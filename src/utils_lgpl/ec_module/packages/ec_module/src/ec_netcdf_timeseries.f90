@@ -159,6 +159,7 @@ contains
       integer :: i_dim, n_dims, iVars, iTims, nVars, nTims, nGlobalAtts, unlimdimid, ierr
       integer :: tslen
       integer :: dimids_tsid(2)
+      integer, dimension(:), allocatable :: layer_ids
       integer :: len_vectordef
       logical :: isVector
       integer, dimension(:, :), allocatable :: var_dimids
@@ -316,7 +317,13 @@ contains
             ncptr%is_vertical_coord_time_varying = ncptr%variable_ndims(ncptr%vertical_coordinate_id) == 3 ! If z variable has three dimensions, we assume the vertical coordinate is time varying (e.g. z(t, station, layer))
             if (len_trim(positive) > 0) then ! Identified a layercoord variable, by its positive:up/down attribute
                ! NOTE: officially, a vertical coord var may also be identified by a unit of pressure, but we don't support that here.
-               ncptr%layerdimid = var_dimids(1, ncptr%vertical_coordinate_id) ! For convenience also store the dimension ID explicitly
+               layer_ids = var_dimids(:ncptr%variable_ndims(ncptr%vertical_coordinate_id), ncptr%vertical_coordinate_id)
+               layer_ids = pack(layer_ids, layer_ids /= ncptr%timedimid .and. layer_ids /= ncptr%tsiddimid)
+               if (size(layer_ids) /= 1) then
+                  call set_ec_message("Cannot identify the vertical dimension in "//trim(ncptr%ncfilename)//".")
+                  return
+               end if
+               ncptr%layerdimid = layer_ids(1)
                ncptr%nLayer = ncptr%dimlen(ncptr%layerdimid)
                allocate (ncptr%vp(ncptr%nLayer), stat=ierr)
                if (.not. ncptr%is_vertical_coord_time_varying) then
@@ -384,35 +391,30 @@ contains
 
    ! =======================================================================
    !> Scan netcdf instance for a specific quantity name and location label
-   recursive function ecNetCDFScan(ncptr, quantity, location, q_id, l_id, dimids, vectormax) result(success)
+   function ecNetCDFScan(ncptr, quantity, location, q_id, l_id, dimension_indices, vectormax) result(success)
       logical :: success
       type(tEcNetCDF), pointer, intent(inout) :: ncptr
       character(len=*), intent(in) :: quantity
       character(len=*), intent(in) :: location
-      integer, dimension(:), allocatable, intent(inout) :: q_id !< Awkward recursive construction, using q_id(1), forcing the calling routine to allocate it
+      integer, dimension(:), allocatable, intent(out) :: q_id
       integer, intent(out) :: l_id
-      integer, dimension(:), allocatable, intent(out) :: dimids
+      type(tEcBoundaryDimensionIndices), dimension(:), allocatable, intent(out) :: dimension_indices !< Layout per component.
       integer, intent(out), optional :: vectormax
 
       integer :: n_dims
-      integer :: ivar, itim, ltl, iv
+      integer :: ivar, iv
       integer :: ierr, vmax
+      character(len=NF90_MAX_NAME) :: variable_name
       character(len=30), dimension(:), allocatable :: elmnames
-      integer, dimension(:), allocatable :: dimids_check
+      integer, dimension(:), allocatable :: dimids
       character(len=NF90_MAX_NAME), dimension(:), allocatable :: ncstdnames !< list with standard names to be filled
       character(len=NF90_MAX_NAME), dimension(:), allocatable :: ncvarnames !< list with variable names to be filled
       character(len=NF90_MAX_NAME), dimension(:), allocatable :: ncstdnames_fallback !< list with fallback standard names to be filled
-      character(len=NF90_MAX_NAME) :: quantity_candidate !< quantity candidate name during search      
 
       success = .false.
       vmax = 1
 
-      !first check with the quantity name directly
-      do ivar = 1, ncptr%nVars
-         if (strcmpi(ncptr%variable_names(ivar), quantity)) then
-            exit
-         end if
-      end do 
+      ivar = find_candidates_in_targets(ncptr%variable_names, [quantity])
 
       if (ivar < 0) then
          ! get candidate names for the quantity
@@ -434,63 +436,47 @@ contains
          ivar = find_candidates_in_targets(ncptr%variable_names, ncvarnames)
       end if
 
-     if (ivar <= ncptr%nVars) then
-         q_id(1) = ivar
-         if (allocated(ncptr%vector_definitions(ivar)%s)) then
-            call strsplit(ncptr%vector_definitions(ivar)%s, 1, elmnames, 1, sep=",")
-            vmax = size(elmnames)
-            call realloc(q_id, vmax, keepexisting=.true., fill=0)
-            do iv = 2, vmax
-               do ivar = 1, ncptr%nVars
-                   if (strcmpi(ncptr%variable_names(ivar), elmnames(iv))) then
-                      exit
-                   end if
-               end do
-               q_id(iv) = ivar
-            end do
-         end if
-      else
+      l_id = -1
+      if (ivar < 1) then
          call set_EC_Message("ec_netcdf_timeseries::ecNetCDFScan: Quantity '"//trim(quantity)//"' not found in file '"//trim(ncptr%ncfilename)//"'.")
-         q_id(1) = -1
+         return
       end if
 
-      do itim = 1, ncptr%nTims
-         ltl = len_trim(location)
-         if (strcmpi(ncptr%tsid(itim), location)) exit ! Found
+      l_id = find_candidates_in_targets(ncptr%tsid, [location])
+      if (l_id < 1) then
+         return
+      end if
+
+      if (allocated(ncptr%vector_definitions(ivar)%s)) then
+         call strsplit(ncptr%vector_definitions(ivar)%s, 1, elmnames, 1, sep=",")
+         vmax = size(elmnames)
+      end if
+      allocate (q_id(vmax), dimension_indices(vmax))
+      n_dims = ncptr%variable_ndims(ivar)
+      do iv = 1, vmax
+         if (iv > 1) then
+            ivar = find_candidates_in_targets(ncptr%variable_names, elmnames(iv:iv))
+            if (ivar < 1) then
+               call set_ec_message("Missing boundary variable '"//trim(elmnames(iv))//"' in "//trim(ncptr%ncfilename)//".")
+               return
+            end if
+         end if
+         ierr = ecSupportNCInquireVariable(ncptr%ncid, ivar, variable_name, dimids)
+         if (.not. ecSupportNetcdfCheckError(ierr, "inquiring boundary variable", ncptr%ncfilename)) then
+            return
+         end if
+         q_id(iv) = ivar
+         dimension_indices(iv) = tEcBoundaryDimensionIndices(station_index=findloc(dimids, ncptr%tsiddimid, dim=1), &
+                                                             time_index=findloc(dimids, ncptr%timedimid, dim=1), &
+                                                             layer_index=findloc(dimids, ncptr%layerdimid, dim=1))
+         if (n_dims < 2 .or. n_dims > 3 .or. size(dimids) /= n_dims .or. &
+             dimension_indices(iv)%station_index == 0 .or. dimension_indices(iv)%time_index == 0 .or. &
+             ((n_dims == 3) .neqv. (dimension_indices(iv)%layer_index > 0))) then
+            call set_ec_message("Boundary variable '"//trim(variable_name)//"' in "//trim(ncptr%ncfilename)// &
+                                " must have station and time dimensions, plus a layer dimension for 3D data.")
+            return
+         end if
       end do
-      if (itim <= ncptr%nTims) then
-         l_id = itim
-      else
-         l_id = -1
-      end if
-      if (l_id <= 0 .or. q_id(1) <= 0) then
-         return ! l_id<0 means : location not found, q_id<0 means quantity not found
-      end if
-      ierr = nf90_Inquire_Variable(ncptr%ncid, q_id(1), ndims=n_dims)
-      if (ierr /= NF90_NOERR) return
-      if (.not. allocated(dimids)) then
-         allocate (dimids(n_dims), stat=ierr)
-         if (ierr /= 0) then
-            return
-         end if
-         ierr = nf90_Inquire_Variable(ncptr%ncid, q_id(1), dimids=dimids)
-         if (ierr /= NF90_NOERR) then
-            return
-         end if
-      else
-         allocate (dimids_check(n_dims), stat=ierr)
-         if (ierr /= 0) then
-            return
-         end if
-         ierr = nf90_Inquire_Variable(ncptr%ncid, q_id(1), dimids=dimids_check)
-         if (ierr /= NF90_NOERR) then
-            return
-         end if
-         if (.not. (all(dimids == dimids_check) .and. n_dims == size(dimids))) then
-            ! sanity check: all elements should have the same dimensions vector
-            return ! unsuccessfully
-         end if
-      end if
       !  TODO: Retrieve relevant variable attributes and store them in the bc-instance this netcdf is connected to
 
       if (present(vectormax)) then
@@ -500,13 +486,13 @@ contains
    end function ecNetCDFScan
 
    ! =======================================================================
-   !> Reader of timeseries to be implemented here ....
-   function ecNetCDFGetTimeseriesValue(ncptr, q_id, l_id, dims, timelevel, nctime, ncvalue, buffer,func) result(success)
+   !> Read a boundary timeseries value or profile using per-variable axis positions.
+   function ecNetCDFGetTimeseriesValue(ncptr, q_id, l_id, dimension_indices, timelevel, nctime, ncvalue, buffer, func) result(success)
       logical :: success
       type(tEcNetCDF), pointer, intent(inout) :: ncptr
       integer, dimension(:), intent(in) :: q_id
       integer, intent(in) :: l_id
-      integer, dimension(:), intent(in) :: dims
+      type(tEcBoundaryDimensionIndices), dimension(:), intent(in) :: dimension_indices !< Layout per component.
       integer, intent(in) :: timelevel
       real(dp), dimension(:), intent(out) :: nctime
       real(dp), dimension(:), intent(out) :: ncvalue
@@ -514,26 +500,33 @@ contains
       integer, intent(in) :: func !< should be a BC_FUNC_* enum value that specifies the type of timeseries
 
       integer :: vectormax, iv, il, ierr
+      integer, dimension(3) :: start, counts
 
       success = .false.
       vectormax = size(q_id)
-      ! Use func in stead of number of layers      
-      ! if (ncptr%nLayer < 0)  then ! no 3rd dimension, get single data value, maybe should be <=0
-      if (func == BC_FUNC_TSERIES) then
-         do iv = 1, vectormax
-            ierr = nf90_get_var(ncptr%ncid, q_id(iv), ncvalue(iv:iv), (/l_id, timelevel/), (/1, 1/))
-            if (ierr /= NF90_NOERR) return
-         end do
-      else ! yes 3rd dimension, get a rank-1 vector, num. of layers
+      if (func == BC_FUNC_TIM3D) then
          call realloc(buffer, ncptr%nLayer)
-         do iv = 1, vectormax
-            ierr = nf90_get_var(ncptr%ncid, q_id(iv), buffer(1:ncptr%nLayer), (/1, l_id, timelevel/), (/ncptr%nLayer, 1, 1/))
-            if (ierr /= NF90_NOERR) return
+      end if
+      do iv = 1, vectormax
+         start = 1
+         counts = 1
+         start(dimension_indices(iv)%station_index) = l_id
+         start(dimension_indices(iv)%time_index) = timelevel
+         if (func == BC_FUNC_TSERIES) then
+            ierr = nf90_get_var(ncptr%ncid, q_id(iv), ncvalue(iv:iv), start(:2), counts(:2))
+         else
+            counts(dimension_indices(iv)%layer_index) = ncptr%nLayer
+            ierr = nf90_get_var(ncptr%ncid, q_id(iv), buffer, start, counts)
+         end if
+         if (.not. ecSupportNetcdfCheckError(ierr, "reading boundary variable", ncptr%ncfilename)) then
+            return
+         end if
+         if (func == BC_FUNC_TIM3D) then
             do il = 1, ncptr%nLayer
                ncvalue(iv + (il - 1) * vectormax) = buffer(il) ! interleaving three quantities from netCDF into one array
             end do
-         end do
-      end if
+         end if
+      end do
 
       ierr = nf90_get_var(ncptr%ncid, ncptr%timevarid, nctime(1:1), (/timelevel/), (/1/)) ! get one single time value
       if (ierr /= NF90_NOERR) return

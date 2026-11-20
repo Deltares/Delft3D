@@ -161,9 +161,6 @@ module m_ec_module
       module procedure ecQuantitySet
    end interface ecSetQuantity
    
-   interface ecSetQuantityUnitsFillScaleOffsetFromNcidVarid
-      module procedure ecQuantitySetUnitsFillScaleOffsetFromNcidVarid
-   end interface ecSetQuantityUnitsFillScaleOffsetFromNcidVarid
 
    
    ! ElementSet

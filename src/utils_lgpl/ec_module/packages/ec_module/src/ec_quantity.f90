@@ -45,7 +45,7 @@ module m_ec_quantity
    public :: ecQuantityCreate
    public :: ecQuantityFree1dArray
    public :: ecQuantitySet
-   public :: ecQuantitySetUnitsFillScaleOffsetFromNcidVarid
+   public :: ecQuantityReadNetcdfAttributes
    public :: ecQuantitySetName
    public :: ecQuantitySetTimeint
    
@@ -110,11 +110,8 @@ module m_ec_quantity
                                                        units,                    &
                                                        vectormax,                &
                                                        periodic, constant,       &
-                                                       factor,                   &
-                                                       offset,                   &
                                                        fillvalue,                &
-                                                       timeint,                  &
-                                                       ncid                      &
+                                                       timeint                   &
                                                      ) result(success)
 
          logical                               :: success     !< function status
@@ -125,11 +122,8 @@ module m_ec_quantity
          character(len=*),optional :: units
          integer         ,optional :: vectormax
          logical         ,optional :: periodic, constant
-         real(hp)        ,optional :: factor
-         real(hp)        ,optional :: offset
          real(hp)        ,optional :: fillvalue
          integer         ,optional :: timeint
-         integer         ,optional :: ncid
          !
          type(tEcQuantity), pointer :: quantityPtr !< Quantity corresponding to quantityId
          !
@@ -152,19 +146,14 @@ module m_ec_quantity
          if (present(vectormax)) quantityPtr%vectormax = vectormax  
          if (present(periodic)) quantityPtr%periodic = periodic  
          if (present(constant)) quantityPtr%constant = constant  
-         if (present(factor)) quantityPtr%factor = factor  
-         if (present(offset)) quantityPtr%offset = offset  
          if (present(fillvalue)) quantityPtr%fillvalue = fillvalue  
          if (present(timeint)) quantityPtr%timeint = timeint  
-         if (present(ncid)) quantityPtr%ncid = ncid  
          success = .true.
          
       end function ecQuantitySet
       
-      !> Change the Units, Fillvalue, Scalefactor and Offset shift of the Quantity corresponding to quantityId
-      !> obtained from the variable varid in the netcdf file ncid 
-      !> all in try-catch fashion: if not available, leave empty or use default
-      function ecQuantitySetUnitsFillScaleOffsetFromNcidVarid(instancePtr, quantityId, ncid, varid) result(success)
+      !> Set the quantity's units and missing value, and return the source's scale and offset.
+      function ecQuantityReadNetcdfAttributes(instancePtr, quantityId, ncid, varid, factor, offset) result(success)
          use netcdf
          use netcdf_utils, only: ncu_get_att
          use string_module
@@ -177,16 +166,17 @@ module m_ec_quantity
          integer,                   intent(in) :: quantityId  !< unique Quantity id
          integer,                   intent(in) :: ncid        !< id of the nc-file 
          integer,                   intent(in) :: varid       !< id of the variable
-                                                              !< order: new = (old*scale) + offset
+         real(hp), intent(out) :: factor !< Scale factor, defaults to one.
+         real(hp), intent(out) :: offset !< Offset after scaling, including any unit conversion.
          character(len=:), allocatable  :: units
          integer  :: ierr
-         real(hp) :: add_offset, scalefactor, fillvalue
+         real(hp) :: fillvalue
          
          allocate(character(len=0) :: units)
          
          success = .false.
-         add_offset = 0.d0
-         scalefactor = 1.d0
+         factor = 1.0_hp
+         offset = 0.0_hp
          fillvalue = ec_undef_hp
 
          units = ''
@@ -206,33 +196,25 @@ module m_ec_quantity
             end if
          end if
 
-         ierr = nf90_get_att(ncid, varid, 'scale_factor', scalefactor)
-         if (ierr==NF90_NOERR) then
-            if (.not.(ecQuantitySet(instancePtr, quantityId, factor=scalefactor))) then
-               call set_ec_message("Unable to set scale factor for quantity ", quantityId)
-               return
-            end if
+         ierr = nf90_get_att(ncid, varid, 'scale_factor', factor)
+         if (ierr /= NF90_NOERR) then
+            factor = 1.0_hp
          end if
 
-         ierr = nf90_get_att(ncid, varid, 'add_offset', add_offset)
-         if (ierr /= NF90_NOERR) add_offset = 0.0_hp
+         ierr = nf90_get_att(ncid, varid, 'add_offset', offset)
+         if (ierr /= NF90_NOERR) then
+            offset = 0.0_hp
+         end if
 
          if (units == 'K' .or. units == 'KELVIN') then
             ! convert Kelvin to degrees Celsius (kernel expects degrees Celsius)
-            add_offset = add_offset - C_TO_KELVIN
-         end if
-
-         if (add_offset /= 0.0_hp) then
-            if (.not.(ecQuantitySet(instancePtr, quantityId, offset=add_offset))) then
-               call set_ec_message("Unable to set offset for quantity ", quantityId)
-               return
-            end if
+            offset = offset - C_TO_KELVIN
          end if
 
         deallocate(units)
         success = .true.
 
-      end function ecQuantitySetUnitsFillScaleOffsetFromNcidVarid
+      end function ecQuantityReadNetcdfAttributes
      
       ! =======================================================================
       
