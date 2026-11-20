@@ -713,11 +713,11 @@ contains
       !
       success = .false.
       fieldPtr => null()
-      has_time = item%quantityPtr%dimension_indices%time_index > 0
+      has_time = item%dimension_indices%time_index > 0
       has_harmonics = allocated(fileReaderPtr%hframe%phases) ! a valid hframe will have allocated phases
 
       dmiss_nc = item%quantityPtr%fillvalue
-      varid = item%quantityPtr%ncid
+      varid = item%nc_varid
       !
       !
       ! =============
@@ -787,9 +787,9 @@ contains
             fieldPtr%timesndx = timesndx
 
             ! Apply the scale factor and offset before returning from the scalar path.
-            if (item%quantityPtr%factor /= 1.0_dp .or. item%quantityPtr%offset /= 0.0_dp) then
+            if (item%factor /= 1.0_dp .or. item%offset /= 0.0_dp) then
                if (fieldPtr%arr1dPtr(1) /= item%quantityPtr%fillvalue) then
-                  fieldPtr%arr1dPtr(1) = fieldPtr%arr1dPtr(1) * item%quantityPtr%factor + item%quantityPtr%offset
+                  fieldPtr%arr1dPtr(1) = fieldPtr%arr1dPtr(1) * item%factor + item%offset
                end if
             end if
 
@@ -832,7 +832,7 @@ contains
 
          if (col1 /= 0 .or. row1 /= 0) then
             if (issparse == 1) then
-               call read_data_sparse(fileReaderPtr%fileHandle, item%quantityPtr, n_cols, n_rows, nlay, &
+               call read_data_sparse(fileReaderPtr%fileHandle, item, n_cols, n_rows, nlay, &
                                      timesndx, ia, ja, Ndatasize, fieldPtr%arr1dPtr, ierror)
                if (.not. ecSupportNetcdfCheckError(ierror, 'reading sparse grid', fileReaderPtr%filename)) then
                   return
@@ -840,7 +840,7 @@ contains
             else
                do k = 1, max(nlay, 1)
                   layer_offset = (k - 1) * Ndatasize
-                  ierror = read_netcdf_layer(fileReaderPtr%fileHandle, item%quantityPtr, [col0, row0], [ncol, nrow], &
+                  ierror = read_netcdf_layer(fileReaderPtr%fileHandle, item, [col0, row0], [ncol, nrow], &
                                              k, timesndx, fieldPtr%arr1dPtr(layer_offset + 1:layer_offset + Ndatasize))
                   if (.not. ecSupportNetcdfCheckError(ierror, 'reading gridded variable '//trim(item%quantityPtr%name), fileReaderPtr%filename)) then
                      return
@@ -863,10 +863,10 @@ contains
       end if
 
       ! - Apply the scale factor and offset
-      if (item%quantityPtr%factor /= 1.0_dp .or. item%quantityPtr%offset /= 0.0_dp) then
+      if (item%factor /= 1.0_dp .or. item%offset /= 0.0_dp) then
          do i = 1, size(fieldPtr%arr1dPtr)
             if (fieldPtr%arr1dPtr(i) /= item%quantityPtr%fillvalue) then
-               fieldPtr%arr1dPtr(i) = fieldPtr%arr1dPtr(i) * item%quantityPtr%factor + item%quantityPtr%offset
+               fieldPtr%arr1dPtr(i) = fieldPtr%arr1dPtr(i) * item%factor + item%offset
             end if
          end do
       end if
@@ -875,18 +875,18 @@ contains
    end function ecNetcdfReadNextBlock
 
    !> Read a horizontal subset in X-fastest order, at the selected layer and time if present.
-   integer function read_netcdf_layer(filehandle, quantity, xy_start, xy_count, layer, timestep, data) result(status)
+   integer function read_netcdf_layer(filehandle, item, xy_start, xy_count, layer, timestep, data) result(status)
       use netcdf
       integer, intent(in) :: filehandle, layer, timestep
-      type(tEcQuantity), intent(in) :: quantity
+      type(tEcItem), intent(in) :: item
       integer, dimension(2), intent(in) :: xy_start, xy_count
       real(dp), dimension(:), intent(out) :: data
-      integer, dimension(quantity%nc_rank) :: start, counts
+      integer, dimension(item%nc_rank) :: start, counts
       type(tEcDimensionIndices) :: indices
       real(dp), dimension(:, :), allocatable :: file_order
       integer :: row, ncol, nrow, istat
 
-      indices = quantity%dimension_indices
+      indices = item%dimension_indices
       call netcdf_layer_selection(indices, xy_start, xy_count, layer, timestep, start, counts)
       ! If Y comes before X in NetCDF Fortran order, Y varies fastest. Reorder for the dense X-fastest output.
       if (indices%y_index > 0 .and. indices%y_index < indices%x_index) then
@@ -897,7 +897,7 @@ contains
             status = NF90_ENOMEM
             return
          end if
-         status = nf90_get_var(filehandle, quantity%ncid, file_order, start=start, count=counts)
+         status = nf90_get_var(filehandle, item%nc_varid, file_order, start=start, count=counts)
          if (status /= NF90_NOERR) then
             return
          end if
@@ -905,7 +905,7 @@ contains
             data((row - 1) * ncol + 1:row * ncol) = file_order(row, :)
          end do
       else
-         status = nf90_get_var(filehandle, quantity%ncid, data, start=start, count=counts)
+         status = nf90_get_var(filehandle, item%nc_varid, data, start=start, count=counts)
       end if
    end function read_netcdf_layer
 
@@ -2176,7 +2176,7 @@ contains
    end subroutine strip_comment
 
 !     read data and store in CRS format
-   subroutine read_data_sparse(filehandle, quantity, n_cols, n_rows, n_layers, timesndx, ia, ja, Ndatasize, arr1d, ierror)
+   subroutine read_data_sparse(filehandle, item, n_cols, n_rows, n_layers, timesndx, ia, ja, Ndatasize, arr1d, ierror)
       use netcdf
       use netcdf_utils, only: ncu_get_att
       use io_ugrid
@@ -2184,7 +2184,7 @@ contains
       implicit none
 
       integer, intent(in) :: filehandle !< filehandle
-      type(tEcQuantity), intent(in) :: quantity
+      type(tEcItem), intent(in) :: item
       integer, intent(in) :: n_cols !< number of columns in input
       integer, intent(in) :: n_rows !< number of rows in input
       integer, intent(in) :: n_layers !< number of layers in input
@@ -2210,14 +2210,14 @@ contains
       character(len=:), allocatable :: standard_name
       character(len=64) :: stringBuffer
       integer :: block_ncol, block_nrow, col_stride, row_stride
-      integer, dimension(quantity%nc_rank) :: start, counts
+      integer, dimension(item%nc_rank) :: start, counts
       type(tEcDimensionIndices) :: indices
       logical :: y_first
 
       ierror = 1
       allocate (character(len=0) :: standard_name)
 
-      indices = quantity%dimension_indices
+      indices = item%dimension_indices
       y_first = indices%y_index > 0 .and. indices%y_index < indices%x_index
       Nreadrow = n_rows
 
@@ -2264,13 +2264,13 @@ contains
                block_ncol = mcolmax(j) - mcolmin(j) + 1
                block_nrow = nrowmax(j) - nrowmin + 1
                call netcdf_layer_selection(indices, [mcolmin(j), nrowmin], [block_ncol, block_nrow], k, timesndx, start, counts)
-               ierror = nf90_get_var(filehandle, quantity%ncid, data_block, start=start, count=counts)
+               ierror = nf90_get_var(filehandle, item%nc_varid, data_block, start=start, count=counts)
 
                if (ierror /= 0) then
                   standard_name = ''
-                  ierr = ncu_get_att(fileHandle, quantity%ncid, 'standard_name', standard_name)
+                  ierr = ncu_get_att(fileHandle, item%nc_varid, 'standard_name', standard_name)
                   if (ierr /= 0) then
-                     write (stringBuffer, *) 'varid = ', quantity%ncid
+                     write (stringBuffer, *) 'varid = ', item%nc_varid
                      call set_ec_message("Read error in read_data_sparse for "//trim(stringBuffer))
                   else
                      call set_ec_message("Read error in read_data_sparse for "//trim(standard_name))

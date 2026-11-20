@@ -399,12 +399,25 @@ module m_ec_typedefs
 
    !===========================================================================
 
+   !> Positions in a gridded NetCDF variable's dimension list; zero means absent.
+   type :: tEcDimensionIndices
+      integer :: x_index = 0 !< X or station dimension.
+      integer :: y_index = 0
+      integer :: z_index = 0
+      integer :: time_index = 0
+   end type tEcDimensionIndices
+
    !>
    type tEcItem
       integer :: id !< unique Item number, set by ecInstanceCreateItem
       integer :: role !< source or target Item, see itemType enumeration
       integer :: accessType !< file reader, file writer, data provider
       integer :: providerId = ec_undef_int !< identifier of the provider (usually a file reader)
+      integer :: nc_varid = -1 !< NetCDF variable ID in the source file.
+      integer :: nc_rank = 0 !< Rank of the source NetCDF variable.
+      type(tEcDimensionIndices) :: dimension_indices !< Layout of the source NetCDF variable.
+      real(hp) :: factor = 1.0_hp !< Scale applied to source values before adding the offset.
+      real(hp) :: offset = 0.0_hp !< Offset added to scaled source values.
       type(tEcQuantity), pointer :: quantityPtr => null() !< Quantity, stored in tEcInstance%ecQuantitiesPtr
       type(tEcElementSet), pointer :: elementSetPtr => null() !< ElementSet, stored in tEcInstance%ecElementSetsPtr
       type(tEcField), pointer :: sourceT0FieldPtr => null() !< Field containing source data of second to last read data block.
@@ -424,14 +437,6 @@ module m_ec_typedefs
 
    !===========================================================================
 
-   !> Positions in a gridded NetCDF variable's dimension list; zero means absent.
-   type :: tEcDimensionIndices
-      integer :: x_index = 0 !< X or station dimension.
-      integer :: y_index = 0
-      integer :: z_index = 0
-      integer :: time_index = 0
-   end type tEcDimensionIndices
-
    !> Datatype containing metadata which describe an ecItem's data.
    type tEcQuantity
       integer :: id !< unique Quantity number, set by ecInstanceCreateQuantity
@@ -442,13 +447,7 @@ module m_ec_typedefs
       integer :: timeint = timeint_lin !< Temporal interpolation type, default is linear
       logical :: periodic = .false. !< Use timeseries periodically if True
       logical :: constant = .false. !< Provide constant value if True
-      !< Intended for quantities from NetCDF:
-      real(hp) :: fillvalue = ec_undef_hp !<    default if NaN, missing value
-      real(hp) :: factor = 1.d0 !<    multiplication (scale) factor
-      real(hp) :: offset = 0.d0 !<    offset (new = raw*factor + offset)
-      integer :: ncid = -1 !<    NetCDF variable ID, only used in case of NetCDF format
-      integer :: nc_rank = 0 !< Rank of a gridded NetCDF variable.
-      type(tEcDimensionIndices) :: dimension_indices
+      real(hp) :: fillvalue = ec_undef_hp !< Missing-value marker.
    end type tEcQuantity
 
    type tEcQuantityPtr

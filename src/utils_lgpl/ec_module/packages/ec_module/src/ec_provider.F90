@@ -992,7 +992,7 @@ contains
       item => null()
 
       quantityId = ecInstanceCreateQuantity(instancePtr)
-      if (.not. ecQuantitySet(instancePtr, quantityId, name=quantityName, factor=data_value)) then
+      if (.not. ecQuantitySet(instancePtr, quantityId, name=quantityName)) then
          return
       end if
 
@@ -2101,10 +2101,7 @@ contains
       end do ! loop over support points
 
       if (n_signals > 0) then
-         if (.not. ecQuantitySet(instancePtr, quantityId, &
-                                 fillvalue=bcBlockPtr%quantity%missing, &
-                                 offset=bcBlockPtr%quantity%offset, &
-                                 factor=bcBlockPtr%quantity%factor)) then
+         if (.not. ecQuantitySet(instancePtr, quantityId, fillvalue=bcBlockPtr%quantity%missing)) then
             return
          end if
       end if
@@ -3246,8 +3243,7 @@ contains
          case default
             timeint = timeint_lin
          end select
-         if (.not. (ecQuantitySet(instancePtr, quantityId, name=sourceItemQuantityName, ncid=idvar, timeint=timeint))) return
-         if (.not. (ecQuantitySetUnitsFillScaleOffsetFromNcidVarid(instancePtr, quantityId, fileReaderPtr%fileHandle, idvar))) return
+         if (.not. (ecQuantitySet(instancePtr, quantityId, name=sourceItemQuantityName, timeint=timeint))) return
 
          ! ========================
          ! Create the source Fields
@@ -3279,8 +3275,13 @@ contains
             itemPtr => ecSupportFindItem(instancePtr, itemId)
          end if
          ! ===== finish initialization of Fields =====
-         itemPtr%quantityPtr%nc_rank = data_rank
-         itemPtr%quantityPtr%dimension_indices = dimension_indices
+         itemPtr%nc_varid = idvar
+         itemPtr%nc_rank = data_rank
+         itemPtr%dimension_indices = dimension_indices
+         if (.not. ecQuantityReadNetcdfAttributes(instancePtr, quantityId, fileReaderPtr%fileHandle, idvar, &
+                                                  itemPtr%factor, itemPtr%offset)) then
+            return
+         end if
          itemPtr%sourceT0FieldPtr%timesteps = ec_undef_hp
          itemPtr%sourceT1FieldPtr%timesteps = ec_undef_hp
 
@@ -3427,7 +3428,7 @@ contains
       !
       quantityId = ecInstanceCreateQuantity(instancePtr)
 
-      if (.not. (ecQuantitySet(instancePtr, quantityId, name=quantityName, units=trim(string), ncid=idvar_q))) then
+      if (.not. (ecQuantitySet(instancePtr, quantityId, name=quantityName, units=trim(string)))) then
          success = .false.
       end if
       field0Id = ecInstanceCreateField(instancePtr)
