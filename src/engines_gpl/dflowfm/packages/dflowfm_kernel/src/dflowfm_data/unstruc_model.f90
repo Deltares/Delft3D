@@ -3673,7 +3673,7 @@ contains
       call prop_set(prop_ptr, 'meteo', 'freeConvection', trim(tmpstr), 'Free convection switch (options: ''off'', ''on'').')
 
       call convert_salinity_dependent_evaporation_method_integer_to_string(salinity_dependent_evaporation_method, tmpstr)
-      call prop_set(prop_ptr, 'meteo', 'salinityDependentEvaporationMethod', trim(tmpstr), 'Salinity dependent evaporation method (options: ''off'', ''constant reduction factor'', ''salinity-dependent reduction factor'').')
+      call prop_set(prop_ptr, 'meteo', 'salinityDependentEvaporationMethod', trim(tmpstr), 'Salinity dependent evaporation method (options: ''none'', ''constant'', ''linear'').')
 
       if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_CONSTANT) then
          call prop_set(prop_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity%scalar, 'Salinity reduction factor for saturation humidity in bulk formulae.')
