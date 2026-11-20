@@ -353,11 +353,11 @@ module swan_input
       character(72) :: title3
       character(256) :: casl
       character(256) :: filnam
-      character(256) :: flowgridfile ! netcdf file containing flow grid
       character(256) :: scriptname
       character(256) :: specfile
       character(256) :: inputtemplatefile
       character(1024) :: comfile
+      character(1024) :: mudfile_deprecated
       character(15) :: usehottime = '00000000.000000' ! Time in the name of the hotfile that has to be used by SWAN
       character(15) :: writehottime = '00000000.000000' ! Time in the name of the hotfile that has to be written by SWAN
       character(15) :: keephottime = '00000000.000000' ! Time in the name of the hotfile that should not be deleted
@@ -662,7 +662,7 @@ contains
       sr%title2 = ''
       sr%title3 = ''
       sr%comfile = ''
-      sr%flowgridfile = ' '
+      sr%mudfile_deprecated = ' '
       sr%useflowdata = .false.
       sr%exemode = SWAN_MODE_EXE
       sr%swmor = .false.
@@ -914,25 +914,16 @@ contains
       end select
       !
       parname = ''
-      call prop_get(mdw_ptr, 'General', 'FlowFile', parname)
-      if (parname /= ' ') then
-         call setmode(wavedata, flow_online)
-         parname = ''
-         call prop_get(mdw_ptr, 'General', 'FlowMudFile', parname)
-         if (parname /= ' ') then
-            call setmode(wavedata, flow_mud_online)
+      call prop_get(mdw_ptr, 'General', 'FlowMudFile', sr%mudfile_deprecated)
+      if (sr%mudfile_deprecated /= ' ') then
+         write (*, *) 'SWAN_INPUT: Keyword "FlowMudFile" is deprecated'
+         if (wavedata%wave_flow_mode%online /= ONLINE_DELFTIO) then
+             write (*, *) 'SWAN_INPUT: Keyword "FlowMudFile" is only supported for Delft3D-FLOW'
+             call handle_errors_mdw(sr)
          end if
-      else
-         call prop_get(mdw_ptr, 'General', 'ComFile', sr%comfile)
+         call setcom(wavedata, COM_NEFIS)
       end if
-      select case (wavedata%mode)
-      case (stand_alone)
-         write (*, '(a)') '*** MESSAGE: Delft3D-WAVE runs stand alone'
-      case (flow_online)
-         write (*, '(a)') '*** MESSAGE: Delft3D-WAVE runs online with Delft3D-FLOW'
-      case (flow_mud_online)
-         write (*, '(a)') '*** MESSAGE: Delft3D-WAVE runs online with Delft3D-FLOW, including MUD'
-      end select
+      call prop_get(mdw_ptr, 'General', 'ComFile', sr%comfile)
       !
       parname = ''
       call prop_get(mdw_ptr, 'General', 'DirConvention', parname)
@@ -1494,7 +1485,6 @@ contains
       sr%wavm_write_interval = 0.0
       sr%swwav = .false.
       sr%deltcom = 0.0
-      sr%flowgridfile = ' '
       sr%append_com = .false.
       sr%output_points = .false.
       sr%output_pnt_file = .false.
@@ -1516,12 +1506,15 @@ contains
       call prop_get(mdw_ptr, 'Output', 'WriteCOM', sr%swwav)
       call prop_get(mdw_ptr, 'Output', 'MassFluxToCOM', sr%swflux)
       call prop_get(mdw_ptr, 'Output', 'COMWriteInterval', sr%deltcom)
-      call prop_get(mdw_ptr, 'Output', 'FlowGridForCom', sr%flowgridfile)
-      if (sr%flowgridfile /= ' ') then
-         write (*, '(a)') "ERROR: No longer supported: stand alone WAVE computation using FLOW data in a com-file via keyword 'FlowGridForCom'"
-         call handle_errors_mdw(sr)
+      parname = ''
+      call prop_get(mdw_ptr, 'Output', 'COMFile', parname)
+      if (parname /= ' ') then
+         if (sr%comfile /= ' ') then
+             write (*, '(a)') "ERROR: COMFile in block '[General]' and in '[Output]' cannot be used together"
+             call handle_errors_mdw(sr)
+         end if
+         sr%comfile = parname
       end if
-      call prop_get(mdw_ptr, 'Output', 'COMFile', sr%flowgridfile)
       call prop_get(mdw_ptr, 'Output', 'AppendCOM', sr%append_com)
       call prop_get(mdw_ptr, 'Output', 'MapWriteNetCDF', sr%swmapwritenetcdf)
       call prop_get(mdw_ptr, 'Output', 'NetCDFSinglePrecision', sr%netcdf_sp)
@@ -1538,12 +1531,21 @@ contains
       !
       ! Check that the comfile is not a map file (not allowed. Was allowed in preliminary versions)
       !
-      if (sr%flowgridfile /= ' ') then
-         i = len_trim(sr%flowgridfile)
-         if (sr%flowgridfile(i - 5:i) /= "com.nc") then
-            write (*, '(3a)') "ERROR: The name of the COMFile (", trim(sr%flowgridfile), ") must end on 'com.nc'"
+      if (sr%comfile /= ' ') then
+         i = index(sr%comfile, ".", back=.true.)
+         if (sr%comfile(i - 3:i-1) /= "com") then
+            write (*, '(3a)') "ERROR: The base of the name of the COMFile (", trim(sr%comfile), ") must end on 'com'"
             call handle_errors_mdw(sr)
          end if
+         select case (sr%comfile(i:))
+         case (".nc")
+             call setcom(wavedata, COM_NETCDF)
+         case (".dat", ".def")
+             call setcom(wavedata, COM_NEFIS)
+         case default
+             write (*, '(3a)') "ERROR: The COMFile (", trim(sr%comfile), ") has an unknown file extension"
+             call handle_errors_mdw(sr)
+         end select
       end if
       !
       ! determine the number of location files
@@ -1695,7 +1697,7 @@ contains
       !
       ! Put general FLOW mapping flags in dom(1)
       !
-      if (wavedata%mode /= stand_alone) then
+      if (wavedata%wave_flow_mode%online /= ONLINE_NONE) then
          call prop_get(mdw_ptr, 'General', 'FlowBedLevel', sr%dom(1)%qextnd(q_bath))
          call prop_get(mdw_ptr, 'General', 'FlowVegetation', sr%dom(1)%qextnd(q_veg))
          if (sr%dom(1)%qextnd(q_veg) == 2) then
@@ -2581,7 +2583,7 @@ contains
       ! Backward slash does not work on Linux
       slash_ok = 47 ! /
       slash_er = 92 ! \
-      call replace_char(sr%flowgridfile, slash_er, slash_ok)
+      call replace_char(sr%comfile, slash_er, slash_ok)
       do i = 1, sr%nloc
          call replace_char(sr%pntfilnam(i), slash_er, slash_ok)
       end do
@@ -3235,7 +3237,7 @@ contains
       !
       !     Fluid Mud
       !
-      if (wavedata%mode == flow_mud_online) then
+      if (sr%mudfile_deprecated /= ' ') then
          write (luninp, '(1X,A)') '$'
          lijn = 'INPGRID _'
          line(1:18) = 'MUDL CURV 0. 0. '
@@ -3673,7 +3675,7 @@ contains
          write (luninp, '(1X,A)') line
          line = ' '
       end if
-      if (wavedata%mode == flow_mud_online) then
+      if (sr%mudfile_deprecated /= ' ') then
          !
          ! In the future, (some of) the following parameters must be read from the mud-comfile
          !
@@ -4115,12 +4117,12 @@ contains
                indstart = i + 1
                i = i + 1 + len_trim(pointname)
                call add_inest(nnest, line, i, inest)
-               if (nttide > 1 .or. wavedata%mode /= stand_alone) then
+               if (nttide > 1 .or. wavedata%wave_flow_mode%online /= ONLINE_NONE) then
                   line(i:) = 't'
                   i = i + 1
                   if (nttide > 1) then
                      write (line(i:), '(I8.8)') 1000000 * inest + itide
-                  else ! wavedata%mode /= stand_alone
+                  else ! wavedata%wave_flow_mode%online /= ONLINE_NONE
                      write (line(i:), '(I8.8)') calccount
                   end if
                   i = i + 8
@@ -4157,11 +4159,11 @@ contains
                !
                ! Running online with Delft3D-FLOW: itide contains the output counter
                !
-               if (nttide > 1 .or. wavedata%mode /= stand_alone) then
+               if (nttide > 1 .or. wavedata%wave_flow_mode%online /= ONLINE_NONE) then
                   line(i:) = 't'
                   if (nttide > 1) then
                      write (line(i + 1:), '(I6.6)') itide
-                  else ! wavedata%mode /= stand_alone
+                  else ! wavedata%wave_flow_mode%online /= ONLINE_NONE
                      write (line(i + 1:), '(I6.6)') calccount
                   end if
                   i = i + 7
@@ -4189,11 +4191,11 @@ contains
                !
                ! Running online with Delft3D-FLOW: itide contains the output counter
                !
-               if (nttide > 1 .or. wavedata%mode /= stand_alone) then
+               if (nttide > 1 .or. wavedata%wave_flow_mode%online /= ONLINE_NONE) then
                   line(i:) = 't'
                   if (nttide > 1) then
                      write (line(i + 1:), '(I6.6)') itide
-                  else ! wavedata%mode /= stand_alone
+                  else ! wavedata%wave_flow_mode%online /= ONLINE_NONE
                      write (line(i + 1:), '(I6.6)') calccount
                   end if
                   i = i + 7

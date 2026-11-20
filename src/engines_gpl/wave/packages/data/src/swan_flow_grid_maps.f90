@@ -560,12 +560,12 @@ contains
 !
 !
 !==============================================================================
-   subroutine alloc_input_fields(g, inpfld, mode, ice)
+   subroutine alloc_input_fields(g, inpfld, mudfile_deprecated, ice)
       use wave_data
       implicit none
       !
       ! arguments
-      integer :: mode
+      character(LEN=*) :: mudfile_deprecated
       type(grid) :: g
       type(input_fields) :: inpfld
       integer, optional :: ice
@@ -615,7 +615,7 @@ contains
       !
       ! Interaction with Fluid Mud
       !
-      if (mode == flow_mud_online) then
+      if (mudfile_deprecated /= '') then
          allocate (inpfld%s1mud(inpfld%mmax, inpfld%nmax))
          allocate (inpfld%dpsmud(inpfld%mmax, inpfld%nmax))
          inpfld%s1mud = 0.0
@@ -666,12 +666,12 @@ contains
 !
 !
 !==============================================================================
-   subroutine dealloc_input_fields(inpfld, mode, ice)
+   subroutine dealloc_input_fields(inpfld, mudfile_deprecated, ice)
       use wave_data
       implicit none
       !
       integer :: ierr
-      integer :: mode
+      character(LEN=*) :: mudfile_deprecated
       type(input_fields) :: inpfld
       integer, optional :: ice
       !
@@ -696,7 +696,7 @@ contains
       deallocate (inpfld%veg_stemheight, stat=ierr)
       deallocate (inpfld%windu, stat=ierr)
       deallocate (inpfld%windv, stat=ierr)
-      if (mode == flow_mud_online) then
+      if (mudfile_deprecated /= '') then
          deallocate (inpfld%s1mud, stat=ierr)
          deallocate (inpfld%dpsmud, stat=ierr)
       end if
