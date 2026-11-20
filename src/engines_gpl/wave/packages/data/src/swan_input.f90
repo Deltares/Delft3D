@@ -1697,7 +1697,7 @@ contains
       !
       ! Put general FLOW mapping flags in dom(1)
       !
-      if (wavedata%mode /= stand_alone) then
+      if (wavedata%wave_flow_mode%online /= ONLINE_NONE) then
          call prop_get(mdw_ptr, 'General', 'FlowBedLevel', sr%dom(1)%qextnd(q_bath))
          call prop_get(mdw_ptr, 'General', 'FlowVegetation', sr%dom(1)%qextnd(q_veg))
          if (sr%dom(1)%qextnd(q_veg) == 2) then
@@ -3237,7 +3237,7 @@ contains
       !
       !     Fluid Mud
       !
-      if (wavedata%mode == flow_mud_online) then
+      if (sr%mudfile_deprecated /= ' ') then
          write (luninp, '(1X,A)') '$'
          lijn = 'INPGRID _'
          line(1:18) = 'MUDL CURV 0. 0. '
@@ -3675,7 +3675,7 @@ contains
          write (luninp, '(1X,A)') line
          line = ' '
       end if
-      if (wavedata%mode == flow_mud_online) then
+      if (sr%mudfile_deprecated /= ' ') then
          !
          ! In the future, (some of) the following parameters must be read from the mud-comfile
          !
@@ -4117,12 +4117,12 @@ contains
                indstart = i + 1
                i = i + 1 + len_trim(pointname)
                call add_inest(nnest, line, i, inest)
-               if (nttide > 1 .or. wavedata%mode /= stand_alone) then
+               if (nttide > 1 .or. wavedata%wave_flow_mode%online /= ONLINE_NONE) then
                   line(i:) = 't'
                   i = i + 1
                   if (nttide > 1) then
                      write (line(i:), '(I8.8)') 1000000 * inest + itide
-                  else ! wavedata%mode /= stand_alone
+                  else ! wavedata%wave_flow_mode%online /= ONLINE_NONE
                      write (line(i:), '(I8.8)') calccount
                   end if
                   i = i + 8
@@ -4159,11 +4159,11 @@ contains
                !
                ! Running online with Delft3D-FLOW: itide contains the output counter
                !
-               if (nttide > 1 .or. wavedata%mode /= stand_alone) then
+               if (nttide > 1 .or. wavedata%wave_flow_mode%online /= ONLINE_NONE) then
                   line(i:) = 't'
                   if (nttide > 1) then
                      write (line(i + 1:), '(I6.6)') itide
-                  else ! wavedata%mode /= stand_alone
+                  else ! wavedata%wave_flow_mode%online /= ONLINE_NONE
                      write (line(i + 1:), '(I6.6)') calccount
                   end if
                   i = i + 7
@@ -4191,11 +4191,11 @@ contains
                !
                ! Running online with Delft3D-FLOW: itide contains the output counter
                !
-               if (nttide > 1 .or. wavedata%mode /= stand_alone) then
+               if (nttide > 1 .or. wavedata%wave_flow_mode%online /= ONLINE_NONE) then
                   line(i:) = 't'
                   if (nttide > 1) then
                      write (line(i + 1:), '(I6.6)') itide
-                  else ! wavedata%mode /= stand_alone
+                  else ! wavedata%wave_flow_mode%online /= ONLINE_NONE
                      write (line(i + 1:), '(I6.6)') calccount
                   end if
                   i = i + 7

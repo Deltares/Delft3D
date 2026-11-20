@@ -120,10 +120,6 @@ subroutine grids_and_gridmaps (n_swan_grids, n_flow_grids, sr, wave_flow_mode)
        enddo
 
        do i=1,n_flow_grids
-          if (.not. flow_data_initialized) then
-             write(*,'(a)') '*** ERROR: FLOW data (runid(s)) is not initialized.'
-             call wavestop(1, '*** ERROR: FLOW data (runid(s)) is not initialized.')
-          endif
           if (com_file == COM_NETCDF) then
              if (n_flow_grids == 1) then
                 grid_name = sr%comfile

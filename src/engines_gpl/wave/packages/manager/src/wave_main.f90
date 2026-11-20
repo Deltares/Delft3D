@@ -176,7 +176,6 @@ function wave_init(mode_in, online_in, com_file_type_in, mdw_file) result(retval
 !! executable statements -----------------------------------------------
 !
    retval = 0
-   call setmode(wavedata, mode_in)
    call setonline(wavedata, online_in)
    call setcom(wavedata, com_file_type_in)
    !
@@ -482,7 +481,7 @@ function wave_master_step(stepsize) result(retval)
                write(*,'(a)') '*** ERROR: Communication with Delft3D-FLOW failed.'
                call wavestop(1, '*** ERROR: Communication with Delft3D-FLOW failed.')
             endif
-            if (wavedata%mode == flow_mud_online) then
+            if (swan_run%mudfile_deprecated /= ' ') then
                write(*,'(a)') 'Waiting for communication with MUD ...'
                mud     = .true.
                success = wave_from_flow_command(command, mud, timtscale)
@@ -515,7 +514,7 @@ function wave_master_step(stepsize) result(retval)
          if (wavedata%wave_flow_mode%online == ONLINE_DELFTIO) then
             mud = .false.
             call wave_to_flow_status(flow_wave_comm_result_ok, mud)
-            if (wavedata%mode == flow_mud_online) then
+            if (swan_run%mudfile_deprecated /= ' ') then
                mud = .true.
                call wave_to_flow_status(flow_wave_comm_result_ok, mud)
             endif

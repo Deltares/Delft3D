@@ -64,7 +64,7 @@ character(15), external :: datetime_to_string
    ! or
    ! - no "int2keephotfile" specified
    !
-   if (wavedata%mode==stand_alone .or. comparereal(swan_run%int2keephotfile,0.0)<=0) then
+   if (wavedata%wave_flow_mode%online==ONLINE_NONE .or. comparereal(swan_run%int2keephotfile,0.0)<=0) then
       dodelete = .true.
       return
    endif

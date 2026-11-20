@@ -88,7 +88,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
    !
    ! check to see if a wave map should be written
    !
-   if (wavedata%mode == stand_alone) then
+   if (wavedata%wave_flow_mode%online == ONLINE_NONE) then
       call setwrite_wavm(wavedata%output, .true.)
    else
       if (wavedata%time%timsec >= wavedata%output%nexttim) then
@@ -124,7 +124,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
       !
       ! Set time in case of standalone run
       !
-      if (wavedata%mode == stand_alone) call settimmin(wavedata%time, real(swan_run%timwav(itide), hp), swan_run%modsim, swan_run%nonstat_interval)
+      if (wavedata%wave_flow_mode%online == ONLINE_NONE) call settimmin(wavedata%time, real(swan_run%timwav(itide), hp), swan_run%modsim, swan_run%nonstat_interval)
       !
       ! Update wave and wind conditions
       !
@@ -285,7 +285,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
                                 & 'WNDNOW', extr_var1, extr_var2, &
                                 & sumvars)
          end if
-         if (wavedata%mode == flow_mud_online) then
+         if (swan_run%mudfile_deprecated /= ' ') then
             !
             ! Write SWAN mud file
             ! Never extend!
