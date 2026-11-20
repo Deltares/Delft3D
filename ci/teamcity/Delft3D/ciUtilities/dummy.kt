@@ -11,7 +11,6 @@ import Delft3D.template.*
 object DummyBuild: BuildType({
     templates(
         TemplateLinuxAgent,
-        TemplateDetermineChangedFiles,
     )
 
     name = "dummy"
