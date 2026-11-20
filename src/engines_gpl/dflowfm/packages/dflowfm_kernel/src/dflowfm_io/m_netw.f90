@@ -36,7 +36,7 @@ module m_netw
 
 contains
 
-   subroutine loadNetwork(filename, istat, jadoorladen)
+   subroutine loadNetwork(filename, istat, append_mode)
       use precision, only: dp
       use m_closeworld, only: closeworld
       use unstruc_netcdf, only: unc_read_net, unc_write_net, md5_net_file
@@ -52,7 +52,7 @@ contains
 
       character(*), intent(in) :: filename !< Name of file to be read (in current directory or with full path).
       integer, intent(out) :: istat !< Return status (0=success)
-      integer, intent(in) :: jadoorladen
+      integer, intent(in) :: append_mode !< 0 to replace the current network, nonzero to append to it.
 
       integer :: iDumk
       integer :: iDuml
@@ -70,9 +70,10 @@ contains
          return
       end if
 
-      if (JADOORLADEN == 0) then
+      if (append_mode == 0) then
          K0 = 0
          L0 = 0
+         call discard_network_edge_lengths()
       else
          K0 = NUMK
          L0 = NUML
@@ -91,7 +92,8 @@ contains
          NUML = L0 + NUMLN
          call SETNODADM(0)
       else
-         call qnerror('Error while loading network from '''//trim(filename)//''', please inspect the preceding diagnostic output.', ' ', ' ')
+         call qnerror('Error while loading network from '''//trim(filename)// &
+                      ''', please inspect the preceding diagnostic output.', ' ', ' ')
       end if
       call CLOSEWORLD() ! STITCH 0-360 FOR 0-360 GLOBE MODELS
       netstat = NETSTAT_CELLS_DIRTY

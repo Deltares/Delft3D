@@ -57,7 +57,8 @@ contains
       use M_SEASTATE
       use unstruc_model
       use unstruc_display
-      use M_splines, only: increasespl, maxspl, maxsplen, readsplines
+      use M_splines, only: increasespl, maxspl, maxsplen, readsplines, xsp
+      use m_landboundary, only: xlan
       use M_SAMPLES
       use m_commandline_option
       use dfm_signals
@@ -190,7 +191,9 @@ contains
       call INCREASEGRID(2, 2)
 !write (*,*) 'increased grid'
 
-      call increasespl(maxspl, maxsplen)
+      if (.not. allocated(xsp)) then
+         call increasespl(maxspl, maxsplen)
+      end if
 !write (*,*) 'increased spl'
 
       !call increaseCrossSections(maxcrs)
@@ -199,7 +202,9 @@ contains
       call INCREASESAM(2)
 !write (*,*) 'increased sam'
 
-      call INCREASELAN(MAXLAN)
+      if (.not. allocated(xlan)) then
+         call INCREASELAN(MAXLAN)
+      end if
 !write (*,*) 'increased lan'
 
       call ZERONET()
@@ -223,6 +228,9 @@ contains
 
       KN = 0
       KN0 = 0
+      if (allocated(dxe0)) then
+         dxe0 = dmiss
+      end if
 
       NMK = 0
       NMK0 = 0

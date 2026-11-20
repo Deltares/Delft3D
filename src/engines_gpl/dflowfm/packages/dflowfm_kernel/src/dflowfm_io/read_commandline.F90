@@ -236,12 +236,12 @@ contains
             end do
 
          case ('precice')
-            call precicef_get_version_information(msgbuf, LEN(msgbuf))
+            call precicef_get_version_information(msgbuf, len(msgbuf))
             write (*, '(a)') 'Using preCICE: '//trim(msgbuf)
             write (*, '(a)') ' '
             write (*, '(a)') 'WARNING: Known issue:'
             write (*, '(a)') '         The D-Flow FM 3D mesh is redefined at the end of each preCICE time-window, before writing data.'
-            write (*, '(a)') '         The first remesh does not work. The data being written is correct,' 
+            write (*, '(a)') '         The first remesh does not work. The data being written is correct,'
             write (*, '(a)') '         but their vertical location might be incorrect (at the first preCICE time-window only).'
             call precice_adapter_enable()
 
@@ -274,8 +274,9 @@ contains
             write (*, '(a)') trim(msgbuf)
             call getbranch_dflowfm(msgbuf)
             write (*, '(a)') 'Source: '//trim(msgbuf)
-#ifdef __INTEL_COMPILER
-            write (*, '(a,f5.2)') "Compiled with Intel ifort, version ", (0.01 * __INTEL_COMPILER)
+#ifdef __INTEL_LLVM_COMPILER
+            write (*, '(a,i0,a,i0,a,i0)') "Compiled with Intel ifx, version ", &
+               __INTEL_LLVM_COMPILER / 10000, ".", mod(__INTEL_LLVM_COMPILER / 100, 100), ".", mod(__INTEL_LLVM_COMPILER, 100)
 #endif
             write (*, '(a)') 'Compiled with support for:'
             if (jaGUI == 1) then
