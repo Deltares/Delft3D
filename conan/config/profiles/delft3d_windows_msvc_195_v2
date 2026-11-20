@@ -1,0 +1,10 @@
+{% set fflags = ["/fp:precise", "/arch:CORE-AVX2"] %}
+include(delft3d_windows_msvc_195_v1)
+
+[conf]
+tools.build:cflags=["/fp:precise", "/arch:AVX2"]
+tools.build:cxxflags=["/fp:precise", "/arch:AVX2"]
+## Keep the ifx toolset from v1 when adding the Fortran initialization flags.
+tools.cmake.cmaketoolchain:extra_variables*={'CMAKE_Fortran_FLAGS_INIT': '{{ fflags | join(" ") }}'}
+user.delft3d:fflags={{ fflags }}
+tools.info.package_id:confs=["tools.build:cflags", "tools.build:cxxflags", "user.delft3d:fflags"]

@@ -1,4 +1,5 @@
 import os
+from shlex import quote
 
 from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration
@@ -64,6 +65,22 @@ class PetscConan(ConanFile):
             )
         cc, cxx = c_map[compiler]
         return cc, cxx, f_map[fortran]
+
+    def _extra_flags_args(self):
+        # PETSc does not use Conan's toolchain; += preserves its optimization flags.
+        args = []
+        for language, key in (
+            ("C", "tools.build:cflags"),
+            ("CXX", "tools.build:cxxflags"),
+            ("F", "user.delft3d:fflags"),
+        ):
+            flags = self.conf.get(key, default=[], check_type=list)
+            if self.settings.os == "Windows":
+                # win32fe expects dash-prefixed compiler options.
+                flags = ["-" + flag[1:] if flag.startswith("/") else flag for flag in flags]
+            if flags:
+                args.append(quote(f"--{language}FLAGS+={' '.join(flags)}"))
+        return args
 
     def validate(self):
         if self.settings.os not in ("Linux", "Windows"):
@@ -131,6 +148,7 @@ class PetscConan(ConanFile):
             f"--with-scalar-type={self.options.scalar_type}",
             f"--with-precision={self.options.precision}",
             f"--with-64-bit-indices={1 if self.options.with_64_bit_indices else 0}",
+            *self._extra_flags_args(),
         ]
 
         self.run(f"./configure {' '.join(args)}", cwd=self.source_folder)
@@ -142,6 +160,13 @@ class PetscConan(ConanFile):
         debug = self.settings.build_type == "Debug"
         prefix = unix_path(self, self.package_folder)
         cc, cxx, fc = self._wrappers()
+        # PETSc appends -QxW after FFLAGS, which overrides the profile's AVX2
+        # target in ifx. Keep its release optimization level without -QxW.
+        fortran_opt = (
+            ["--FOPTFLAGS=-O3"]
+            if not debug and self.conf.get("user.delft3d:fflags", default=[], check_type=list)
+            else []
+        )
 
         args = " ".join(
             [
@@ -154,12 +179,14 @@ class PetscConan(ConanFile):
                 '--with-mpiexec="$MPI/bin/mpiexec.exe"',
                 '--with-blaslapack-dir="$MKL/lib"',
                 f"--with-debugging={1 if debug else 0}",
+                *fortran_opt,
                 # PETSc only officially supports a shared build with ifx via
                 # --with-shared-libraries=0.
                 f"--with-shared-libraries={1 if self.options.shared else 0}",
                 f"--with-scalar-type={self.options.scalar_type}",
                 f"--with-precision={self.options.precision}",
                 f"--with-64-bit-indices={1 if self.options.with_64_bit_indices else 0}",
+                *self._extra_flags_args(),
             ]
         )
 

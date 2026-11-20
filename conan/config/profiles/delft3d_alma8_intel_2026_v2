@@ -1,0 +1,10 @@
+{% set fflags = ["-fp-model=precise", "-arch CORE-AVX2"] %}
+include(delft3d_alma8_intel_2026_v1)
+
+[conf]
+tools.build:cflags=["-mavx2", "-fp-model=precise"]
+tools.build:cxxflags=["-mavx2", "-fp-model=precise"]
+## CMake initializes its Fortran flags from this value; PETSc reads the list directly.
+tools.cmake.cmaketoolchain:extra_variables={'CMAKE_Fortran_FLAGS_INIT': '{{ fflags | join(" ") }}'}
+user.delft3d:fflags={{ fflags }}
+tools.info.package_id:confs=["tools.build:cflags", "tools.build:cxxflags", "user.delft3d:fflags"]

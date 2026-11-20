@@ -120,8 +120,12 @@ class PreciceConan(ConanFile):
             if self.options.bindings_fortran and fortran in ("ifx", "ifort"):
                 # Match the C symbol names the Fortran bindings expect. These
                 # flags are specific to the Intel Fortran compilers.
-                tc.cache_variables["CMAKE_Fortran_FLAGS"] = (
-                    "/names:lowercase /assume:underscore"
+                tc.cache_variables["CMAKE_Fortran_FLAGS"] = " ".join(
+                    [
+                        "/names:lowercase",
+                        "/assume:underscore",
+                        *self.conf.get("user.delft3d:fflags", default=[], check_type=list),
+                    ]
                 )
 
         tc.generate()
