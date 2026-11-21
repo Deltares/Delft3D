@@ -2846,8 +2846,10 @@ contains
          if (idvar <= 0) then ! Variable not found among standard names and variable names either
             if (allocated(nccustomnames)) then
                nameVar = trim(nccustomnames(i))
-            else
+            else if (allocated(ncvarnames)) then
                nameVar = trim(ncvarnames(i))
+            else
+               nameVar = sourceItemQuantityName
             end if
             call set_ec_message("Variable '"//nameVar//"' not found in NetCDF file '"//trim(fileReaderPtr%filename)//"'.")
             return

@@ -76,7 +76,6 @@ contains
     character(len=*), optional,    intent(in)      :: funtype
 
     integer(kind=8)                                :: fhandle
-    integer                                        :: nrVar    
     success = .false.
     bc%qname = quantityName
     bc%bcname = plilabel
@@ -108,17 +107,11 @@ contains
           return                                               ! quantityName-plilabel combination not found
        endif
        
-       ! Find number of quantity, get dimension (2 or 3) and then decide TSERIES or TIM3D
-       do nrVar = 1, size(bc%ncptr%variable_names)
-          if (strcmpi(bc%ncptr%variable_names(nrVar),quantityName)) then
-            exit
-          end if
-       end do
-                              
-       if (bc%ncptr%variable_ndims(nrVar) == 2) then 
+       ! Use the variable selected by the scan, which may be a mapped alias.
+       if (bc%ncptr%variable_ndims(bc%ncvarndx(1)) == 2) then
           bc%func = BC_FUNC_TSERIES
        end if
-       if (bc%ncptr%variable_ndims(nrVar) == 3) then
+       if (bc%ncptr%variable_ndims(bc%ncvarndx(1)) == 3) then
          bc%func = BC_FUNC_TIM3D
        end if
        
