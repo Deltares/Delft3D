@@ -197,6 +197,23 @@ module process_registration
     use m_ssedph
     use m_phcarb
     use m_protist_mortality_salinity, only : protist_mortality_salinity
+    use m_hydrau
+    use m_diftem
+    use m_inisoi
+    use m_emepni
+    use m_emlgen
+    use m_espgss
+    use m_heatf2
+    use m_setfat
+    use m_sedlnk
+    use m_sedwfl
+    use m_sedvel
+    use m_soinit
+    use m_soipho
+    use m_soiprt
+    use m_stwcol
+    use m_rainmm
+    use m_modinp
 
     implicit none
 
@@ -424,7 +441,24 @@ contains
                             process_routine_info('PHPROT', PHPROT), &
                             process_routine_info('FLOCSD', FLOCSD), &
                             process_routine_info('AGECAR', AGECART), &
-                            process_routine_info( 'PRTMRT', protist_mortality_salinity) &
+                            process_routine_info('PRTMRT', protist_mortality_salinity), &
+                            process_routine_info('HYDRAU', HYDRAU), &
+                            process_routine_info('DIFTEM', DIFTEM), &
+                            process_routine_info('INISOI', INISOI), &
+                            process_routine_info('EMEPNI', EMEPNI), &
+                            process_routine_info('EMLGEN', EMLGEN), &
+                            process_routine_info('ESPGSS', ESPGSS), &
+                            process_routine_info('HEATF2', HEATF2), &
+                            process_routine_info('SETFAT', SETFAT), &
+                            process_routine_info('SEDLNK', SEDLNK), &
+                            process_routine_info('SEDWFL', SEDWFL), &
+                            process_routine_info('SEDVEL', SEDVEL), &
+                            process_routine_info('SOINIT', SOINIT), &
+                            process_routine_info('SOIPHO', SOIPHO), &
+                            process_routine_info('SOIPRT', SOIPRT), &
+                            process_routine_info('STWCOL', STWCOL), &
+                            process_routine_info('RAINMM', RAINMM), &
+                            process_routine_info('MODINP', MODINP) &
                     ]
 
             max_processes = size(process_routine)
