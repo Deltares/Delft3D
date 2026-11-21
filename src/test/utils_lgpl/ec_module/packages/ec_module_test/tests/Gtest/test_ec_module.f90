@@ -8,6 +8,129 @@ module test_ec_module
 contains
 
    !$gtest
+   subroutine test_connection_target_mask_initialization() bind(C)
+      use m_ec_module, only: ecCreateInstance, ecFreeInstance, ecCreateConnection, ecSetConnectionTargetMask
+      use m_ec_message, only: clear_ec_message
+      use m_ec_support, only: ecSupportFindConnection
+      use m_ec_typedefs, only: tEcConnection, tEcInstance
+
+      type(tEcInstance), pointer :: ecInstancePtr
+      type(tEcConnection), pointer :: connection
+      integer :: connection_id
+      logical :: success
+
+      ecInstancePtr => null()
+      success = ecCreateInstance(ecInstancePtr)
+      if (.not. f90_assert_true(success, 'EC instance should be created')) then
+         return
+      end if
+      connection_id = ecCreateConnection(ecInstancePtr)
+      connection => ecSupportFindConnection(ecInstancePtr, connection_id)
+      success = ecSetConnectionTargetMask(ecInstancePtr, connection_id, [0, 0, 0, 0])
+      call f90_expect_true(success, 'all-zero mask should be accepted on a fresh connection')
+      call f90_expect_true(allocated(connection%targetMask), 'all-zero mask must remain allocated')
+      if (.not. allocated(connection%targetMask)) then
+         success = ecFreeInstance(ecInstancePtr)
+         call f90_expect_true(success, 'EC instance should be freed')
+         call clear_ec_message()
+         return
+      end if
+      call f90_expect_true(all(connection%targetMask == 0), 'all-zero mask must retain its selection')
+
+      success = ecSetConnectionTargetMask(ecInstancePtr, connection_id, [1, 1, 1, 1])
+      call f90_expect_false(success, 'a second mask assignment must be rejected')
+      call f90_expect_true(all(connection%targetMask == 0), 'rejected assignment must preserve the original mask')
+
+      connection_id = ecCreateConnection(ecInstancePtr)
+      connection => ecSupportFindConnection(ecInstancePtr, connection_id)
+      success = ecSetConnectionTargetMask(ecInstancePtr, connection_id, [1, 1, 1, 1])
+      call f90_expect_true(success, 'trivial mask should be accepted on a fresh connection')
+      call f90_expect_false(allocated(connection%targetMask), 'trivial mask must not be allocated')
+
+      success = ecFreeInstance(ecInstancePtr)
+      call f90_expect_true(success, 'EC instance should be freed')
+      call clear_ec_message()
+   end subroutine test_connection_target_mask_initialization
+
+   !$gtest
+   subroutine test_connection_target_mask_size() bind(C)
+      use m_ec_module, only: ecCreateInstance, ecFreeInstance, ecCreateConnection, ecSetConnectionTargetMask, ecAddConnectionTargetItem, &
+                             ecCreateItem, ecCreateElementSet, ecSetItemElementSet, &
+                             ecSetElementSetType, ecSetElementSetNumberOfCoordinates
+      use m_ec_message, only: clear_ec_message
+      use m_ec_parameters, only: elmSetType_cartesian
+      use m_ec_support, only: ecSupportFindConnection
+      use m_ec_typedefs, only: tEcConnection, tEcInstance
+
+      type(tEcInstance), pointer :: ecInstancePtr
+      type(tEcConnection), pointer :: connection
+      integer, dimension(3) :: item_ids
+      integer :: connection_id, element_set_id, i
+      logical :: success
+
+      ecInstancePtr => null()
+      success = ecCreateInstance(ecInstancePtr)
+      if (.not. f90_assert_true(success, 'EC instance should be created')) then
+         return
+      end if
+      do i = 1, size(item_ids)
+         element_set_id = ecCreateElementSet(ecInstancePtr)
+         success = ecSetElementSetType(ecInstancePtr, element_set_id, elmSetType_cartesian)
+         call f90_expect_true(success, 'target element set type should be configured')
+         success = ecSetElementSetNumberOfCoordinates(ecInstancePtr, element_set_id, i)
+         call f90_expect_true(success, 'target coordinate count should be configured')
+         item_ids(i) = ecCreateItem(ecInstancePtr)
+         success = ecSetItemElementSet(ecInstancePtr, item_ids(i), element_set_id)
+         call f90_expect_true(success, 'target item should receive its element set')
+      end do
+
+      connection_id = ecCreateConnection(ecInstancePtr)
+      connection => ecSupportFindConnection(ecInstancePtr, connection_id)
+      success = ecSetConnectionTargetMask(ecInstancePtr, connection_id, [1, 0])
+      call f90_expect_true(success, 'mask may be assigned before targets')
+      success = ecAddConnectionTargetItem(ecInstancePtr, connection_id, item_ids(1))
+      call f90_expect_false(success, 'a target smaller than the mask must be rejected')
+      success = ecAddConnectionTargetItem(ecInstancePtr, connection_id, item_ids(3))
+      call f90_expect_false(success, 'a target larger than the mask must be rejected')
+      call f90_expect_eq(connection%nTargetItems, 0, 'rejected targets must not be attached')
+      success = ecAddConnectionTargetItem(ecInstancePtr, connection_id, item_ids(2))
+      call f90_expect_true(success, 'a target matching the mask must be accepted')
+      call f90_expect_eq(connection%nTargetItems, 1, 'only the matching target should be attached')
+
+      connection_id = ecCreateConnection(ecInstancePtr)
+      connection => ecSupportFindConnection(ecInstancePtr, connection_id)
+      success = ecAddConnectionTargetItem(ecInstancePtr, connection_id, item_ids(2))
+      call f90_expect_true(success, 'target may be attached before assigning a mask')
+      success = ecSetConnectionTargetMask(ecInstancePtr, connection_id, [0])
+      call f90_expect_false(success, 'a mask smaller than the target must be rejected')
+      call f90_expect_false(allocated(connection%targetMask), 'a rejected short mask must not be stored')
+      success = ecSetConnectionTargetMask(ecInstancePtr, connection_id, [0, 0, 0])
+      call f90_expect_false(success, 'a mask larger than the target must be rejected')
+      call f90_expect_false(allocated(connection%targetMask), 'a rejected long mask must not be stored')
+      success = ecSetConnectionTargetMask(ecInstancePtr, connection_id, [1, 1, 1])
+      call f90_expect_false(success, 'all-enabled masks must be size-checked before being discarded')
+      call f90_expect_false(allocated(connection%targetMask), 'a rejected all-enabled mask must not be stored')
+      success = ecSetConnectionTargetMask(ecInstancePtr, connection_id, [1, 0])
+      call f90_expect_true(success, 'a matching mask must still be accepted after rejected assignments')
+      call f90_expect_eq(connection%nTargetItems, 1, 'rejected masks must not change the attached targets')
+
+      connection_id = ecCreateConnection(ecInstancePtr)
+      connection => ecSupportFindConnection(ecInstancePtr, connection_id)
+      success = ecAddConnectionTargetItem(ecInstancePtr, connection_id, item_ids(2))
+      call f90_expect_true(success, 'first unmasked target should be attached')
+      success = ecAddConnectionTargetItem(ecInstancePtr, connection_id, item_ids(3))
+      call f90_expect_true(success, 'second unmasked target should be attached')
+      success = ecSetConnectionTargetMask(ecInstancePtr, connection_id, [1, 0])
+      call f90_expect_false(success, 'the mask must match every target, not just the first')
+      call f90_expect_false(allocated(connection%targetMask), 'a mask incompatible with a later target must not be stored')
+      call f90_expect_eq(connection%nTargetItems, 2, 'rejecting a mask must preserve all attached targets')
+
+      success = ecFreeInstance(ecInstancePtr)
+      call f90_expect_true(success, 'EC instance should be freed')
+      call clear_ec_message()
+   end subroutine test_connection_target_mask_size
+
+   !$gtest
    subroutine test_initial_velocity_netcdf_candidates() bind(C)
       use m_ec_support, only: ecSupportNetcdfGetQuantityCandidateNames
       use iso_c_utils, only: cstr

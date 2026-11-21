@@ -48,6 +48,7 @@ module m_ec_connection
    public :: ecConnectionAddSourceItem
    public :: ecConnectionAddTargetItem
    public :: ecConnectionSetIndexWeights
+   public :: ecConnectionSetTargetMask
 
 contains
 
@@ -167,6 +168,44 @@ contains
       end if
    end function ecConnectionSetConverter
 
+   !> Assign the target mask to the connection, unless it consists of only non-zero values.
+   function ecConnectionSetTargetMask(instancePtr, connectionId, mask) result(success)
+      type(tEcInstance), pointer, intent(in) :: instancePtr !< EC instance owning the connection.
+      integer, intent(in) :: connectionId !< Connection to configure.
+      integer, dimension(:), intent(in) :: mask !< Mask to assign to the connection.
+      logical :: success
+      type(tEcConnection), pointer :: connectionPtr
+      integer :: istat, i
+
+      success = .false.
+      connectionPtr => ecSupportFindConnection(instancePtr, connectionId)
+      if (.not. associated(connectionPtr)) then
+         call set_ec_message("ERROR: ec_connection::ecConnectionSetTargetMask: connection does not exist.")
+         return
+      end if
+      if (allocated(connectionPtr%targetMask)) then !> A connection should receive a target mask exactly once, so error if it is already allocated.
+         call set_ec_message("ERROR: ec_connection::ecConnectionSetTargetMask: target mask is already allocated.")
+         return
+      end if
+      do i = 1, connectionPtr%nTargetItems
+         if (.not. associated(connectionPtr%targetItemsPtr(i)%ptr%elementSetPtr)) then
+            call set_ec_message("ERROR: ec_connection::ecConnectionSetTargetMask: target item has no element set.")
+            return
+         end if
+         if (size(mask) /= connectionPtr%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates) then
+            call set_ec_message("ERROR: ec_connection::ecConnectionSetTargetMask: target mask size does not match target coordinate count.")
+            return
+         end if
+      end do
+      if (all(mask /= 0)) then
+         success = .true.
+         return
+      end if
+      allocate (connectionPtr%targetMask(size(mask)), stat=istat)
+      connectionPtr%targetMask = mask
+      success = .true.
+   end function ecConnectionSetTargetMask
+
    ! =======================================================================
 
    !> Add a source Item to a Connection's array of source Items.
@@ -219,6 +258,16 @@ contains
       connectionPtr => ecSupportFindConnection(instancePtr, connectionId)
       itemPtr => ecSupportFindItem(instancePtr, itemId)
       if (associated(connectionPtr) .and. associated(itemPtr)) then
+         if (allocated(connectionPtr%targetMask)) then
+            if (.not. associated(itemPtr%elementSetPtr)) then
+               call set_ec_message("ERROR: ec_connection::ecConnectionAddTargetItem: target item has no element set.")
+               return
+            end if
+            if (size(connectionPtr%targetMask) /= itemPtr%elementSetPtr%nCoordinates) then
+               call set_ec_message("ERROR: ec_connection::ecConnectionAddTargetItem: target mask size does not match target coordinate count.")
+               return
+            end if
+         end if
          ! ensure capacity
          if (connectionPtr%nTargetItems == size(connectionPtr%targetItemsPtr)) then
             if (.not. ecArrayIncrease(connectionPtr%targetItemsPtr, connectionPtr%nTargetItems)) then
