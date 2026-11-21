@@ -235,13 +235,13 @@ class ChangeLogPublisher(StepExecutorInterface):
         self.__context.log("Prepending/replacing changelog section")
         self.__prepend_or_replace_in_changelog(current_tag, changelog, dry_run=self.__context.dry_run)
 
-        # self.__context.log(f"Copying {self.__changelog_file.name} to {path_to_release_notes_file}")
-        # self.__ssh.secure_copy(
-        #     str(self.__changelog_file),
-        #     path_to_release_notes_file,
-        #     Direction.TO,
-        # )
-        # self.__context.log(f"Changelog copied successfully to {path_to_release_notes_file}")
+        self.__context.log(f"Copying {self.__changelog_file.name} to {path_to_release_notes_file}")
+        self.__ssh.secure_copy(
+            str(self.__changelog_file),
+            path_to_release_notes_file,
+            Direction.TO,
+        )
+        self.__context.log(f"Changelog copied successfully to {path_to_release_notes_file}")
         return True
 
     def execute_step(self) -> bool:
