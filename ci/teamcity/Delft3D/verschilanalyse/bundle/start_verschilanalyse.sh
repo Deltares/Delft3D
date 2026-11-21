@@ -148,8 +148,8 @@ DOWNLOAD_REFS_JOB_ID=$(
 if [[ "$RUN_MODELS" = 'true' ]]; then
     # Pull apptainer from Harbor and store it as a `.sif` in the home directory.
     apptainer remote login \
-        --username="robot\$delft3d+h7" \
-        --password-stdin oras://containers.deltares.nl <"${HOME}/.harbor/delft3d"
+        --username="robot\$delft3d-dev+h7" \
+        --password-stdin oras://containers.deltares.nl <"${HOME}/.harbor/delft3d-dev"
     mkdir -p "$(dirname "$DELFT3D_SIF")"
     apptainer pull --force "$DELFT3D_SIF" "$APPTAINER"
 
