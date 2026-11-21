@@ -133,6 +133,11 @@ namespace pre_c_sumo
         void setCoordinatesDimension(const std::size_t dimension)
         {
             coordinates.resize(dimension * 2, 0.0);
+            // TEMPORARY TEST
+            for (std::size_t x = 0; x < dimension; x++)
+            {
+                coordinates[x * 2] = static_cast<double>(x);
+            }
             precice_ids.resize(dimension, 0); // Assuming 2D coordinates (x, y)
         }
 
