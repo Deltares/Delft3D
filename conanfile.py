@@ -28,6 +28,7 @@ class Delft3DRecipe(ConanFile):
         self.requires("pugixml/1.15")
         self.requires("metis/5.1.1")
         self.requires("gklib/5.1.1")
+        self.requires("fortran-stdlib/0.8.1")
 
     def generate(self):
         save(
