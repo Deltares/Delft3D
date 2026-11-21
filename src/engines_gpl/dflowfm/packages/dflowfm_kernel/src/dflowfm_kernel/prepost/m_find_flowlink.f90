@@ -72,9 +72,6 @@ contains
       end do
       if (jampi == 1 .and. size(xx) > 0) then
          call mpi_allreduce(mpi_in_place, cell_numbers, size(xx), mpi_integer, mpi_max, mpi_comm_world, ierror)
-         if (ierror /= MPI_SUCCESS) then
-            call mess(LEVEL_ERROR, 'find_flowlinks: mpi_allreduce failed')
-         end if
       end if
       ! Return warnings for points that lie outside the grid
       do ii = 1, size(xx)

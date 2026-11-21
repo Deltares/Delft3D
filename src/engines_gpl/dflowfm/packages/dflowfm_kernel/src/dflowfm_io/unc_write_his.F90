@@ -685,8 +685,8 @@ contains
                call check_netcdf_error(nf90_put_var(ihisfile, id_crsgeom_node_count, nodeCountCrs))
 #ifdef HAVE_PROJ
                if (add_latlon) then
-                  call transform_and_put_latlon_coordinates(ihisfile, id_crsgeom_node_lon, id_crsgeom_node_lat, &
-                                                   nccrs%proj_string, geomXCrs, geomYCrs, start=[1], count=[nNodesCrs])
+                  call check_netcdf_error(transform_and_put_latlon_coordinates(ihisfile, id_crsgeom_node_lon, id_crsgeom_node_lat, &
+                                                   nccrs%proj_string, geomXCrs, geomYCrs, start=[1], count=[nNodesCrs]))
                end if
 #endif
                if (allocated(geomXCrs)) then
@@ -1244,8 +1244,8 @@ contains
             count = [numobs_total]
          end if
 
-         call transform_and_put_latlon_coordinates(ihisfile, id_statlon, id_statlat, &
-                                                   nccrs%proj_string, xobs(1:numobs_total), yobs(1:numobs_total), start=start, count=count)
+         call check_netcdf_error(transform_and_put_latlon_coordinates(ihisfile, id_statlon, id_statlat, &
+                                                   nccrs%proj_string, xobs, yobs, start=start, count=count))
       end function unc_put_his_station_coord_vars_latlon
 
       !> Write (put) the z-coordinate variables for the station type.
@@ -1410,8 +1410,8 @@ contains
 
 #ifdef HAVE_PROJ
          if (add_latlon) then
-            call transform_and_put_latlon_coordinates(ihisfile, id_geom_node_coordlon, id_geom_node_coordlat, &
-                                                      nccrs%proj_string, xobs(1:numobs), yobs(1:numobs))
+            call check_netcdf_error(transform_and_put_latlon_coordinates(ihisfile, id_geom_node_coordlon, id_geom_node_coordlat, &
+                                                      nccrs%proj_string, xobs, yobs, start=[1], count=[numobs]))
          end if
 #endif
 
