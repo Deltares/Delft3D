@@ -38,6 +38,7 @@ contains
         use m_part_geom, only: ba, ndx, lnx, lne2ln
         use m_part_times, only: time1
         use partmem, only: zmodel, laytop
+        use io_ugrid, only: UG_EDGETYPE_BND
         use m_hydmod
         use timers
 
@@ -48,7 +49,7 @@ contains
         integer, intent(inout) :: istat
 
         !  local declarations
-        integer iseg, iq, L, K, iql, offset, isegl, ilay
+        integer iseg, iq, L, K, iql, offset, isegl, ilay, ln
 
         integer(4) ithndl              ! handle to time this subroutine
         data ithndl / 0 /
@@ -59,7 +60,7 @@ contains
                 vol0(iseg) = vol1(iseg)
                 h0(iseg) = h1(iseg)
             end do
-            do iq = 1, hyd%num_exchanges
+            do iq = 1, noqfull
                 q0(iq) = q1(iq)
             end do
         end if
@@ -92,13 +93,17 @@ contains
             do K = 1, hyd%num_layers
                 do L = 1, lnx  ! horizontal
                     iql = lne2ln(L)  !loop at boundary cells
-                    iq = lne2ln(L) + (K - 1) * lnx  !
                     if (iql <= 0) cycle
-
-                    if (hyd%edge_type(iql) == 2 .or. hyd%edge_type(iql) == 22) then  ! upstream boundary?
-                        q1(iq) = hyd%flow(iq)
+                    iq = iql + (K - 1) * lnx
+                    ln = ln2ln3D(iql, K)
+                    if (ln <= 0) then
+                       q1(iq) = 0d0
+                       cycle
+                    end if
+                    if (hyd%edge_type(iql) == UG_EDGETYPE_BND) then  ! not a boundary, then reverse discharge?
+                        q1(iq) = hyd%flow(ln)
                     else
-                        q1(iq) = -hyd%flow(iq)
+                        q1(iq) = -hyd%flow(ln)
                     endif
                 end do
             end do

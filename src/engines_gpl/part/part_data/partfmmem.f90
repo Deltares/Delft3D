@@ -53,6 +53,11 @@ module m_part_flow
 
     ! flow arrays
 
+    ! boundary related, dim = nobndl
+    integer :: nobndl !< Nr. of boundaries
+    double precision, allocatable, target :: xbnd(:) !< [-] Boundary x coordinate {"shape": ["nobndl"]}
+    double precision, allocatable, target :: ybnd(:) !< [-] Boundary y coordinate {"shape": ["nobndl"]}
+
     ! node related, dim = ndx
     double precision, allocatable :: h0(:)       !< [m] layer thickness at start of timestep {"location": "face", "shape": ["ndx"]}
     double precision, allocatable :: h1(:)       !< [m] layer thickness at end   of timestep {"location": "face", "shape": ["ndx"]}
@@ -63,6 +68,9 @@ module m_part_flow
 
     double precision, allocatable :: qw    (:)   !< vertical flux through interface (m3/s)
 
+    integer, allocatable :: ln2ln3D(:,:)      !< flowlink and layer to iexchange dim = Lnx, kmx
+
+    integer :: noqfull                       !< number of horizontal and vertical flowlinks in full 3d grid
     double precision, allocatable :: q0(:)   !< [m3/s] discharge     (m3/s) for current time step (makes vol0 -> vol1)
     double precision, allocatable :: q1(:)   !< [m3/s] discharge     (m3/s) for next time time step
 

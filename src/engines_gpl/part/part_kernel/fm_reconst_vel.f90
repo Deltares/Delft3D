@@ -195,7 +195,7 @@ contains
 
         integer :: icell, icell3d, j, k, L, lay, L3d
 
-        double precision :: hk0, hk1, h, un
+        double precision :: hk0, hk1, h, un, volumemin
 
         double precision, parameter :: DTOL = 1d-10
 
@@ -288,8 +288,12 @@ contains
                 k = abs(cell2nod(icell)) + (lay - 1) * hyd%nosegl
                 L3d = hyd%num_exchanges_u_dir + k
                 icell3d = icell + (lay - 1) * numcells
-
-                u0w(icell3d) = hyd%flow(L3d) / (hyd%volume(k) + tiny(hyd%volume(k)))
+                volumemin = hyd%surf(k) * epshs
+                if (hyd%volume(k) > volumemin) then
+                   u0w(icell3d) = hyd%flow(L3d) / hyd%volume(k)
+                else
+                   u0w(icell3d) = 0.0
+                end if
             end do
         end do
 
