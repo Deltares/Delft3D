@@ -26,7 +26,7 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!
+
 !> Observation stations are used to monitor flow data at fixed and moving points
 !! in the domain. Which data is monitored is configured elsewhere (output routine history file)
 !! In arrays: (1:numobs = normal or fixed observation stations, numobs+1:numobs+nummovobs = moving observation stations)
@@ -39,7 +39,7 @@ module m_observations
    use precision, only: dp
    use m_waveconst
 
-   implicit none
+   implicit none(type, external)
 
    integer, parameter, private :: capacity_ = 200 !< Initial observation capacity
    integer, private :: iUniq_ = 1
@@ -55,13 +55,13 @@ module m_observations
 
 contains
 
-!> (re)initialize valobs and set pointers for observation stations
+   !> (re)initialize valobs and set pointers for observation stations
    subroutine init_valobs()
       call init_valobs_pointers()
       call alloc_valobs()
    end subroutine init_valobs
 
-!> (re)allocate valobs work array
+   !> (re)allocate valobs work array
    subroutine alloc_valobs()
 
       if (allocated(valobs)) then
@@ -74,16 +74,16 @@ contains
       end if
    end subroutine alloc_valobs
 
-!> set the pointers in the valobs work array
-!! only include variables that are available
-!! IVAL_XXX are the enumerators >0 when available
-!! IPNT_XXX are the pointers in the "valobs" array,
-!! which is being reduced in parallel runs
+   !> set the pointers in the valobs work array
+   !! only include variables that are available
+   !! IVAL_XXX are the enumerators >0 when available
+   !! IPNT_XXX are the pointers in the "valobs" array,
+   !! which is being reduced in parallel runs
    subroutine init_valobs_pointers()
       use m_flowparameters, only: jawave, his_write_settings, temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_EXCESS, &
                                   TEMPERATURE_MODEL_COMPOSITE, jased, jasal, air_sea_interaction_model, AIR_SEA_INTERACTION_MODEL_MOST
-      use m_flow, only: iturbulencemodel, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, &
-         TURBULENCE_MODEL_KTAU, idensform, kmx, apply_thermobaricity, use_density
+      use m_flow, only: iturbulencemodel, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS_FLOW_LINKS, &
+         TURBULENCE_MODEL_KTAU, TURBULENCE_MODEL_KEPS_CELL_CENTERS, idensform, kmx, apply_thermobaricity, use_density
       use m_transport, only: ITRA1, ITRAN, ISED1, ISEDN
       use m_fm_wq_processes, only: noout, numwqbots
       use m_sediment, only: stm_included, stmpar
@@ -97,7 +97,7 @@ contains
       MAXNUMVALOBS3Dw = 0
       MAXNUMVALOBSLYR = 0
 
-!  initialize
+      !  initialize
       IVAL_S1 = 0
       IVAL_HS = 0
       IVAL_BL = 0
@@ -419,7 +419,7 @@ contains
       end if
       if (kmx > 0) then
          IVAL_BRUV = next_index(i)
-         if (any(iturbulencemodel ==[TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU]) .and. his_write_settings%tur > 0) then
+         if (any(iturbulencemodel == [TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU, TURBULENCE_MODEL_KEPS_CELL_CENTERS]) .and. his_write_settings%tur > 0) then
             IVAL_TKIN = next_index(i)
             IVAL_TEPS = next_index(i)
             IVAL_VICWWS = next_index(i)

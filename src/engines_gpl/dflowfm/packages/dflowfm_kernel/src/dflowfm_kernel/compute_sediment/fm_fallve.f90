@@ -53,10 +53,10 @@ contains
       use m_sediment, only: stmpar, mtd
       use m_flowtimes, only: time1
       use m_flowgeom, only: ndx, ln, bl, wcl, lnx
-      use m_flow, only: iturbulencemodel, TURBULENCE_MODEL_KEPS, kmx, zws, ucxq, ucyq, ucz, s1, z0urou, ucx_mor, ucy_mor
+      use m_flow, only: iturbulencemodel, TURBULENCE_MODEL_KEPS_FLOW_LINKS, kmx, zws, ucxq, ucyq, ucz, s1, z0urou, ucx_mor, ucy_mor
       use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE, epshs, epsz0
       use m_transport, only: constituents, isalt, itemp, ised1
-      use m_turbulence, only: turkinws, turepsws, rhowat
+      use m_turbulence, only: turbulent_kinetic_energy_ws, turbulent_dissipation_ws, rhowat
       use sediment_basics_module, only: SEDTYP_CLAY
       use morphology_data_module
       use message_module, only: write_error
@@ -157,7 +157,7 @@ contains
       do L = 1, lnx
          k1 = ln(1, L)
          k2 = ln(2, L)
-         z0rou(k1) = z0rou(k1) + wcl(1, L) * z0urou(L) ! set for all cases in setcfuhi/getustbcfuhi
+         z0rou(k1) = z0rou(k1) + wcl(1, L) * z0urou(L) ! set for all cases in setcfuhi/get_ustb_cfuhi
          z0rou(k2) = z0rou(k2) + wcl(2, L) * z0urou(L)
       end do
 
@@ -220,17 +220,17 @@ contains
                v = (tka * ucy_mor(kk + 1) + tkb * ucy_mor(kk)) / tkt ! y component
                w = (tka * ucz(kk + 1) + tkb * ucz(kk)) / tkt ! z component
 
-               if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
-                  tur_k = turkinws(kk)
+               if (iturbulencemodel == TURBULENCE_MODEL_KEPS_FLOW_LINKS) then
+                  tur_k = turbulent_kinetic_energy_ws(kk)
                else
                   tur_k = -999.0_dp
                end if
-               if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
-                  tur_eps = turepsws(kk)
+               if (iturbulencemodel == TURBULENCE_MODEL_KEPS_FLOW_LINKS) then
+                  tur_eps = turbulent_dissipation_ws(kk)
                else
                   tur_eps = -999.0_dp
                end if
-               if (iturbulencemodel == TURBULENCE_MODEL_KEPS) then
+               if (iturbulencemodel == TURBULENCE_MODEL_KEPS_FLOW_LINKS) then
                   call get_tshear_tdiss(tshear, tur_eps, rhoint, tke=tur_k)
                else
                   call get_tshear_tdiss(tshear, tur_eps, rhoint, taub=taub(k), waterdepth=h0, localdepth=s1(k) - zws(kk), vonkar=VON_KARMAN)

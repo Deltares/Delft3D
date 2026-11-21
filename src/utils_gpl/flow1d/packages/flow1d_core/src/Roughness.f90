@@ -50,7 +50,7 @@ module m_Roughness
    public functionTypeStringToInteger
    public frictionTypeIntegerToString
 
-   real(kind=dp), parameter :: vonkar = 0.41 !< von Karman constant ()
+   real(kind=dp), parameter :: VON_KARMAN = 0.41 !< von Karman constant ()
    real(kind=dp), parameter :: ag = 9.81_dp !< gravity acceleration
    real(kind=dp), parameter :: sag  = sqrt(ag)
 
@@ -311,7 +311,7 @@ contains
       case (2)
          !            White Colebrook Delft3D
          z0 = min(cpar / 30.0_dp, rad0 * 0.3_dp)
-         sqcf = vonkar / log(rad0 / (ee * z0))
+         sqcf = VON_KARMAN / log(rad0 / (ee * z0))
          getChezy = sag / sqcf
       case (3)
          !           White Colebrook WAQUA / Nikuradse-formula
