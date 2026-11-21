@@ -1,0 +1,65 @@
+# IMPORTANT: This file must be the exact complement of .gitignore: the same rules in the same order,
+# with every '!' flipped, except '!**/' (directories) which is identical in both files.
+#
+# In this suite, files with the extensions below are tracked by Git, all other files by DVC.
+# To do the same in another suite, copy this .gitignore and .dvcignore into that suite folder.
+
+# Extensions tracked by Git (case-insensitive).
+# .bat
+**/*.[bB][aA][tT]
+# .bc
+**/*.[bB][cC]
+# .bcm
+**/*.[bB][cC][mM]
+# .bct
+**/*.[bB][cC][tT]
+# .bnd
+**/*.[bB][nN][dD]
+# .cmp
+**/*.[cC][mM][pP]
+# .dep
+**/*.[dD][eE][pP]
+# .enc
+**/*.[eE][nN][cC]
+# .ext
+**/*.[eE][xX][tT]
+# .inc
+**/*.[iI][nN][cC]
+# .ini
+**/*.[iI][nN][iI]
+# .m
+**/*.[mM]
+# .mdu
+**/*.[mM][dD][uU]
+# .mor
+**/*.[mM][oO][rR]
+# .obs
+**/*.[oO][bB][sS]
+# .pli
+**/*.[pP][lL][iI]
+# .pol
+**/*.[pP][oO][lL]
+# .py
+**/*.[pP][yY]
+# .sed
+**/*.[sS][eE][dD]
+# .tcp
+**/*.[tT][cC][pP]
+# .tex
+**/*.[tT][eE][xX]
+# .txt
+**/*.[tT][xX][tT]
+# .xml
+**/*.[xX][mM][lL]
+# .xyn
+**/*.[xX][yY][nN]
+
+# Folders that are fully tracked by DVC (e.g. to keep the data internal).
+!/f090_validation_realworld/**
+!/f107_1d2d_validation/**
+
+# Keep directories traversable and DVC/ignore metadata in Git.
+!**/
+**/*.dvc
+**/.gitignore
+**/.dvcignore
