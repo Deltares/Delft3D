@@ -426,6 +426,8 @@ contains
    subroutine flowfinalize()
       use unstruc_files
       use unstruc_netcdf
+      use m_sedtrails_netcdf, only: close_sedtrails_output
+      use m_sedtrails_stats, only: release_sedtrails_stats
       use MessageHandling, only: FinalizeMessageHandling
       use m_ec_module
       use m_meteo, only: ecInstancePtr
@@ -445,6 +447,8 @@ contains
       call dealloc_nfarrays()
       call dealloc_lateraldata()
       call close_fm_statistical_output()
+      call close_sedtrails_output()
+      call release_sedtrails_stats()
 
       if (.not. ecFreeInstance(ecInstancePtr)) then
          continue

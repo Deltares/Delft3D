@@ -63,7 +63,9 @@ contains
       use m_sobekdfm
       use m_save_ugrid_state, only: reset_save_ugrid_state
       use m_longculverts, only: reset_longculverts
-      use m_sedtrails_data
+      use m_sedtrails_data, only: sedtrails_resetdata
+      use m_sedtrails_stats, only: release_sedtrails_stats
+      use m_sedtrails_netcdf, only: close_sedtrails_output
       use m_nearfield, only: reset_nearfieldData
       use m_laterals, only: reset_lateral
       use m_flow_validatestate, only: reset_flow_validatestate
@@ -85,6 +87,8 @@ contains
       call reset_flowgeom()
 
       ! Sedtrails
+      call close_sedtrails_output()
+      call release_sedtrails_stats()
       call sedtrails_resetdata()
 
       call reset_modelbounds()

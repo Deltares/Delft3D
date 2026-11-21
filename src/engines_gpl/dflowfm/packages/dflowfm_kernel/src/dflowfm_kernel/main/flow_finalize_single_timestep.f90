@@ -67,7 +67,7 @@ contains
       use m_oned_functions, only: updateTimeWetOnGround, updateTotalInflow1d2d, updateTotalInflowLat, &
                                   updateFreeboard, updateDepthOnGround, updateVolOnGround
       use unstruc_channel_flow, only: network
-      use m_sedtrails_stats, st_is_numndvals => is_numndvals
+      use m_sedtrails_stats, only: st_is_numndvals => is_numndvals, update_sedtrails_stats, update_sedtrails_profiles
       use fm_statistical_output
       use m_statistical_output, only: update_statistical_output, update_source_input
       use m_update_fourier, only: update_fourier
@@ -83,6 +83,8 @@ contains
       use m_source_sink, only: source_sinks
 
       integer, intent(out) :: iresult
+
+      integer :: sedtrails_status
 
       ! Timestep has been performed, now finalize it.
 
@@ -183,6 +185,11 @@ contains
 
       if (jasedtrails > 0) then
          if (st_is_numndvals > 0) then
+            call update_sedtrails_profiles(sedtrails_status)
+            if (sedtrails_status /= 0) then
+               iresult = DFM_GENERICERROR
+               return
+            end if
             call update_sedtrails_stats()
          end if
       end if
