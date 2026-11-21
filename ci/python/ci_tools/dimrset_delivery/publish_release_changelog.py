@@ -183,9 +183,10 @@ class ChangeLogPublisher(StepExecutorInterface):
             action = f"Replaced existing section for {tag}"
         else:
             # Insert new release *just after the main header*
-            header_pattern = re.compile(r"(<h1>.*?<\/h1>\s*)", re.S | re.M)
-            if header_pattern.search(content):
-                updated = header_pattern.sub(r"\1" + new_text + "\n", content, count=1)
+            header = re.search(r"<h1>.*?</h1>\s*", content, re.DOTALL)
+            if header is not None:
+                insert_idx = header.end()
+                updated = f"{content[:insert_idx]}{new_text}\n{content[insert_idx:]}"
             else:
                 updated = "<h1>DIMRset weekly changelog</h1>\n\n" + new_text + "\n" + content
             action = f"Prepended new section for {tag}"
@@ -234,13 +235,13 @@ class ChangeLogPublisher(StepExecutorInterface):
         self.__context.log("Prepending/replacing changelog section")
         self.__prepend_or_replace_in_changelog(current_tag, changelog, dry_run=self.__context.dry_run)
 
-        self.__context.log(f"Copying {self.__changelog_file.name} to {path_to_release_notes_file}")
-        self.__ssh.secure_copy(
-            str(self.__changelog_file),
-            path_to_release_notes_file,
-            Direction.TO,
-        )
-        self.__context.log(f"Changelog copied successfully to {path_to_release_notes_file}")
+        # self.__context.log(f"Copying {self.__changelog_file.name} to {path_to_release_notes_file}")
+        # self.__ssh.secure_copy(
+        #     str(self.__changelog_file),
+        #     path_to_release_notes_file,
+        #     Direction.TO,
+        # )
+        # self.__context.log(f"Changelog copied successfully to {path_to_release_notes_file}")
         return True
 
     def execute_step(self) -> bool:
