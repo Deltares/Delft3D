@@ -43,9 +43,11 @@ module m_struc_helper
    !! independent of left-right orientation of the structure itself.
    !! (Motivation: a single structure in 2D may be crossed by multiple flow links, with varying 1->2 orientation.)
    subroutine UpAndDownstreamParameters(s1ml, s1mr, alm, arm, qtotal, velheight, &
-                                        rholeft, rhoright, crest, hu, hd, uu, ud, flowdir)
+                                        rholeft, rhoright, crest, hu, hd, uu, ud, flowdir, densities)
       !!--declarations----------------------------------------------------------------
       use m_GlobalParameters
+      use precision, only: dp
+      use MessageHandling, only: mess, LEVEL_FATAL
       implicit none
       !
       ! Global variables
@@ -57,14 +59,15 @@ module m_struc_helper
       double precision, intent(in   ) :: qtotal        !< Total discharge through flow link (in case of compound structures this might be larger than the
                                                        !< discharge through the actual structure).
       logical,          intent(in   ) :: velheight     !< Indicates whether the velocity height is taken into account or if the water level is used.
-      double precision, intent(  out) :: rholeft       !< Water density at flow link's  left side of structure (unimplemented).
-      double precision, intent(  out) :: rhoright      !< Water density at flow link's right side of structure (unimplemented).
+      double precision, intent(  out) :: rholeft       !< Water density at flow link's left side of structure.
+      double precision, intent(  out) :: rhoright      !< Water density at flow link's right side of structure.
       double precision, intent(in   ) :: crest         !< Crest level.
       double precision, intent(  out) :: hu            !< Upstream water level.
       double precision, intent(  out) :: hd            !< Downstream water level.
       double precision, intent(  out) :: uu            !< Upstream velocity.
       double precision, intent(  out) :: ud            !< Downstream velocity.
       double precision, intent(  out) :: flowdir       !< Flow direction 1 positive direction, -1 negative direction.
+      real(kind=dp), dimension(2), optional, intent(in) :: densities !< Positive side densities [kg/m3], in flow-link orientation; default 1000.
       !
       !
       ! Local variables
@@ -78,6 +81,13 @@ module m_struc_helper
       !
       rholeft = 1000.0D0
       rhoright = 1000.0D0
+      if (present(densities)) then
+         if (.not. all(densities > 0.0_dp)) then
+            call mess(LEVEL_FATAL, 'Structure side densities must be positive.')
+         end if
+         rholeft = densities(1)
+         rhoright = densities(2)
+      end if
       !
       !if (relax>0.D0) then
       !   hu = s1ml * relax + (1.0D0 - relax) * s2ml

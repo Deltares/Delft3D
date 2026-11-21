@@ -34,6 +34,8 @@ module m_furu_structures
 
    implicit none
 
+   public :: depth_averaged_density
+
 contains
 
    subroutine furu_structures()
@@ -76,6 +78,7 @@ contains
       real(kind=dp) :: perimeter
       real(kind=dp) :: wetdown
       real(kind=dp) :: width
+      real(kind=dp), dimension(2) :: densities
 
       logical :: firstiter
       logical :: SkipDimensionChecks
@@ -128,8 +131,13 @@ contains
                      end if
                      Cz = get_chezy(hu(L), frcu(L), u1(L), v(L), ifrcutp(L))
                      au(L) = pstru%au(L0)
+                     densities = 1000.0_dp
+                     if (pstru%generalst%useDensity) then
+                        densities(1) = depth_averaged_density(k1)
+                        densities(2) = depth_averaged_density(k2)
+                     end if
                      call compute_general_structure(pstru%generalst, direction, L0, width, bob0(:, L), fu(L), ru(L), &
-                                                  au(L), as1, as2, width, s1(k1), s1(k2), q1(L), Cz, dx(L), dts, SkipDimensionChecks)
+                                                  au(L), as1, as2, width, s1(k1), s1(k2), q1(L), Cz, dx(L), dts, SkipDimensionChecks, densities)
                      
                   case (ST_DAMBREAK)
                      continue
@@ -217,5 +225,40 @@ contains
       end do
 
    end subroutine furu_structures
+
+   !> Return the layer-thickness-weighted density of a full water column, or rhomean for a dry column.
+   function depth_averaged_density(cell) result(mean_density)
+      use precision, only: dp
+      use m_flow, only: kmx, rho, zws
+      use m_physcoef, only: rhomean
+      use m_get_kbot_ktop, only: getkbotktop
+
+      integer, intent(in) :: cell !< Horizontal cell index on one side of the structure.
+      real(kind=dp) :: mean_density
+      real(kind=dp) :: thickness
+      real(kind=dp) :: total_thickness
+      real(kind=dp) :: integrated_density
+      integer :: kb
+      integer :: kt
+      integer :: k
+
+      mean_density = rhomean
+      if (kmx == 0) then
+         mean_density = rho(cell)
+         return
+      end if
+
+      call getkbotktop(cell, kb, kt)
+      integrated_density = 0.0_dp
+      total_thickness = 0.0_dp
+      do k = kb, kt
+         thickness = max(0.0_dp, zws(k) - zws(k - 1))
+         integrated_density = integrated_density + rho(k) * thickness
+         total_thickness = total_thickness + thickness
+      end do
+      if (total_thickness > 0.0_dp) then
+         mean_density = integrated_density / total_thickness
+      end if
+   end function depth_averaged_density
 
 end module m_furu_structures

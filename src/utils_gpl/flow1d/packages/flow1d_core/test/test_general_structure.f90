@@ -77,9 +77,86 @@ contains
       
    end subroutine test_genstru_1d2d_crestwidth_reduced
  
-   function compute(general_structure) result(q)
+   !$gtest
+   !> Supplying densities must not change existing structures unless explicitly enabled.
+   subroutine test_density_default_off() bind(C)
+      real(kind=dp) :: reference, with_densities
+      type(t_GeneralStructure), pointer :: general_structure
+
+      general_structure => create_general_structure()
+      call f90_expect_false(general_structure%useDensity, 'Density effects must default to off.')
+      reference = compute(general_structure)
+      with_densities = compute(general_structure, densities=[1000.0_dp, 1025.0_dp])
+      call f90_expect_near(reference, with_densities, 1.0e-10_dp, 'Disabled density effects must preserve discharge.')
+      call dealloc(general_structure)
+   end subroutine test_density_default_off
+
+   !$gtest
+   !> Equal densities and omitted densities retain the original hydraulics when enabled.
+   subroutine test_density_equal_and_missing() bind(C)
+      real(kind=dp) :: reference, equal_density, missing_density
+      type(t_GeneralStructure), pointer :: general_structure
+
+      general_structure => create_general_structure()
+      reference = compute(general_structure)
+      general_structure%useDensity = .true.
+      equal_density = compute(general_structure, densities=[1025.0_dp, 1025.0_dp])
+      missing_density = compute(general_structure)
+      call f90_expect_near(reference, equal_density, 1.0e-10_dp, 'Equal densities must preserve discharge.')
+      call f90_expect_near(reference, missing_density, 1.0e-10_dp, 'Omitted densities must preserve discharge.')
+      call dealloc(general_structure)
+   end subroutine test_density_equal_and_missing
+
+   !$gtest
+   !> A density difference drives gate flow and can overcome an opposing water-level difference.
+   subroutine test_density_driven_gate_flow() bind(C)
+      real(kind=dp) :: forward, reverse, opposing_head
+      type(t_GeneralStructure), pointer :: general_structure
+
+      general_structure => create_general_structure()
+      general_structure%useDensity = .true.
+      general_structure%velheight = .false.
+      general_structure%gateLowerEdgeLevel = 1.0_dp
+      general_structure%gateopeningwidth = general_structure%ws
+      forward = compute(general_structure, [10.0_dp, 10.0_dp], [1025.0_dp, 1000.0_dp])
+      reverse = compute(general_structure, [10.0_dp, 10.0_dp], [1000.0_dp, 1025.0_dp])
+      opposing_head = compute(general_structure, [10.1_dp, 10.0_dp], [1000.0_dp, 1025.0_dp])
+      call f90_expect_gt(forward, 0.0_dp, 'Denser left water must drive positive flow.')
+      call f90_expect_lt(reverse, 0.0_dp, 'Denser right water must drive negative flow.')
+      call f90_expect_near(forward, -reverse, 1.0e-8_dp, 'Swapping densities must reverse symmetric gate flow.')
+      call f90_expect_lt(opposing_head, 0.0_dp, 'Density head must be able to overcome water-level head.')
+      general_structure%velheight = .true.
+      forward = compute(general_structure, [10.0_dp, 10.0_dp], [1025.0_dp, 1000.0_dp])
+      reverse = compute(general_structure, [10.0_dp, 10.0_dp], [1000.0_dp, 1025.0_dp])
+      call f90_expect_gt(forward, 0.0_dp, 'Density must also drive flow with velocity head enabled.')
+      call f90_expect_near(forward, -reverse, 1.0e-8_dp, 'Velocity-head gate flow must reverse symmetrically.')
+      call dealloc(general_structure)
+   end subroutine test_density_driven_gate_flow
+
+   !$gtest
+   !> Balanced hydrostatic heads sustain a water-level difference without gate flow.
+   subroutine test_density_hydrostatic_balance() bind(C)
+      real(kind=dp) :: discharge
+      type(t_GeneralStructure), pointer :: general_structure
+
+      general_structure => create_general_structure()
+      general_structure%useDensity = .true.
+      general_structure%velheight = .false.
+      general_structure%gateLowerEdgeLevel = 1.0_dp
+      general_structure%gateopeningwidth = general_structure%ws
+      discharge = compute(general_structure, [10.25_dp, 10.0_dp], [1000.0_dp, 1025.0_dp])
+      call f90_expect_near(discharge, 0.0_dp, 1.0e-8_dp, 'Equal density-weighted heads must give zero flow.')
+      general_structure%gateLowerEdgeLevel = general_structure%zs
+      discharge = compute(general_structure, [10.0_dp, 10.0_dp], [1000.0_dp, 1025.0_dp])
+      call f90_expect_near(discharge, 0.0_dp, 1.0e-8_dp, 'A fully closed gate must remain impermeable.')
+      call dealloc(general_structure)
+   end subroutine test_density_hydrostatic_balance
+
+   function compute(general_structure, levels, densities) result(q)
       use precision, only: dp
       type(t_GeneralStructure), pointer, intent(inout) :: general_structure
+      real(kind=dp), dimension(2), optional, intent(in) :: levels
+      real(kind=dp), dimension(2), optional, intent(in) :: densities
       
       real(kind=dp) :: fu
       real(kind=dp) :: ru
@@ -104,6 +181,10 @@ contains
       ru = 0.0_dp
       s1_up = 1.2_dp
       s1_down = 1.0_dp
+      if (present(levels)) then
+         s1_up = levels(1)
+         s1_down = levels(2)
+      end if
       maxwidth = 200.0_dp
       qtotal = 0.0_dp
       Cz = 50.0_dp
@@ -131,7 +212,7 @@ contains
       
       ! General structure fully opened and no door
       num_iterations = 0
-      do while ( diff > 0.0001)
+      do while (diff > 0.0001_dp .and. num_iterations < 1000)
          call compute_general_structure(genstr=general_structure,&
                                       direction = 1, &
                                       L0 = 1, &
@@ -149,13 +230,15 @@ contains
                                       Cz = cz, &
                                       dxL = dxl, &
                                       dt = dt, &
-                                      SkipDimensionChecks = SkipDimensionChecks)
+                                      SkipDimensionChecks = SkipDimensionChecks, &
+                                      densities = densities)
          u = ru - fu * (s1_down - s1_up)
          q_prev = q
          q = u * flow_area
-         diff = ABS( (q - q_prev)/MAX(q, q_prev, 1.0_dp))
+         diff = abs(q - q_prev) / max(abs(q), abs(q_prev), 1.0_dp)
          num_iterations = num_iterations+1
       end do
+      call f90_expect_lt(diff, 0.0001_dp, 'General-structure discharge iteration must converge.')
    end function compute
    
    function create_general_structure() result(general_structure)

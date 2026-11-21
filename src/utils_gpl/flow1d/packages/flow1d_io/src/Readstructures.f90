@@ -1480,6 +1480,9 @@ contains
       generalst%velheight = .true.
       call prop_get(md_ptr, '', 'useVelocityHeight', generalst%velheight)
 
+      generalst%useDensity = .false.
+      call prop_get(md_ptr, '', 'useDensity', generalst%useDensity)
+
    end subroutine readGeneralStructure
 
    !> Warns about unknown or unused settings in a structure property block.
