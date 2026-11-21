@@ -2531,6 +2531,33 @@ subroutine esm_alloc_real(lundia, error, gdp)
     ! END arrays for: (Rigid) 3D Vegetation Model
     !
     !
+    ! BEGIN arrays for: Slurry
+    !                           vicmud(nmaxddb ,mmaxddb ,0:kmax)
+    !
+    pntnam = 'vicmud'          !  Global data
+    ierr = mkfpnt(pntnam, nmaxddb*mmaxddb*(kmax+1), gdp)
+    if (ierr <= - 9) goto 9999
+    !                           clayint(nmaxddb ,mmaxddb )
+    !
+    pntnam = 'clyint'          !  Global data
+    ierr = mkfpnt(pntnam, nmaxddb*mmaxddb, gdp)
+    if (ierr <= - 9) goto 9999
+    !                           siltint(nmaxddb ,mmaxddb )
+    !
+    pntnam = 'sltint'          !  Global data
+    ierr = mkfpnt(pntnam, nmaxddb*mmaxddb, gdp)
+    if (ierr <= - 9) goto 9999
+    !
+    !                           sandint(nmaxddb ,mmaxddb )
+    !
+    pntnam = 'sndint'          !  Global data
+    ierr = mkfpnt(pntnam, nmaxddb*mmaxddb, gdp)
+    if (ierr <= - 9) goto 9999
+    !
+    ! END arrays for: Slurry
+    !
+    !
+    !
     ! The following list of scalar reals have to be placed in shared memory,
     ! because then the mapper can read them.
     ! BE CAREFUL:

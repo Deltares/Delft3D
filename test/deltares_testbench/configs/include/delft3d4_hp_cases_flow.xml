@@ -4317,6 +4317,26 @@
       </file>
     </checks>
   </testCase>
+  <testCase name="e01_f30_c01-baw_run_112" ref="flow2d3d_default">
+    <path version="DVC">e01_d3dflow/f30_slurry/c01-baw_run_112</path>
+    <maxRunTime>1200</maxRunTime>
+    <checks>
+      <file name="trih-2DV_beach.dat" type="NEFIS">
+        <parameters name="his-series">
+          <parameter name="ZWL" toleranceAbsolute="0.01"/>
+          <parameter name="VIDMUD" toleranceAbsolute="0.1"/>
+          <parameter name="GRO" toleranceAbsolute="0.1"/>
+        </parameters>
+      </file>
+      <file name="trim-2DV_beach.dat" type="NEFIS">
+        <parameters name="map-series">
+          <parameter name="S1" toleranceAbsolute="0.01"/>
+          <parameter name="VICMUD" toleranceAbsolute="0.1"/>
+          <parameter name="R1" toleranceAbsolute="0.1"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
   <testCase name="e01_f50_c31100_Simple-channel-flow(MG)_sigma_uni" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f50_validation_analytical/c31100_Simple-channel-flow(MG)_sigma_uni</path>
 
