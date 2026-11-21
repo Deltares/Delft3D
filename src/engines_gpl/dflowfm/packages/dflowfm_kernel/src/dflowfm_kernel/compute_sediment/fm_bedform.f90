@@ -307,14 +307,14 @@ contains
       use message_module
       use m_get_Lbot_Ltop
       use m_fm_advec_diff_2d, only: fm_advec_diff_2d
-      use m_turbulence, only: BACKGROUND_DIFFUSION_ON
+      use m_turbulence, only: BACKGROUND_DIFFUSION_OFF
       !
       ! Global variables
       !
       real(fp), dimension(:), allocatable :: sink
       real(fp), dimension(:), allocatable :: sour
       !
-      real(kind=dp), dimension(1), parameter :: BEDFORM_BACKGROUND_DIFFUSION_FACTOR = [BACKGROUND_DIFFUSION_ON] !< background diffusion factor [-]. For backward compatibility, it is set to 1.0`, although it would most probably make more sense to be 0. It cannot be a `parameter` because it is `inout` in `comp_fluxhor3D` because it is optional.
+      real(kind=dp), dimension(1), parameter :: BEDFORM_BACKGROUND_DIFFUSION_FACTOR = [BACKGROUND_DIFFUSION_OFF] !< background diffusion factor [-]. For backward compatibility, it is set to 1.0`, although it would most probably make more sense to be 0. It cannot be a `parameter` because it is `inout` in `comp_fluxhor3D` because it is optional.
       integer, parameter :: LIMITER_TYPE = 4 !< It should be made equal to a parameter inside, for instance, `m_flowparameters`.
       !
       !Local parameters
@@ -326,7 +326,9 @@ contains
       integer :: ierror
       integer :: kk
       integer :: nsteps
-      real(fp) :: hdtb, hdtb_max
+      real(fp) :: dt_dune
+      real(fp) :: dt_max_dune
+      real(fp) :: dt_user_dune
       real(fp) :: hpow
       real(fp) :: dtsori
       real(fp) :: T_relax !< bedform relaxation time in seconds
@@ -340,6 +342,7 @@ contains
       real(fp) :: vmean
       real(fp) :: dum
       real(fp) :: qbf
+      real(fp) :: morfac_correction
       integer, pointer :: bdfrlxtype
       integer, pointer :: lsedtot
       logical, pointer :: lfbdfmor
@@ -416,14 +419,16 @@ contains
       ! environment the morphological time scale should be used.
       !
       if (lfbdfmor) then ! oke, staat op false als .not. stm_included
-         hdtb = dts * morfac
          if ((comparereal(morfac, 0.0_fp) == 0) .or. (time1 < tstart_user + tcmp * tfac)) then ! JRE+BJ to check: tcmp or tmor?
             ! no update of bedforms necessary
             return
          end if
+         morfac_correction = morfac
       else
-         hdtb = dts
+         morfac_correction = 1.0_fp
       end if
+      dt_user_dune = dt_user * morfac_correction
+
       !
       ! Calculate equilibrium bedform heights/lengths
       !
@@ -554,7 +559,7 @@ contains
       !
       ! Determine local subtimestep for bedform advection
       !
-      hdtb_max = dt_user
+      dt_max_dune = dt_user_dune
       if (lfbedfrmADV) then
          lfbedfrmCFL = .true.
          do k = 1, ndx
@@ -574,19 +579,19 @@ contains
             end do
 
             if (dum > tiny(0.0_dp)) then
-               hdtb_max = min(hdtb_max, ba(k) / dum)
+               dt_max_dune = min(dt_max_dune, ba(k) / dum)
             end if
          end do
       end if
-      nsteps = ceiling(dt_user / hdtb_max)
-      hdtb = dt_user / nsteps
+      nsteps = ceiling(dt_user_dune / dt_max_dune)
+      dt_dune = dt_user_dune / nsteps
       !
       ! Calculate the growth rate of the dune
       !
       select case (bdfrlxtype)
       case (1)
          ! TH = given
-         T_relax = max(bedformT_H * tfac, hdtb) ! bedformT_H must be in mdu TUnits!
+         T_relax = max(bedformT_H * tfac / morfac_correction, dt_dune) ! bedformT_H must be in mdu TUnits!
          do nm = 1, ndx
             if (hs(nm) > epshs) then
                sour(nm) = duneheightequi(nm) / T_relax
@@ -599,7 +604,7 @@ contains
          do nm = 1, ndx
             if (hs(nm) > epshs) then
                if (abs(ubedform(nm)) > 1e-20_fp) then
-                  T_relax = max(bedformL_H / ubedform(nm), hdtb)
+                  T_relax = max(bedformL_H / ubedform(nm) / morfac_correction, dt_dune)
                   sour(nm) = duneheightequi(nm) / T_relax
                   sink(nm) = 1.0_fp / T_relax
                end if
@@ -612,7 +617,7 @@ contains
             if (hs(nm) > epshs) then
                bedformL_H = bdfL_Hc * dunelength(nm)
                if (abs(ubedform(nm)) > 1e-20_fp) then
-                  T_relax = max(bedformL_H / ubedform(nm), hdtb)
+                  T_relax = max(bedformL_H / ubedform(nm) / morfac_correction, dt_dune)
                   sour(nm) = duneheightequi(nm) / T_relax
                   sink(nm) = 1.0_fp / T_relax
                end if
@@ -626,7 +631,7 @@ contains
                phi = max(min((bdfHmax / hs(nm))**bdfL_Hp, bdfPmax), 1.0_fp)
                bedformL_H = phi * dunelength(nm)
                if (abs(ubedform(nm)) > 1e-20_fp) then
-                  T_relax = max(bedformL_H / ubedform(nm), hdtb)
+                  T_relax = max(bedformL_H / ubedform(nm) / morfac_correction, dt_dune)
                   sour(nm) = duneheightequi(nm) / T_relax
                   sink(nm) = 1.0_fp / T_relax
                end if
@@ -642,7 +647,7 @@ contains
       end do
 
       dtsori = dts
-      dts = hdtb
+      dts = dt_dune
       do n = 1, nsteps
          do L = lnxi + 1, lnx ! Neumann conditions
             kb = ln(1, L)
@@ -858,7 +863,7 @@ contains
                end if
 
                if (stm_included .and. (.not. seddia_from_bfm)) then
-                  d50l = 0.0002_fp    ! provide default values
+                  d50l = 0.0002_fp ! provide default values
                   d90l = 0.0003_fp
                   if (lsedtot > 0) then
                      d50l = dxx(k, i50)
