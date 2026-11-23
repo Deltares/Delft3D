@@ -378,6 +378,20 @@ namespace dflowfm_io::test
         EXPECT_TRUE(report.GetIssues()[1].lineNumber.has_value());
     }
 
+    TEST(IssueReportTest, AddIssues_MutlipleWithSameLineNumber_PreservesInsertionOrder)
+    {
+        IssueReport report;
+
+        report.Add<Severity::Error>(10, "First error");
+        report.Add<Severity::Warning>(10, "Second warning");
+        report.Add<Severity::Info>(10, "Third info");
+
+        ASSERT_EQ(report.GetIssues().size(), 3);
+        EXPECT_EQ(report.GetIssues()[0].message, "First error");
+        EXPECT_EQ(report.GetIssues()[1].message, "Second warning");
+        EXPECT_EQ(report.GetIssues()[2].message, "Third info");
+    }
+
     TEST(IssueReportTest, AddIssues_MultipleWithoutLineNumbers_PreservesInsertionOrder)
     {
         IssueReport report;

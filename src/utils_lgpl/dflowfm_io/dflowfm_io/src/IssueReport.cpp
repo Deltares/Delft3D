@@ -7,12 +7,10 @@ namespace dflowfm_io
 {
     void IssueReport::AddIssue(Severity severity, std::optional<int> lineNumber, std::string message)
     {
-        auto it = std::lower_bound(issues.begin(), issues.end(), lineNumber,
-                                   [](const Issue& issue, const std::optional<int>& line) {
-                                       if (!issue.lineNumber) return true;
-                                       if (!line) return false;
-                                       return *issue.lineNumber < *line;
-                                   });
+        auto it = std::upper_bound(issues.begin(), issues.end(), lineNumber,
+                                [](const std::optional<int>& line, const Issue& issue) {
+                                    return line < issue.lineNumber;
+                                });
         issues.emplace(it, severity, std::move(message), lineNumber);
     }
 
