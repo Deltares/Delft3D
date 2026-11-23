@@ -863,6 +863,124 @@ contains
       useVolumeTableFile = .false.
       call prop_get(md_ptr, 'volumeTables', 'useVolumeTableFile', useVolumeTableFile)
 
+! Time
+      call prop_get(md_ptr, 'Time', 'refDate', refdat)
+      read (refdat, *) irefdate
+      success = ymd2modified_jul(irefdate, refdate_mjd)
+      if (.not. success) then
+         call mess(LEVEL_ERROR, 'Something went wrong in conversion from refDate to Modified Julian Date')
+      end if
+      call prop_get(md_ptr, 'Time', 'tZone', Tzone)
+      call prop_get(md_ptr, 'Time', 'tUnit', md_tunit)
+      call prop_get(md_ptr, 'Time', 'tStart', tstart_user)
+      call prop_get(md_ptr, 'Time', 'tStop', tstop_user)
+      select case (md_tunit)
+      case ('D')
+         tfac = 3600.0_dp * 24.0_dp
+      case ('H')
+         tfac = 3600.0_dp
+      case ('M')
+         tfac = 60.0_dp
+      case default
+         tfac = 1.0_dp
+      end select
+      tstart_user = tstart_user * tfac
+      tstop_user = tstop_user * tfac
+
+      call setTUDUnitString()
+
+      call prop_get(md_ptr, 'Time', 'dtUser', dt_user)
+
+      ! Set default values if not specified in MDU
+      if (dt_user <= 0) then
+         dt_user = 300.0_dp
+         dt_max = 60.0_dp
+         autotimestep = AUTO_TIMESTEP_2D_OUT
+      end if
+
+      call prop_get(md_ptr, 'Time', 'dtNodal', dt_nodal)
+
+      call prop_get(md_ptr, 'Time', 'dtMax', dt_max)
+      if (dt_max > dt_user) then
+         dt_max = dt_user
+         write (msgbuf, '(a,f9.3)') 'dtMax should be <= dtUser. It has been reset to: ', dt_max
+         call msg_flush()
+      end if
+
+      ! ibuf = 1
+      ! Default autotimestep value for 3D is AUTO_TIMESTEP_3D_INOUT
+      if (kmx > 1) then
+         autotimestep = AUTO_TIMESTEP_3D_INOUT
+      end if
+      !
+      call prop_get(md_ptr, 'Time', 'autoTimeStep', autotimestep, success)
+      call prop_get(md_ptr, 'Time', 'autoTimeStepDiff', jadum, success)
+      if (success .and. jadum /= 0) then
+         call mess(LEVEL_ERROR, 'autoTimeStepDiff not supported')
+      end if
+      call prop_get(md_ptr, 'Time', 'autoTimeStepVisc', ja_timestep_auto_visc, success)
+      if (success .and. ja_timestep_auto_visc /= 0) then
+         if (ja_timestep_auto_visc /= 1234) then
+!         hide feature
+            call mess(LEVEL_ERROR, 'autoTimeStepVisc not supported')
+         else
+            ja_timestep_auto_visc = 1
+         end if
+      end if
+
+      call prop_get(md_ptr, 'Time', 'autoTimeStepNoStruct', ja_timestep_nostruct, success)
+      call prop_get(md_ptr, 'Time', 'autoTimeStepNoQout', ja_timestep_noqout, success)
+
+      call prop_get(md_ptr, 'Time', 'dtFacMax', dt_fac_max)
+
+      call prop_get(md_ptr, 'Time', 'dtInit', dt_init)
+
+      call prop_get(md_ptr, 'Time', 'timeStepAnalysis', ja_time_step_analysis)
+
+      call prop_get(md_ptr, 'Time', 'startDateTime', start_date_time, success)
+      if (len_trim(start_date_time) > 0 .and. success) then
+         call datetimestring_to_seconds(start_date_time, refdat, tim, iostat)
+         if (iostat == 0) then
+            Tstart_user = tim
+         end if
+      end if
+
+      ! Set default tstart_tlfsmo_user after possible start_date_time
+      call prop_get(md_ptr, 'Time', 'tStartTlfsmo', tstart_tlfsmo_user, success)
+      if (success) then
+         tstart_tlfsmo_user = tstart_tlfsmo_user * tfac
+      else
+         tstart_tlfsmo_user = tstart_user
+      end if
+
+      call prop_get(md_ptr, 'Time', 'startDateTimeTlfsmo', start_date_time_tlfsmo, success)
+      if (len_trim(start_date_time_tlfsmo) > 0 .and. success) then
+         call datetimestring_to_seconds(start_date_time_tlfsmo, refdat, tim, iostat)
+         if (iostat == 0) then
+            tstart_tlfsmo_user = tim
+         end if
+      end if
+
+      if (tstart_tlfsmo_user > tstart_user) then
+         tstart_tlfsmo_user = tstart_user
+         call mess(LEVEL_WARN, 'tStartTlfsmo should be <= tStart. tStartTlfsmo has been reset to tStart.')
+      end if
+
+      call prop_get(md_ptr, 'Time', 'stopDateTime', stop_date_time, success)
+      if (len_trim(stop_date_time) > 0 .and. success) then
+         call datetimestring_to_seconds(stop_date_time, refdat, tim, iostat)
+         if (iostat == 0) then
+            Tstop_user = tim
+         end if
+      end if
+
+      ! Set update frequency for the time dependent roughness from frictFile.
+      call prop_get(md_ptr, 'Time', 'updateRoughnessInterval', dt_update_roughness, success)
+      if (success .and. dt_update_roughness < dt_User) then
+         ! NOTE: dt_update_roughness must at least be >= dt_max, but we'll enforce dt_user, because that makes more sense anyway.
+         call SetMessage(LEVEL_ERROR, 'The value of "updateRoughnessInterval" must be equal to or larger than the user time step.')
+      end if
+
       ! Numerics
 
       call prop_get(md_ptr, 'numerics', 'CFLMax', cflmx)
@@ -893,11 +1011,6 @@ contains
       call prop_get(md_ptr, 'numerics', 'Limtypmom', limtypmom)
       call prop_get(md_ptr, 'numerics', 'Limtypsa', limtypsa)
       call prop_get(md_ptr, 'numerics', 'Limtypw', limtypw)
-
-      ! Default autotimestep value for 3D is AUTO_TIMESTEP_3D_INOUT
-      if (kmx > 1) then
-         autotimestep = AUTO_TIMESTEP_3D_INOUT
-      end if
 
       call prop_get(md_ptr, 'numerics', 'TransportAutoTimestepdiff', jatransportautotimestepdiff)
 
@@ -1496,19 +1609,19 @@ contains
          call convert_air_sea_interaction_model_string_to_integer(tmpstr, ibuf)
 
          if (ibuf == -1) then
-            call mess(LEVEL_ERROR, 'Invalid entry for airSeaInteractionModel. Should be ''none'' or ''most''.')
+            call mess(LEVEL_ERROR, 'Invalid entry for keyword ''[meteo] airSeaInteractionModel''. Should be ''none'' or ''most''.')
          else
             air_sea_interaction_model = ibuf
          end if
       end if
 
       tmpstr = ''
-      call prop_get(md_ptr, 'meteo', 'stabilityFunction', tmpstr, success)
+      call prop_get(md_ptr, 'meteo', 'stabilityFunctions', tmpstr, success)
       if (success) then
          call convert_atmospheric_stability_function_string_to_integer(tmpstr, ibuf)
 
          if (ibuf == -1) then
-            call mess(LEVEL_ERROR, 'Invalid entry for stabilityFunction. Should be ''none'' or ''ecmwf''.')
+            call mess(LEVEL_ERROR, 'Invalid entry for keyword ''[meteo] stabilityFunctions''. Should be ''none'' or ''ecmwf''.')
          else
             atmospheric_stability_function = ibuf
          end if
@@ -1520,7 +1633,7 @@ contains
          call convert_free_convection_string_to_integer(tmpstr, ibuf)
 
          if (ibuf == -1) then
-            call mess(LEVEL_ERROR, 'Invalid entry for freeConvection. Should be ''off'' or ''on''.')
+            call mess(LEVEL_ERROR, 'Invalid entry for keyword ''[meteo] freeConvection''. Should be ''off'' or ''on''.')
          else
             free_convection = ibuf
          end if
@@ -1532,12 +1645,12 @@ contains
          call convert_salinity_dependent_evaporation_method_string_to_integer(tmpstr, ibuf)
 
          if (ibuf == -1) then
-            call mess(LEVEL_ERROR, 'Invalid entry for salinityDependentEvaporationMethod. Should be ''none'', ''constant'' or ''linear''.')
+            call mess(LEVEL_ERROR, 'Invalid entry for keyword ''[meteo] salinityDependentEvaporationMethod''. Should be ''none'', ''constant'' or ''linear''.')
          else
             salinity_dependent_evaporation_method = ibuf
 
             if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_LINEAR .and. jasal == 0) then
-               call mess(LEVEL_ERROR, 'salinityDependentEvaporationMethod is set to ''linear'' but Salinity is turned off in mdu.')
+               call mess(LEVEL_ERROR, 'Keyword ''[meteo] salinityDependentEvaporationMethod'' is set to ''linear'' but Salinity is turned off in mdu.')
             end if
          end if
       end if
@@ -1545,7 +1658,7 @@ contains
       call prop_get(md_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity%scalar, success)
       if (success .and. salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_CONSTANT) then
          if (salinity_reduction_factor_saturation_humidity%scalar < 0 .or. salinity_reduction_factor_saturation_humidity%scalar > 1) then
-            call mess(LEVEL_ERROR, 'Invalid entry for QsatFactor. Should be inclusive between 0 and 1.')
+            call mess(LEVEL_ERROR, 'Invalid entry for keyword ''[meteo] QsatFactor''. Should be inclusive between 0 and 1.')
          end if
       end if
 
@@ -1554,7 +1667,7 @@ contains
       if (success) then
          call convert_rain_temperature_string_to_integer(tmpstr, ibuf)
          if (ibuf == -1) then
-            call mess(LEVEL_ERROR, 'Invalid entry for rainTemperature. Should be ''airTemperature'' or ''wetBulbTemperature''.')
+            call mess(LEVEL_ERROR, 'Invalid entry for keyword ''[meteo] rainTemperature''. Should be ''airTemperature'' or ''wetBulbTemperature''.')
          else
             rain_temperature_method = ibuf
          end if
@@ -1571,7 +1684,7 @@ contains
       call prop_get(md_ptr, 'meteo', 'longwaveEmissivity', longwave_emissivity, success)
       if (success) then
          if (longwave_emissivity < 0 .or. longwave_emissivity > 1) then
-            call mess(LEVEL_ERROR, 'Invalid entry for longwaveEmissivity. Should be inclusive between 0 and 1.')
+            call mess(LEVEL_ERROR, 'Invalid entry for keyword ''[meteo] longwaveEmissivity''. Should be inclusive between 0 and 1.')
          end if
       end if
 
@@ -1826,118 +1939,6 @@ contains
       !
       call prop_get(md_ptr, 'hydrology', 'InterceptionModel', interceptionmodel)
 
-! Time
-      call prop_get(md_ptr, 'Time', 'refDate', refdat)
-      read (refdat, *) irefdate
-      success = ymd2modified_jul(irefdate, refdate_mjd)
-      if (.not. success) then
-         call mess(LEVEL_ERROR, 'Something went wrong in conversion from refDate to Modified Julian Date')
-      end if
-      call prop_get(md_ptr, 'Time', 'tZone', Tzone)
-      call prop_get(md_ptr, 'Time', 'tUnit', md_tunit)
-      call prop_get(md_ptr, 'Time', 'tStart', tstart_user)
-      call prop_get(md_ptr, 'Time', 'tStop', tstop_user)
-      select case (md_tunit)
-      case ('D')
-         tfac = 3600.0_dp * 24.0_dp
-      case ('H')
-         tfac = 3600.0_dp
-      case ('M')
-         tfac = 60.0_dp
-      case default
-         tfac = 1.0_dp
-      end select
-      tstart_user = tstart_user * tfac
-      tstop_user = tstop_user * tfac
-
-      call setTUDUnitString()
-
-      call prop_get(md_ptr, 'Time', 'dtUser', dt_user)
-
-      ! Set default values if not specified in MDU
-      if (dt_user <= 0) then
-         dt_user = 300.0_dp
-         dt_max = 60.0_dp
-         autotimestep = AUTO_TIMESTEP_2D_OUT
-      end if
-
-      call prop_get(md_ptr, 'Time', 'dtNodal', dt_nodal)
-
-      call prop_get(md_ptr, 'Time', 'dtMax', dt_max)
-      if (dt_max > dt_user) then
-         dt_max = dt_user
-         write (msgbuf, '(a,f9.3)') 'dtMax should be <= dtUser. It has been reset to: ', dt_max
-         call msg_flush()
-      end if
-
-      ! ibuf = 1
-      call prop_get(md_ptr, 'Time', 'autoTimeStep', autotimestep, success)
-      call prop_get(md_ptr, 'Time', 'autoTimeStepDiff', jadum, success)
-      if (success .and. jadum /= 0) then
-         call mess(LEVEL_ERROR, 'autoTimeStepDiff not supported')
-      end if
-      call prop_get(md_ptr, 'Time', 'autoTimeStepVisc', ja_timestep_auto_visc, success)
-      if (success .and. ja_timestep_auto_visc /= 0) then
-         if (ja_timestep_auto_visc /= 1234) then
-!         hide feature
-            call mess(LEVEL_ERROR, 'autoTimeStepVisc not supported')
-         else
-            ja_timestep_auto_visc = 1
-         end if
-      end if
-
-      call prop_get(md_ptr, 'Time', 'autoTimeStepNoStruct', ja_timestep_nostruct, success)
-      call prop_get(md_ptr, 'Time', 'autoTimeStepNoQout', ja_timestep_noqout, success)
-
-      call prop_get(md_ptr, 'Time', 'dtFacMax', dt_fac_max)
-
-      call prop_get(md_ptr, 'Time', 'dtInit', dt_init)
-
-      call prop_get(md_ptr, 'Time', 'timeStepAnalysis', ja_time_step_analysis)
-
-      call prop_get(md_ptr, 'Time', 'startDateTime', start_date_time, success)
-      if (len_trim(start_date_time) > 0 .and. success) then
-         call datetimestring_to_seconds(start_date_time, refdat, tim, iostat)
-         if (iostat == 0) then
-            Tstart_user = tim
-         end if
-      end if
-
-      ! Set default tstart_tlfsmo_user after possible start_date_time
-      call prop_get(md_ptr, 'Time', 'tStartTlfsmo', tstart_tlfsmo_user, success)
-      if (success) then
-         tstart_tlfsmo_user = tstart_tlfsmo_user * tfac
-      else
-         tstart_tlfsmo_user = tstart_user
-      end if
-
-      call prop_get(md_ptr, 'Time', 'startDateTimeTlfsmo', start_date_time_tlfsmo, success)
-      if (len_trim(start_date_time_tlfsmo) > 0 .and. success) then
-         call datetimestring_to_seconds(start_date_time_tlfsmo, refdat, tim, iostat)
-         if (iostat == 0) then
-            tstart_tlfsmo_user = tim
-         end if
-      end if
-
-      if (tstart_tlfsmo_user > tstart_user) then
-         tstart_tlfsmo_user = tstart_user
-         call mess(LEVEL_WARN, 'tStartTlfsmo should be <= tStart. tStartTlfsmo has been reset to tStart.')
-      end if
-
-      call prop_get(md_ptr, 'Time', 'stopDateTime', stop_date_time, success)
-      if (len_trim(stop_date_time) > 0 .and. success) then
-         call datetimestring_to_seconds(stop_date_time, refdat, tim, iostat)
-         if (iostat == 0) then
-            Tstop_user = tim
-         end if
-      end if
-
-      ! Set update frequency for the time dependent roughness from frictFile.
-      call prop_get(md_ptr, 'Time', 'updateRoughnessInterval', dt_update_roughness, success)
-      if (success .and. dt_update_roughness < dt_User) then
-         ! NOTE: dt_update_roughness must at least be >= dt_max, but we'll enforce dt_user, because that makes more sense anyway.
-         call SetMessage(LEVEL_ERROR, 'The value of "updateRoughnessInterval" must be equal to or larger than the user time step.')
-      end if
       !
       ! TIDAL TURBINES: Insert calls to rdturbine and echoturbine here (use the structure_turbines variable defined in m_structures)
       !
@@ -3606,13 +3607,13 @@ contains
       call prop_set(prop_ptr, 'meteo', 'airSeaInteractionModel', trim(tmpstr), 'Air-sea interaction model (options: ''none'', ''MOST'' (Monin-Obukhov Similarity Theory)).')
 
       call convert_atmospheric_stability_function_integer_to_string(atmospheric_stability_function, tmpstr)
-      call prop_set(prop_ptr, 'meteo', 'stabilityFunction', trim(tmpstr), 'Atmospheric stability function (options: ''none'', ''ECMWF'').')
+      call prop_set(prop_ptr, 'meteo', 'stabilityFunctions', trim(tmpstr), 'Atmospheric stability function (options: ''none'', ''ECMWF'').')
 
       call convert_free_convection_integer_to_string(free_convection, tmpstr)
       call prop_set(prop_ptr, 'meteo', 'freeConvection', trim(tmpstr), 'Free convection switch (options: ''off'', ''on'').')
 
       call convert_salinity_dependent_evaporation_method_integer_to_string(salinity_dependent_evaporation_method, tmpstr)
-      call prop_set(prop_ptr, 'meteo', 'salinityDependentEvaporationMethod', trim(tmpstr), 'Salinity dependent evaporation method (options: ''off'', ''constant reduction factor'', ''salinity-dependent reduction factor'').')
+      call prop_set(prop_ptr, 'meteo', 'salinityDependentEvaporationMethod', trim(tmpstr), 'Salinity dependent evaporation method (options: ''none'', ''constant'', ''linear'').')
 
       if (salinity_dependent_evaporation_method == SALINITY_DEPENDENT_EVAPORATION_CONSTANT) then
          call prop_set(prop_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity%scalar, 'Salinity reduction factor for saturation humidity in bulk formulae.')
