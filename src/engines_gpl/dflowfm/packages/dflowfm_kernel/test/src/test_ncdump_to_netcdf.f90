@@ -12,7 +12,7 @@ contains
    !$gtest
    !> Convert a small SWAN-style CDL fixture and check the values in the resulting NetCDF file.
    subroutine test_ncdump_to_netcdf() bind(C)
-      use m_file_helpers, only: create_file
+      use m_file_helpers, only: create_netcdf_from_cdl
       use netcdf, only: nf90_open, nf90_nowrite, nf90_inq_varid, nf90_get_var, nf90_close, nf90_noerr, nf90_strerror
 
       character(len=*), parameter :: cdl_file = "bubblescreen_swan_fixture.cdl"
@@ -21,22 +21,27 @@ contains
       integer :: cmdstat, exitstat, ncid, varid, status, close_status
       real(kind=dp), dimension(1, 1, 2) :: wave_height
 
-      call create_file(cdl_file, [character(len=72) :: &
-                                 "netcdf swan_fixture {", &
-                                 "dimensions:", &
-                                 "    time = 2;", &
-                                 "    yc = 1;", &
-                                 "    xc = 1;", &
-                                 "variables:", &
-                                 "    float hs(time, yc, xc);", &
-                                 '    hs:units = "m";', &
-                                 '    hs:standard_name = "sea_surface_wave_significant_height";', &
-                                 "data:", &
-                                 "    hs = 0.5, 1.25;", &
-                                 "}"])
+      call create_netcdf_from_cdl( &
+         cdl_file, &
+         nc_file, &
+         [character(len=72) :: &
+            "netcdf swan_fixture {", &
+            "dimensions:", &
+            "    time = 2;", &
+            "    yc = 1;", &
+            "    xc = 1;", &
+            "variables:", &
+            "    float hs(time, yc, xc);", &
+            '    hs:units = "m";', &
+            '    hs:standard_name = "sea_surface_wave_significant_height";', &
+            "data:", &
+            "    hs = 0.5, 1.25;", &
+            "}"], &
+         cmdstat, &
+         exitstat, &
+         cmdmsg &
+      )
 
-      call execute_command_line("ncgen -o "//nc_file//" "//cdl_file, &
-                                wait=.true., cmdstat=cmdstat, cmdmsg=cmdmsg, exitstat=exitstat)
       if (cmdstat /= 0) then
          call f90_expect_true(.false., "Could not execute ncgen: "//trim(cmdmsg))
          return
