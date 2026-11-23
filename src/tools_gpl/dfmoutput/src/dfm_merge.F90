@@ -1290,8 +1290,8 @@ contains
                end if
             end if
             
-            ! copy attributes of morft and morfac if they exist
             if (jasedmor == 1) then
+               ! define morft and morfac if they exist
                ierr = nf90_inq_varid(ncids(ifileScan), 'morft', id_morft(ifileScan))
                ierr = nf90_def_var(ncids(noutfile), 'morft', nf90_double, (/id_timedim(itopo, noutfile)/), id_morft(noutfile))
                ierr = ncu_copy_atts(ncids(ifileScan), ncids(noutfile), id_morft(ifileScan), id_morft(noutfile))
@@ -1309,6 +1309,7 @@ contains
                   end if
                end if
                
+               ! define sedAvgTim if it exists
                ierr = nf90_inq_varid(ncids(ifileScan), 'sedAvgTim', id_sedavgtim(ifileScan))
                if  (ierr == nf90_noerr) then
                   ierr = nf90_def_var(ncids(noutfile), 'sedAvgTim', nf90_double, id_dimTwo(noutfile), id_sedavgtim(noutfile))
@@ -2109,8 +2110,8 @@ contains
          end do
       end do ! itopo
 
-      ! copy the attrubutes of sedfrac_name and sussedfrac_name
       if (jasedmor == 1) then
+         ! copy the attributes of sedfrac_name and sussedfrac_name
          ifileScan = ifile(minTopodim)
          ierr = nf90_inq_varid(ncids(ifileScan), 'sedfrac_name', id_frac_name(ifileScan))
          ierr = nf90_inquire_variable(ncids(ifileScan), id_frac_name(ifileScan), dimids=tmpdimids)
@@ -2128,7 +2129,8 @@ contains
          if (isNetCDF4) then
             ierr = ncu_copy_chunking_deflate(ncids(ifileScan), ncids(noutfile), id_susfrac_name(ifileScan), id_susfrac_name(noutfile))
          end if
-                  
+         
+         ! copy the attributes of sedAvgTim
          ierr = nf90_inq_varid(ncids(ifileScan), 'sedAvgTim', id_sedavgtim(ifileScan))
          ierr = nf90_def_var(ncids(noutfile), 'sedAvgTim', nf90_double, id_dimTwo(noutfile), id_sedavgtim(noutfile))
          ierr = ncu_copy_atts(ncids(ifileScan), ncids(noutfile), id_sedavgtim(ifileScan), id_sedavgtim(noutfile))
@@ -2343,8 +2345,8 @@ contains
          end if
       end if
       
-      !copy the sediment fraction name to the merged file
       if (jasedmor == 1) then
+         !copy the sediment fraction name to the merged file
          nsedtotsel = nsedtot(ifileScan)
          nsedtot(noutfile) = nsedtotsel
          allocate (sedfrac_name(nsedtotsel))
@@ -2363,6 +2365,7 @@ contains
          end do
          ierr = nf90_put_var(ncids(noutfile), id_susfrac_name(noutfile), sussedfrac_name)
          
+         !copy the sediment transport averaging interval to the merged file
          ntwosel = ntwo(ifileScan)
          ntwo(noutfile) = ntwosel
          allocate (sedavgtim(ntwosel))
