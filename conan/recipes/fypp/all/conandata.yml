@@ -1,0 +1,4 @@
+sources:
+  "3.2.0":
+    url: "https://files.pythonhosted.org/packages/01/35/0e2dfffc90201f17436d3416f8d5c8b00e2187e410ec899bb62cf2cea59b/fypp-3.2.tar.gz"
+    sha256: "05c20f71dd9a7206ffe2d8688032723f97b8c2984d472ba045819d7d2b513bce"
