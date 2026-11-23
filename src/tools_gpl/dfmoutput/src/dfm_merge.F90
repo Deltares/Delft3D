@@ -198,13 +198,13 @@ contains
       integer, allocatable :: id_facedim(:, :), id_edgedim(:, :), id_laydim(:, :), id_wdim(:, :), id_nodedim(:, :), id_sedtotdim(:, :), id_sedsusdim(:, :), id_nlyrdim(:, :), &
                               id_netedgedim(:, :), id_netfacedim(:, :), id_netfacemaxnodesdim(:, :), id_bnddim(:, :) !< dim and var ids, maintained for all input files + 1 output file.
       integer, dimension(nfiles + 1) :: ncids, id_time, id_timestep, id_mappingVar
-      integer, allocatable :: id_timedim(:, :), id_morft(:), id_morfac(:), id_frac_name(:), id_susfrac_name(:), id_strlendim(:)
+      integer, allocatable :: id_timedim(:, :), id_morft(:), id_morfac(:), id_frac_name(:), id_susfrac_name(:), id_strlendim(:), id_dimTwo(:), id_sedavgtim(:)
       double precision :: convversion
       integer :: jaugrid, iconvtype, formatCode, new_ndx, jasedmor, jamorfac
       integer, dimension(nfiles) :: jaugridi, ioncids
       logical :: isNetCDF4
       integer, allocatable :: dimids(:, :, :) !<(nDims, maxTopodim,nfiles+1) Used for storing any remaining vectormax dimension IDs
-      integer, allocatable, target :: ndx(:, :), lnx(:, :), ndxg(:, :), lnxg(:, :), kmx(:, :), numk(:, :), numl(:, :), nump(:, :), numkg(:, :), numlg(:, :), netfacemaxnodes(:, :), ndxbnd(:, :), nt(:), nsedtot(:), nsedsus(:) !< counters, maintained for all input files + 1 output file.
+      integer, allocatable, target :: ndx(:, :), lnx(:, :), ndxg(:, :), lnxg(:, :), kmx(:, :), numk(:, :), numl(:, :), nump(:, :), numkg(:, :), numlg(:, :), netfacemaxnodes(:, :), ndxbnd(:, :), nt(:), nsedtot(:), nsedsus(:), ntwo(:) !< counters, maintained for all input files + 1 output file.
       integer, dimension(:), pointer :: item_counts !< Generalized count pointer, will point to ndx, lnx, numl, or numk during var data reading + writing.
       integer :: noutfile !< array index/position of output file ids, by default the last, i.e., nfiles + 1.
       integer, allocatable, target :: face_domain(:, :), facebnd_domain(:, :), edge_domain(:, :), node_domain(:, :), netedge_domain(:, :) !< Global face/edge/node numbers and their domain number.
@@ -232,7 +232,7 @@ contains
 !netface_g2c(:)
       integer :: id_flownodedomain, id_flownodeglobnr, id_edgefaces, id_netfacenodes, id_edgenodes, id_netedgefaces, id_netfaceedges
       integer :: ierri
-      integer :: maxlen, nlen, plen, mlen, ii, id, iv, it, itm, ip, ik, is, ie, ntsel, ndims, nvardims, vartype, nsedtotsel, nsedsussel
+      integer :: maxlen, nlen, plen, mlen, ii, id, iv, it, itm, ip, ik, is, ie, ntsel, ndims, nvardims, vartype, nsedtotsel, nsedsussel, ntwosel
       integer :: netfacemaxnodesg, numkt, lnxt, ndxt, numlt
       integer, allocatable :: ndxc(:), lnxc(:), numkc(:), numlc(:), ndx_bndc(:) ! number of ndx, lnx,... of all input files on a certain mesh
       integer :: ndxMax, lnxMax, numkMax, numlMax, ndx_bndMax
@@ -328,6 +328,7 @@ contains
       double precision, allocatable :: timestep(:)
       double precision, allocatable :: morft(:)
       double precision, allocatable :: morfac(:)
+      double precision, allocatable :: sedavgtim(:)
       logical :: isfound, needshift, exist
       integer :: size_btmp
       character(len=1) :: answer
@@ -374,7 +375,6 @@ contains
 
       id_time = -1
       id_timestep = -1
-      id_dimTwo = -1
       nMeshOld = 1 ! For old format input file, the number of meshes is 1
       jasedmor = 0
       jamorfac = 0
@@ -581,10 +581,13 @@ contains
       call realloc(id_strlendim, nfiles + 1, keepExisting=.false., fill=-1)
       call realloc(id_frac_name, nfiles + 1, keepExisting=.false., fill=-1)
       call realloc(id_susfrac_name, nfiles + 1, keepExisting=.false., fill=-1)
-
+      call realloc(id_dimTwo, nfiles + 1, keepExisting=.false., fill=-1)
+      call realloc(id_sedavgtim, nfiles + 1, keepExisting=.false., fill=-1)
+      
       call realloc(nt, nfiles + 1, keepExisting=.false., fill=0)
       call realloc(nsedtot, nfiles + 1, keepExisting=.false., fill=0)
       call realloc(nsedsus, nfiles + 1, keepExisting=.false., fill=0)
+      call realloc(ntwo, nfiles + 1, keepExisting=.false., fill=0)
       call realloc(ndx, (/maxTopodim, nfiles + 1/), keepExisting=.false., fill=0)
       call realloc(lnx, (/maxTopodim, nfiles + 1/), keepExisting=.false., fill=0)
       call realloc(ndxg, (/maxTopodim, nfiles + 1/), keepExisting=.false., fill=0)
@@ -798,6 +801,10 @@ contains
                         id_nlyrdim(itopo, ii) = id
                         dimids(id, itopo, ii) = id
                         cycle
+                     else if (strcmpi(dimname, 'Two')) then
+                        id_dimTwo(ii) = id
+                        dimids(id, itopo, ii) = id
+                        ntwo(ii) = nlen
                      end if
                      ! Check if this dimension is related to mesh imesh
                      isOnMesh = ionc_check_dim_on_a_mesh(ioncids(ii), imesh, topodimTmp, id)
@@ -1299,6 +1306,15 @@ contains
                   ierr = ncu_copy_atts(ncids(ifileScan), ncids(noutfile), id_morfac(ifileScan), id_morfac(noutfile))
                   if (isNetCDF4) then
                      ierr = ncu_copy_chunking_deflate(ncids(ifileScan), ncids(noutfile), id_morfac(ifileScan), id_morfac(noutfile))
+                  end if
+               end if
+               
+               ierr = nf90_inq_varid(ncids(ifileScan), 'sedAvgTim', id_sedavgtim(ifileScan))
+               if  (ierr == nf90_noerr) then
+                  ierr = nf90_def_var(ncids(noutfile), 'sedAvgTim', nf90_double, id_dimTwo(noutfile), id_sedavgtim(noutfile))
+                  ierr = ncu_copy_atts(ncids(ifileScan), ncids(noutfile), id_sedavgtim(ifileScan), id_sedavgtim(noutfile))
+                  if (isNetCDF4) then
+                      ierr = ncu_copy_chunking_deflate(ncids(ifileScan), ncids(noutfile), id_sedavgtim(ifileScan), id_sedavgtim(noutfile))
                   end if
                end if
             end if
@@ -1992,8 +2008,8 @@ contains
                   nlen = maxval(netfacemaxnodes)
                end if
 
-               if (jaugrid == 1 .and. maxTopodim == 2 .and. dimname == 'Two' .and. id_dimTwo > 0) then ! mesh1d and mesh2d share the same dimension "Two", and it has been defined in the output file
-                  dimids(id, itopo, noutfile) = id_dimTwo
+               if (jaugrid == 1 .and. maxTopodim == 2 .and. dimname == 'Two' .and. id_dimTwo(ifileScan) > 0) then ! mesh1d and mesh2d share the same dimension "Two", and it has been defined in the output file
+                  dimids(id, itopo, noutfile) = id_dimTwo(ifileScan)
                   cycle
                end if
 
@@ -2005,7 +2021,7 @@ contains
                      ' from `'//trim(infiles(ifileScan))//''' into output file `'//trim(outfile)//'''. Error: ', ierr
                   if (.not. verbose_mode) goto 888
                else if (dimname == 'Two') then
-                  id_dimTwo = dimids(id, itopo, noutfile)
+                  id_dimTwo(noutfile) = dimids(id, itopo, noutfile)
                else if (dimname == 'nSedTot') then
                   id_sedtotdim(itopo, noutfile) = dimids(id, itopo, noutfile)
                else if (dimname == 'nSedSus') then
@@ -2111,6 +2127,13 @@ contains
          ierr = ncu_copy_atts(ncids(ifileScan), ncids(noutfile), id_susfrac_name(ifileScan), id_susfrac_name(noutfile))
          if (isNetCDF4) then
             ierr = ncu_copy_chunking_deflate(ncids(ifileScan), ncids(noutfile), id_susfrac_name(ifileScan), id_susfrac_name(noutfile))
+         end if
+                  
+         ierr = nf90_inq_varid(ncids(ifileScan), 'sedAvgTim', id_sedavgtim(ifileScan))
+         ierr = nf90_def_var(ncids(noutfile), 'sedAvgTim', nf90_double, id_dimTwo(noutfile), id_sedavgtim(noutfile))
+         ierr = ncu_copy_atts(ncids(ifileScan), ncids(noutfile), id_sedavgtim(ifileScan), id_sedavgtim(noutfile))
+         if (isNetCDF4) then
+            ierr = ncu_copy_chunking_deflate(ncids(ifileScan), ncids(noutfile), id_sedavgtim(ifileScan), id_sedavgtim(noutfile))
          end if
       end if
       
@@ -2339,6 +2362,12 @@ contains
              ierr = nf90_get_var(ncids(ifileScan), id_susfrac_name(ifileScan), sussedfrac_name(it), start=(/1, it/), count=(/nlen, 1/))
          end do
          ierr = nf90_put_var(ncids(noutfile), id_susfrac_name(noutfile), sussedfrac_name)
+         
+         ntwosel = ntwo(ifileScan)
+         ntwo(noutfile) = ntwosel
+         allocate (sedavgtim(ntwosel))
+         ierr = nf90_get_var(ncids(ifileScan), id_sedavgtim(ifileScan), sedavgtim)
+         ierr = nf90_put_var(ncids(noutfile), id_sedavgtim(noutfile), sedavgtim)
       end if
       
       ! 6b. A loop on meshe topology to write the merged variables to the output file.
