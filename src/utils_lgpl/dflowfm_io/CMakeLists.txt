@@ -20,4 +20,3 @@ option(DFLOWFM_IO_BUILD_WRAPPER_PACKAGES
 add_subdirectory(dflowfm_ini_parser)
 add_subdirectory(dflowfm_io)
 add_subdirectory(dflowfm_io_api)
-add_subdirectory(dflowfm_io_tool)
