@@ -53,15 +53,6 @@ namespace dflowfm_io
             }
         }
 
-        std::string GetCurrentTimeString()
-        {
-            const auto now = std::chrono::system_clock::now();
-            const auto nowSeconds = std::chrono::floor<std::chrono::seconds>(now);
-            const auto time = std::chrono::zoned_time{std::chrono::current_zone(), nowSeconds};
-
-            return std::format("{:%H:%M:%S, %d-%m-%Y}", time);
-        }
-
         ini::FloatFormat GetFloatFormat(const PropertySchema& schema)
         {
             if (schema.format == FormatType::Fixed)
@@ -181,11 +172,6 @@ namespace dflowfm_io
         for (const auto& sectionSchema : schema.Sections())
         {
             auto& iniSection = iniData.AddSection(sectionSchema.name);
-
-            if (iniData.GetSections().size() == 1)
-            {
-                iniSection.AddComment(std::format("Generated on {}\n", GetCurrentTimeString()));
-            }
 
             for (const auto& propertySchema : sectionSchema.properties)
             {

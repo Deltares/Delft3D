@@ -630,27 +630,14 @@ namespace dflowfm_io::test
     // Convert MduData → IniData — comments
     // -------------------------------------------------------------------------
 
-    TEST_F(MduConverterTest, ConvertMduData_FullyCompliantInput_FirstSectionHasCommentBlock)
+    TEST_F(MduConverterTest, ConvertMduData_FullyCompliantInput_SectionsHaveNoCommentBlock)
     {
         MduData mduData = TestMduData();
 
         const ini::IniData iniData = MduConverter::Convert(mduData, schema);
 
-        ASSERT_FALSE(iniData.GetSections().empty());
-        const auto& firstSection = iniData.GetSections()[0];
-        EXPECT_FALSE(firstSection.GetComments().empty());
-    }
-
-    TEST_F(MduConverterTest, ConvertMduData_FullyCompliantInput_NonFirstSectionsHaveNoCommentBlock)
-    {
-        MduData mduData = TestMduData();
-
-        const ini::IniData iniData = MduConverter::Convert(mduData, schema);
-
-        const auto sections = iniData.GetSections();
-        ASSERT_GT(sections.size(), 1);
-        for (auto it = std::next(sections.begin()); it != sections.end(); ++it)
-            EXPECT_TRUE(it->GetComments().empty()) << "Unexpected comment block on section: " << it->GetName();
+        for (const auto& section : iniData.GetSections())
+            EXPECT_TRUE(section.GetComments().empty()) << "Unexpected comment block on section: " << section.GetName();
     }
 
     TEST_F(MduConverterTest, ConvertMduData_FullyCompliantInput_AllPropertiesHaveComment)
