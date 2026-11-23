@@ -63,34 +63,48 @@ For the official Doxygen user guide, see: https://www.doxygen.nl/manual/starting
 
 ## Exchange responsibilities
 
-- [csumo_data.hpp](../include/csumo_data.hpp) defines C-SUMO settings, FF2NF input,
+Utility headers live in [include/utils/](../include/utils/), with corresponding
+implementations in [src/utils/](../src/utils/). They are part of `pre_c_sumo_lib`;
+include them using paths such as `utils/file_io.hpp`. Their unit tests are in
+[test/utils/](../test/utils/).
+
+Project code uses `pre_c_sumo`, with C-SUMO and preCICE components in
+`pre_c_sumo::c_sumo` and `pre_c_sumo::precice`, respectively. Conversions
+between them remain in `pre_c_sumo`. Shared helpers and I/O error types belong
+to `pre_c_sumo::utils`, with file operations in `pre_c_sumo::utils::file_io`
+and error types in `pre_c_sumo::utils::io_errors`. Helpers used only within one
+source file use anonymous namespaces inside their owning project namespace;
+shared interfaces are declared in headers.
+The C-SUMO and preCICE headers, sources and tests are grouped in corresponding
+`csumo/` and `precice/` directories.
+
+- [csumo/data.hpp](../include/csumo/data.hpp) defines C-SUMO settings, FF2NF input,
   and NF2FF result records. Settings XML passed through to FF2NF is stored as owned text.
-- [precice_data.hpp](../include/precice_data.hpp) defines preCICE mesh mappings,
+- [precice/data.hpp](../include/precice/data.hpp) defines preCICE mesh mappings,
   interleaved buffers, quantity identifiers, and sink/source mesh registration data.
   Neither data header depends on the preCICE SDK or on a reader/writer.
   Their types live in `pre_c_sumo::c_sumo` and `pre_c_sumo::precice`, respectively.
-- [precice_to_csumo.hpp](../include/precice_to_csumo.hpp) converts received mesh
-  buffers into FF2NF data. [csumo_to_precice.hpp](../include/csumo_to_precice.hpp)
-  creates meshes from sampling locations and converts NF2FF records into
+- [conversions.hpp](../include/conversions.hpp) converts received mesh
+  buffers into FF2NF data, creates meshes from sampling locations, and converts NF2FF records into
   sink/source buffers. These conversions do not parse XML or communicate, and
   report invalid mappings or sample buffers as conversion errors.
-- [csumo_diffuser.hpp](../include/csumo_diffuser.hpp) handles DESA geometry,
+- [csumo/diffuser.hpp](../include/csumo/diffuser.hpp) handles DESA geometry,
   independently of transport and XML parsing.
-- [csumo_settings_reader.hpp](../include/csumo_settings_reader.hpp) and
-  [csumo_nf2ff_reader.hpp](../include/csumo_nf2ff_reader.hpp) parse XML strings into data.
-  [csumo_ff2nf_writer.hpp](../include/csumo_ff2nf_writer.hpp) validates and generates XML only.
-- [file_io.hpp](../include/file_io.hpp) reads text and writes
+- [csumo/settings_reader.hpp](../include/csumo/settings_reader.hpp) and
+  [csumo/nf2ff_reader.hpp](../include/csumo/nf2ff_reader.hpp) parse XML strings into data.
+  [csumo/ff2nf_writer.hpp](../include/csumo/ff2nf_writer.hpp) validates and generates XML only.
+- [file_io.hpp](../include/utils/file_io.hpp) reads text and writes
   already-serialized content. Writing creates parent directories and refuses to
-  overwrite existing files. [csumo_file_paths.hpp](../include/csumo_file_paths.hpp)
+  overwrite existing files. [csumo/file_paths.hpp](../include/csumo/file_paths.hpp)
   provides the exchange filename policy without accessing the filesystem.
-- [xml_parsing_utils.hpp](../include/xml_parsing_utils.hpp) provides shared XML parsing helpers;
-  C-SUMO-specific point parsing belongs to [csumo_xml_utils.hpp](../include/csumo_xml_utils.hpp).
-- [precice_exchange.hpp](../include/precice_exchange.hpp) handles preCICE reads
-  and writes. [precice_sink_source_connections.hpp](../include/precice_sink_source_connections.hpp)
+- [xml_parsing.hpp](../include/utils/xml_parsing.hpp) provides shared XML parsing helpers;
+  C-SUMO-specific parsing belongs to [csumo/xml.hpp](../include/csumo/xml.hpp).
+- [precice/exchange.hpp](../include/precice/exchange.hpp) handles preCICE reads
+  and writes. [precice/sink_source_connections.hpp](../include/precice/sink_source_connections.hpp)
   maintains aligned sink/source buffers;
   transport clears those buffers after a successful write.
 
-The workflow in [csumo_exchange.cpp](../src/csumo_exchange.cpp) explicitly performs
+The workflow in [csumo/exchange.cpp](../src/csumo/exchange.cpp) explicitly performs
 conversion, XML generation, and file writing as separate steps. NF2FF read/parse
 errors are returned to the caller rather than skipping a diffuser and shifting
 the remaining mappings.

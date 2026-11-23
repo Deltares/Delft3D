@@ -7,11 +7,11 @@
 #include <vector>
 #include <map>
 
-#include "csumo_settings_reader.hpp"
-#include "precice_sink_source_connections.hpp"
-#include "csumo_exchange.hpp"
-#include "csumo_to_precice.hpp"
-#include "precice_exchange.hpp"
+#include "csumo/settings_reader.hpp"
+#include "precice/sink_source_connections.hpp"
+#include "csumo/exchange.hpp"
+#include "conversions.hpp"
+#include "precice/exchange.hpp"
 
 namespace pre_c_sumo
 {

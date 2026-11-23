@@ -1,43 +1,43 @@
 set(source_files
     pre_c_sumo_lib.cpp
-    precice_sink_source_connections.cpp
-    csumo_exchange.cpp
-    precice_to_csumo.cpp
-    csumo_to_precice.cpp
-    csumo_diffuser.cpp
-    csumo_file_paths.cpp
-    precice_data.cpp
-    precice_exchange.cpp
-    file_io.cpp
-    csumo_xml_utils.cpp
-    csumo_settings_reader.cpp
-    csumo_ff2nf_writer.cpp
-    csumo_nf2ff_reader.cpp
-    xml_parsing_utils.cpp
+    conversions.cpp
+    csumo/diffuser.cpp
+    csumo/exchange.cpp
+    csumo/ff2nf_writer.cpp
+    csumo/file_paths.cpp
+    csumo/nf2ff_reader.cpp
+    csumo/settings_reader.cpp
+    csumo/xml.cpp
+    precice/data.cpp
+    precice/exchange.cpp
+    precice/sink_source_connections.cpp
+    utils/file_io.cpp
+    utils/xml_parsing.cpp
 )
 set(include_dir ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 set(header_files
     ${include_dir}/pre_c_sumo_lib.hpp
-    ${include_dir}/precice_sink_source_connections.hpp
-    ${include_dir}/csumo_exchange.hpp
-    ${include_dir}/precice_to_csumo.hpp
-    ${include_dir}/csumo_to_precice.hpp
-    ${include_dir}/csumo_diffuser.hpp
-    ${include_dir}/csumo_file_paths.hpp
-    ${include_dir}/csumo_data.hpp
-    ${include_dir}/precice_data.hpp
-    ${include_dir}/precice_exchange.hpp
-    ${include_dir}/file_io.hpp
-    ${include_dir}/io_errors.hpp
-    ${include_dir}/csumo_xml_utils.hpp
-    ${include_dir}/csumo_settings_reader.hpp
-    ${include_dir}/monadic_utils.hpp
-    ${include_dir}/csumo_ff2nf_writer.hpp
-    ${include_dir}/csumo_nf2ff_reader.hpp
-    ${include_dir}/xml_parsing_utils.hpp
+    ${include_dir}/conversions.hpp
+    ${include_dir}/csumo/data.hpp
+    ${include_dir}/csumo/diffuser.hpp
+    ${include_dir}/csumo/exchange.hpp
+    ${include_dir}/csumo/ff2nf_writer.hpp
+    ${include_dir}/csumo/file_paths.hpp
+    ${include_dir}/csumo/nf2ff_reader.hpp
+    ${include_dir}/csumo/settings_reader.hpp
+    ${include_dir}/csumo/xml.hpp
+    ${include_dir}/precice/data.hpp
+    ${include_dir}/precice/exchange.hpp
+    ${include_dir}/precice/sink_source_connections.hpp
+)
+set(utility_headers
+    ${include_dir}/utils/file_io.hpp
+    ${include_dir}/utils/io_errors.hpp
+    ${include_dir}/utils/monadic.hpp
+    ${include_dir}/utils/xml_parsing.hpp
 )
 
-add_library(pre_c_sumo_lib ${source_files} ${header_files})
+add_library(pre_c_sumo_lib ${source_files} ${header_files} ${utility_headers})
 
 target_link_libraries(pre_c_sumo_lib PRIVATE
     compiler_warnings_settings
@@ -76,6 +76,7 @@ endif()
 
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files} main.cpp)
+source_group(TREE ${include_dir} PREFIX "Header Files" FILES ${header_files} ${utility_headers})
 set_target_properties(preC-SUMO pre_c_sumo_lib PROPERTIES FOLDER tools_gpl/pre_c_sumo)
 
 install(TARGETS preC-SUMO RUNTIME DESTINATION bin)

@@ -7,8 +7,6 @@
 
 #include "pre_c_sumo_lib.hpp"
 
-namespace po = boost::program_options;
-
 int main(int argc, char** argv)
 {
     std::string csumo_settings_file_name;

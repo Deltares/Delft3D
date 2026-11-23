@@ -80,14 +80,14 @@ For the detailed per-step swimlane view, see \ref pre_c_sumo::run in the API ref
 \section code_map Code Entry Points
 Main implementation entry points:
 - \ref pre_c_sumo::run in pre_c_sumo_lib.hpp / pre_c_sumo_lib.cpp
-- \ref pre_c_sumo::c_sumo::readSettingsFile in csumo_exchange.hpp / csumo_exchange.cpp
-- \ref pre_c_sumo::precice::receiveFFData in precice_exchange.hpp / precice_exchange.cpp
-- \ref pre_c_sumo::c_sumo::writeFF2NFFiles in csumo_exchange.hpp / csumo_exchange.cpp
-- \ref pre_c_sumo::c_sumo::waitForNF2FFFiles in csumo_exchange.hpp / csumo_exchange.cpp
-- \ref pre_c_sumo::c_sumo::readNF2FFFiles in csumo_exchange.hpp / csumo_exchange.cpp
-- \ref pre_c_sumo::convertPreciceToCSumo in precice_to_csumo.hpp / precice_to_csumo.cpp
-- \ref pre_c_sumo::convertCSumoToPrecice in csumo_to_precice.hpp / csumo_to_precice.cpp
-- \ref pre_c_sumo::precice::writeSinkSourceConnections in precice_exchange.hpp / precice_exchange.cpp
+- \ref pre_c_sumo::c_sumo::readSettingsFile in csumo/exchange.hpp / csumo/exchange.cpp
+- \ref pre_c_sumo::precice::receiveFFData in precice/exchange.hpp / precice/exchange.cpp
+- \ref pre_c_sumo::c_sumo::writeFF2NFFiles in csumo/exchange.hpp / csumo/exchange.cpp
+- \ref pre_c_sumo::c_sumo::waitForNF2FFFiles in csumo/exchange.hpp / csumo/exchange.cpp
+- \ref pre_c_sumo::c_sumo::readNF2FFFiles in csumo/exchange.hpp / csumo/exchange.cpp
+- \ref pre_c_sumo::convertPreciceToCSumo in conversions.hpp / conversions.cpp
+- \ref pre_c_sumo::convertCSumoToPrecice in conversions.hpp / conversions.cpp
+- \ref pre_c_sumo::precice::writeSinkSourceConnections in precice/exchange.hpp / precice/exchange.cpp
 
 \section coding_guidelines Coding Guidelines
 See the project development guidelines in \ref pre_c_sumo_development_guidelines.

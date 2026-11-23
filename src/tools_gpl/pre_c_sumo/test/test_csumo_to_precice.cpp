@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "csumo_to_precice.hpp"
+#include "conversions.hpp"
 
 TEST(CSumoToPreciceTest, Builds2DAnd3DMeshesAndMappingsForDifferentDiffusers)
 {

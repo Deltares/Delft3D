@@ -10,18 +10,18 @@ configure_file(
 
 set(source_files
     test_pre_c_sumo_lib.cpp
-    test_precice_sink_source_connections.cpp
-    test_precice_data.cpp
     test_precice_to_csumo.cpp
     test_csumo_to_precice.cpp
-    test_csumo_diffuser.cpp
-    test_csumo_file_paths.cpp
-    test_file_io.cpp
-    test_csumo_xml_utils.cpp
-    test_csumo_settings_reader.cpp
-    test_csumo_ff2nf_writer.cpp
-    test_csumo_nf2ff_reader.cpp
-    test_xml_parsing_utils.cpp
+    csumo/test_diffuser.cpp
+    csumo/test_file_paths.cpp
+    csumo/test_xml.cpp
+    csumo/test_settings_reader.cpp
+    csumo/test_ff2nf_writer.cpp
+    csumo/test_nf2ff_reader.cpp
+    precice/test_data.cpp
+    precice/test_sink_source_connections.cpp
+    utils/test_file_io.cpp
+    utils/test_xml_parsing.cpp
 )
 
 add_executable(test_pre_c_sumo_lib ${source_files})

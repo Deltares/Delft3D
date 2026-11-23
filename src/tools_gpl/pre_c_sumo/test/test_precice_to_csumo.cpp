@@ -2,8 +2,8 @@
 
 #include <cstddef>
 
-#include "precice_data.hpp"
-#include "precice_to_csumo.hpp"
+#include "precice/data.hpp"
+#include "conversions.hpp"
 
 TEST(PreciceToCSumoTest, ConvertsPointAndLayersAtNonzeroIndices)
 {
