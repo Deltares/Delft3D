@@ -2047,6 +2047,8 @@ contains
 
       integer :: item_index
       logical :: is_in_network
+      real(kind=dp), dimension(:, :), pointer :: history_values
+      integer :: history_row, history_column
 
       integer :: iconst
       integer :: itrac
@@ -2062,6 +2064,9 @@ contains
       field_name_original = char_array_to_string(c_field_name)
       field_name = str_tolower(field_name_original)
       x = c_null_ptr
+      history_values => null()
+      history_row = 0
+      history_column = 0
 
       select case (var_name)
          ! PUMPS
@@ -2078,10 +2083,29 @@ contains
                x = c_loc(qpump(item_index))
             end if
             return
-         case ("discharge", "water_level_up", "water_level_down", "head_difference")
-            call get_structure_history()
+         case ("discharge")
+            history_row = IVAL_DIS
+         case ("water_level_up")
+            history_row = IVAL_S1UP
+         case ("water_level_down")
+            history_row = IVAL_S1DN
+         case ("head_difference")
+            history_row = IVAL_HEAD
+         case default
             return
          end select
+         if (ti_his > 0.0_dp .and. his_write_settings%pump > 0 .and. allocated(valpump)) then
+            history_values => valpump
+            if (is_in_network) then
+               if (allocated(pumpsWithLevels)) then
+                  if (npumpsg > 0 .and. npumpsg <= size(pumpsWithLevels)) then
+                     history_column = findloc(pumpsWithLevels(1:npumpsg), item_index, dim=1)
+                  end if
+               end if
+            else
+               history_column = item_index
+            end if
+         end if
 
          ! WEIRS
       case ("weirs")
@@ -2101,11 +2125,42 @@ contains
          case ("lat_contr_coeff")
             ! TODO: RTC: AvD: get this from weir params
             return
-         case ("discharge", "velocity", "flow_area", "water_level_up", "water_level_down", &
-               "head_difference", "force_difference", "water_level_at_crest")
-            call get_structure_history()
+         case ("discharge")
+            history_row = IVAL_DIS
+         case ("velocity")
+            history_row = IVAL_VEL
+         case ("flow_area")
+            history_row = IVAL_AREA
+         case ("water_level_up")
+            history_row = IVAL_S1UP
+         case ("water_level_down")
+            history_row = IVAL_S1DN
+         case ("head_difference")
+            history_row = IVAL_HEAD
+         case ("force_difference")
+            history_row = IVAL_FORCEDIF
+         case ("water_level_at_crest")
+            history_row = IVAL_S1ONCREST
+         case default
             return
          end select
+         if (ti_his > 0.0_dp .and. his_write_settings%weir > 0 .and. allocated(valweirgen)) then
+            history_values => valweirgen
+            if (is_in_network) then
+               if (associated(network%sts%weirIndices)) then
+                  if (network%sts%numWeirs > 0 .and. network%sts%numWeirs <= size(network%sts%weirIndices)) then
+                     history_column = findloc(network%sts%weirIndices(1:network%sts%numWeirs), item_index, dim=1)
+                  end if
+               end if
+            else if (allocated(weir2cgen)) then
+               if (nweirgen > 0 .and. nweirgen <= size(weir2cgen)) then
+                  history_column = findloc(weir2cgen(1:nweirgen), item_index, dim=1)
+               end if
+               if (field_name == "force_difference" .or. field_name == "water_level_at_crest") then
+                  history_column = 0
+               end if
+            end if
+         end if
 
          ! ORIFICES
       case ("orifices")
@@ -2125,11 +2180,36 @@ contains
                x = get_crest_level_c_loc(network%sts%struct(item_index))
             end if
             return
-         case ("discharge", "velocity", "flow_area", "water_level_up", "water_level_down", &
-               "head_difference", "opening_height", "force_difference", "water_level_at_crest")
-            call get_structure_history()
+         case ("discharge")
+            history_row = IVAL_DIS
+         case ("velocity")
+            history_row = IVAL_VEL
+         case ("flow_area")
+            history_row = IVAL_AREA
+         case ("water_level_up")
+            history_row = IVAL_S1UP
+         case ("water_level_down")
+            history_row = IVAL_S1DN
+         case ("head_difference")
+            history_row = IVAL_HEAD
+         case ("opening_height")
+            history_row = IVAL_OPENH
+         case ("force_difference")
+            history_row = IVAL_FORCEDIF
+         case ("water_level_at_crest")
+            history_row = IVAL_S1ONCREST
+         case default
             return
          end select
+         if (ti_his > 0.0_dp .and. his_write_settings%orifice > 0 .and. &
+             allocated(valorifgen) .and. is_in_network) then
+            history_values => valorifgen
+            if (associated(network%sts%orificeIndices)) then
+               if (network%sts%numOrifices > 0 .and. network%sts%numOrifices <= size(network%sts%orificeIndices)) then
+                  history_column = findloc(network%sts%orificeIndices(1:network%sts%numOrifices), item_index, dim=1)
+               end if
+            end if
+         end if
 
          ! GATES
       case ("gates")
@@ -2169,10 +2249,31 @@ contains
          case ("gateopeninghorizontaldirection")
             ! TODO: RTC: AvD: get this from gate/genstru params
             return
-         case ("discharge", "water_level_up", "water_level_down", "opening_height")
-            call get_structure_history()
+         case ("discharge")
+            history_row = IVAL_DIS
+         case ("water_level_up")
+            history_row = IVAL_S1UP
+         case ("water_level_down")
+            history_row = IVAL_S1DN
+         case ("opening_height")
+            history_row = IVAL_GATE_FLOWH
+         case default
             return
          end select
+         if (ti_his > 0.0_dp .and. his_write_settings%gate > 0 .and. allocated(valgategen)) then
+            history_values => valgategen
+            if (is_in_network) then
+               if (associated(network%sts%gateIndices)) then
+                  if (network%sts%numGates > 0 .and. network%sts%numGates <= size(network%sts%gateIndices)) then
+                     history_column = findloc(network%sts%gateIndices(1:network%sts%numGates), item_index, dim=1)
+                  end if
+               end if
+            else if (allocated(gate2cgen)) then
+               if (ngategen > 0 .and. ngategen <= size(gate2cgen)) then
+                  history_column = findloc(gate2cgen(1:ngategen), item_index, dim=1)
+               end if
+            end if
+         end if
 
          ! GENERALSTRUCTURES
       case ("generalstructures")
@@ -2213,11 +2314,47 @@ contains
          case ("gateopeninghorizontaldirection")
             ! TODO: RTC: AvD: get this from gate/genstru params
             return
-         case ("discharge", "velocity", "flow_area", "water_level_up", "water_level_down", &
-               "head_difference", "opening_height", "force_difference", "water_level_at_crest")
-            call get_structure_history()
+         case ("discharge")
+            history_row = IVAL_DIS
+         case ("velocity")
+            history_row = IVAL_VEL
+         case ("flow_area")
+            history_row = IVAL_AREA
+         case ("water_level_up")
+            history_row = IVAL_S1UP
+         case ("water_level_down")
+            history_row = IVAL_S1DN
+         case ("head_difference")
+            history_row = IVAL_HEAD
+         case ("opening_height")
+            history_row = IVAL_OPENH
+         case ("force_difference")
+            history_row = IVAL_FORCEDIF
+         case ("water_level_at_crest")
+            history_row = IVAL_S1ONCREST
+         case default
             return
          end select
+         if (ti_his > 0.0_dp .and. his_write_settings%cgen > 0 .and. allocated(valgenstru)) then
+            history_values => valgenstru
+            if (is_in_network) then
+               if (associated(network%sts%generalStructureIndices)) then
+                  if (network%sts%numGeneralStructures > 0 .and. &
+                      network%sts%numGeneralStructures <= size(network%sts%generalStructureIndices)) then
+                     history_column = findloc(network%sts%generalStructureIndices(1:network%sts%numGeneralStructures), &
+                                              item_index, dim=1)
+                  end if
+               end if
+            else if (allocated(genstru2cgen)) then
+               if (ngenstru > 0 .and. ngenstru <= size(genstru2cgen)) then
+                  history_column = findloc(genstru2cgen(1:ngenstru), item_index, dim=1)
+               end if
+               if (field_name == "opening_height" .or. field_name == "force_difference" .or. &
+                   field_name == "water_level_at_crest") then
+                  history_column = 0
+               end if
+            end if
+         end if
 
          ! CULVERTS
       case ("culverts")
@@ -2232,11 +2369,36 @@ contains
                x = get_valve_opening_height_c_loc(network%sts%struct(item_index))
             end if
             return
-         case ("discharge", "velocity", "flow_area", "water_level_up", "water_level_down", &
-               "head_difference", "opening_height", "crest_level", "gate_lower_edge_level")
-            call get_structure_history()
+         case ("discharge")
+            history_row = IVAL_DIS
+         case ("velocity")
+            history_row = IVAL_VEL
+         case ("flow_area")
+            history_row = IVAL_AREA
+         case ("water_level_up")
+            history_row = IVAL_S1UP
+         case ("water_level_down")
+            history_row = IVAL_S1DN
+         case ("head_difference")
+            history_row = IVAL_HEAD
+         case ("opening_height")
+            history_row = IVAL_CL_OPENH
+         case ("crest_level")
+            history_row = IVAL_CL_CRESTL
+         case ("gate_lower_edge_level")
+            history_row = IVAL_CL_EDGEL
+         case default
             return
          end select
+         if (ti_his > 0.0_dp .and. his_write_settings%culvert > 0 .and. &
+             allocated(valculvert) .and. is_in_network) then
+            history_values => valculvert
+            if (associated(network%sts%culvertIndices)) then
+               if (network%sts%numCulverts > 0 .and. network%sts%numCulverts <= size(network%sts%culvertIndices)) then
+                  history_column = findloc(network%sts%culvertIndices(1:network%sts%numCulverts), item_index, dim=1)
+               end if
+            end if
+         end if
 
          ! LONGCULVERTS
       case ("longculverts")
@@ -2470,137 +2632,20 @@ contains
          end select
       end select ! var_name
 
-      ! check automatically generated interface
-      ! TODO: AvD: include "bmi_get_compound_field.inc"
-
-   contains
-
-      subroutine get_structure_history()
-         real(kind=dp), dimension(:, :), pointer :: values
-         integer :: row, column
-
-         values => null()
-         column = 0
-         row = 0
-         if (ti_his > 0.0_dp) then
-            select case (var_name)
-            case ("pumps")
-               if (his_write_settings%pump > 0 .and. allocated(valpump)) then
-                  values => valpump
-                  if (is_in_network) then
-                     if (allocated(pumpsWithLevels)) then
-                        column = history_column(pumpsWithLevels, npumpsg)
-                     end if
-                  else
-                     column = item_index
-                  end if
-               end if
-            case ("weirs")
-               if (his_write_settings%weir > 0 .and. allocated(valweirgen)) then
-                  values => valweirgen
-                  if (is_in_network) then
-                     if (associated(network%sts%weirIndices)) then
-                        column = history_column(network%sts%weirIndices, network%sts%numWeirs)
-                     end if
-                  else if (allocated(weir2cgen)) then
-                     column = history_column(weir2cgen, nweirgen)
-                     if (field_name == "force_difference" .or. field_name == "water_level_at_crest") then
-                        column = 0
-                     end if
-                  end if
-               end if
-            case ("orifices")
-               if (his_write_settings%orifice > 0 .and. allocated(valorifgen) .and. is_in_network) then
-                  values => valorifgen
-                  if (associated(network%sts%orificeIndices)) then
-                     column = history_column(network%sts%orificeIndices, network%sts%numOrifices)
-                  end if
-               end if
-            case ("gates")
-               if (his_write_settings%gate > 0 .and. allocated(valgategen)) then
-                  values => valgategen
-                  if (is_in_network) then
-                     if (associated(network%sts%gateIndices)) then
-                        column = history_column(network%sts%gateIndices, network%sts%numGates)
-                     end if
-                  else if (allocated(gate2cgen)) then
-                     column = history_column(gate2cgen, ngategen)
-                  end if
-               end if
-            case ("generalstructures")
-               if (his_write_settings%cgen > 0 .and. allocated(valgenstru)) then
-                  values => valgenstru
-                  if (is_in_network) then
-                     if (associated(network%sts%generalStructureIndices)) then
-                        column = history_column(network%sts%generalStructureIndices, network%sts%numGeneralStructures)
-                     end if
-                  else if (allocated(genstru2cgen)) then
-                     column = history_column(genstru2cgen, ngenstru)
-                     if (field_name == "opening_height" .or. field_name == "force_difference" .or. &
-                         field_name == "water_level_at_crest") then
-                        column = 0
-                     end if
-                  end if
-               end if
-            case ("culverts")
-               if (his_write_settings%culvert > 0 .and. allocated(valculvert) .and. is_in_network) then
-                  values => valculvert
-                  if (associated(network%sts%culvertIndices)) then
-                     column = history_column(network%sts%culvertIndices, network%sts%numCulverts)
-                  end if
-               end if
-            end select
-         end if
-
-         select case (field_name)
-         case ("discharge")
-            row = IVAL_DIS
-         case ("velocity")
-            row = IVAL_VEL
-         case ("flow_area")
-            row = IVAL_AREA
-         case ("water_level_up")
-            row = IVAL_S1UP
-         case ("water_level_down")
-            row = IVAL_S1DN
-         case ("head_difference")
-            row = IVAL_HEAD
-         case ("opening_height")
-            row = IVAL_OPENH
-            if (var_name == "gates") then
-               row = IVAL_GATE_FLOWH
-            else if (var_name == "culverts") then
-               row = IVAL_CL_OPENH
-            end if
-         case ("force_difference")
-            row = IVAL_FORCEDIF
-         case ("water_level_at_crest")
-            row = IVAL_S1ONCREST
-         case ("crest_level")
-            row = IVAL_CL_CRESTL
-         case ("gate_lower_edge_level")
-            row = IVAL_CL_EDGEL
-         end select
-
-         if (associated(values)) then
-            if (column > 0 .and. column <= size(values, 2) .and. row > 0 .and. row <= size(values, 1)) then
-               x = c_loc(values(row, column))
+      if (history_row > 0) then
+         if (associated(history_values)) then
+            if (history_column > 0 .and. history_column <= size(history_values, 2) .and. &
+                history_row <= size(history_values, 1)) then
+               x = c_loc(history_values(history_row, history_column))
                return
             end if
          end if
          call mess(LEVEL_WARN, 'BMI '//trim(var_name)//'/'//trim(item_name)//'/'//trim(field_name)// &
                    ': structure history value unavailable; check the structure type and history-output settings.')
-      end subroutine get_structure_history
+      end if
 
-      integer function history_column(indices, count) result(column)
-         integer, dimension(:), intent(in) :: indices
-         integer, intent(in) :: count
-
-         column = 0
-         if (count > 0 .and. count <= size(indices)) then
-            column = findloc(indices(1:count), item_index, dim=1)
-         end if
-      end function history_column
+      ! check automatically generated interface
+      ! TODO: AvD: include "bmi_get_compound_field.inc"
 
    end subroutine get_compound_field
 
