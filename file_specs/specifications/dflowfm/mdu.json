@@ -5317,16 +5317,22 @@
                     "description": "Write bottom friction to map file."
                 },
                 {
-                    "key": "wriMap_chezy",
+                    "key": "wriMap_Chezy",
                     "default_value": 0,
                     "value_type": "intbool",
-                    "description": "Write chezy roughness in flow elements to map file."
+                    "description": "Write Chezy roughness in flow elements to map file."
                 },
                 {
-                    "key": "wriMap_chezy_on_flow_links",
+                    "key": "wriMap_Chezy_on_flow_links",
                     "default_value": 0,
                     "value_type": "intbool",
-                    "description": "Write chezy roughness on flow links to map file."
+                    "description": "Write Chezy roughness on flow links to map file."
+                },
+                {
+                    "key": "wriMap_Chezy_on_flow_links_1d_sections",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write 1D main-channel and floodplain Chezy coefficients to the map file; these are not additive parts of the link Chezy coefficient."
                 },
                 {
                     "key": "writePart_domain",
@@ -5350,7 +5356,7 @@
                     "key": "wriMap_input_roughness",
                     "default_value": 0,
                     "value_type": "intbool",
-                    "description": "Write chezy input roughness on flow links to map file."
+                    "description": "Write Chezy input roughness on flow links to map file."
                 },
                 {
                     "key": "wriMap_turbulence",
@@ -5548,7 +5554,13 @@
                     "key": "wriMap_flowarea_au",
                     "default_value": 0,
                     "value_type": "intbool",
-                    "description": "Write low areas au to map file."
+                    "description": "Write total flow area, 1D hydraulic radius and flow width to the map file. Previously it wrote flow areas."
+                },
+                {
+                    "key": "wriMap_flowarea_au_1d_sections",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write main-channel and floodplain flow area, hydraulic radius and flow width to the map file."
                 },
                 {
                     "key": "wriMap_velocity_magnitude",
@@ -5566,7 +5578,18 @@
                     "key": "wriMap_flow_flux_q1_main",
                     "default_value": 0,
                     "value_type": "intbool",
-                    "description": "Write flow flux in main channel to map file."
+                    "description": "Write flow flux in main channel to map file.",
+                    "status": {
+                        "value": "deprecated",
+                        "comment": "Use `[output] wriMap_flowflux_q1_1d_sections` instead.",
+                        "date": "2026-11-18"
+                    }
+                },
+                {
+                    "key": "wriMap_flowflux_q1_1d_sections",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write flow flux in the main channel and both floodplains to the map file."
                 },
                 {
                     "key": "wriMap_interception",

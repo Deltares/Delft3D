@@ -326,6 +326,105 @@
     {
       "type": "added",
       "target": {
+        "section": "output",
+        "property": "wriMap_Chezy_on_flow_links_1d_sections",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "wriMap_flowarea_au_1d_sections",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "wriMap_flowflux_q1_1d_sections",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "output",
+        "property": "wriMap_Chezy",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "Write chezy roughness in flow elements to map file.",
+      "new_value": "Write Chezy roughness in flow elements to map file."
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "output",
+        "property": "wriMap_Chezy_on_flow_links",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "Write chezy roughness on flow links to map file.",
+      "new_value": "Write Chezy roughness on flow links to map file."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "wriMap_flow_flux_q1_main",
+        "enum_value": null
+      },
+      "field": "status.comment",
+      "new_value": "Use `[output] wriMap_flowflux_q1_1d_sections` instead."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "wriMap_flow_flux_q1_main",
+        "enum_value": null
+      },
+      "field": "status.date",
+      "new_value": "2026-11-18"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "output",
+        "property": "wriMap_flow_flux_q1_main",
+        "enum_value": null
+      },
+      "field": "status.value",
+      "old_value": "GA",
+      "new_value": "deprecated"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "output",
+        "property": "wriMap_flowarea_au",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "Write low areas au to map file.",
+      "new_value": "Write total flow area, 1D hydraulic radius and flow width to the map file. Previously it wrote flow areas."
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "output",
+        "property": "wriMap_input_roughness",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "Write chezy input roughness on flow links to map file.",
+      "new_value": "Write Chezy input roughness on flow links to map file."
+    },
+    {
+      "type": "added",
+      "target": {
         "section": "physics",
         "property": "tracerConcentrationMax",
         "enum_value": null

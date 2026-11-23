@@ -729,12 +729,13 @@ This section contains the settings for various output files.
 | `wriMap_numlimdt` | Write numlimdt to map file. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `wriXyz_numlimdt` | Write numlimdt to xyz file This option is useful when a map file is not written. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `wriMap_taucurrent` | Write bottom friction to map file. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `wriMap_chezy` | Write chezy roughness in flow elements to map file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `wriMap_chezy_on_flow_links` | Write chezy roughness on flow links to map file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `wriMap_Chezy` | Write Chezy roughness in flow elements to map file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `wriMap_Chezy_on_flow_links` | Write Chezy roughness on flow links to map file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `wriMap_Chezy_on_flow_links_1d_sections` | Write 1D main-channel and floodplain Chezy coefficients to the map file; these are not additive parts of the link Chezy coefficient. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `writePart_domain` | Write interpreted network file (DFM_interpreted_idomain_\*.nc) containing domain partition info. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `velocityDirectionClassesInterval` | Class map's step size of class values for velocity direction. | `0.0` |  |  |  |
 | `velocityMagnitudeClasses` | Class map's list of class values for velocity magnitudes. | `<empty>` |  |  |  |
-| `wriMap_input_roughness` | Write chezy input roughness on flow links to map file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `wriMap_input_roughness` | Write Chezy input roughness on flow links to map file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `wriMap_turbulence` | Write turbulence to map file. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `wriMap_rain` | Write rainfall rate to map file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `wriMap_wind` | Write winds to map file. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
@@ -767,10 +768,12 @@ This section contains the settings for various output files.
 | `wriMap_waterdepth` | Write water depths to map file. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `wriMap_waterdepth_hu` | Write water depths on u-points to map file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `wriMap_ancillary_variables` | Write ancillary variables attributes to map file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `wriMap_flowarea_au` | Write low areas au to map file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `wriMap_flowarea_au` | Write total flow area, 1D hydraulic radius and flow width to the map file. Previously it wrote flow areas. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `wriMap_flowarea_au_1d_sections` | Write main-channel and floodplain flow area, hydraulic radius and flow width to the map file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `wriMap_velocity_magnitude` | Write cell-center velocity vector magnitude to map file. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `wriMap_velocity_vectorq` | Write cell-center velocity vectors (discharge-based) to map file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `wriMap_flow_flux_q1_main` | Write flow flux in main channel to map file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `wriMap_flow_flux_q1_main` ⚠️ | Write flow flux in main channel to map file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `wriMap_flowflux_q1_1d_sections` | Write flow flux in the main channel and both floodplains to the map file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `wriMap_interception` | Write interception to map file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `wriMap_windstress` | Write wind stress to map file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `wriMap_cdWind` | Write wind friction coeffs to map file. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
@@ -1151,6 +1154,7 @@ The keywords and options listed below are deprecated and will be removed in a fu
 | `[numerics] sobekdfm_relax` | Keyword no longer supported, the provided value is ignored. Use `[numerics] lateral_fixedweir_relax` instead. |
 | `[numerics] vertAdvTypSal` | Use `[numerics] verticalAdvectionType` instead. |
 | `[numerics] vertAdvTypTem` | Use `[numerics] verticalAdvectionType` instead. |
+| `[output] wriMap_flow_flux_q1_main` | Use `[output] wriMap_flowflux_q1_1d_sections` instead. |
 | `[physics] jadelvappos` | Keyword will be removed in a future release. |
 | `[physics] SecchiDepth2` | Use `[physics] SecchiDepthNonPenetrative` instead. |
 | `[physics] SecchiDepth2Fraction` | Use `[physics] SecchiDepthNonPenetrativeFraction` instead. |
