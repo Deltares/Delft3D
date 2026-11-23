@@ -653,8 +653,6 @@ contains
       real(kind=dp), optional, intent(in) :: width1D !< Optional custom width for boundary flow link.
       real(kind=dp), optional, intent(in) :: blDepth !< Optional custom bed level depths below water level boundaries's initial value for boundary points.
       integer      , optional, intent(in) :: num_bc_ini_blocks 
-      character(len=256) :: qidfm !
-      integer :: itpbn
 
       ! Local variables
       character(len=256) :: qidfm
@@ -2550,92 +2548,5 @@ contains
          success = .false.
       end if
    end function check_keyword_zerozbndinflowadvection
-
-   subroutine allocatewindarrays()
-      use m_wind, only: wx, wy
-      use m_flow, only: wdsu, wdsu_x, wdsu_y
-      use m_flowgeom, only: lnx
-      use m_alloc, only: realloc, aerr
-
-      implicit none
-
-      integer :: ierr
-
-      if (.not. allocated(wx)) then
-         allocate (wx(lnx), wy(lnx), wdsu(lnx), wdsu_x(lnx), wdsu_y(lnx), stat=ierr)
-         call aerr('wx(lnx), wy(lnx), wdsu(lnx), wdsu_x(lnx), wdsu_y(lnx)', ierr, lnx)
-         wx = 0.0_dp
-         wy = 0.0_dp
-         wdsu = 0.0_dp
-         wdsu_x = 0.0_dp
-         wdsu_y = 0.0_dp
-      end if
-
-   end subroutine allocatewindarrays
-
-   subroutine det_net2pli_position(pliFile,position)
-     ! Fuction: determines position of network relative to a boundary pli
-     !          position =  1: network on the right/on top of a pli
-     !          position = -1: network on the left /below  of a pli
-     use m_filez,            only: oldfil, doclose
-     use m_polygon
-     use m_reapol,           only: reapol
-     use m_missing
-     use m_GlobalParameters, only: INDTP_2D
-     use m_find_flownode,    only: find_nearest_flownodes
-     use m_flowgeom,         only: xz, yz
-     implicit none
-  
-      character(len=*), intent(in) :: pliFile
-      integer         , intent(out):: position
-      
-      integer                        :: mpli, i_first, i_last, jakdtree ! i_bndpnt
-      real(kind=dp)                  :: xpli_centre, ypli_centre, xbnd_centre, ybnd_centre, vx,vy, wx, wy,cross ! dist, distmin,    
-
-      character(len=5), dimension(1) :: tmpname
-      integer         , dimension(1) :: kbnd_centre
-      real(kind=dp)   , dimension(1) :: x_tmp, y_tmp   
-      
-      ! Read the boundary pli
-      call oldfil(mpli, pliFile)
-      call reapol(mpli, 0)
-      call doclose(mpli)
-      
-      ! determine centre point of boundary pli 
-      i_first = floor(npl/2.0_dp)
-      i_last  = i_first
-      if (mod(npl,2) == 0)  i_last = i_first + 1
-      xpli_centre = (xpl(i_first) + xpl(i_last))/2.0_dp
-      ypli_centre = (ypl(i_first) + ypl(i_last))/2.0_dp
-      
-      ! Determine closest boundary point (probably more ellegant to use find_nearest_flownode, for now keep it simple)
-      tmpname(1)      = 'dummy'
-      x_tmp(1)        = xpli_centre
-      y_tmp(1)        = ypli_centre
-      kbnd_centre(1)  = 0
-      jakdtree        = 0
-      call find_nearest_flownodes(1, x_tmp, y_tmp, tmpname(1),kbnd_centre(1), jakdtree, 1, INDTP_2D)
-      ! Only look for internal 2D points, Boundary pli might be within network
-      xbnd_centre = xz(kbnd_centre(1))
-      ybnd_centre = yz(kbnd_centre(1))
-      
-      ! Determine cross product of pli and centre point bnd
-      ! orientation vector pli
-      vx = xpl(i_first + 1) - xpl(i_first)
-      vy = ypl(i_first + 1) - ypl(i_first)
-      ! orientation vector from centre bnd point to firts pli point
-      wx = xbnd_centre - xpl(i_first)
-      wy = ybnd_centre - ypl(i_first)
-      ! cross product
-      cross = (vx*wy) - (vy*wx)
-      
-      ! cross < 0 ==> Model right of pli or obove pli
-      if (cross < 0.0_dp) then
-         position = 1
-      else if (cross > 0.0_dp) then 
-         position = -1
-      end if
-
-   end subroutine det_net2pli_position
 
 end module fm_external_forcings
