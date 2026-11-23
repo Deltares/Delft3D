@@ -225,8 +225,8 @@ namespace ini::test
 
     INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionToStringDoubleTest,
                              ::testing::Values(std::make_pair(0.0, "0.0"),
-                                               std::make_pair(2.718281828, "2.718282"),
-                                               std::make_pair(-12345.6789, "-12345.68")));
+                                               std::make_pair(2.718281828, "2.718281828"),
+                                               std::make_pair(-12345.6789, "-12345.6789")));
 
     // -------------------------------------------------------------------------
     // ToString - double with FloatFormat

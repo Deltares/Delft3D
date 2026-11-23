@@ -49,7 +49,7 @@ namespace ini
         /// @brief Formats an int without changing its stream representation.
         std::string ToString(int value);
 
-        /// @brief Formats a double using the specified representation.
+        /// @brief Formats a float using the specified representation.
         std::string ToString(float value, FloatFormat format = FloatFormat::General);
 
         /// @brief Formats a double using the specified representation.
@@ -86,19 +86,19 @@ namespace ini
         }
 
         /// @brief Formats booleans as a delimited string.
-        std::string ToMultiValueString(const std::vector<bool>& values,
-                                       BoolFormat format = BoolFormat::TrueFalse, char separator = ' ');
+        std::string ToMultiValueString(const std::vector<bool>& values, BoolFormat format = BoolFormat::TrueFalse,
+                                       char separator = ' ');
 
         /// @brief Formats int values as a delimited string.
         std::string ToMultiValueString(const std::vector<int>& values, char separator = ' ');
 
         /// @brief Formats double values as a delimited string.
-        std::string ToMultiValueString(const std::vector<double>& values,
-                                       FloatFormat format = FloatFormat::General, char separator = ' ');
+        std::string ToMultiValueString(const std::vector<double>& values, FloatFormat format = FloatFormat::General,
+                                       char separator = ' ');
 
         /// @brief Formats float values as a delimited string.
-        std::string ToMultiValueString(const std::vector<float>& values,
-                                       FloatFormat format = FloatFormat::General, char separator = ' ');
+        std::string ToMultiValueString(const std::vector<float>& values, FloatFormat format = FloatFormat::General,
+                                       char separator = ' ');
 
         /// @brief Formats time points as a delimited string using the required date/time format.
         std::string ToMultiValueString(const std::vector<time_point>& values, TimePointFormat format,

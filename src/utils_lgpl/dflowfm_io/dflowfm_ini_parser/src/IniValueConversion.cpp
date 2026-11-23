@@ -82,18 +82,50 @@ namespace ini::conversion
         {
             T result{};
             std::istringstream iss(value);
-            if (!(iss >> result))
-            {
-                throw std::invalid_argument("String '" + value + "' could not be converted to the target type.");
-            }
-
             char remaining;
-            if (iss >> remaining)
+            if (!(iss >> result) || (iss >> remaining))
             {
                 throw std::invalid_argument("String '" + value + "' could not be converted to the target type.");
             }
 
             return result;
+        }
+
+        template <typename T>
+        T ParseFloatingPoint(const std::string& value)
+        {
+            std::string normalized = trim(value);
+            const std::size_t pos = normalized.find_first_of("dD");
+            if (pos != std::string::npos)
+            {
+                normalized[pos] = 'e';
+            }
+
+            return ParseNumber<T>(normalized);
+        }
+
+        template <typename T>
+        std::string FormatFloatingPoint(T value, FloatFormat format)
+        {
+            switch (format)
+            {
+                case FloatFormat::Fixed:
+                    return std::format("{:f}", value);
+                case FloatFormat::Scientific:
+                    return std::format("{:e}", value);
+                case FloatFormat::General:
+                default: {
+                    std::string result = std::format("{}", value);
+                    if (result.find('.') == std::string::npos &&
+                        result.find('e') == std::string::npos &&
+                        result.find('E') == std::string::npos)
+                    {
+                        result += ".0";
+                    }
+
+                    return result;
+                }
+            }
         }
     } // namespace
 
@@ -118,30 +150,9 @@ namespace ini::conversion
         return oss.str();
     }
 
-    std::string ToString(float value, FloatFormat format) { return ToString(static_cast<double>(value), format); }
+    std::string ToString(float value, FloatFormat format) { return FormatFloatingPoint(value, format); }
 
-    std::string ToString(double value, FloatFormat format)
-    {
-        switch (format)
-        {
-            case FloatFormat::Fixed:
-                return std::format("{:f}", value);
-            case FloatFormat::Scientific:
-                return std::format("{:e}", value);
-            case FloatFormat::General:
-            default: {
-                std::string result = std::format("{:.7g}", value);
-
-                if (result.find('.') == std::string::npos &&
-                    result.find('e') == std::string::npos &&
-                    result.find('E') == std::string::npos)
-                {
-                    result += ".0";
-                }
-                return result;
-            }
-        }
-    }
+    std::string ToString(double value, FloatFormat format) { return FormatFloatingPoint(value, format); }
 
     std::string ToString(time_point value, TimePointFormat format)
     {
@@ -176,8 +187,7 @@ namespace ini::conversion
         return JoinValues(values, separator, [format](float value) { return ToString(value, format); });
     }
 
-    std::string ToMultiValueString(const std::vector<time_point>& values, TimePointFormat format,
-                                   char separator)
+    std::string ToMultiValueString(const std::vector<time_point>& values, TimePointFormat format, char separator)
     {
         return JoinValues(values, separator, [format](time_point value) { return ToString(value, format); });
     }
@@ -220,27 +230,13 @@ namespace ini::conversion
     template <>
     double FromString<double>(const std::string& value)
     {
-        std::string normalized = trim(value);
-        const std::size_t pos = normalized.find_first_of("dD");
-        if (pos != std::string::npos)
-        {
-            normalized[pos] = 'e';
-        }
-
-        return ParseNumber<double>(normalized);
+        return ParseFloatingPoint<double>(value);
     }
 
     template <>
     float FromString<float>(const std::string& value)
     {
-        std::string normalized = trim(value);
-        const std::size_t pos = normalized.find_first_of("dD");
-        if (pos != std::string::npos)
-        {
-            normalized[pos] = 'e';
-        }
-
-        return ParseNumber<float>(normalized);
+        return ParseFloatingPoint<float>(value);
     }
 
     time_point FromString(const std::string& value, TimePointFormat format)
