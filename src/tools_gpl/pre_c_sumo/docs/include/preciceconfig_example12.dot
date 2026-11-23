@@ -1,0 +1,148 @@
+digraph G {
+layout=dot;
+splines=true;
+overlap=scale;
+compound=true;
+rankdir=LR;
+margin=0;
+subgraph cluster_m2n {
+label="Communicators";
+"m2n-fm-preC-SUMO" [shape=component, label="sockets"];
+}
+subgraph cluster_cpl {
+label="Coupling Schemes";
+"cpl-fm-preC-SUMO" [shape=component, label="parallel-explicit"];
+}
+subgraph cluster_fm {
+label="fm";
+style=bold;
+"fm" [color="#0173B2", shape=doubleoctagon];
+"fm-fm_flow_cells" [shape=cylinder, label=<fm_flow_cells<SUP><I>2D</I></SUP>>, color="#0173B2"];
+"fm-fm_flow_cells_3d" [shape=cylinder, label=<fm_flow_cells_3d<SUP><I>3D</I></SUP>>, color="#0173B2"];
+"fm-sources_sinks_nodes" [shape=cylinder, label="sources_sinks_nodes
+from preC-SUMO", color="#DE8F05", style=dashed];
+"fm-sources_sinks_nodes" -> "fm" [label="sinks_x", tooltip=scalar, color="#0173B2"];
+"fm-sources_sinks_nodes" -> "fm" [label="sinks_y", tooltip=scalar, color="#0173B2"];
+"fm-sources_sinks_nodes" -> "fm" [label="sinks_z_min", tooltip=scalar, color="#0173B2"];
+"fm-sources_sinks_nodes" -> "fm" [label="sinks_z_max", tooltip=scalar, color="#0173B2"];
+"fm-sources_sinks_nodes" -> "fm" [label="sources_x", tooltip=scalar, color="#0173B2"];
+"fm-sources_sinks_nodes" -> "fm" [label="sources_y", tooltip=scalar, color="#0173B2"];
+"fm-sources_sinks_nodes" -> "fm" [label="sources_z_min", tooltip=scalar, color="#0173B2"];
+"fm-sources_sinks_nodes" -> "fm" [label="sources_z_max", tooltip=scalar, color="#0173B2"];
+"fm-sources_sinks_nodes" -> "fm" [label="sources_sinks_discharge", tooltip=scalar, color="#0173B2"];
+"fm-sources_sinks_nodes" -> "fm" [label="sources_momentum_magnitude_weighted", tooltip=scalar, color="#0173B2"];
+"fm-sources_sinks_nodes" -> "fm" [label="sources_momentum_direction", tooltip=scalar, color="#0173B2"];
+"fm-sources_sinks_nodes" -> "fm" [label=C01, tooltip=scalar, color="#0173B2"];
+"fm-sources_sinks_nodes" -> "fm" [label=C02, tooltip=scalar, color="#0173B2"];
+"fm-sources_sinks_nodes" -> "fm" [label=C03, tooltip=scalar, color="#0173B2"];
+"fm-sources_sinks_nodes" -> "fm" [label=C04, tooltip=scalar, color="#0173B2"];
+"fm-sources_sinks_nodes" -> "fm" [label=C05, tooltip=scalar, color="#0173B2"];
+"fm-sources_sinks_nodes" -> "fm" [label=C06, tooltip=scalar, color="#0173B2"];
+"fm-sources_sinks_nodes" -> "fm" [label=C07, tooltip=scalar, color="#0173B2"];
+"fm-sources_sinks_nodes" -> "fm" [label=C08, tooltip=scalar, color="#0173B2"];
+"fm-sources_sinks_nodes" -> "fm" [label=C09, tooltip=scalar, color="#0173B2"];
+"fm-sources_sinks_nodes" -> "fm" [label=C10, tooltip=scalar, color="#0173B2"];
+"fm" -> "fm-fm_flow_cells" [label="sea_floor_depth_below_sea_surface", tooltip=scalar, color="#0173B2"];
+"fm" -> "fm-fm_flow_cells" [label="sea_surface_height", tooltip=scalar, color="#0173B2"];
+"fm" -> "fm-fm_flow_cells" [label="sea_floor_depth_below_geoid", tooltip=scalar, color="#0173B2"];
+"fm" -> "fm-fm_flow_cells_3d" [label="sea_water_potential_density", tooltip=scalar, color="#0173B2"];
+"fm" -> "fm-fm_flow_cells_3d" [label=C01, tooltip=scalar, color="#0173B2"];
+"fm" -> "fm-fm_flow_cells_3d" [label=C02, tooltip=scalar, color="#0173B2"];
+"fm" -> "fm-fm_flow_cells_3d" [label=C03, tooltip=scalar, color="#0173B2"];
+"fm" -> "fm-fm_flow_cells_3d" [label=C04, tooltip=scalar, color="#0173B2"];
+"fm" -> "fm-fm_flow_cells_3d" [label=C05, tooltip=scalar, color="#0173B2"];
+"fm" -> "fm-fm_flow_cells_3d" [label=C06, tooltip=scalar, color="#0173B2"];
+"fm" -> "fm-fm_flow_cells_3d" [label=C07, tooltip=scalar, color="#0173B2"];
+"fm" -> "fm-fm_flow_cells_3d" [label=C08, tooltip=scalar, color="#0173B2"];
+"fm" -> "fm-fm_flow_cells_3d" [label=C09, tooltip=scalar, color="#0173B2"];
+"fm" -> "fm-fm_flow_cells_3d" [label=C10, tooltip=scalar, color="#0173B2"];
+}
+subgraph "cluster_preC-SUMO" {
+label="preC-SUMO";
+style=bold;
+"preC-SUMO" [color="#DE8F05", shape=doubleoctagon];
+"preC-SUMO-csumo_2d_nodes" [shape=cylinder, label=<csumo_2d_nodes<SUP><I>2D</I></SUP>>, color="#DE8F05"];
+"preC-SUMO-csumo_3d_nodes" [shape=cylinder, label=<csumo_3d_nodes<SUP><I>3D</I></SUP>>, color="#DE8F05"];
+"preC-SUMO-sources_sinks_nodes" [shape=cylinder, label=<sources_sinks_nodes<SUP><I>2D</I></SUP>>, color="#DE8F05"];
+"preC-SUMO-fm_flow_cells" [shape=cylinder, label="fm_flow_cells
+from fm", color="#0173B2", style=dashed];
+"preC-SUMO-fm_flow_cells_3d" [shape=cylinder, label="fm_flow_cells_3d
+from fm", color="#0173B2", style=dashed];
+"preC-SUMO-fm_flow_cells" -> "preC-SUMO-csumo_2d_nodes" [label="linear-cell-interpolation", color="#DE8F05"];
+"preC-SUMO-fm_flow_cells_3d" -> "preC-SUMO-csumo_3d_nodes" [label="linear-cell-interpolation", color="#DE8F05"];
+"preC-SUMO-csumo_2d_nodes" -> "preC-SUMO" [label="sea_floor_depth_below_sea_surface", tooltip=scalar, color="#DE8F05"];
+"preC-SUMO-csumo_2d_nodes" -> "preC-SUMO" [label="sea_surface_height", tooltip=scalar, color="#DE8F05"];
+"preC-SUMO-csumo_2d_nodes" -> "preC-SUMO" [label="sea_floor_depth_below_geoid", tooltip=scalar, color="#DE8F05"];
+"preC-SUMO-csumo_3d_nodes" -> "preC-SUMO" [label="sea_water_potential_density", tooltip=scalar, color="#DE8F05"];
+"preC-SUMO-csumo_3d_nodes" -> "preC-SUMO" [label=C01, tooltip=scalar, color="#DE8F05"];
+"preC-SUMO-csumo_3d_nodes" -> "preC-SUMO" [label=C02, tooltip=scalar, color="#DE8F05"];
+"preC-SUMO-csumo_3d_nodes" -> "preC-SUMO" [label=C03, tooltip=scalar, color="#DE8F05"];
+"preC-SUMO-csumo_3d_nodes" -> "preC-SUMO" [label=C04, tooltip=scalar, color="#DE8F05"];
+"preC-SUMO-csumo_3d_nodes" -> "preC-SUMO" [label=C05, tooltip=scalar, color="#DE8F05"];
+"preC-SUMO-csumo_3d_nodes" -> "preC-SUMO" [label=C06, tooltip=scalar, color="#DE8F05"];
+"preC-SUMO-csumo_3d_nodes" -> "preC-SUMO" [label=C07, tooltip=scalar, color="#DE8F05"];
+"preC-SUMO-csumo_3d_nodes" -> "preC-SUMO" [label=C08, tooltip=scalar, color="#DE8F05"];
+"preC-SUMO-csumo_3d_nodes" -> "preC-SUMO" [label=C09, tooltip=scalar, color="#DE8F05"];
+"preC-SUMO-csumo_3d_nodes" -> "preC-SUMO" [label=C10, tooltip=scalar, color="#DE8F05"];
+"preC-SUMO" -> "preC-SUMO-sources_sinks_nodes" [label="sinks_x", tooltip=scalar, color="#DE8F05"];
+"preC-SUMO" -> "preC-SUMO-sources_sinks_nodes" [label="sinks_y", tooltip=scalar, color="#DE8F05"];
+"preC-SUMO" -> "preC-SUMO-sources_sinks_nodes" [label="sinks_z_min", tooltip=scalar, color="#DE8F05"];
+"preC-SUMO" -> "preC-SUMO-sources_sinks_nodes" [label="sinks_z_max", tooltip=scalar, color="#DE8F05"];
+"preC-SUMO" -> "preC-SUMO-sources_sinks_nodes" [label="sources_x", tooltip=scalar, color="#DE8F05"];
+"preC-SUMO" -> "preC-SUMO-sources_sinks_nodes" [label="sources_y", tooltip=scalar, color="#DE8F05"];
+"preC-SUMO" -> "preC-SUMO-sources_sinks_nodes" [label="sources_z_min", tooltip=scalar, color="#DE8F05"];
+"preC-SUMO" -> "preC-SUMO-sources_sinks_nodes" [label="sources_z_max", tooltip=scalar, color="#DE8F05"];
+"preC-SUMO" -> "preC-SUMO-sources_sinks_nodes" [label="sources_sinks_discharge", tooltip=scalar, color="#DE8F05"];
+"preC-SUMO" -> "preC-SUMO-sources_sinks_nodes" [label="sources_momentum_magnitude_weighted", tooltip=scalar, color="#DE8F05"];
+"preC-SUMO" -> "preC-SUMO-sources_sinks_nodes" [label="sources_momentum_direction", tooltip=scalar, color="#DE8F05"];
+"preC-SUMO" -> "preC-SUMO-sources_sinks_nodes" [label=C01, tooltip=scalar, color="#DE8F05"];
+"preC-SUMO" -> "preC-SUMO-sources_sinks_nodes" [label=C02, tooltip=scalar, color="#DE8F05"];
+"preC-SUMO" -> "preC-SUMO-sources_sinks_nodes" [label=C03, tooltip=scalar, color="#DE8F05"];
+"preC-SUMO" -> "preC-SUMO-sources_sinks_nodes" [label=C04, tooltip=scalar, color="#DE8F05"];
+"preC-SUMO" -> "preC-SUMO-sources_sinks_nodes" [label=C05, tooltip=scalar, color="#DE8F05"];
+"preC-SUMO" -> "preC-SUMO-sources_sinks_nodes" [label=C06, tooltip=scalar, color="#DE8F05"];
+"preC-SUMO" -> "preC-SUMO-sources_sinks_nodes" [label=C07, tooltip=scalar, color="#DE8F05"];
+"preC-SUMO" -> "preC-SUMO-sources_sinks_nodes" [label=C08, tooltip=scalar, color="#DE8F05"];
+"preC-SUMO" -> "preC-SUMO-sources_sinks_nodes" [label=C09, tooltip=scalar, color="#DE8F05"];
+"preC-SUMO" -> "preC-SUMO-sources_sinks_nodes" [label=C10, tooltip=scalar, color="#DE8F05"];
+}
+"m2n-fm-preC-SUMO" -> "fm" [lhead="cluster_fm", dir=both, color="#0173B2"];
+"m2n-fm-preC-SUMO" -> "preC-SUMO" [lhead="cluster_preC-SUMO", dir=both, color="#DE8F05"];
+"cpl-fm-preC-SUMO" -> "fm" [lhead="cluster_fm", taillabel="first", color="#0173B2"];
+"cpl-fm-preC-SUMO" -> "preC-SUMO" [lhead="cluster_preC-SUMO", taillabel="second", color="#DE8F05"];
+"fm-fm_flow_cells" -> "preC-SUMO-fm_flow_cells" [label="sea_floor_depth_below_sea_surface", tooltip="scalar initialized", color="#0173B2", style=bold];
+"fm-fm_flow_cells" -> "preC-SUMO-fm_flow_cells" [label="sea_surface_height", tooltip="scalar initialized", color="#0173B2", style=bold];
+"fm-fm_flow_cells" -> "preC-SUMO-fm_flow_cells" [label="sea_floor_depth_below_geoid", tooltip="scalar initialized", color="#0173B2", style=bold];
+"fm-fm_flow_cells_3d" -> "preC-SUMO-fm_flow_cells_3d" [label="sea_water_potential_density", tooltip="scalar initialized", color="#0173B2", style=bold];
+"fm-fm_flow_cells_3d" -> "preC-SUMO-fm_flow_cells_3d" [label="C01", tooltip="scalar initialized", color="#0173B2", style=bold];
+"fm-fm_flow_cells_3d" -> "preC-SUMO-fm_flow_cells_3d" [label="C02", tooltip="scalar initialized", color="#0173B2", style=bold];
+"fm-fm_flow_cells_3d" -> "preC-SUMO-fm_flow_cells_3d" [label="C03", tooltip="scalar initialized", color="#0173B2", style=bold];
+"fm-fm_flow_cells_3d" -> "preC-SUMO-fm_flow_cells_3d" [label="C04", tooltip="scalar initialized", color="#0173B2", style=bold];
+"fm-fm_flow_cells_3d" -> "preC-SUMO-fm_flow_cells_3d" [label="C05", tooltip="scalar initialized", color="#0173B2", style=bold];
+"fm-fm_flow_cells_3d" -> "preC-SUMO-fm_flow_cells_3d" [label="C06", tooltip="scalar initialized", color="#0173B2", style=bold];
+"fm-fm_flow_cells_3d" -> "preC-SUMO-fm_flow_cells_3d" [label="C07", tooltip="scalar initialized", color="#0173B2", style=bold];
+"fm-fm_flow_cells_3d" -> "preC-SUMO-fm_flow_cells_3d" [label="C08", tooltip="scalar initialized", color="#0173B2", style=bold];
+"fm-fm_flow_cells_3d" -> "preC-SUMO-fm_flow_cells_3d" [label="C09", tooltip="scalar initialized", color="#0173B2", style=bold];
+"fm-fm_flow_cells_3d" -> "preC-SUMO-fm_flow_cells_3d" [label="C10", tooltip="scalar initialized", color="#0173B2", style=bold];
+"preC-SUMO-sources_sinks_nodes" -> "fm-sources_sinks_nodes" [label="sinks_x", tooltip="scalar initialized", color="#DE8F05", style=bold];
+"preC-SUMO-sources_sinks_nodes" -> "fm-sources_sinks_nodes" [label="sinks_y", tooltip="scalar initialized", color="#DE8F05", style=bold];
+"preC-SUMO-sources_sinks_nodes" -> "fm-sources_sinks_nodes" [label="sinks_z_min", tooltip="scalar initialized", color="#DE8F05", style=bold];
+"preC-SUMO-sources_sinks_nodes" -> "fm-sources_sinks_nodes" [label="sinks_z_max", tooltip="scalar initialized", color="#DE8F05", style=bold];
+"preC-SUMO-sources_sinks_nodes" -> "fm-sources_sinks_nodes" [label="sources_x", tooltip="scalar initialized", color="#DE8F05", style=bold];
+"preC-SUMO-sources_sinks_nodes" -> "fm-sources_sinks_nodes" [label="sources_y", tooltip="scalar initialized", color="#DE8F05", style=bold];
+"preC-SUMO-sources_sinks_nodes" -> "fm-sources_sinks_nodes" [label="sources_z_min", tooltip="scalar initialized", color="#DE8F05", style=bold];
+"preC-SUMO-sources_sinks_nodes" -> "fm-sources_sinks_nodes" [label="sources_z_max", tooltip="scalar initialized", color="#DE8F05", style=bold];
+"preC-SUMO-sources_sinks_nodes" -> "fm-sources_sinks_nodes" [label="sources_sinks_discharge", tooltip="scalar initialized", color="#DE8F05", style=bold];
+"preC-SUMO-sources_sinks_nodes" -> "fm-sources_sinks_nodes" [label="sources_momentum_magnitude_weighted", tooltip="scalar initialized", color="#DE8F05", style=bold];
+"preC-SUMO-sources_sinks_nodes" -> "fm-sources_sinks_nodes" [label="sources_momentum_direction", tooltip="scalar initialized", color="#DE8F05", style=bold];
+"preC-SUMO-sources_sinks_nodes" -> "fm-sources_sinks_nodes" [label="C01", tooltip="scalar initialized", color="#DE8F05", style=bold];
+"preC-SUMO-sources_sinks_nodes" -> "fm-sources_sinks_nodes" [label="C02", tooltip="scalar initialized", color="#DE8F05", style=bold];
+"preC-SUMO-sources_sinks_nodes" -> "fm-sources_sinks_nodes" [label="C03", tooltip="scalar initialized", color="#DE8F05", style=bold];
+"preC-SUMO-sources_sinks_nodes" -> "fm-sources_sinks_nodes" [label="C04", tooltip="scalar initialized", color="#DE8F05", style=bold];
+"preC-SUMO-sources_sinks_nodes" -> "fm-sources_sinks_nodes" [label="C05", tooltip="scalar initialized", color="#DE8F05", style=bold];
+"preC-SUMO-sources_sinks_nodes" -> "fm-sources_sinks_nodes" [label="C06", tooltip="scalar initialized", color="#DE8F05", style=bold];
+"preC-SUMO-sources_sinks_nodes" -> "fm-sources_sinks_nodes" [label="C07", tooltip="scalar initialized", color="#DE8F05", style=bold];
+"preC-SUMO-sources_sinks_nodes" -> "fm-sources_sinks_nodes" [label="C08", tooltip="scalar initialized", color="#DE8F05", style=bold];
+"preC-SUMO-sources_sinks_nodes" -> "fm-sources_sinks_nodes" [label="C09", tooltip="scalar initialized", color="#DE8F05", style=bold];
+"preC-SUMO-sources_sinks_nodes" -> "fm-sources_sinks_nodes" [label="C10", tooltip="scalar initialized", color="#DE8F05", style=bold];
+}

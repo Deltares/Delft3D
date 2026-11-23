@@ -45,7 +45,7 @@ contains
       use m_inipointers_erosed, only: inipointers_erosed
       use m_sediment
       use m_rdstm
-      use m_flow, only: kmx, ndkx, iturbulencemodel
+      use m_flow, only: kmx, ndkx, iturbulencemodel, TURBULENCE_MODEL_NONE, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU
       use morphology_data_module !, only: nullsedtra, allocsedtra
       use sediment_basics_module
       use message_module, only: clearstack, initstack
@@ -54,7 +54,7 @@ contains
       use unstruc_files
       use m_flowgeom
       use m_flowtimes
-      use m_physcoef, only: rhomean, ag, vismol, dynroughveg
+      use m_physcoef, only: rhomean, ag, vismol, dynamic_vegetation_roughness_enabled
       use m_initsedtra, only: initsedtra
       use m_rdmorlyr, only: rdinimorlyr
       use fm_external_forcings_data, only: numfracs, nopenbndsect, openbndname, openbndlin, nopenbndlin
@@ -126,9 +126,9 @@ contains
       ltur_ = 0
       if (kmx > 0) then
          select case (iturbulencemodel)
-         case (0, 1, 2)
+         case (TURBULENCE_MODEL_NONE, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC)
             ltur_ = 0
-         case (3, 4)
+         case (TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU)
             ltur_ = 2
          end select
       end if
@@ -145,7 +145,7 @@ contains
          ln_mor = ln
       end if
 
-      call rdstm(stmpar, griddim, md_sedfile, md_morfile, filtrn='', lundia=mdia, lsal=jasal, ltem=temperature_model, ltur=ltur_, lsec=jasecflow, lfbedfrm=bfm_included, julrefday=julrefdat, dtunit='Tunit='//md_tunit, nambnd=nambnd, error=error)
+      call rdstm(stmpar, griddim, md_sedfile, md_morfile, filtrn='', lundia=mdia, lsal=jasal, ltem=temperature_model, ltur=ltur_, lsec=jasecflow, lfbedfrm=bfm_included, julrefday=julrefdat, dtunit='Tunit='//md_tunit, nambnd=nambnd, error=error, ag=ag)
       if (error) then
          call mess(LEVEL_FATAL, 'unstruc::flow_sedmorinit - Error in subroutine rdstm.')
          return
@@ -543,7 +543,7 @@ contains
          ! if 0, do nothing.
       end select
       !
-      if (dynroughveg > 0) then
+      if (dynamic_vegetation_roughness_enabled > 0) then
          if (allocated(cumes)) deallocate(cumes)
          call realloc(cumes, lnx,stat=ierr,fill=0.0_dp, keepExisting=.false.)
       end if

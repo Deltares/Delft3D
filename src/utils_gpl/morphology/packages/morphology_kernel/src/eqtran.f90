@@ -55,7 +55,7 @@ subroutine eqtran(sig, thick, num_layers_grid, ws, ltur, &
 !!--declarations----------------------------------------------------------------
    use precision
    use message_module, only: write_error
-   use mathconsts, only: pi, ee
+   use m_mathconstants, only: pi, ee
    use iso_c_binding, only: c_char
    use morphology_data_module
    use m_tram1, only: tram1

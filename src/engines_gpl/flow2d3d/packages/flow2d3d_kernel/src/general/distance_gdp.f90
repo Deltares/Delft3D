@@ -38,7 +38,7 @@ subroutine distance_gdp(sferic    ,x1        ,y1        ,x2        ,y2        , 
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     !
     use globaldata
     !

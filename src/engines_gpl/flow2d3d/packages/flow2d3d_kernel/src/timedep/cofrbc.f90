@@ -40,7 +40,7 @@ subroutine cofrbc(j         ,nmmaxj    ,norow     ,icx       ,icy       , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     use globaldata
     !
     implicit none

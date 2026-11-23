@@ -33,7 +33,7 @@ subroutine magdir_to_uv(alfa, grdang, &
 !!--pseudo code and references--------------------------------------------------
 ! NONE
 !!--declarations----------------------------------------------------------------
-    use mathconsts
+    use m_mathconstants
     !
     implicit none
 !

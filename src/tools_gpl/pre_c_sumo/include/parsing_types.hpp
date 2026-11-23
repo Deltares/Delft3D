@@ -6,7 +6,8 @@
 namespace parsing_utils
 {
     /**
-     * @brief Error returned when a parsing function fails.
+     * @anchor parsing_utils_parse_error
+     * @brief Error information returned when a parsing helper fails.
      */
     struct ParseError
     {
@@ -14,7 +15,8 @@ namespace parsing_utils
     };
 
     /**
-     * @brief A 2-D coordinate pair (x, y).
+     * @anchor parsing_utils_point_2d
+     * @brief Two-dimensional coordinate pair containing an x/y position.
      */
     struct Point2D
     {

@@ -1,6 +1,7 @@
 import logging
 import platform
 import stat
+import subprocess
 import tempfile
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
@@ -33,6 +34,45 @@ def close_file_logger_handler(logger: logging.Logger) -> None:
 
 
 class TestProgram:
+    @pytest.mark.parametrize("return_code", [0, 126, -15])
+    @pytest.mark.parametrize("ignore_return_value", [False, True])
+    @pytest.mark.parametrize("ignore_standard_error", [False, True])
+    def test_run__stderr_preserves_process_failure(
+        self,
+        mocker: MockerFixture,
+        tmp_dir: Path,
+        return_code: int,
+        ignore_return_value: bool,
+        ignore_standard_error: bool,
+    ) -> None:
+        config = ProgramConfig()
+        config.path = "foo"
+        config.absolute_bin_path = "foo"
+        config.working_directory = str(tmp_dir)
+        config.ignore_return_value = ignore_return_value
+        config.ignore_standard_error = ignore_standard_error
+        stderr = b"Permission denied"
+        mocker.patch.object(
+            Program,
+            "_run_in_subprocess",
+            return_value=subprocess.CompletedProcess(["foo"], return_code, b"", stderr),
+        )
+        program = Program(config, TestBenchSettings())
+
+        program.run(mocker.Mock(spec=ILogger))
+
+        error = program.getError()
+        assert program.last_return_code == return_code
+        if return_code != 0 and not ignore_return_value:
+            assert isinstance(error, subprocess.CalledProcessError)
+            assert error.returncode == return_code
+            assert error.stderr == stderr
+        elif not ignore_standard_error:
+            assert isinstance(error, RuntimeError)
+            assert "Permission denied" in str(error)
+        else:
+            assert error is None
+
     def test_run__log_output_to_file(self, mocker: MockerFixture, tmp_dir: Path) -> None:
         # Arrange
         system = platform.system()

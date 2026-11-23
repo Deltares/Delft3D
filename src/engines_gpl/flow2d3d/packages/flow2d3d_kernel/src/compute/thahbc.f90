@@ -52,7 +52,7 @@ subroutine thahbc(j         ,nmmaxj    ,icx       ,icy       ,kmax      , &
 !
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     !
     use globaldata
     !

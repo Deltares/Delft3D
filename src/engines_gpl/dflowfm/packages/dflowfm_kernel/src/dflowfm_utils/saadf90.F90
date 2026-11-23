@@ -77,11 +77,8 @@ module m_saad
 
    real(kind=dp) :: tol, fpar(16), cp0, cp1, cfl
 
-   integer :: jasafe = 0 ! thread-safe (1) or not (0)
-
 contains
 
-! NOT THREAD-SAFE
    real(kind=dp) function ddotXXX(n, dx, incx, dy, incy)
       use m_saadf, only: ddotORG
 
@@ -96,21 +93,10 @@ contains
 
          DOTs = 0.0_dp
 
-         if (jasafe /= 1) then
-            !$OMP PARALLEL DO                                     &
-            !$OMP PRIVATE(i)                                      &
-            !$OMP REDUCTION(+:DOTs)
-            do I = 1, N
-               DOTs = DOTs + DX(I) * DY(I)
-            end do
-            !$OMP END PARALLEL DO
-            ddotXXX = dots
-         else
-            do I = 1, N
-               DOTs = DOTs + DX(I) * DY(I)
-            end do
-            ddotXXX = dots
-         end if
+         do I = 1, N
+            DOTs = DOTs + DX(I) * DY(I)
+         end do
+         ddotXXX = dots
 
       else
          ddotXXX = ddotORG(n, dx, incx, dy, incy)
@@ -6532,7 +6518,6 @@ contains
       return
    end subroutine gfunbl
 
-! NOT THREAD-SAFE
    subroutine amuxXXX(n, x, y, a, ja, ia)
       use precision, only: dp
 
@@ -6565,43 +6550,21 @@ contains
       integer i, k
 !-----------------------------------------------------------------------
 
-      if (jasafe /= 1) then
-         !$OMP PARALLEL DO                                          &
-         !$OMP PRIVATE(i,k,t)
+      do i = 1, n
 
-         do i = 1, n
-            !
-            !     compute the inner product of row i with vector x
-            !
-            t = 0.0_dp
-            do k = ia(i), ia(i + 1) - 1
-               t = t + a(k) * x(ja(k))
-            end do
-            !
-            !     store result in y(i)
-            !
-            y(i) = t
-
+         t = 0.0_dp
+         do k = ia(i), ia(i + 1) - 1
+            t = t + a(k) * x(ja(k))
          end do
-         !$OMP END PARALLEL DO
-      else
-         do i = 1, n
 
-            t = 0.0_dp
-            do k = ia(i), ia(i + 1) - 1
-               t = t + a(k) * x(ja(k))
-            end do
+         y(i) = t
 
-            y(i) = t
-
-         end do
-      end if
+      end do
 
 !
       return
    end subroutine amuxXXX
 
-! NOT THREAD-SAFE
    subroutine atmux(n, x, y, a, ja, ia)
       use precision, only: dp
 
@@ -6642,24 +6605,12 @@ contains
 ! loop over the rows
 !
 
-      if (jasafe /= 1) then
-         !$OMP PARALLEL DO                                          &
-         !$OMP PRIVATE(i,k)
-         do i = 1, n
-            y(i) = 0.0
-            do k = ia(i), ia(i + 1) - 1
-               y(ja(k)) = y(ja(k)) + x(i) * a(k)
-            end do
+      do i = 1, n
+         y(i) = 0.0
+         do k = ia(i), ia(i + 1) - 1
+            y(ja(k)) = y(ja(k)) + x(i) * a(k)
          end do
-         !$OMP END PARALLEL DO
-      else
-         do i = 1, n
-            y(i) = 0.0
-            do k = ia(i), ia(i + 1) - 1
-               y(ja(k)) = y(ja(k)) + x(i) * a(k)
-            end do
-         end do
-      end if
+      end do
 
 !
       return

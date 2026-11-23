@@ -79,13 +79,6 @@ contains
       logical :: breaker_turbulence_required
 
       requirements = 0
-      breaker_turbulence_required = wave_breaker_turbulence > WAVE_BREAKER_TURB_OFF
-
-      if (breaker_turbulence_required) then
-         requirements = ior(requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT)
-         requirements = ior(requirements, WAVE_INPUT_DISSIPATION_SURFACE)
-         requirements = ior(requirements, WAVE_INPUT_DISSIPATION_WHITE_CAPPING)
-      end if
 
       if (flow_without_waves) then
          ! D-WAQ needs wave height and period to derive orbital velocity, but
@@ -93,6 +86,14 @@ contains
          requirements = ior(requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT)
          requirements = ior(requirements, WAVE_INPUT_PERIOD)
          return
+      end if
+
+      breaker_turbulence_required = wave_breaker_turbulence > WAVE_BREAKER_TURB_OFF
+
+      if (breaker_turbulence_required) then
+         requirements = ior(requirements, WAVE_INPUT_SIGNIFICANT_HEIGHT)
+         requirements = ior(requirements, WAVE_INPUT_DISSIPATION_SURFACE)
+         requirements = ior(requirements, WAVE_INPUT_DISSIPATION_WHITE_CAPPING)
       end if
 
       wave_kinematics_required = stokes_drift > NO_STOKES_DRIFT .or. &

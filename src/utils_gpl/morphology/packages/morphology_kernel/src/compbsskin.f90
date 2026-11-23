@@ -96,7 +96,7 @@ subroutine compbsskin (umean , vmean , depth , wave  , uorb  , tper  , &
 !          8) Mutiple mud fractions, each fraction own kssilt and kssand?????
 !
 !!--declarations----------------------------------------------------------------
-    use mathconsts
+    use m_mathconstants
     use morphology_data_module, only:sedpar_type, SC_MUDFRAC
 !
 ! Local parameters

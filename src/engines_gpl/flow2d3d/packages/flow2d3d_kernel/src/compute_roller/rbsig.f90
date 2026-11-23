@@ -75,7 +75,7 @@ subroutine rbsig(ncmax     ,ampbc     ,ombc      ,phibc     ,thetbc    , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     use globaldata
     use string_module
     !

@@ -53,7 +53,6 @@ contains
 
       use m_fm_wq_processes
       use m_alloc
-      use unstruc_model, only: md_thetav_waq
       use m_bedform, only: bfmpar
 
       character(len=8) :: str
@@ -144,7 +143,7 @@ contains
          if (javasal == 6) then
             thetavert(isalt) = 0.0_dp ! Ho explicit
          else
-            thetavert(isalt) = tetav ! Central implicit
+            thetavert(isalt) = THETA_VERTICAL_TRANSPORT ! Central implicit
          end if
          const_names(isalt) = 'salt'
       end if
@@ -153,7 +152,7 @@ contains
          if (javatem == 6) then
             thetavert(itemp) = 0.0_dp ! Ho explicit
          else
-            thetavert(itemp) = tetav ! Central implicit  0.55d0
+            thetavert(itemp) = THETA_VERTICAL_TRANSPORT ! Central implicit  0.55d0
          end if
          const_names(itemp) = 'temperature'
       end if
@@ -162,7 +161,7 @@ contains
          if (javased == 6) then
             thetavert(ised1:isedn) = 0.0_dp
          else
-            thetavert(ised1:isedn) = tetav
+            thetavert(ised1:isedn) = THETA_VERTICAL_TRANSPORT
          end if
          if (.not. stm_included) then ! Andere naamgeving in flow_sedmorinit, fracties van sed file
             do i = ised1, isedn
@@ -200,6 +199,7 @@ contains
          const_names(ispir) = 'secondary_flow_intensity'
       end if
 
+      tracer_limiter_mass_error = 0.0_dp ! initialise mass error counter
       if (itra1 > 0) then
          do i = itra1, itran
             itrace = i - itra1 + 1
@@ -219,7 +219,7 @@ contains
             end if
 
             itrac2const(itrace) = i
-
+            thetavert(i) = theta_vertical_tracers
          end do
       end if
 
@@ -245,8 +245,6 @@ contains
             i = itrac2const(isys2trac(isys))
             isys2const(isys) = i
             iconst2sys(i) = isys
-
-            thetavert(i) = md_thetav_waq
          end do
       end if
 

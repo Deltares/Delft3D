@@ -37,7 +37,7 @@ function getdx(sferic,x1,y1,x2,y2,gdp)
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     !
     use globaldata
     !

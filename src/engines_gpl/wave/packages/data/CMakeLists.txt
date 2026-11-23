@@ -13,11 +13,18 @@ set(src_path src)
 
 # Gather source files
 get_fortran_source_files(${src_path} source_files)
+set(cxx_source_files ${CMAKE_CURRENT_SOURCE_DIR}/${src_path}/inja_templates.cpp)
 
-# Define library
-set(library_name wave_data)
-add_library(${library_name} ${source_files}
+# Define libraries
+add_library(wave_data ${source_files}
                             ${fortran_version_files})
+add_library(wave_data_cpp OBJECT ${cxx_source_files})
+
+target_include_directories(wave_data_cpp PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(wave_data_cpp pantor::inja)
+
+target_include_directories(wave_data PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(wave_data wave_data_cpp pantor::inja)
 
 set_source_files_properties(${fortran_version_files}
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
@@ -32,14 +39,14 @@ if (WIN32)
                             io_netcdf_data
                             nefis
                             netCDF::netcdff)
-    target_link_libraries(${library_name} ${oss_dependencies})
+    target_link_libraries(wave_data ${oss_dependencies})
 
     include_directories(${mpi_module_path}
                         ${version_include_dir}
                         ${wave_version_path})
 
     # Define preprocessor definitions
-    target_compile_definitions(${library_name} PRIVATE "WIN32;HAVE_MPI")
+    target_compile_definitions(wave_data PRIVATE "WIN32;HAVE_MPI")
 
 endif(WIN32)
 
@@ -52,9 +59,10 @@ if (UNIX)
                             io_netcdf_data
                             nefis
                             netCDF::netcdff
+                            stdc++
     )
 
-    target_link_libraries(${library_name} ${oss_dependencies})
+    target_link_libraries(wave_data ${oss_dependencies})
 
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"
                         ${mpi_module_path}
@@ -62,7 +70,7 @@ if (UNIX)
                         ${wave_version_path})
 
     # Define preprocessor definitions
-    target_compile_definitions(${library_name} PRIVATE "HAVE_MPI")
+    target_compile_definitions(wave_data PRIVATE "HAVE_MPI")
 
 endif(UNIX)
 
@@ -71,5 +79,6 @@ set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/wave_mpi.F90
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
 # Define how the files should be structured within Visual Studio
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
-set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/wave)
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files} ${cxx_source_files})
+set_target_properties (wave_data PROPERTIES FOLDER engines_gpl/wave)
+set_target_properties (wave_data_cpp PROPERTIES FOLDER engines_gpl/wave)

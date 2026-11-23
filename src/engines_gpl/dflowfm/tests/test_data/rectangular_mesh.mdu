@@ -59,7 +59,7 @@ TransportTimestepping       = 1                   # Timestepping method in Trans
 Vertadvtypsal               = 6                   # Vertical advection type for salinity (0: none, 1: upwind explicit, 2: central explicit, 3: upwind implicit, 4: central implicit, 5: central implicit but upwind for neg. stratif., 6: higher order explicit, no Forester)
 Vertadvtyptem               = 6                   # Vertical advection type for temperature (0: none, 1: upwind explicit, 2: central explicit, 3: upwind implicit, 4: central implicit, 5: central implicit but upwind for neg. stratif., 6: higher order explicit, no Forester)
 Zlayercenterbedvel          = 1                   # reconstruction of center velocity at half closed bedcells (0=no, 1: copy bed link velocities)
-Icgsolver                   = 4                   # Solver type (1: sobekGS_OMP, 2: sobekGS_OMPthreadsafe, 3: sobekGS, 4: sobekGS + Saadilud, 5: parallel/global Saad, 6: parallel/Petsc, 7: parallel/GS)
+Icgsolver                   = 4                   # Solver type (1: sobekGS_OMP, 2: sobekGS_OMPthreadsafe, 3: sobekGS, 4: sobekGS + Saadilud, 5: parallel/global Saad, 6: parallel/PETSc)
 Noderivedtypes              = 5                   # 0=use der. types. , 1 = less, 2 = lesser, 5 = also dealloc der. types
 Tlfsmo                      = 0.                  # Fourier smoothing time (s) on water level boundaries
 Logprofkepsbndin            = 0                   # inflow: 0=0 keps, 1 = log keps, 2 = user3D
@@ -70,16 +70,16 @@ jaupwindsrc                 = 1                   # 1st-order upwind advection a
 jasfer3D                    = 0                   # corrections for spherical coordinates
 
 [physics]
-UnifFrictCoef               = 2.3d-2              # Uniform friction coefficient (0: no friction)
-UnifFrictType               = 1                   # Uniform friction type (0: Chezy, 1: Manning, 2: White-Colebrook, 3: idem, WAQUA style)
-UnifFrictCoef1D             = 2.3d-2              # Uniform friction coefficient in 1D links (0: no friction)
-UnifFrictCoef1D2D           = 2.3d-2              # Uniform friction coefficient in 1D links (0: no friction)
-UnifFrictCoefLin            = 0.                  # Uniform linear friction coefficient (0: no friction)
-UnifFrictCoef1DgrLay        = 5.d-2               # Uniform ground layer friction coefficient for ocean models (m/s) (0: no friction)
-Vicouv                      = 1.                  # Uniform horizontal eddy viscosity (m2/s)
-Dicouv                      = 1.                  # Uniform horizontal eddy diffusivity (m2/s)
-Smagorinsky                 = 0.                  # Smagorinsky factor in horizontal turbulence, e.g. 0.15
-Elder                       = 0.                  # Elder factor in horizontal turbulence
+uniformFrictionCoefficient2D               = 2.3d-2              # Uniform friction coefficient (0: no friction)
+uniformFrictiontype               = 1                   # Uniform friction type (0: Chezy, 1: Manning, 2: White-Colebrook, 3: idem, WAQUA style)
+uniformFrictionCoefficient1D             = 2.3d-2              # Uniform friction coefficient in 1D links (0: no friction)
+uniformFrictionCoefficient1D2D           = 2.3d-2              # Uniform friction coefficient in 1D links (0: no friction)
+uniformFrictionCoefficientLinear            = 0.                  # Uniform linear friction coefficient (0: no friction)
+uniformFrictionCoefficientGroundlayer        = 5.d-2               # Uniform ground layer friction coefficient for ocean models (m/s) (0: no friction)
+uniformHorizontalEddyViscosity                      = 1.                  # Uniform horizontal eddy viscosity (m2/s)
+uniformHorizontalEddyDiffusivity = 1.             # Uniform horizontal eddy diffusivity (m2/s)
+SmagorinskyCoefficient      = 0.                  # Smagorinsky factor in horizontal turbulence, e.g. 0.15
+ElderCoefficient            = 0.                  # Elder factor in horizontal turbulence
 irov                        = 0                   # 0=free slip, 1 = partial slip using wall_ks
 wall_ks                     = 0.                  # Wall roughness type (0: free slip, 1: partial slip using wall_ks)
 Rhomean                     = 1000.               # Average water density (kg/m3)
@@ -161,7 +161,5 @@ Wrirst_bnd                  = 1                   # Write waterlevel, bedlevel a
 [processes]
 SubstanceFile               =                                                                                                                                                                                                                                                                #
 AdditionalHistoryOutputFile =                                                                                                                                                                                                                                                                #
-ThetaVertical               = 0.                  # theta vertical for waq
 DtProcesses                 = 0.                  # waq processes time step
 DtMassBalance               = 0.                  # waq mass balance output time step
-ProcessFluxIntegration      = 1                   # Process fluxes integration option (1: WAQ, 2: D-Flow FM)

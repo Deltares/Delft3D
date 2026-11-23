@@ -43,7 +43,7 @@ subroutine santoss_ripple(d50, uwc, uwt, delta, g, aw, rh, rl)
 !
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts, only: pi
+    use m_mathconstants, only: pi
 !
 ! arguments
 !

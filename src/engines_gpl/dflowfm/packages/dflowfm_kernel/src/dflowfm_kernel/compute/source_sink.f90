@@ -39,12 +39,13 @@ module m_source_sink
 
    private
 
+   public :: SourceSinks
+
+   public :: SINK_SIDE, SOURCE_SIDE
+   public :: FLOWCELL_SINK, BOTTOM_LAYER_SINK, TOP_LAYER_SINK, FLOWCELL_SOURCE, BOTTOM_LAYER_SOURCE, TOP_LAYER_SOURCE
+
    public :: source_sinks
    public :: source_sink_all_discharges
-
-   public :: addsorsin_from_polyline_file
-   public :: addsorsin
-   public :: setsorsin
 
    ! Type containing all source/sink data.
    type :: SourceSinks
@@ -58,22 +59,22 @@ module m_source_sink
 
       ! Source/sink name, x,y,z coordinates, and indices.
       character(len=255), dimension(:), allocatable :: name !< [-] Name of the source/sink.
-      real(kind=dp), dimension(:,:), allocatable :: x !< [m] x-coordinates of source/sink.
-      real(kind=dp), dimension(:,:), allocatable :: y !< [m] y-coordinates of source/sink.
-      real(kind=dp), dimension(:,:), allocatable :: z_bottom !< [m] z-level of bottom source/sink.
-      real(kind=dp), dimension(:,:), allocatable :: z_top !< [m] z-level of top source/sink.
-      integer, dimension(:,:), allocatable :: indices !< [-] Indices of source and sink side.
-                                                      !< (1) flowcell sink, (2) bottom layer index sink, (3) top layer index sink,
-                                                      !< (4) flowcell source, (5) bottom layer index source, (6) top layer index source.
+      real(kind=dp), dimension(:, :), allocatable :: x !< [m] x-coordinates of source/sink.
+      real(kind=dp), dimension(:, :), allocatable :: y !< [m] y-coordinates of source/sink.
+      real(kind=dp), dimension(:, :), allocatable :: z_bottom !< [m] z-level of bottom source/sink.
+      real(kind=dp), dimension(:, :), allocatable :: z_top !< [m] z-level of top source/sink.
+      integer, dimension(:, :), allocatable :: indices !< [-] Indices of source and sink side.
+      !< (1) flow cell sink, (2) bottom layer index sink, (3) top layer index sink,
+      !< (4) flow cell source, (5) bottom layer index source, (6) top layer index source.
 
       ! Source/sink momentum transport variables.
       real(kind=dp), dimension(:), allocatable :: area !< [m2] area of source/sink. If zero, source/sink transport no momentum.
-      real(kind=dp), dimension(:,:), allocatable :: discharge_cosine !< [-] Cosine of discharge on sink side (1) and source side (2).
-      real(kind=dp), dimension(:,:), allocatable :: discharge_sine !< [-] Sine of discharge on sink side (1) and source side (2).
+      real(kind=dp), dimension(:, :), allocatable :: discharge_cosine !< [-] Cosine of discharge on sink side (1) and source side (2).
+      real(kind=dp), dimension(:, :), allocatable :: discharge_sine !< [-] Sine of discharge on sink side (1) and source side (2).
 
       ! Source/sink discharge variables.
       real(kind=dp), dimension(:), allocatable :: discharge !< [m3/s] Water discharge of source/sink.
-      real(kind=dp), dimension(:,:), allocatable :: constituents !< [ppt,degC,kg/m3] Constituents of source/sink discharges.
+      real(kind=dp), dimension(:, :), allocatable :: constituents !< [ppt,degC,kg/m3] Constituents of source/sink discharges.
 
       ! Source/sink miscellaneous variables.
       integer, dimension(:), allocatable :: max_xy_points !< [-] Maximum number of points per source/sink in x, y. Used for array dimensions.
@@ -91,107 +92,40 @@ module m_source_sink
    contains
 
       procedure :: initialize => initialize_source_sinks
-      procedure :: dealloc => dealloc_source_sinks
-      procedure :: resize => resize_source_sinks
-      procedure :: resize_xy => resize_xy_source_sinks
+      procedure :: reset => reset_source_sinks
+      procedure :: realloc => realloc_source_sinks
+      procedure, private :: realloc_xy => realloc_xy_source_sinks
+
+      procedure :: add => add_source_sink
+      procedure :: add_from_polyline_file => add_source_sink_from_polyline_file
+      procedure :: update_discharges => update_source_sink_discharges
+      procedure :: get_nearfield_discharge
 
    end type SourceSinks
+
+   ! Enums for the SourceSinks%z_bottom, %z_top, %discharge_cosine, and %discharge_sine arrays
+   integer, parameter :: SINK_SIDE = 1 !< Sink side identifier for SourceSinks%z_bottom, %z_top, %discharge_cosine, and %discharge_sine arrays
+   integer, parameter :: SOURCE_SIDE = 2 !< Source side identifier for SourceSinks%z_bottom, %z_top, %discharge_cosine, and %discharge_sine arrays
+
+   ! Enums for the SourceSinks%indices array
+   integer, parameter :: FLOWCELL_SINK = 1 !< Flow cell identifier of sink in SourceSinks%indices array
+   integer, parameter :: BOTTOM_LAYER_SINK = 2 !< Bottom layer identifier of sink in SourceSinks%indices array
+   integer, parameter :: TOP_LAYER_SINK = 3 !< Top layer identifier of sink in SourceSinks%indices array
+   integer, parameter :: FLOWCELL_SOURCE = 4 !< Flow cell identifier of source in SourceSinks%indices array
+   integer, parameter :: BOTTOM_LAYER_SOURCE = 5 !< Bottom layer identifier of source in SourceSinks%indices array
+   integer, parameter :: TOP_LAYER_SOURCE = 6 !< Top layer identifier of source in SourceSinks%indices array
 
    ! Object containing all source/sink data.
    type(SourceSinks), target :: source_sinks
 
    ! Global source/sink arrays used for EC module and partitioned models.
-   real(kind=dp), dimension(:,:), allocatable, target :: source_sink_all_discharges !< [m3/s] All source/sink discharges in one array for partitioned models. {size=(numconst+1,source_sinks%num_total)}
-   real(kind=dp), dimension(:,:), allocatable :: source_sink_reduction !< [-] Source/sink reduction array for partitioned models. {size=(2*(numconst+1),source_sinks%num_total)}   
+   real(kind=dp), dimension(:, :), allocatable, target :: source_sink_all_discharges !< [m3/s] All source/sink discharges in one array for partitioned models. {size=(numconst+1,source_sinks%num_total)}
+   real(kind=dp), dimension(:, :), allocatable :: source_sink_reduction !< [-] Source/sink reduction array for partitioned models. {size=(2*(numconst+1),source_sinks%num_total)}
 
 contains
 
    ! SourceSinks type-bound procedures.
    ! ====================================================================================================
-
-   !> Resets the source/sink administration to its default state.
-   subroutine default_source_sinks(self)
-      class(SourceSinks), intent(inout) :: self
-
-      self%num_total = 0
-      self%num_normal = 0
-      self%num_oldfile = 0
-      self%num_nearfield = 0
-      self%max_polyline_points = 2
-      self%add_k_to_turkin = .false.
-   end subroutine default_source_sinks
-
-   !> Deallocates and resets all source/sink administration.
-   subroutine dealloc_source_sinks(self)
-      class(SourceSinks), intent(inout) :: self
-
-      if (allocated(self%name)) then
-         deallocate (self%name)
-      end if
-      if (allocated(self%x)) then
-         deallocate (self%x)
-      end if
-      if (allocated(self%y)) then
-         deallocate (self%y)
-      end if
-      if (allocated(self%z_bottom)) then
-         deallocate (self%z_bottom)
-      end if
-      if (allocated(self%z_top)) then
-         deallocate (self%z_top)
-      end if
-      if (allocated(self%indices)) then
-         deallocate (self%indices)
-      end if
-      if (allocated(self%area)) then
-         deallocate (self%area)
-      end if
-      if (allocated(self%discharge_cosine)) then
-         deallocate (self%discharge_cosine)
-      end if
-      if (allocated(self%discharge_sine)) then
-         deallocate (self%discharge_sine)
-      end if
-      if (allocated(self%discharge)) then
-         deallocate (self%discharge)
-      end if
-      if (allocated(self%constituents)) then
-         deallocate (self%constituents)
-      end if
-      if (allocated(self%max_xy_points)) then
-         deallocate (self%max_xy_points)
-      end if
-      if (allocated(self%is_normal)) then
-         deallocate (self%is_normal)
-      end if
-      if (allocated(self%cumulative_volume)) then
-         deallocate (self%cumulative_volume)
-      end if
-      if (allocated(self%cumulative_volume_previous)) then
-         deallocate (self%cumulative_volume_previous)
-      end if
-      if (allocated(self%average_discharge_previous)) then
-         deallocate (self%average_discharge_previous)
-      end if
-      if (allocated(self%waq_index)) then
-         deallocate (self%waq_index)
-      end if
-      if (allocated(self%cumulative_discharge_waq)) then
-         deallocate (self%cumulative_discharge_waq)
-      end if
-      if (allocated(self%cumulative_discharge_waq_previous)) then
-         deallocate (self%cumulative_discharge_waq_previous)
-      end if
-
-      if (allocated(source_sink_all_discharges)) then
-         deallocate (source_sink_all_discharges)
-      end if
-      if (allocated(source_sink_reduction)) then
-         deallocate (source_sink_reduction)
-      end if
-
-      call default_source_sinks(self)
-   end subroutine dealloc_source_sinks
 
    !> Allocates and initializes the SourceSinks attributes to size.
    subroutine initialize_source_sinks(self, size)
@@ -200,8 +134,8 @@ contains
       integer, intent(in) :: size
 
       ! Allocate and intialize global source/sink arrays.
-      allocate (source_sink_all_discharges(numconst+1, size))
-      allocate (source_sink_reduction(2*(numconst+1), size))
+      allocate (source_sink_all_discharges(numconst + 1, size))
+      allocate (source_sink_reduction(2*(numconst + 1), size))
 
       source_sink_all_discharges = 0.0_dp
       source_sink_reduction = 0.0_dp
@@ -232,12 +166,6 @@ contains
       allocate (self%cumulative_discharge_waq_previous(size))
 
       ! Initialize all source/sink attributes.
-      self%num_total = 0
-      self%num_normal = 0
-      self%num_oldfile = 0
-      self%num_nearfield = 0
-      self%max_polyline_points = 2
-
       self%name = ''
       self%x = dmiss
       self%y = dmiss
@@ -254,7 +182,6 @@ contains
 
       self%max_xy_points = 0
       self%is_normal = .true.
-      self%add_k_to_turkin = .false.
 
       self%cumulative_volume = 0.0_dp
       self%cumulative_volume_previous = 0.0_dp
@@ -265,18 +192,37 @@ contains
 
    end subroutine initialize_source_sinks
 
-   !> Resizes the SourceSinks object to new size, keeping existing values.
-   subroutine resize_source_sinks(self, new_size)
+   !> Resets the SourceSinks object and deallocates its associated global arrays.
+   subroutine reset_source_sinks(self)
+      ! Parameters
+      class(SourceSinks), intent(inout) :: self
+
+      select type (self)
+      type is (SourceSinks)
+         self = SourceSinks()
+      end select
+
+      if (allocated(source_sink_all_discharges)) then
+         deallocate (source_sink_all_discharges)
+      end if
+      if (allocated(source_sink_reduction)) then
+         deallocate (source_sink_reduction)
+      end if
+
+   end subroutine reset_source_sinks
+
+   !> Reallocates the SourceSinks object arrays to new size, keeping existing values.
+   subroutine realloc_source_sinks(self, new_size)
       ! Parameters
       class(SourceSinks), intent(inout) :: self
       integer, intent(in) :: new_size
 
       if (new_size > size(self%name)) then
-         ! Resize global source/sink arrays.
-         call realloc(source_sink_all_discharges, [numconst+1, new_size], keepExisting=.true., fill=0.0_dp)
-         call realloc(source_sink_reduction, [2*(numconst+1), new_size], keepExisting=.true., fill=0.0_dp)
+         ! Reallocate global source/sink arrays.
+         call realloc(source_sink_all_discharges, [numconst + 1, new_size], keepExisting=.true., fill=0.0_dp)
+         call realloc(source_sink_reduction, [2*(numconst + 1), new_size], keepExisting=.true., fill=0.0_dp)
 
-         ! Resize all source/sink arrays.
+         ! Reallocate all source/sink arrays.
          call realloc(self%name, new_size, keepExisting=.true., fill='')
          call realloc(self%x, [new_size, self%max_polyline_points], keepExisting=.true., fill=dmiss)
          call realloc(self%y, [new_size, self%max_polyline_points], keepExisting=.true., fill=dmiss)
@@ -302,10 +248,10 @@ contains
          call realloc(self%cumulative_discharge_waq_previous, new_size, keepExisting=.true., fill=0.0_dp)
       end if
 
-   end subroutine resize_source_sinks
+   end subroutine realloc_source_sinks
 
-   !> Resizes the x and y arrays of the SourceSinks object to fit new_max_polyline_points, keeping existing values if possible.
-   subroutine resize_xy_source_sinks(self, new_max_polyline_points)
+   !> Reallocates the x and y arrays of the SourceSinks object to fit new_max_polyline_points, keeping existing values if possible.
+   subroutine realloc_xy_source_sinks(self, new_max_polyline_points)
       ! Parameters
       class(SourceSinks), intent(inout) :: self
       integer, intent(in) :: new_max_polyline_points
@@ -313,24 +259,25 @@ contains
       ! Update max_polyline_points to new value if larger than current value.
       self%max_polyline_points = max(self%max_polyline_points, new_max_polyline_points)
 
-      ! Resize x and y arrays to fit new max_polyline_points.
+      ! Reallocate x and y arrays to fit new max_polyline_points.
       call realloc(self%x, [size(self%name), self%max_polyline_points], keepExisting=.true., fill=dmiss)
       call realloc(self%y, [size(self%name), self%max_polyline_points], keepExisting=.true., fill=dmiss)
 
-   end subroutine resize_xy_source_sinks
+   end subroutine realloc_xy_source_sinks
 
    ! Source/sink subroutines.
    ! ====================================================================================================
 
    !> Add a source(-sink) to the model based on geometry given in a polyline file.
-   !! This subroutine is a wrapper around addsorsin, mainly taking care of reading the polyline file.
-   subroutine addsorsin_from_polyline_file(polyline_file, name, z_source, z_sink, area, ierr)
+   !! This subroutine is a wrapper around source_sinks%add, mainly taking care of reading the polyline file.
+   subroutine add_source_sink_from_polyline_file(self, polyline_file, name, z_source, z_sink, area, ierr)
       use m_filez, only: oldfil
       use m_polygon, only: xpl, ypl, zpl, npl, dzL, colpl
       use m_reapol, only: reapol
       use system_utils, only: split_filename
 
       ! Parameters
+      class(SourceSinks), intent(inout) :: self !< Source/sink object instance
       character(len=*), intent(in) :: polyline_file !< Name of the polyline file, either with x,y values only (*.pli), or including z-values (*.pliz).
       character(len=*), optional, intent(in) :: name !< Name of the source-sink. When not present, name is based on the polyline filename instead.
       real(kind=dp), dimension(:), optional, intent(in) :: z_source !< Vertical position of the source, Z-value(s) in m (1 for point or 2 for range).
@@ -401,24 +348,25 @@ contains
          call split_filename(polyline_file, path, name_, ext)
       end if
 
-      ! Initialize source_sinks if not already done.
-      if (.not. allocated(source_sinks%name)) then
-         call source_sinks%initialize(1)
+      ! Initialize self (source_sinks) if not already done.
+      if (.not. allocated(self%name)) then
+         call self%initialize(1)
       end if
 
       ! Add the source/sink to the model based on prepared polyline data.
-      call addsorsin(trim(name_), xpl(1:npl), ypl(1:npl), z_source_, z_sink_, area, ierr)
+      call self%add(trim(name_), xpl(1:npl), ypl(1:npl), z_source_, z_sink_, area, ierr)
 
-   end subroutine addsorsin_from_polyline_file
+   end subroutine add_source_sink_from_polyline_file
 
    !> Add a source-sink to the model.
-   subroutine addsorsin(name, x_points, y_points, z_source, z_sink, area, ierr)
+   subroutine add_source_sink(self, name, x_points, y_points, z_source, z_sink, area, ierr)
       use m_GlobalParameters, only: INDTP_ALL
       use geometry_module, only: normalin
       use m_sferic, only: jsferic, jasfer3D
       use m_find_flownode, only: find_nearest_flownodes
 
       ! Parameters
+      class(SourceSinks), intent(inout) :: self !< Source/sink object instance
       character(len=*), intent(in) :: name !< Name of the source/sink.
       real(kind=dp), dimension(:), intent(in) :: x_points !< x-coordinates of the source/sink (polyline from sink to source point).
       real(kind=dp), dimension(:), intent(in) :: y_points !< y-coordinates of the source/sink (polyline from sink to source point).
@@ -428,13 +376,13 @@ contains
       integer, intent(out) :: ierr !< Error code, DFM_NOERR if no error occurred.
 
       ! Local variables
-      integer :: kk
-      integer :: kk2
-      integer :: i
+      integer :: source_sink_index !< Source/sink index
+      integer :: sink_flow_cell_index ! Flow cell index of sink
+      integer :: source_flow_cell_index ! Flow cell index of source
+      integer, dimension(1) :: dummy_flow_cell_index ! Dummy flow cell index for readout
       integer :: jakdtree
-      integer :: num_points
-      integer, dimension(1) :: kdum
-      character(len=IdLen), dimension(1) :: tmpname
+      integer :: num_points !< Number of points in the polyline representing the source/sink.
+      character(len=IdLen), dimension(1) :: temporary_name !< Temporary name of the source/sink
 
       ierr = DFM_WRONGINPUT
 
@@ -445,224 +393,254 @@ contains
       end if
 
       ! Increment source/sink counter.
-      source_sinks%num_total = source_sinks%num_total + 1
-      
+      self%num_total = self%num_total + 1
+
       ! If the number of source/sinks exceeds the current array size, double the array size.
-      if (source_sinks%num_total > size(source_sinks%name)) then
-         call source_sinks%resize((source_sinks%num_total - 1) * 2)
+      if (self%num_total > size(self%name)) then
+         call self%realloc((self%num_total - 1)*2)
       end if
 
-      ! If the number of points in the polyline exceeds the current max_polyline_points, resize the arrays to fit the new number of points.
-      if (num_points > source_sinks%max_polyline_points) then
-         call source_sinks%resize_xy(num_points)
+      ! If the number of points in the polyline exceeds the current max_polyline_points, reallocate the arrays to fit the new number of points.
+      if (num_points > self%max_polyline_points) then
+         call self%realloc_xy(num_points)
       end if
 
       ! Set the coordinates of the source/sink, only the first 2 points of the polyline file are actually used.
-      source_sinks%x(source_sinks%num_total, 1:num_points) = x_points(1:num_points)
-      source_sinks%y(source_sinks%num_total, 1:num_points) = y_points(1:num_points)
-      source_sinks%max_xy_points(source_sinks%num_total) = num_points
-      kk = 0
-      kk2 = 0
+      self%x(self%num_total, 1:num_points) = x_points(1:num_points)
+      self%y(self%num_total, 1:num_points) = y_points(1:num_points)
+      self%max_xy_points(self%num_total) = num_points
+      sink_flow_cell_index = 0
+      source_flow_cell_index = 0
 
       ! Set source/sink name.
-      source_sinks%name(source_sinks%num_total) = name
+      self%name(self%num_total) = name
 
-      tmpname(1) = name//' source'
+      temporary_name(1) = name//' source'
       jakdtree = 0
-      kdum(1) = 0
-      if (source_sinks%x(source_sinks%num_total, num_points) /= dmiss) then
-         call find_nearest_flownodes(1, source_sinks%x(source_sinks%num_total, num_points), source_sinks%y(source_sinks%num_total, num_points), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL)
-         kk2 = kdum(1)
+      dummy_flow_cell_index(1) = 0
+      if (self%x(self%num_total, num_points) /= dmiss) then
+         call find_nearest_flownodes(1, self%x(self%num_total, num_points), self%y(self%num_total, num_points), temporary_name(1), &
+                                     dummy_flow_cell_index(1), jakdtree, -1, INDTP_ALL, prefer_own_domain=.true.)
+         source_flow_cell_index = dummy_flow_cell_index(1)
       end if
 
       ! Support point source/sinks in a single cell if polyline has just one point (npl==1)
       if (num_points == 1) then
 
-         kk = 0 ! Only keep the source-side (kk2), and disable momentum discharge
+         sink_flow_cell_index = 0 ! Only keep the source-side (source_flow_cell_index), and disable momentum discharge
          if (area /= dmiss .and. area /= 0.0_dp) then
             ! User specified an area for momentum discharge, but that does not apply to POINT sources.
             write (msgbuf, '(a,a,a,f8.2,a)') 'Source-sink ''', trim(name), ''' is a POINT-source. Nonzero area was specified: ', area, ', but area will be ignored (no momentum discharge).'
             call warn_flush()
          end if
-         source_sinks%area(source_sinks%num_total) = 0.0_dp
+         self%area(self%num_total) = 0.0_dp
 
       else ! Default: linked source-sink, with 2 or more polyline points
-         tmpname = name//' sink'
-         kdum(1) = 0
-         if (source_sinks%x(source_sinks%num_total, 1) /= dmiss) then
-            call find_nearest_flownodes(1, source_sinks%x(source_sinks%num_total, 1), source_sinks%y(source_sinks%num_total, 1), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL)
-            kk = kdum(1)
+         temporary_name = name//' sink'
+         dummy_flow_cell_index(1) = 0
+         if (self%x(self%num_total, 1) /= dmiss) then
+            call find_nearest_flownodes(1, self%x(self%num_total, 1), self%y(self%num_total, 1), temporary_name(1), &
+                                        dummy_flow_cell_index(1), jakdtree, -1, INDTP_ALL, prefer_own_domain=.true.)
+            sink_flow_cell_index = dummy_flow_cell_index(1)
          end if
 
-         if (kk /= 0 .or. kk2 /= 0) then
-            source_sinks%area(source_sinks%num_total) = area
+         if (sink_flow_cell_index /= 0 .or. source_flow_cell_index /= 0) then
+            self%area(self%num_total) = area
          end if
       end if
 
-      if (kk == 0 .and. kk2 == 0) then
+      if (sink_flow_cell_index == 0 .and. source_flow_cell_index == 0) then
          write (msgbuf, '(a,a)') 'Source+sink is outside model area for ', trim(name)
          call warn_flush()
          ierr = DFM_NOERR
-         goto 8888
+         return
       end if
 
-      source_sinks%indices(source_sinks%num_total, 1) = kk
-      source_sinks%z_bottom(source_sinks%num_total, 1) = z_sink(1)
-      source_sinks%z_top(source_sinks%num_total, 1) = z_sink(1)
+      self%indices(self%num_total, FLOWCELL_SINK) = sink_flow_cell_index
+      self%z_bottom(self%num_total, SINK_SIDE) = z_sink(1)
+      self%z_top(self%num_total, SINK_SIDE) = z_sink(1)
 
-      source_sinks%indices(source_sinks%num_total, 4) = kk2
-      source_sinks%z_bottom(source_sinks%num_total, 2) = z_source(1)
-      source_sinks%z_top(source_sinks%num_total, 2) = z_source(1)
+      self%indices(self%num_total, FLOWCELL_SOURCE) = source_flow_cell_index
+      self%z_bottom(self%num_total, SOURCE_SIDE) = z_source(1)
+      self%z_top(self%num_total, SOURCE_SIDE) = z_source(1)
 
-      if (kk > 0) then
+      if (sink_flow_cell_index > 0) then
          if (z_sink(2) /= dmiss) then
-            source_sinks%z_top(source_sinks%num_total, 1) = z_sink(2)
+            self%z_top(self%num_total, SINK_SIDE) = z_sink(2)
          end if
          ! Determine angle (sin/cos) of 'from' link (=first segment of polyline)
          if (num_points > 1) then
-            call normalin(source_sinks%x(source_sinks%num_total, 1), source_sinks%y(source_sinks%num_total, 1), source_sinks%x(source_sinks%num_total, 2), source_sinks%y(source_sinks%num_total, 2), source_sinks%discharge_cosine(source_sinks%num_total, 1), source_sinks%discharge_sine(source_sinks%num_total, 1), source_sinks%x(source_sinks%num_total, 1), source_sinks%y(source_sinks%num_total, 1), jsferic, jasfer3D, dxymis)
+            call normalin( &
+               self%x(self%num_total, 1), &
+               self%y(self%num_total, 1), &
+               self%x(self%num_total, 2), &
+               self%y(self%num_total, 2), &
+               self%discharge_cosine(self%num_total, SINK_SIDE), &
+               self%discharge_sine(self%num_total, SINK_SIDE), &
+               self%x(self%num_total, 1), &
+               self%y(self%num_total, 1), &
+               jsferic, jasfer3D, dxymis &
+               )
          end if
 
-         do i = 1, source_sinks%num_total - 1
-            if (source_sinks%indices(i, 1) /= 0 .and. kk == source_sinks%indices(i, 1)) then
-               write (msgbuf, '(4a)') 'FROM point of ', trim(source_sinks%name(source_sinks%num_total)), ' coincides with FROM point of ', trim(source_sinks%name(i))
+         do source_sink_index = 1, self%num_total - 1
+            if (self%indices(source_sink_index, FLOWCELL_SINK) /= 0 .and. sink_flow_cell_index == self%indices(source_sink_index, FLOWCELL_SINK)) then
+               write (msgbuf, '(4a)') 'FROM point of ', trim(self%name(self%num_total)), ' coincides with FROM point of ', trim(self%name(source_sink_index))
                call warn_flush()
-            else if (source_sinks%indices(i, 4) /= 0 .and. kk == source_sinks%indices(i, 4)) then
-               write (msgbuf, '(4a)') 'FROM point of ', trim(source_sinks%name(source_sinks%num_total)), ' coincides with TO   point of ', trim(source_sinks%name(i))
+            else if (self%indices(source_sink_index, FLOWCELL_SOURCE) /= 0 .and. sink_flow_cell_index == self%indices(source_sink_index, FLOWCELL_SOURCE)) then
+               write (msgbuf, '(4a)') 'FROM point of ', trim(self%name(self%num_total)), ' coincides with TO   point of ', trim(self%name(source_sink_index))
                call warn_flush()
             end if
          end do
 
       end if
 
-      if (kk2 > 0) then
+      if (source_flow_cell_index > 0) then
          if (z_source(2) /= dmiss) then
-            source_sinks%z_top(source_sinks%num_total, 2) = z_source(2)
+            self%z_top(self%num_total, SOURCE_SIDE) = z_source(2)
          end if
-         
+
          ! Determine angle (sin/cos) of 'to' link (= first segment of polyline)
          if (num_points > 1) then
-            call normalin(source_sinks%x(source_sinks%num_total, num_points - 1), source_sinks%y(source_sinks%num_total, num_points - 1), source_sinks%x(source_sinks%num_total, num_points), source_sinks%y(source_sinks%num_total, num_points), source_sinks%discharge_cosine(source_sinks%num_total, 2), source_sinks%discharge_sine(source_sinks%num_total, 2), source_sinks%x(source_sinks%num_total, num_points), source_sinks%y(source_sinks%num_total, num_points), jsferic, jasfer3D, dxymis)
+            call normalin( &
+               self%x(self%num_total, num_points - 1), &
+               self%y(self%num_total, num_points - 1), &
+               self%x(self%num_total, num_points), &
+               self%y(self%num_total, num_points), &
+               self%discharge_cosine(self%num_total, SOURCE_SIDE), &
+               self%discharge_sine(self%num_total, SOURCE_SIDE), &
+               self%x(self%num_total, num_points), &
+               self%y(self%num_total, num_points), &
+               jsferic, jasfer3D, dxymis &
+               )
          end if
       end if
 
       ierr = DFM_NOERR
 
-8888  continue
-
-   end subroutine addsorsin
+   end subroutine add_source_sink
 
    !> Compute and set source and sink values for the 'intake-outfall' structures.
-   subroutine setsorsin()
-      use m_flow, only: kmx, zws, vol1, qin, epshs
+   subroutine update_source_sink_discharges(self)
+      use m_flow, only: kmx, zws, vol1, qin
       use m_get_kbot_ktop, only: getkbotktop
       use m_flowtimes, only: dts
       use m_partitioninfo, only: jampi, reduce_srsn
 
-      integer :: n
-      integer :: kk
-      integer :: k
-      integer :: kb
-      integer :: kt
-      integer :: kk2
-      integer :: ku
+      ! Arguments
+      class(SourceSinks), intent(inout) :: self !< Source/sink object instance
+
+      ! Local variables
+      integer :: source_sink_index ! Source/sink index
+      integer :: constituent_index ! Constituent index
+      integer :: layer_index ! Layer index
+      integer :: bottom_layer_index ! Bottom layer index
+      integer :: top_layer_index ! Top layer index
+      integer :: upper_layer_index ! Upper layer index
+      integer :: sink_flow_cell_index ! Flow cell index of sink
+      integer :: source_flow_cell_index ! Flow cell index of source
       integer :: numvals
-      integer :: L
-      real(kind=dp) :: qsrck
-      real(kind=dp) :: qsrckk
-      real(kind=dp) :: dzss
+      real(kind=dp) :: flow_cell_discharge ! [m3/s] Source/sink discharge of the (whole) flow cell
+      real(kind=dp) :: layer_discharge ! [m3/s] Source/sink discharge of a layer
       real(kind=dp), parameter :: FRAC = 0.5_dp ! cell volume fraction that can at most be extracted in one step
 
       source_sink_reduction = 0.0_dp
-      do n = 1, source_sinks%num_total
-         kk = source_sinks%indices(n, 1) ! 2D pressure cell nr, From side, 0 = out of all, -1 = in other domain, > 0, own domain
-         kk2 = source_sinks%indices(n, 4) ! 2D pressure cell nr, To   side, 0 = out of all, -1 = in other domain, > 0, own domain
-         source_sinks%discharge(n) = source_sink_all_discharges(1, n)
-         if (kk > 0) then ! FROM point
+
+      do source_sink_index = 1, self%num_total
+
+         sink_flow_cell_index = self%indices(source_sink_index, FLOWCELL_SINK) ! 2D pressure cell nr, From side, 0 = out of all, -1 = in other domain, > 0, own domain
+         source_flow_cell_index = self%indices(source_sink_index, FLOWCELL_SOURCE) ! 2D pressure cell nr, To   side, 0 = out of all, -1 = in other domain, > 0, own domain
+         self%discharge(source_sink_index) = source_sink_all_discharges(1, source_sink_index)
+
+         if (sink_flow_cell_index > 0) then ! FROM point
             if (kmx > 0) then
-               call getkbotktop(kk, kb, kt)
-               if (source_sinks%z_bottom(n, 1) == dmiss) then
-                  k = kb
-                  ku = kt
+               call getkbotktop(sink_flow_cell_index, bottom_layer_index, top_layer_index)
+               if (self%z_bottom(source_sink_index, SINK_SIDE) == dmiss) then
+                  layer_index = bottom_layer_index
+                  upper_layer_index = top_layer_index
                else
-                  do k = kb, kt
-                     if (zws(k) > source_sinks%z_bottom(n, 1) .or. k == kt) then
+                  do layer_index = bottom_layer_index, top_layer_index
+                     if (zws(layer_index) > self%z_bottom(source_sink_index, SINK_SIDE) .or. layer_index == top_layer_index) then
                         exit
                      end if
                   end do
-                  if (source_sinks%z_top(n, 1) == dmiss) then
-                     ku = k
+                  if (self%z_top(source_sink_index, SINK_SIDE) == dmiss) then
+                     upper_layer_index = layer_index
                   else
-                     do ku = kb, kt
-                        if (zws(ku) > source_sinks%z_top(n, 1) .or. ku == kt) then
+                     do upper_layer_index = bottom_layer_index, top_layer_index
+               if (zws(upper_layer_index) > self%z_top(source_sink_index, SINK_SIDE) .or. upper_layer_index == top_layer_index) then
                            exit
                         end if
                      end do
                   end if
                end if
             else
-               k = kk
-               kt = kk
-               ku = kk ! in 2D, volume cell nr = pressure cell nr
+               layer_index = sink_flow_cell_index
+               top_layer_index = sink_flow_cell_index
+               upper_layer_index = sink_flow_cell_index ! in 2D, volume cell nr = pressure cell nr
             end if
-            source_sinks%indices(n, 2) = k ! store kb of src
-            source_sinks%indices(n, 3) = ku !
-            if (source_sinks%discharge(n) > 0) then ! Reduce if flux pos
 
-               do k = source_sinks%indices(n, 2), source_sinks%indices(n, 3)
-                  source_sink_reduction(1, n) = source_sink_reduction(1, n) + vol1(k)
-                  do L = 1, numconst
-                     source_sink_reduction(1 + L, n) = source_sink_reduction(1 + L, n) + constituents(L, k) * vol1(k)
+            self%indices(source_sink_index, BOTTOM_LAYER_SINK) = layer_index ! store bottom_layer_index of src
+            self%indices(source_sink_index, TOP_LAYER_SINK) = upper_layer_index !
+
+            if (self%discharge(source_sink_index) > 0) then ! Reduce if flux pos
+
+               do layer_index = self%indices(source_sink_index, BOTTOM_LAYER_SINK), self%indices(source_sink_index, TOP_LAYER_SINK)
+                  source_sink_reduction(1, source_sink_index) = source_sink_reduction(1, source_sink_index) + vol1(layer_index)
+                  do constituent_index = 1, numconst
+                     source_sink_reduction(1 + constituent_index, source_sink_index) = source_sink_reduction(1 + constituent_index, source_sink_index) + constituents(constituent_index, layer_index) * vol1(layer_index)
                   end do
                end do
-               if (source_sink_reduction(1, n) > 0.0_dp) then
-                  do L = 1, numconst
-                     source_sink_reduction(1 + L, n) = source_sink_reduction(1 + L, n) / source_sink_reduction(1, n)
+               if (source_sink_reduction(1, source_sink_index) > 0.0_dp) then
+                  do constituent_index = 1, numconst
+                     source_sink_reduction(1 + constituent_index, source_sink_index) = source_sink_reduction(1 + constituent_index, source_sink_index) / source_sink_reduction(1, source_sink_index)
                   end do
                end if
             end if
          end if
 
-         if (kk2 > 0) then ! TO point
+         if (source_flow_cell_index > 0) then ! TO point
             if (kmx > 0) then
-               call getkbotktop(kk2, kb, kt)
-               if (source_sinks%z_bottom(n, 2) == dmiss) then
-                  k = kb
-                  ku = kt
+               call getkbotktop(source_flow_cell_index, bottom_layer_index, top_layer_index)
+               if (self%z_bottom(source_sink_index, SOURCE_SIDE) == dmiss) then
+                  layer_index = bottom_layer_index
+                  upper_layer_index = top_layer_index
                else
-                  do k = kb, kt
-                     if (zws(k) > source_sinks%z_bottom(n, 2) .or. k == kt) then
+                  do layer_index = bottom_layer_index, top_layer_index
+                     if (zws(layer_index) > self%z_bottom(source_sink_index, SOURCE_SIDE) .or. layer_index == top_layer_index) then
                         exit
                      end if
                   end do
-                  if (source_sinks%z_top(n, 2) == dmiss) then
-                     ku = k
+                  if (self%z_top(source_sink_index, SOURCE_SIDE) == dmiss) then
+                     upper_layer_index = layer_index
                   else
-                     do ku = kb, kt
-                        if (zws(ku) > source_sinks%z_top(n, 2) .or. ku == kt) then
+                     do upper_layer_index = bottom_layer_index, top_layer_index
+             if (zws(upper_layer_index) > self%z_top(source_sink_index, SOURCE_SIDE) .or. upper_layer_index == top_layer_index) then
                            exit
                         end if
                      end do
                   end if
                end if
             else
-               k = kk2
-               kt = kk2
-               ku = kk2 ! in 2D, volume cell nr = pressure cell nr
+               layer_index = source_flow_cell_index
+               top_layer_index = source_flow_cell_index
+               upper_layer_index = source_flow_cell_index ! in 2D, volume cell nr = pressure cell nr
             end if
-            source_sinks%indices(n, 5) = k
-            source_sinks%indices(n, 6) = ku
-            if (source_sinks%discharge(n) < 0) then ! Reduce if flux neg
 
-               do k = source_sinks%indices(n, 5), source_sinks%indices(n, 6)
-                  source_sink_reduction(1 + numconst + 1, n) = source_sink_reduction(1 + numconst + 1, n) + vol1(k)
-                  do L = 1, numconst
-                     source_sink_reduction(1 + numconst + 1 + L, n) = source_sink_reduction(1 + numconst + 1 + L, n) + constituents(L, k) * vol1(k)
+            self%indices(source_sink_index, BOTTOM_LAYER_SOURCE) = layer_index
+            self%indices(source_sink_index, TOP_LAYER_SOURCE) = upper_layer_index
+
+            if (self%discharge(source_sink_index) < 0) then ! Reduce if flux neg
+
+            do layer_index = self%indices(source_sink_index, BOTTOM_LAYER_SOURCE), self%indices(source_sink_index, TOP_LAYER_SOURCE)
+                  source_sink_reduction(1 + numconst + 1, source_sink_index) = source_sink_reduction(1 + numconst + 1, source_sink_index) + vol1(layer_index)
+                  do constituent_index = 1, numconst
+                     source_sink_reduction(1 + numconst + 1 + constituent_index, source_sink_index) = source_sink_reduction(1 + numconst + 1 + constituent_index, source_sink_index) + constituents(constituent_index, layer_index) * vol1(layer_index)
                   end do
                end do
-               if (source_sink_reduction(1 + numconst + 1, n) > 0.0_dp) then
-                  do L = 1, numconst
-                     source_sink_reduction(1 + numconst + 1 + L, n) = source_sink_reduction(1 + numconst + 1 + L, n) / source_sink_reduction(1 + numconst + 1, n)
+               if (source_sink_reduction(1 + numconst + 1, source_sink_index) > 0.0_dp) then
+                  do constituent_index = 1, numconst
+                     source_sink_reduction(1 + numconst + 1 + constituent_index, source_sink_index) = source_sink_reduction(1 + numconst + 1 + constituent_index, source_sink_index) / source_sink_reduction(1 + numconst + 1, source_sink_index)
                   end do
                end if
             end if
@@ -671,85 +649,154 @@ contains
       end do
 
       if (jampi > 0) then
-         numvals = 2 * (1 + numconst)
-         call reduce_srsn(numvals, source_sinks%num_total, source_sink_reduction)
+         numvals = 2*(1 + numconst)
+         call reduce_srsn(numvals, self%num_total, source_sink_reduction)
       end if
 
-      do n = 1, source_sinks%num_total
-         source_sinks%discharge(n) = source_sink_all_discharges(1, n)
-         do L = 1, numconst
-            source_sinks%constituents(n, L) = source_sink_all_discharges(L + 1, n)
+      do source_sink_index = 1, self%num_total
+         self%discharge(source_sink_index) = source_sink_all_discharges(1, source_sink_index)
+         do constituent_index = 1, numconst
+      self%constituents(source_sink_index, constituent_index) = source_sink_all_discharges(constituent_index + 1, source_sink_index)
          end do
 
-         kk = source_sinks%indices(n, 1) ! 2D pressure cell nr
-         qsrck = source_sinks%discharge(n)
-         if (kk /= 0 .and. qsrck > 0) then ! Extract FROM 1
-            if (FRAC * source_sink_reduction(1, n) / dts < abs(qsrck)) then
-               qsrck = FRAC * source_sink_reduction(1, n) / dts
+         sink_flow_cell_index = self%indices(source_sink_index, FLOWCELL_SINK) ! 2D pressure cell nr
+         flow_cell_discharge = self%discharge(source_sink_index)
+         if (sink_flow_cell_index /= 0 .and. flow_cell_discharge > 0) then ! Extract FROM 1
+            if (FRAC*source_sink_reduction(1, source_sink_index)/dts < abs(flow_cell_discharge)) then
+               flow_cell_discharge = FRAC*source_sink_reduction(1, source_sink_index)/dts
 
-               write (msgbuf, *) 'Extraction flux larger than cell volume at point 1 of : ', trim(source_sinks%name(n))
+               write (msgbuf, *) 'Extraction flux larger than cell volume at point 1 of : ', trim(self%name(source_sink_index))
                call mess(LEVEL_WARN, msgbuf)
             end if
          end if
 
-         kk2 = source_sinks%indices(n, 4) ! 2D pressure cell nr
-         if (kk2 /= 0 .and. qsrck < 0) then ! Extract From 2
-            if (FRAC * source_sink_reduction(1 + numconst + 1, n) / dts < abs(qsrck)) then
-               qsrck = -FRAC * source_sink_reduction(1 + numconst + 1, n) / dts
+         source_flow_cell_index = self%indices(source_sink_index, FLOWCELL_SOURCE) ! 2D pressure cell nr
+         if (source_flow_cell_index /= 0 .and. flow_cell_discharge < 0) then ! Extract From 2
+            if (FRAC*source_sink_reduction(1 + numconst + 1, source_sink_index)/dts < abs(flow_cell_discharge)) then
+               flow_cell_discharge = -FRAC*source_sink_reduction(1 + numconst + 1, source_sink_index)/dts
 
-               write (msgbuf, *) 'Extraction flux larger than cell volume at point 2 of : ', trim(source_sinks%name(n))
+               write (msgbuf, *) 'Extraction flux larger than cell volume at point 2 of : ', trim(self%name(source_sink_index))
                call mess(LEVEL_WARN, msgbuf)
             end if
          end if
 
-         source_sinks%discharge(n) = qsrck
+         self%discharge(source_sink_index) = flow_cell_discharge
 
-         if (kk * kk2 /= 0) then ! Coupled stuff
-            if (qsrck > 0) then ! FROM k to k2
-               do L = 1, numconst
-                  source_sinks%constituents(n, L) = source_sinks%constituents(n, L) + source_sink_reduction(1 + L, n)
+         if (sink_flow_cell_index*source_flow_cell_index /= 0) then ! Coupled stuff
+            if (flow_cell_discharge > 0) then ! FROM layer_index to k2
+               do constituent_index = 1, numconst
+                  self%constituents(source_sink_index, constituent_index) = self%constituents(source_sink_index, constituent_index) + source_sink_reduction(1 + constituent_index, source_sink_index)
                end do
-            else if (qsrck < 0) then ! FROM k2 to k
-               do L = 1, numconst
-                  source_sinks%constituents(n, L) = source_sinks%constituents(n, L) + source_sink_reduction(1 + numconst + 1 + L, n)
+            else if (flow_cell_discharge < 0) then ! FROM k2 to layer_index
+               do constituent_index = 1, numconst
+                  self%constituents(source_sink_index, constituent_index) = self%constituents(source_sink_index, constituent_index) + source_sink_reduction(1 + numconst + 1 + constituent_index, source_sink_index)
                end do
             end if
          end if
 
-         if (kk > 0) then ! FROM Point
-            qsrckk = source_sinks%discharge(n)
-            qin(kk) = qin(kk) - qsrckk ! add to 2D pressure cell nr
-            do k = source_sinks%indices(n, 2), source_sinks%indices(n, 3)
+         if (sink_flow_cell_index > 0) then ! FROM Point
+            layer_discharge = self%discharge(source_sink_index)
+            qin(sink_flow_cell_index) = qin(sink_flow_cell_index) - layer_discharge ! add to 2D pressure cell nr
+            do layer_index = self%indices(source_sink_index, BOTTOM_LAYER_SINK), self%indices(source_sink_index, TOP_LAYER_SINK)
                if (kmx > 0) then
-                  dzss = zws(source_sinks%indices(n, 3)) - zws(source_sinks%indices(n, 2) - 1)
-                  if (dzss > epshs) then
-                     qsrck = qsrckk * (zws(k) - zws(k - 1)) / dzss
-                  else
-                     qsrck = qsrckk / (source_sinks%indices(n, 3) - source_sinks%indices(n, 2) + 1)
-                  end if
-                  qin(k) = qin(k) - qsrck
+                  flow_cell_discharge = calculate_layer_discharge(layer_discharge, layer_index, &
+                                                                  self%indices(source_sink_index, BOTTOM_LAYER_SINK), &
+                                                                  self%indices(source_sink_index, TOP_LAYER_SINK))
+                  qin(layer_index) = qin(layer_index) - flow_cell_discharge
                end if
             end do
          end if
 
-         if (kk2 > 0) then ! TO Point
-            qsrckk = source_sinks%discharge(n)
-            qin(kk2) = qin(kk2) + qsrckk ! add to 2D pressure cell nr
-            do k = source_sinks%indices(n, 5), source_sinks%indices(n, 6)
+         if (source_flow_cell_index > 0) then ! TO Point
+            layer_discharge = self%discharge(source_sink_index)
+            qin(source_flow_cell_index) = qin(source_flow_cell_index) + layer_discharge ! add to 2D pressure cell nr
+            do layer_index = self%indices(source_sink_index, BOTTOM_LAYER_SOURCE), self%indices(source_sink_index, TOP_LAYER_SOURCE)
                if (kmx > 0) then
-                  dzss = zws(source_sinks%indices(n, 6)) - zws(source_sinks%indices(n, 5) - 1)
-                  if (dzss > epshs) then
-                     qsrck = qsrckk * (zws(k) - zws(k - 1)) / dzss
-                  else
-                     qsrck = qsrckk / (source_sinks%indices(n, 6) - source_sinks%indices(n, 5) + 1)
-                  end if
-                  qin(k) = qin(k) + qsrck
+                  flow_cell_discharge = calculate_layer_discharge(layer_discharge, layer_index, &
+                                                                  self%indices(source_sink_index, BOTTOM_LAYER_SOURCE), &
+                                                                  self%indices(source_sink_index, TOP_LAYER_SOURCE))
+                  qin(layer_index) = qin(layer_index) + flow_cell_discharge
                end if
             end do
          end if
-
       end do
 
-   end subroutine setsorsin
+   end subroutine update_source_sink_discharges
+
+   !> Collect the signed nearfield discharges per volume cell for map output.
+   subroutine get_nearfield_discharge(self, discharge)
+      class(SourceSinks), intent(in) :: self !< Source/sink object instance.
+      real(kind=dp), dimension(:), intent(out) :: discharge !< [m3/s] Net nearfield discharge per volume cell.
+
+      integer :: source_sink_index
+
+      discharge = 0.0_dp
+      do source_sink_index = self%num_total - self%num_nearfield + 1, self%num_total
+         call add_layer_discharge(self%indices(source_sink_index, FLOWCELL_SINK), &
+                                  self%indices(source_sink_index, BOTTOM_LAYER_SINK), &
+                                  self%indices(source_sink_index, TOP_LAYER_SINK), &
+                                  -self%discharge(source_sink_index), discharge)
+         call add_layer_discharge(self%indices(source_sink_index, FLOWCELL_SOURCE), &
+                                  self%indices(source_sink_index, BOTTOM_LAYER_SOURCE), &
+                                  self%indices(source_sink_index, TOP_LAYER_SOURCE), &
+                                  self%discharge(source_sink_index), discharge)
+      end do
+   end subroutine get_nearfield_discharge
+
+   !> Accumulate one source/sink side's discharge in the map output array using the solver's layer range.
+   subroutine add_layer_discharge(flow_cell, &
+                                  bottom_layer, &
+                                  top_layer, &
+                                  side_discharge, &
+                                  map_discharge)
+      integer, intent(in) :: flow_cell !< 2D flow-cell index; nonpositive for a nonlocal or absent side.
+      integer, intent(in) :: bottom_layer !< Bottom volume-cell index selected by the solver; zero before initialization.
+      integer, intent(in) :: top_layer !< Top volume-cell index selected by the solver.
+      real(kind=dp), intent(in) :: side_discharge !< [m3/s] Discharge on this side, positive for inflow and negative for outflow.
+      real(kind=dp), dimension(:), intent(inout) :: map_discharge !< [m3/s] Map output: net discharge per volume cell.
+
+      integer :: layer_index
+      real(kind=dp) :: layer_discharge ! [m3/s]
+
+      if (flow_cell <= 0) then
+         return
+      end if
+      ! Layer indices are zero before the first discharge update.
+      if (bottom_layer == 0 .or. top_layer < bottom_layer) then
+         return
+      end if
+      do layer_index = bottom_layer, top_layer
+         layer_discharge = calculate_layer_discharge(side_discharge, layer_index, bottom_layer, top_layer)
+         map_discharge(layer_index) = map_discharge(layer_index) + layer_discharge
+      end do
+   end subroutine add_layer_discharge
+
+   !> Compute one layer's discharge using the same distribution for the solver and map output.
+   !! Use thickness weighting, or equal shares when the column height is negligible.
+   pure function calculate_layer_discharge(total_discharge, &
+                                           layer_index, &
+                                           bottom_layer, &
+                                           top_layer) result(layer_discharge)
+      use m_flow, only: kmx, zws, epshs
+
+      real(kind=dp), intent(in) :: total_discharge !< [m3/s] Signed discharge over the selected layer range.
+      integer, intent(in) :: layer_index !< Volume-cell index for which to calculate the discharge.
+      integer, intent(in) :: bottom_layer !< Bottom volume-cell index of the selected layer range.
+      integer, intent(in) :: top_layer !< Top volume-cell index of the selected layer range.
+      real(kind=dp) :: layer_discharge ! [m3/s] Signed discharge in the requested layer.
+
+      real(kind=dp) :: layer_height ! [m]
+
+      if (kmx == 0) then
+         layer_discharge = total_discharge
+         return
+      end if
+      layer_height = zws(top_layer) - zws(bottom_layer - 1)
+      if (layer_height > epshs) then
+         layer_discharge = total_discharge*(zws(layer_index) - zws(layer_index - 1))/layer_height
+      else
+         layer_discharge = total_discharge/real(top_layer - bottom_layer + 1, dp)
+      end if
+   end function calculate_layer_discharge
 
 end module m_source_sink

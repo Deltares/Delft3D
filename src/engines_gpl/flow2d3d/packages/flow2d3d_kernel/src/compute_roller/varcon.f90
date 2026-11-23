@@ -34,7 +34,7 @@ subroutine varcon(fname     ,timmin    ,result    ,isdir     ,nres      , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     use globaldata
     !
     implicit none

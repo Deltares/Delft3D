@@ -269,34 +269,14 @@ TEST(CSumoSettingsReaderTest, ParsesGeometryParameters)
     EXPECT_DOUBLE_EQ(diffuser.horizontal_angle, 180.0);
 }
 
-TEST(CSumoSettingsReaderTest, ParsesNf2ffFile)
+TEST(CSumoSettingsReaderTest, PreservesNf2ffFileInSettingsXml)
 {
     const auto result = pre_c_sumo::CSumoSettingsReader::fromString(pre_c_sumo::test::full_settings_xml);
     ASSERT_TRUE(result.has_value());
     const auto& diffuser = result->diffusers().front();
-    ASSERT_TRUE(diffuser.nf2ff_file.has_value());
-    EXPECT_EQ(diffuser.nf2ff_file.value(), "/path/to/NF2FF.xml");
-}
-
-TEST(CSumoSettingsReaderTest, Nf2ffFileIsNulloptWhenAbsent)
-{
-    constexpr std::string_view xml = R"(<?xml version="1.0"?>
-<COSUMO>
-  <fileVersion>0.3</fileVersion>
-  <settings>
-    <general><ID>D1</ID><subGridModel/><farFieldModel/></general>
-    <comm><FF2NFdir>a</FF2NFdir><FFrundir>b</FFrundir></comm>
-    <data>
-      <XYdiff>1.0 2.0</XYdiff><XYintake>3.0 4.0</XYintake>
-      <discharge><M3s>5.0</M3s><constituentsOperator>absolute</constituentsOperator><constituents>0.0</constituents></discharge>
-      <D0>0.1</D0><H0>0.2</H0><Theta0>0.3</Theta0><Sigma0>0.4</Sigma0>
-    </data>
-  </settings>
-</COSUMO>)";
-    const auto result = pre_c_sumo::CSumoSettingsReader::fromString(xml);
-    ASSERT_TRUE(result.has_value());
-    const auto& diffuser = result->diffusers().front();
-    EXPECT_FALSE(diffuser.nf2ff_file.has_value());
+    const auto nf2ff_file = diffuser.settings_xml_node.child("data").child("NF2FFFile");
+    ASSERT_TRUE(nf2ff_file);
+    EXPECT_STREQ(nf2ff_file.text().get(), "/path/to/NF2FF.xml");
 }
 
 TEST(CSumoSettingsReaderTest, ParsesCommSection)

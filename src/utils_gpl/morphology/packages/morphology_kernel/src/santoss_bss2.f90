@@ -49,7 +49,7 @@ subroutine santoss_bss2(sw_effects, as_effects, g, d, rhow, rhos, delta, &
 !
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts, only: pi,degrad
+    use m_mathconstants, only: pi,degrad
 !
 ! arguments
 !

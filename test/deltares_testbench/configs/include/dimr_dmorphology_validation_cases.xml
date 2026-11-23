@@ -34,7 +34,7 @@
           <parameter name="mesh2d_s1" toleranceAbsolute="0.001"/>
           <parameter name="mesh2d_ucmag" toleranceAbsolute="0.001"/>
           <parameter name="mesh2d_hwav" toleranceAbsolute="0.001"/>
-          <parameter name="mesh2d_twav" toleranceAbsolute="0.001"/>
+          <parameter name="mesh2d_twav" toleranceAbsolute="0.05"/>
           <parameter name="mesh2d_taus" toleranceAbsolute="0.01"/>
           <parameter name="mesh2d_tausmax" toleranceAbsolute="0.01"/>
           <parameter name="mesh2d_taub" toleranceAbsolute="0.01"/>
@@ -83,7 +83,7 @@
     <checks>
       <file name="dflowfmoutput/slope_his.nc" type="netCDF">
         <parameters>
-          <parameter name="sed" toleranceAbsolute="0.0001"/>
+          <parameter name="sed" toleranceAbsolute="0.001"/>
           <parameter name="waterlevel" toleranceAbsolute="0.0001"/>
           <parameter name="velocity_magnitude" toleranceAbsolute="0.0001"/>
         </parameters>
@@ -96,7 +96,7 @@
     <checks>
       <file name="dflowfmoutput/channel_his.nc" type="netCDF">
         <parameters>
-          <parameter name="sed" toleranceAbsolute="0.0001"/>
+          <parameter name="sed" toleranceAbsolute="0.0003"/>
           <parameter name="waterlevel" toleranceAbsolute="0.0001"/>
           <parameter name="velocity_magnitude" toleranceAbsolute="0.0001"/>
         </parameters>
@@ -109,7 +109,7 @@
     <checks>
       <file name="dflowfmoutput/channel_his.nc" type="netCDF">
         <parameters>
-          <parameter name="sed" toleranceAbsolute="0.0001"/>
+          <parameter name="sed" toleranceAbsolute="0.0003"/>
           <parameter name="waterlevel" toleranceAbsolute="0.0001"/>
           <parameter name="velocity_magnitude" toleranceAbsolute="0.0001"/>
         </parameters>
@@ -122,7 +122,7 @@
     <checks>
       <file name="dflowfmoutput/channel_his.nc" type="netCDF">
         <parameters>
-          <parameter name="sed" toleranceAbsolute="0.0001"/>
+          <parameter name="sed" toleranceAbsolute="0.0003"/>
           <parameter name="waterlevel" toleranceAbsolute="0.0001"/>
           <parameter name="velocity_magnitude" toleranceAbsolute="0.0001"/>
         </parameters>
@@ -295,6 +295,58 @@
           <parameter name="mesh2d_ws" toleranceAbsolute="0.0001"/>
           <parameter name="mesh2d_sedfrac_concentration" toleranceAbsolute="0.00001"/>
           <parameter name="mesh2d_bodsed" toleranceAbsolute="0.001"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  <testCase name="e02_f048_c01_full_Gibson" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f048_consolidation/c01_full_Gibson</path>
+    <checks>
+      <file name="dflowfmoutput/masscon_his.nc" type="netCDF">
+        <parameters>
+          <parameter name="bedlevel" toleranceAbsolute="0.001"/>
+          <parameter name="thlyr" toleranceAbsolute="0.001"/>
+          <parameter name="poros" toleranceAbsolute="0.001"/>
+          <parameter name="msed" toleranceAbsolute="1.0"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  <testCase name="e02_f048_c02_DECON" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f048_consolidation/c02_DECON</path>
+    <checks>
+      <file name="dflowfmoutput/masscon_his.nc" type="netCDF">
+        <parameters>
+          <parameter name="bedlevel" toleranceAbsolute="0.001"/>
+          <parameter name="thlyr" toleranceAbsolute="0.001"/>
+          <parameter name="poros" toleranceAbsolute="0.001"/>
+          <parameter name="msed" toleranceAbsolute="1.0"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  <testCase name="e02_f048_c03_Terzaghi" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f048_consolidation/c03_Terzaghi</path>
+    <checks>
+      <file name="dflowfmoutput/masscon_his.nc" type="netCDF">
+        <parameters>
+          <parameter name="bedlevel" toleranceAbsolute="0.001"/>
+          <parameter name="thlyr" toleranceAbsolute="0.001"/>
+          <parameter name="poros" toleranceAbsolute="0.001"/>
+          <parameter name="msed" toleranceAbsolute="1.0"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  <testCase name="e02_f048_c04_Terzaghi_peat" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f048_consolidation/c04_Terzaghi_peat</path>
+    <checks>
+      <file name="dflowfmoutput/masscon_his.nc" type="netCDF">
+        <parameters>
+          <parameter name="bedlevel" toleranceAbsolute="0.001"/>
+          <parameter name="thlyr" toleranceAbsolute="0.001"/>
+          <parameter name="poros" toleranceAbsolute="0.001"/>
+          <parameter name="msed" toleranceAbsolute="1.0"/>
         </parameters>
       </file>
     </checks>

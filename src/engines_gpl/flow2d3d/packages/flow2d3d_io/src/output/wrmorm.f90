@@ -89,7 +89,7 @@ subroutine wrmorm(lundia    ,error     ,mmax      ,nmaxus    ,lsedtot   , &
     real(fp)         , dimension(:,:)   , pointer :: mobile
     real(fp)         , dimension(:)     , pointer :: thclyr
     real(fp)         , dimension(:,:)   , pointer :: svfrac
-    real(fp)         , dimension(:,:)   , pointer :: td
+    real(fp)         , dimension(:,:)   , pointer :: depos_time
     real(fp)         , dimension(:,:)   , pointer :: preload
     real(fp)         , dimension(:,:,:) , pointer :: msed
     type (moroutputtype)                , pointer :: moroutput
@@ -138,7 +138,7 @@ subroutine wrmorm(lundia    ,error     ,mmax      ,nmaxus    ,lsedtot   , &
        if (istat==0) istat = bedcomp_getpointer_realfp(gdp%gdmorlyr,'dpsed',dpsed)
     case (2)
        if (istat==0) istat = bedcomp_getpointer_realfp (gdp%gdmorlyr,'svfrac',svfrac)
-       if (istat==0) istat = bedcomp_getpointer_realfp (gdp%gdmorlyr,'td',td)
+       if (istat==0) istat = bedcomp_getpointer_realfp (gdp%gdmorlyr,'depos_time',depos_time)
        if (istat==0) istat = bedcomp_getpointer_realfp (gdp%gdmorlyr,'preload',preload)
        if (istat==0) istat = bedcomp_getpointer_realfp (gdp%gdmorlyr,'msed',msed)
        if (istat==0) istat = bedcomp_getpointer_realfp (gdp%gdmorlyr,'thlyr',thlyr)
@@ -189,7 +189,7 @@ subroutine wrmorm(lundia    ,error     ,mmax      ,nmaxus    ,lsedtot   , &
        if (iporos>0 .and. moroutput%poros) then
           call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'EPSPOR', ' ', io_prec , 3, dimids=(/iddim_n, iddim_m, iddim_nlyr/), longname='Porosity coefficient', acl='z')
        endif
-       if (moroutput%td .and. associated(td)) then
+       if (moroutput%depos_time .and. associated(depos_time)) then
           call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'TD', ' ', io_prec   , 3, dimids=(/iddim_n, iddim_m, iddim_nlyr/), longname='Time of last load increment', unit='minutes', acl='z')
        endif
        if (moroutput%preload .and. associated(preload)) then
@@ -393,14 +393,14 @@ subroutine wrmorm(lundia    ,error     ,mmax      ,nmaxus    ,lsedtot   , &
        !
        ! element 'TD'
        !
-       if (moroutput%td .and. associated(td)) then
+       if (moroutput%depos_time .and. associated(depos_time)) then
           allocate( rbuff3(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, nlyr) )
           rbuff3(:, :, :) = -999.0_fp
           do k = 1, nlyr
              do m = 1, mmax
                 do n = 1, nmaxus
                    call n_and_m_to_nm(n, m, nm, gdp)
-                   rbuff3(n, m, k) = td(k, nm)
+                   rbuff3(n, m, k) = depos_time(k, nm)
                 enddo
              enddo
           enddo

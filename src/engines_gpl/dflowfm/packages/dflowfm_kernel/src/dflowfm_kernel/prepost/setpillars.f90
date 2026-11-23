@@ -46,7 +46,7 @@ contains
       use fm_external_forcings_data, only: pillar, Cpil
       use m_vegetation, only: rnveg, diaveg, stemheight
       use gridoperations
-      use m_flowparameters, only: japillar
+      use m_flowparameters, only: pillar_method, PILLAR_DELFT3D_FLOWNODE, PILLAR_DELFT3D_FLOWLINK, PILLAR_VEGETATION_BAPTIST
       use m_crspath
       use m_crspath_on_flowgeom
       use unstruc_model, only: md_pillar_use_far_field_velocity
@@ -54,7 +54,7 @@ contains
       integer :: i, j, k, L, Lf, La, m, n
       real(kind=dp) :: pi
       integer, dimension(:), allocatable :: npil
-      real(kind=dp), dimension(:), allocatable :: cdeq !< combined pillar drag coefficient per cell or link
+      real(kind=dp), dimension(:), allocatable :: cdeq !< combined pillar drag coefficient per cell or link 
       real(kind=dp), dimension(:), allocatable :: Aeff !< effective area of cell (pillartype=1) of width of link (pillartype=3) available for flow (not occupied by pillars)
       real(kind=dp) :: velocity_squared_correction_per_width !< correction factor for velocity squared per unit width to be used in pillar drag calculation
       integer, dimension(:), allocatable :: linktype
@@ -65,9 +65,9 @@ contains
       if (allocated(Cpil)) then
          deallocate (Cpil)
       end if
-      if (japillar == 1) then
+      if (pillar_method == PILLAR_DELFT3D_FLOWNODE) then
          allocate (Cpil(ndx))
-      else if (japillar == 3) then
+      else if (pillar_method == PILLAR_DELFT3D_FLOWLINK) then
          allocate (Cpil(lnx))
       end if
 
@@ -79,7 +79,7 @@ contains
 
       pi = 4.0_dp * atan(1.0_dp)
 
-      if (japillar == 2) then
+      if (pillar_method == PILLAR_VEGETATION_BAPTIST) then
          if (allocated(cdeq)) then
             deallocate (cdeq, npil)
          end if
@@ -110,7 +110,7 @@ contains
          deallocate (cdeq)
          deallocate (npil)
 
-      elseif (japillar == 1) then ! Delft3D implimentation, but modified version on flow cells
+      elseif (pillar_method == PILLAR_DELFT3D_FLOWNODE) then ! Delft3D implimentation, but modified version on flow cells
          if (allocated(Aeff)) then
             deallocate (Aeff, cdeq)
          end if
@@ -146,7 +146,7 @@ contains
          deallocate (Aeff)
          deallocate (cdeq)
 
-      else if (japillar == 3) then ! Based on D3D approach on flow links
+      else if (pillar_method == PILLAR_DELFT3D_FLOWLINK) then ! Based on D3D approach on flow links
          if (allocated(Aeff)) then
             deallocate (Aeff, cdeq, linktype)
          end if

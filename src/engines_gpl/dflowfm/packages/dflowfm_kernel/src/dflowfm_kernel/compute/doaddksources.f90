@@ -27,12 +27,9 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 module m_doaddksources
 
-   implicit none
+   implicit none(type, external)
 
    private
 
@@ -42,7 +39,7 @@ contains
 
    subroutine doaddksources() ! add k sources
       use precision, only: dp
-      use m_source_sink, only: source_sinks
+      use m_source_sink, only: source_sinks, FLOWCELL_SINK, FLOWCELL_SOURCE, BOTTOM_LAYER_SINK, BOTTOM_LAYER_SOURCE
       use m_flow, only: vol1, turkinws
       use m_flowtimes, only: dts
       implicit none
@@ -51,19 +48,19 @@ contains
       real(kind=dp) :: qsrck, dvoli, dtol = 1.0e-4_dp
 
       do n = 1, source_sinks%num_total
-         if (source_sinks%indices(n, 2) == 0 .and. source_sinks%indices(n, 5) == 0) then
+         if (source_sinks%indices(n, BOTTOM_LAYER_SINK) == 0 .and. source_sinks%indices(n, BOTTOM_LAYER_SOURCE) == 0) then
             cycle ! due to initialisation
          end if
 
          if (source_sinks%area(n) == 0) then
             cycle
          end if
-         kk = source_sinks%indices(n, 1) ! 2D pressure cell nr FROM
-         kk2 = source_sinks%indices(n, 4) ! 2D pressure cell nr TO
+         kk = source_sinks%indices(n, FLOWCELL_SINK) ! 2D pressure cell nr FROM
+         kk2 = source_sinks%indices(n, FLOWCELL_SOURCE) ! 2D pressure cell nr TO
          qsrck = source_sinks%discharge(n)
 
          if (kk > 0) then ! FROM Point
-            k = source_sinks%indices(n, 2)
+            k = source_sinks%indices(n, BOTTOM_LAYER_SINK)
             dvoli = 1.0_dp / max(vol1(k), dtol)
             if (qsrck > 0) then ! FROM k to k2
                turkinws(k) = turkinws(k) - dts * qsrck * dvoli * turkinws(k)
@@ -73,7 +70,7 @@ contains
          end if
 
          if (kk2 > 0) then ! TO Point
-            k = source_sinks%indices(n, 5)
+            k = source_sinks%indices(n, BOTTOM_LAYER_SOURCE)
             dvoli = 1.0_dp / max(vol1(k), dtol)
             if (qsrck > 0) then
                turkinws(k) = turkinws(k) + dts * qsrck * dvoli * 0.5_dp * (qsrck / source_sinks%area(n))**2

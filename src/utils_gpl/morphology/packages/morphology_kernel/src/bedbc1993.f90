@@ -47,7 +47,7 @@ subroutine bedbc1993(tp        ,uorb      ,rhowat    ,h1        ,umod      , &
 !
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
 !
 ! Arguments
 !

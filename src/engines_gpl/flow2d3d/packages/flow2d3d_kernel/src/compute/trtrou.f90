@@ -40,7 +40,7 @@ subroutine trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     use globaldata
     use string_module
     !

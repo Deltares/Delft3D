@@ -57,6 +57,12 @@ module fm_location_types
    integer, parameter, public :: SPATIAL_LOCATION_1D = 1 !< Spatial location: 1D element.
    integer, parameter, public :: SPATIAL_LOCATION_2D = 2 !< Spatial location: 2D element.
 
+   ! Target vertical layers used by spatial field inputs:
+   integer, parameter, public :: TARGET_LAYER_UNIFORM = 0 !< Apply uniformly to all layers.
+   integer, parameter, public :: TARGET_LAYER_BOTTOM = -1 !< Apply to the bottom layer.
+   integer, parameter, public :: TARGET_LAYER_TOP = -2 !< Apply to the top layer.
+   integer, parameter, public :: TARGET_LAYER_ALL_3D = -3 !< Apply a full 3D field.
+
    ! Model global:
    integer, parameter, public :: UNC_LOC_GLOBAL = 21 !< Data location: model global (e.g. water balance)
 

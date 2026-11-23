@@ -34,7 +34,7 @@
 !! @author edwin.spee@deltares.nl
 module m_ec_astro
    use precision,  only : hp, fp
-   use mathconsts, only : pi, degrad
+   use m_mathconstants, only : pi, degrad
 
    implicit none
 

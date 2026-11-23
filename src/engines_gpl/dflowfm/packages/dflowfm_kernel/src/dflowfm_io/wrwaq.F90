@@ -443,7 +443,7 @@ contains
       use m_flowparameters
       use m_flowtimes
       use m_flow
-      use m_source_sink, only: source_sinks
+      use m_source_sink, only: source_sinks, FLOWCELL_SINK, FLOWCELL_SOURCE
       use m_flowgeom
       use unstruc_model
       use time_module, only: ymd2jul
@@ -636,8 +636,8 @@ contains
          end if
          write (lunhyd, '(A      )') 'sink-sources'
          do isrc = 1, source_sinks%num_total
-            kk1 = source_sinks%indices(isrc, 1)
-            kk2 = source_sinks%indices(isrc, 4)
+            kk1 = source_sinks%indices(isrc, FLOWCELL_SINK)
+            kk2 = source_sinks%indices(isrc, FLOWCELL_SOURCE)
             if ((kk1 == 0 .and. kk2 > 0) .or. &
                 (kk2 == 0 .and. kk1 > 0) .or. &
                 (kk1 > 0 .and. kk2 > 0)) then
@@ -656,7 +656,7 @@ contains
                if (kk2 > 0) then
                   x2 = xz(kk2)
                   y2 = yz(kk2)
-               else if (kk1 == 0) then
+               else if (kk2 == 0) then
                   ibnd = ibnd + 1
                   kk2 = -ibnd
                end if
@@ -1579,7 +1579,7 @@ contains
       use network_data
       use m_partitioninfo, only: is_ghost_node
       use fm_external_forcings_data, only: nopenbndsect, nopenbndlin, openbndlin, openbndname
-      use m_source_sink, only: source_sinks
+      use m_source_sink, only: source_sinks, FLOWCELL_SINK, FLOWCELL_SOURCE
       use m_laterals, only: numlatsg, n1latsg, n2latsg, nnlat, lat_ids
       use unstruc_files
       use m_sferic, only: jsferic, jasfer3D
@@ -1667,13 +1667,13 @@ contains
       end do
       ibnd = ndx - ndxi
       do isrc = 1, source_sinks%num_total
-         if ((source_sinks%indices(isrc, 1) == 0 .and. source_sinks%indices(isrc, 4) > 0) .or. (source_sinks%indices(isrc, 4) == 0 .and. source_sinks%indices(isrc, 1) > 0)) then
+         if ((source_sinks%indices(isrc, FLOWCELL_SINK) == 0 .and. source_sinks%indices(isrc, FLOWCELL_SOURCE) > 0) .or. (source_sinks%indices(isrc, FLOWCELL_SOURCE) == 0 .and. source_sinks%indices(isrc, FLOWCELL_SINK) > 0)) then
             ! This is a boundary condition within the current domain
             ibnd = ibnd + 1
-            if (source_sinks%indices(isrc, 1) /= 0) then
-               kk = source_sinks%indices(isrc, 1)
+            if (source_sinks%indices(isrc, FLOWCELL_SINK) /= 0) then
+               kk = source_sinks%indices(isrc, FLOWCELL_SINK)
             else
-               kk = source_sinks%indices(isrc, 4)
+               kk = source_sinks%indices(isrc, FLOWCELL_SOURCE)
             end if
             bndgroupname = makebndgroupname('src_', source_sinks%name(isrc))
             write (lunbnd, '(a)') bndgroupname ! Source sink name
@@ -2287,7 +2287,7 @@ contains
    subroutine waq_prepare_src()
       use m_flowgeom
       use m_flow
-      use m_source_sink, only: source_sinks
+      use m_source_sink, only: source_sinks, FLOWCELL_SINK, FLOWCELL_SOURCE
       use m_alloc
       use messagehandling, only: msgbuf, err_flush
       implicit none
@@ -2304,8 +2304,8 @@ contains
       call realloc(source_sinks%waq_index, source_sinks%num_total, keepexisting=.false., fill=-1)
       ! First determine the number of external sink/sources and the allocations needed
       do isrc = 1, source_sinks%num_total
-         kk1 = source_sinks%indices(isrc, 1)
-         kk2 = source_sinks%indices(isrc, 4)
+         kk1 = source_sinks%indices(isrc, FLOWCELL_SINK)
+         kk2 = source_sinks%indices(isrc, FLOWCELL_SOURCE)
          if (kk1 == 0 .or. kk2 == 0) then
             ! If one of the nodes is external
             if (kk1 > 0 .or. kk2 > 0) then
@@ -2339,7 +2339,7 @@ contains
    subroutine waq_fill_src()
       use m_flowgeom
       use m_flow
-      use m_source_sink, only: source_sinks
+      use m_source_sink, only: source_sinks, FLOWCELL_SINK, FLOWCELL_SOURCE
       use m_alloc
       use messagehandling, only: msgbuf, err_flush
       implicit none
@@ -2352,8 +2352,8 @@ contains
 
       ! Create additional pointer for sink/sources
       do isrc = 1, source_sinks%num_total
-         kk1 = source_sinks%indices(isrc, 1)
-         kk2 = source_sinks%indices(isrc, 4)
+         kk1 = source_sinks%indices(isrc, FLOWCELL_SINK)
+         kk2 = source_sinks%indices(isrc, FLOWCELL_SOURCE)
          if (kk1 == 0 .or. kk2 == 0) then
             ! This is a boundary. If kk1 or kk2 is positive, then it is in the active domain
             if (kk1 > 0) then

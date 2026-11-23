@@ -8,7 +8,6 @@ from src.config.dependency import Dependency
 from src.config.test_case_path import TestCasePath
 
 
-@staticmethod
 def make_test_case_config_xml(
     test_case_path: Optional[TestCasePath] = None,
     dependency: Optional[Dependency] = None,

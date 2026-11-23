@@ -51,7 +51,7 @@ contains
       integer, intent(in) :: n01 !< Selects whether s0 or s1 has to be set.
       integer, intent(in) :: jasetBlDepth !< Whether or not (1/0) to set the boundary node bed levels, based on depth below s1. Typically only upon model init (based on initial water levels).
 
-      integer :: n, kb, k2, itpbn, L, ibnd
+      integer :: n, kb, k2, boundary_type, L, ibnd
       real(kind=dp) :: water_level_boundary, hh
       logical :: s0_was_updated
 
@@ -61,8 +61,8 @@ contains
          kb = kbndz(1, n)
          k2 = kbndz(2, n)
          L = kbndz(3, n)
-         itpbn = kbndz(4, n)
-         select case (itpbn)
+         boundary_type = kbndz(4, n)
+         select case (boundary_type)
          case (BOUNDARY_WATER_LEVEL)
             water_level_boundary = zbndz(n)
             if (alfsmo < 1.0_dp) then
@@ -106,7 +106,7 @@ contains
             end if
          end if
 
-         if (itpbn /= BOUNDARY_WATER_LEVEL_OUTFLOW) then
+         if (boundary_type /= BOUNDARY_WATER_LEVEL_OUTFLOW) then
             if (n01 == 0) then
                s0(kb) = max(water_level_boundary, bl(kb)) ! TODO: AvD: if single time step is being restarted, then this line will have overwritten some of the old s0 values.
                hs(kb) = s0(kb) - bl(kb)

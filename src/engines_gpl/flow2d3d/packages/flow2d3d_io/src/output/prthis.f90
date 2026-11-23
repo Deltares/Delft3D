@@ -46,7 +46,7 @@ subroutine prthis(lundia    ,error     ,prshis    ,grdang    ,lunprt    , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     !
     implicit none
 !

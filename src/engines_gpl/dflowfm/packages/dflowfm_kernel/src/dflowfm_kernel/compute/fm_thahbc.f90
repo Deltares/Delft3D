@@ -128,7 +128,7 @@ contains
       use fm_external_forcings_data, only: nopenbndsect, threttim
       use m_missing, only: dmiss
       use m_get_Lbot_Ltop, only: getlbotltop
-      use mathconsts, only: pi_hp
+      use m_mathconstants, only: pi_hp
       use m_flow, only: kmxd, q1
       use m_flowtimes, only: dt_user
       use m_flowgeom, only: ln

@@ -27,12 +27,9 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 module m_disable_higherorder_at_sorsin
 
-   implicit none
+   implicit none(type, external)
 
    private
 
@@ -43,12 +40,12 @@ contains
    subroutine disable_higherorder_at_sorsin()
       use precision, only: dp
       use m_flowgeom
-      use m_source_sink, only: source_sinks
+      use m_source_sink, only: source_sinks, FLOWCELL_SINK, FLOWCELL_SOURCE
       use m_partitioninfo
       use m_alloc
-      implicit none
 
       real(kind=dp), dimension(:, :), allocatable :: dum
+      real(kind=dp), dimension(:), allocatable :: node_mask !< 1 for flow nodes with a source/sink (incl. ghost nodes), 0 otherwise
 
       integer, dimension(:), allocatable :: imask
 
@@ -60,38 +57,57 @@ contains
       integer, parameter :: jaall = 1 !< disable all flowlinks attached to flownodes with sources/sinks (1) or only links with both connected flownodes (0)
 
       if (jaall == 1) then
-!        disable all flowlink attached to flownodes with sources/sinks
+         ! disable all flowlink attached to flownodes with sources/sinks
+         ! a source/sink in a ghost cell has index -1, so mark the owned cells and ghost-update the mask:
+         ! links owned by this domain that are attached to such a ghost cell must also be disabled
+         allocate (node_mask(Ndx))
+         node_mask = 0.0_dp
          do n = 1, source_sinks%num_total
-            do i = 1, 4, 3 ! 1 and 4
-!              get 2D flow nodes
-               kk = source_sinks%indices(n, i)
-               if (kk <= 0) then
-                  cycle ! 0: not in whole domain, -1: not in own subdomain, but can be in ghostregion
-               end if
 
-!              loop over all attached flow links
-               do iL = 1, nd(kk)%lnx
-!                 get 2D flink link
-                  LL = abs(nd(kk)%ln(iL))
+            kk = source_sinks%indices(n, FLOWCELL_SINK) ! 2D pressure cell nr FROM
+            if (kk > 0) then
+               node_mask(kk) = 1.0_dp
+            end if
 
-!                 disable high-order reconstruction
-                  klnup(:, LL) = 0
-               end do
+            kk = source_sinks%indices(n, FLOWCELL_SOURCE) ! 2D pressure cell nr FROM
+            if (kk > 0) then
+               node_mask(kk) = 1.0_dp
+            end if
+         end do
+
+         if (jampi == 1) then
+            call update_ghosts(ITYPE_Sall, 1, Ndx, node_mask, ierror)
+         end if
+
+         do kk = 1, Ndx
+            if (node_mask(kk) == 0.0_dp) then
+               cycle
+            end if
+
+            ! loop over all attached flow links
+            do iL = 1, nd(kk)%lnx
+               ! get 2D flink link
+               LL = abs(nd(kk)%ln(iL))
+
+               ! disable high-order reconstruction
+               klnup(:, LL) = 0
             end do
          end do
-      else
-!        disable only flowlinks connecting two flownodes with sources/sinks
 
-!        alloc mask array
+         deallocate (node_mask)
+      else
+         ! disable only flowlinks connecting two flownodes with sources/sinks
+
+         ! alloc mask array
          call realloc(imask, Ndx, keepExisting=.false., fill=0)
 
-!        mask flownodes with sources
+         ! mask flownodes with sources
          do n = 1, source_sinks%num_total
-            imask(source_sinks%indices(n, 1)) = 1
-            imask(source_sinks%indices(n, 4)) = 1
+            imask(source_sinks%indices(n, FLOWCELL_SINK)) = 1
+            imask(source_sinks%indices(n, FLOWCELL_SOURCE)) = 1
          end do
 
-!        disable flowlinks
+         ! disable flowlinks
          do LL = 1, Lnx
             kk1 = ln(1, LL)
             kk2 = ln(2, LL)
@@ -100,14 +116,14 @@ contains
             end if
          end do
 
-!        deallocate
+         ! deallocate
          if (allocated(imask)) then
             deallocate (imask)
          end if
       end if
 
       if (jampi == 1) then
-!        source/sink could have been in ghost region
+         ! source/sink could have been in ghost region
          allocate (dum(6, Lnx))
          do LL = 1, Lnx
             do i = 1, 6
@@ -118,7 +134,7 @@ contains
          call update_ghosts(ITYPE_U, 6, Lnx, dum, ierror)
 
          do LL = 1, Lnx
-!           check if higher-order reconstruction of this link has been disabled
+            ! check if higher-order reconstruction of this link has been disabled
             Ldisabled = .true.
             do i = 1, 6
                if (dum(i, LL) /= 0.0_dp) then
@@ -128,7 +144,7 @@ contains
             end do
 
             if (Ldisabled) then
-!              disable higher-order reconstruction
+               ! disable higher-order reconstruction
                do i = 1, 6
                   if (klnup(i, LL) /= 0) then
                      klnup(i, LL) = 0
@@ -140,7 +156,6 @@ contains
          deallocate (dum)
       end if
 
-      return
    end subroutine disable_higherorder_at_sorsin
 
 end module m_disable_higherorder_at_sorsin

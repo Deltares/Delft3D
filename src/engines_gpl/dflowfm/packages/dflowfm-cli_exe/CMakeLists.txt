@@ -85,3 +85,4 @@ if (UNIX)
 endif(UNIX)
 
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dflowfm/scripts/runscripts/run_dflowfm.${platform_extension} DESTINATION bin)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dflowfm/scripts/runscripts/run_fm_csumo.${platform_extension} DESTINATION bin)

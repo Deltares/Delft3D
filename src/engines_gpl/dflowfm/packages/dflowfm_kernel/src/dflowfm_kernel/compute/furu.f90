@@ -61,12 +61,14 @@ contains
       use fm_manhole_losses, only: calculate_manhole_losses
       use m_get_Lbot_Ltop
       use m_ispumpon
-      use mathconsts, only: ee
+      use m_mathconstants, only: ee
       use network_data, only: LINK_1D2D_INTERNAL
+      use m_boundary_condition_type, only: BOUNDARY_VELOCITY_NORMAL_INFLOW, BOUNDARY_VELOCITY_FLUX, &
+                                           BOUNDARY_CRITICAL_OUTFLOW, BOUNDARY_WEIR_OUTFLOW, BOUNDARY_ABSORBING_GENERATING
 
       implicit none
 
-      integer :: L, n, k1, k2, kb, LL, itu1, Lb, Lt, itpbn, i
+      integer :: L, n, k1, k2, kb, LL, itu1, Lb, Lt, boundary_type, i
       integer :: kup, kdo, iup
 
       real(kind=dp) :: bui, cu, du, du0, gdxi, ds
@@ -138,7 +140,7 @@ contains
                end if
 
                agp = ag
-               if (jahelmert > 0 .and. jsferic > 0) then
+               if (use_helmert > 0 .and. jsferic > 0) then
                   st2 = sin(dg2rd * yu(L))**2
                   agp = 9.7803253359 * (1.0_dp + 0.00193185265241 * st2) / sqrt(1.0_dp - 0.00669437999013 * st2)
                end if
@@ -266,7 +268,6 @@ contains
             end do
          end if
 
-
       end if
 
       if (kmx > 0) then
@@ -283,13 +284,13 @@ contains
 
          k2 = kbndu(2, n)
          LL = kbndu(3, n)
-         itpbn = kbndu(4, n)
+         boundary_type = kbndu(4, n)
          call getLbotLtop(LL, Lb, Lt)
 
          !Original:  !zbndun = zbndu( (n-1)*kmxd + 1 )
-         if (itpbn == 4) then ! dischargebnd
+         if (boundary_type == BOUNDARY_VELOCITY_FLUX) then
             zbndun = zbndq(n)
-         else if (itpbn == 5) then ! absgenbc
+         else if (boundary_type == BOUNDARY_ABSORBING_GENERATING) then 
             zbndun = u1(LL) ! set in xbeach_absgen_bc
          else ! other types that use alfsmo
             zbndun = zbndu((n - 1) * kmxd + 1)
@@ -300,11 +301,11 @@ contains
             zbndun = alfsmo * zbndun + (1.0_dp - alfsmo) * zbndu0n ! i.c. smoothing, start from 0
          end if
 
-         if (itpbn == 8) then ! Criticaloutflowbnd
+         if (boundary_type == BOUNDARY_CRITICAL_OUTFLOW) then
             if (hu(LL) > 0.0_dp) then
                zbndun = -sqrt(ag * (s1(k2) - min(bob(1, LL), bob(2, LL))))
             end if
-         else if (itpbn == 9) then ! Weiroutflowbnd 2/3h(sqrt
+         else if (boundary_type == BOUNDARY_WEIR_OUTFLOW) then
             if (hu(LL) > 0.0_dp) then
                hb = s1(k2) - min(bob(1, LL), bob(2, LL))
                h23 = twot * hb
@@ -336,21 +337,21 @@ contains
             ru(L) = zbndun
 
             if (Lt > Lb) then
-               if (jaLogprofatubndin /= 1 .and. itpbn == 3) then ! non logprof and vertical profile specified
+               if (jaLogprofatubndin /= 1 .and. boundary_type == BOUNDARY_VELOCITY_NORMAL_INFLOW) then ! non logprof and vertical profile specified
                   ru(L) = zbndu((n - 1) * kmxd + L - Lb + 1) * min(1.0_dp, alfsmo)
                else if (abs(u1(Lb)) > 1.0e-4_dp .and. z00 > 0.0_dp) then
                   if (jaustarint == 0 .or. jaustarint == 3 .or. jaustarint == 1) then
-                     dzb = hu(L) + c9of1 * z00
-                     sqcfi = (log(dzb / z00) - 1.0_dp) / vonkar
+                     dzb = hu(L) + C9OF1 * z00
+                     sqcfi = (log(dzb / z00) - 1.0_dp) / VON_KARMAN
                   else if (jaustarint == 2) then
-                     dzb = hu(L) / ee + c9of1 * z00
-                     sqcfi = (log(dzb / z00)) / vonkar
+                     dzb = hu(L) / ee + C9OF1 * z00
+                     sqcfi = (log(dzb / z00)) / VON_KARMAN
                   else if (jaustarint == 4) then
-                     dzb = hu(L) / ee + c9of1 * z00 * 0.66_dp
-                     sqcfi = (log(dzb / z00)) / vonkar
+                     dzb = hu(L) / ee + C9OF1 * z00 * 0.66_dp
+                     sqcfi = (log(dzb / z00)) / VON_KARMAN
                   else if (jaustarint == 5) then
                      dzb = hu(L)
-                     sqcfi = ((1.0_dp + c9of1 * z00 / dzb) * log(dzb / z00 + c9of1) - c9of1 * z00 / dzb * log(c9of1) - 1.0_dp) / vonkar
+                     sqcfi = ((1.0_dp + C9OF1 * z00 / dzb) * log(dzb / z00 + C9OF1) - C9OF1 * z00 / dzb * log(C9OF1) - 1.0_dp) / VON_KARMAN
                   end if
                   qk1 = hu(L) * ustbLL * sqcfi ! integral flux till level k
                   ru(L) = (qk1 - qk0) / (hu(L) - hu(L - 1))

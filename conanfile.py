@@ -1,6 +1,7 @@
 from conan import ConanFile
 from conan.tools.files import save
 
+
 class Delft3DRecipe(ConanFile):
     settings = "os", "compiler", "build_type", "arch", "fortran_compiler"
     generators = "CMakeDeps"
@@ -21,9 +22,19 @@ class Delft3DRecipe(ConanFile):
         self.requires("libxml2/2.15.3")
         self.requires("precice/3.4.1")
         self.requires("gtest/1.18.0")
+        self.requires("swan_mpi/41.51.10")
+        self.requires("swan_omp/41.51.10")
+        self.requires("inja/3.5.0")
+        self.requires("pugixml/1.15")
+        self.requires("metis/5.1.1")
+        self.requires("gklib/5.1.1")
 
     def generate(self):
-        save(self, "conan.stamp", "Timestamp of this file is used by CMake to detect if conan.lock has changed since last conan install.")
+        save(
+            self,
+            "conan.stamp",
+            "Timestamp of this file is used by CMake to detect if conan.lock has changed since last conan install.",
+        )
 
     def layout(self):
         self.folders.generators = "generators"
@@ -105,3 +116,7 @@ class Delft3DRecipe(ConanFile):
         self.options["boost"].without_url = True
         self.options["boost"].without_wave = True
         self.options["gtest"].shared = True
+        self.options["pugixml"].shared = True
+        self.options["metis"].shared = True
+        # GKlib does not support shared libraries with MSVC.
+        self.options["gklib"].shared = self.settings.os != "Windows"

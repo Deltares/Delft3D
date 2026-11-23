@@ -41,7 +41,7 @@ module m_waq_memory_dimensions
     integer :: num_constants                !  number of constants
     integer :: num_spatial_parameters       !  number of parameters changing with space and constant in time.
     integer :: num_time_functions           !  number of parameters changing only with time and constant over space.
-    integer :: num_spatial_time_fuctions    !  number of parameters changing with time and space.
+    integer :: num_spatial_time_functions   !  number of parameters changing with time and space.
     integer :: harmonics_arr_len            !  total space  of harmonics
     integer :: num_harmonics                !  total number of harmonics
     integer :: nlines                       !  cumulative record space
@@ -97,7 +97,7 @@ module m_waq_memory_dimensions
     common  /  sysn   / num_cells, num_layers, num_cells_bottom, num_substances_transported, num_substances_total, &
             num_dispersion_arrays, num_velocity_arrays, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, &
             num_exchanges_bottom_dir, num_exchanges, num_monitoring_points, num_boundary_conditions, num_waste_loads, &
-            num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, harmonics_arr_len, &
+            num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_functions, harmonics_arr_len, &
             num_harmonics, nlines, num_indices, num_file_units, num_cells_u_dir, &
             num_cells_v_dir, num_items_time_fn, num_codiagonals, process_space_int_len, num_processes_activated, &
             num_local_vars, num_fluxes, num_defaults, num_output_files, num_output_variables_extra, &

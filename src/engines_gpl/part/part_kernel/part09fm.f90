@@ -51,7 +51,7 @@ contains
         use partmem, only: hyd
         use m_particles, only: xrpart, yrpart, zrpart
         use m_sferic, only: jsferic
-        use mathconsts, only: pi
+        use m_mathconstants, only: pi
         use random_generator
         use m_part_modeltypes
         use m_fm_particles_in_grid, only: displace_spherical, part_findcellsingle

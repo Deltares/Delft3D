@@ -45,7 +45,7 @@ contains
       use m_waveconst, only: STOKES_DRIFT_2NDORDER, STOKES_DRIFT_DEPTHUNIFORM, WAVE_SURFBEAT
       use m_sferic, only: twopi, dg2rd, pi
       use m_get_Lbot_Ltop, only: getlbotltop
-      use mathconsts, only: ee
+      use m_mathconstants, only: ee
 
       integer, intent(in) :: LL
       real(kind=dp), intent(in) :: z00 ! current only z0

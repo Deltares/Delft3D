@@ -285,7 +285,7 @@ contains
 
 !> Get the Chezy value for a given friction type and parameter value
    real(kind=dp) function GetChezy(frictType, cpar, rad, dep, u)
-      use mathconsts, only: ee
+      use m_mathconstants, only: ee
       implicit none
       real(kind=dp), intent(in) :: dep !< water depth
       real(kind=dp), intent(in) :: rad !< hydraulic radius

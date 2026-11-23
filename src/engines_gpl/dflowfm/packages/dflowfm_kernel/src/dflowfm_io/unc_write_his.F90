@@ -108,7 +108,7 @@ contains
       use m_timer
       use m_sediment
       use fm_external_forcings_data, only: numtracers, trnames
-      use m_source_sink, only: source_sinks, source_sink_all_discharges
+      use m_source_sink, only: source_sinks, source_sink_all_discharges, FLOWCELL_SINK, FLOWCELL_SOURCE
       use m_transport, only: ITRA1, ITRAN, ISED1
       use m_structures
       use m_fm_wq_processes, only: wq_user_outputs => outputs, noout_statt, noout_state, noout_user, jawaqproc
@@ -329,8 +329,8 @@ contains
             do i = 1, source_sinks%num_normal
                if (source_sinks%is_normal(i)) then
                   nNodes = 0
-                  k1 = source_sinks%indices(i, 1)
-                  k2 = source_sinks%indices(i, 4)
+                  k1 = source_sinks%indices(i, FLOWCELL_SINK)
+                  k2 = source_sinks%indices(i, FLOWCELL_SOURCE)
                   if (k1 /= 0) then
                      nNodes = nNodes + 1
                   end if
@@ -1228,22 +1228,24 @@ contains
          integer, intent(in) :: it_his !< Timeframe to write to in the his file
 
          integer :: ierr !< Result status (NF90_NOERR if successful)
+         integer :: numobs_total
 
          integer, dimension(:), allocatable :: start, count
 
          ierr = DFM_NOERR
 
+         numobs_total = numobs + nummovobs
          ! If there are moving observation stations, include a time dimension for the lat/lon-coordinates
          if (model_has_moving_obs_stations()) then
             start = [1, it_his]
-            count = [numobs + nummovobs, 1]
+            count = [numobs_total, 1]
          else
             start = [1]
-            count = [numobs + nummovobs]
+            count = [numobs_total]
          end if
 
          call transform_and_put_latlon_coordinates(ihisfile, id_statlon, id_statlat, &
-                                                   nccrs%proj_string, xobs, yobs, start=start, count=count)
+                                                   nccrs%proj_string, xobs(1:numobs_total), yobs(1:numobs_total), start=start, count=count)
       end function unc_put_his_station_coord_vars_latlon
 
       !> Write (put) the z-coordinate variables for the station type.
@@ -1409,7 +1411,7 @@ contains
 #ifdef HAVE_PROJ
          if (add_latlon) then
             call transform_and_put_latlon_coordinates(ihisfile, id_geom_node_coordlon, id_geom_node_coordlat, &
-                                                      nccrs%proj_string, xobs, yobs)
+                                                      nccrs%proj_string, xobs(1:numobs), yobs(1:numobs))
          end if
 #endif
 

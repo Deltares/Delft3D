@@ -35,7 +35,7 @@ subroutine grmap_esmf(i1, f1, n1, f2, mmax, nmax, f2s, f2g)
 ! NONE
 !!--declarations----------------------------------------------------------------
     use swan_flow_grid_maps
-    use mathconsts
+    use m_mathconstants
     !
     implicit none
 !

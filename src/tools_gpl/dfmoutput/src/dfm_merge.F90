@@ -52,6 +52,126 @@ contains
 !! Typically this routine should be used on output of a parallel run,
 !! i.e., on files <modelname>_000x_map.nc
    function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
+      character(len=MAXNAMELEN), intent(inout) :: infiles(:) !< Input filenames.
+      integer, intent(in) :: nfiles !< Number of supplied filenames.
+      character(len=MAXNAMELEN), intent(inout) :: outfile !< Output filename, derived when empty.
+      logical, intent(in) :: force !< Overwrite without prompting.
+      integer :: ierr !< Zero on success.
+      character(len=MAXNAMELEN), allocatable :: partitions(:)
+
+      partitions = infiles(1:nfiles)
+      call dfm_order_by_partition(partitions, ierr)
+      if (ierr /= 0) then
+         return
+      end if
+      ierr = dfm_merge_partitioned_mapfiles(partitions, size(partitions), outfile, force)
+   end function dfm_merge_mapfiles
+
+!> Discover <model>_????_map.nc files using a base MDU filename.
+!! If the MDU exists, use its OutputDir (default: DFM_OUTPUT_<model>), resolving relative paths from the MDU directory.
+!! If the MDU is absent, search the current working directory, or the directory supplied in the MDU filename.
+   subroutine dfm_mapfiles_from_mdu(mdufile, files, ierr)
+      use properties, only: tree_data, tree_create, tree_destroy, prop_file, prop_get_alloc_string
+      use m_combinepaths, only: combinepaths
+      use system_utils, only: FILESEP, split_filename
+      use string_module, only: iends_with
+
+      character(len=*), intent(in) :: mdufile !< Base MDU filename; if absent, only its model name and optional directory are used.
+      character(len=MAXNAMELEN), allocatable, intent(out) :: files(:) !< Partition-indexed filenames; absent partitions have empty slots.
+      integer, intent(out) :: ierr !< Zero on success.
+
+      type(tree_data), pointer :: model => null()
+      character(len=:), allocatable :: basename, outputdir, mapfile, filename
+      character(len=MAXNAMELEN), allocatable :: found(:)
+      character(len=1024) :: message
+      character(len=len(mdufile)) :: mdupath, mduname, mduext
+      character(len=4) :: rank
+      integer :: partition, count, last_partition, ios
+      logical :: exists
+
+      ierr = 0
+      if (.not. iends_with(mdufile, '.mdu')) then
+         write (*, '(a)') 'Error: mapmerge: --mdufile requires a base MDU name ending in .mdu.'
+         ierr = 1
+         return
+      end if
+      inquire(file=mdufile, exist=exists, iostat=ios)
+      if (ios /= 0) then
+         write (*, '(a)') 'Error: mapmerge: cannot inspect MDU `'//mdufile//'''.'
+         ierr = ios
+         return
+      end if
+      outputdir = '.'
+      if (exists) then
+         call tree_create('mapmerge-input', model)
+         call prop_file('ini', mdufile, model, ierr, message)
+         if (ierr /= 0) then
+            write (*, '(a)') 'Error: mapmerge: cannot read MDU `'//mdufile//''': '//trim(message)
+            call tree_destroy(model)
+            return
+         end if
+         outputdir = ''
+         mapfile = ''
+         call prop_get_alloc_string(model, 'output', 'OutputDir', outputdir)
+         call prop_get_alloc_string(model, 'output', 'MapFile', mapfile)
+         call tree_destroy(model)
+         if (len_trim(mapfile) /= 0) then
+            write (*, '(a)') 'Error: mapmerge: automatic discovery requires an empty MapFile setting; supply custom map filenames explicitly.'
+            ierr = 1
+            return
+         end if
+      else
+         write (*, '(a)') 'Info: mapmerge: MDU not found; using the model name from `'//mdufile// &
+            ''' to search the current working directory, or the directory supplied in the MDU filename.'
+      end if
+
+      call split_filename(mdufile, mdupath, mduname, mduext)
+      basename = trim(mduname)
+      if (len_trim(basename) == 0) then
+         write (*, '(a)') 'Error: mapmerge: the base MDU must have a model name.'
+         ierr = 1
+         return
+      end if
+      if (len_trim(outputdir) == 0) then
+         outputdir = 'DFM_OUTPUT_'//basename
+      end if
+      allocate(found(10000))
+      found = ''
+      count = 0
+      last_partition = 0
+      do partition = 0, 9999
+         write (rank, '(i4.4)') partition
+         filename = combinepaths(mdufile, trim(outputdir)//FILESEP//basename//'_'//rank//'_map.nc')
+         if (len(filename) > MAXNAMELEN) then
+            write (*, '(a)') 'Error: mapmerge: discovered input path exceeds the supported filename length.'
+            ierr = 1
+            return
+         end if
+         inquire(file=filename, exist=exists, iostat=ios)
+         if (ios /= 0) then
+            write (*, '(a)') 'Error: mapmerge: cannot inspect `'//filename//'''.'
+            ierr = ios
+            return
+         end if
+         if (exists) then
+            count = count + 1
+            last_partition = partition + 1
+            found(last_partition) = filename
+         end if
+      end do
+      if (count == 0) then
+         write (*, '(a)') 'Error: mapmerge: no partition map files found in `'//outputdir//''' for model `'//basename//'''.'
+         ierr = 1
+         return
+      end if
+      files = found(:last_partition)
+      write (*, '(a,i0,a)') 'Info: mapmerge: discovered ', count, ' partition map files using `'//mdufile//'''.'
+   end subroutine dfm_mapfiles_from_mdu
+
+!> Merge a set of partition map files into a single map file.
+!! Filenames are indexed by partition number plus one, up to the highest supplied partition.
+!! Empty entries represent partitions fully masked out by the MapOutputPolygonFile MDU setting.
+   function dfm_merge_partitioned_mapfiles(infiles, nfiles, outfile, force) result(ierr)
       use m_alloc
       use string_module
       use io_netcdf
@@ -64,8 +184,8 @@ contains
                           t_ug_contact, ug_clone_contact_definition, cdim_ncontacts
       implicit none
 
-      character(len=MAXNAMELEN), intent(inout) :: infiles(:) !< Input files names, will be sorted if not sorted already.
-      integer, intent(in) :: nfiles !< Number of input files.
+      character(len=MAXNAMELEN), intent(in) :: infiles(:) !< Partition-indexed filenames; absent partitions have empty slots.
+      integer, intent(in) :: nfiles !< Number of partitions, including missing files for masked partitions.
       character(len=MAXNAMELEN), intent(inout) :: outfile !< Output file name. When empty, the name is derived from the input file names.
       logical, intent(in) :: force !< Whether to disallow interactive user prompting (for file overwrite)
       integer :: ierr !< Result status (0 = success)
@@ -78,13 +198,13 @@ contains
       integer, allocatable :: id_facedim(:, :), id_edgedim(:, :), id_laydim(:, :), id_wdim(:, :), id_nodedim(:, :), id_sedtotdim(:, :), id_sedsusdim(:, :), id_nlyrdim(:, :), &
                               id_netedgedim(:, :), id_netfacedim(:, :), id_netfacemaxnodesdim(:, :), id_bnddim(:, :) !< dim and var ids, maintained for all input files + 1 output file.
       integer, dimension(nfiles + 1) :: ncids, id_time, id_timestep, id_mappingVar
-      integer, allocatable :: id_timedim(:, :)
+      integer, allocatable :: id_timedim(:, :), id_morft(:), id_morfac(:), id_frac_name(:), id_susfrac_name(:), id_strlendim(:)
       double precision :: convversion
-      integer :: jaugrid, iconvtype, formatCode, new_ndx
+      integer :: jaugrid, iconvtype, formatCode, new_ndx, jasedmor, jamorfac
       integer, dimension(nfiles) :: jaugridi, ioncids
       logical :: isNetCDF4
       integer, allocatable :: dimids(:, :, :) !<(nDims, maxTopodim,nfiles+1) Used for storing any remaining vectormax dimension IDs
-      integer, allocatable, target :: ndx(:, :), lnx(:, :), ndxg(:, :), lnxg(:, :), kmx(:, :), numk(:, :), numl(:, :), nump(:, :), numkg(:, :), numlg(:, :), netfacemaxnodes(:, :), ndxbnd(:, :), nt(:) !< counters, maintained for all input files + 1 output file.
+      integer, allocatable, target :: ndx(:, :), lnx(:, :), ndxg(:, :), lnxg(:, :), kmx(:, :), numk(:, :), numl(:, :), nump(:, :), numkg(:, :), numlg(:, :), netfacemaxnodes(:, :), ndxbnd(:, :), nt(:), nsedtot(:), nsedsus(:) !< counters, maintained for all input files + 1 output file.
       integer, dimension(:), pointer :: item_counts !< Generalized count pointer, will point to ndx, lnx, numl, or numk during var data reading + writing.
       integer :: noutfile !< array index/position of output file ids, by default the last, i.e., nfiles + 1.
       integer, allocatable, target :: face_domain(:, :), facebnd_domain(:, :), edge_domain(:, :), node_domain(:, :), netedge_domain(:, :) !< Global face/edge/node numbers and their domain number.
@@ -112,7 +232,7 @@ contains
 !netface_g2c(:)
       integer :: id_flownodedomain, id_flownodeglobnr, id_edgefaces, id_netfacenodes, id_edgenodes, id_netedgefaces, id_netfaceedges
       integer :: ierri
-      integer :: maxlen, nlen, plen, mlen, ii, id, iv, it, itm, ip, ik, is, ie, ntsel, ndims, nvardims, vartype
+      integer :: maxlen, nlen, plen, mlen, ii, id, iv, it, itm, ip, ik, is, ie, ntsel, ndims, nvardims, vartype, nsedtotsel, nsedsussel
       integer :: netfacemaxnodesg, numkt, lnxt, ndxt, numlt
       integer, allocatable :: ndxc(:), lnxc(:), numkc(:), numlc(:), ndx_bndc(:) ! number of ndx, lnx,... of all input files on a certain mesh
       integer :: ndxMax, lnxMax, numkMax, numlMax, ndx_bndMax
@@ -151,6 +271,7 @@ contains
       double precision, allocatable, target :: tmpvar2D_tmp(:, :)
       double precision, allocatable, target :: tmpvar2D_tmpmax(:, :)
       double precision, allocatable, target :: tmpvar3D(:, :, :) !< array buffer for a single global variable slice, size: e.g. (kxdim, kmx, maxitems)
+      double precision, allocatable :: tmpvar3D_tmp(:, :, :)
       double precision, pointer :: tmpvarptr(:, :, :)
       character, allocatable :: ctmpvar2D(:, :) !< Character arrays
       character, allocatable :: ctmpvar2D_tmp(:, :)
@@ -205,12 +326,15 @@ contains
       integer, allocatable :: itimsel(:)
       double precision, allocatable :: times(:)
       double precision, allocatable :: timestep(:)
+      double precision, allocatable :: morft(:)
+      double precision, allocatable :: morfac(:)
       logical :: isfound, needshift, exist
       integer :: size_btmp
       character(len=1) :: answer
       character(len=8) :: cdate
       character(len=10) :: ctime
       character(len=5) :: czone
+      character(len=20), allocatable :: sedfrac_name(:), sussedfrac_name(:)
       integer :: nMaxMeshes, nMeshOld, ifileScan, ivScan, jaTopLevel, maxnvars, nvarsScan
       integer, allocatable :: ifile(:), nvars(:, :), max_nvars(:), varids_itopo(:)
       integer :: isOnMesh
@@ -224,7 +348,6 @@ contains
       integer :: nMaxvars_contact
       integer, allocatable :: icfile(:), nvars_contact(:, :), varids_contact(:, :, :), id_contactvars(:, :), nMaxvars_contact_icontact(:)
       integer, allocatable :: nvarsel(:)
-      integer :: jareadglob
       integer :: imesh, maxTopodim, minTopodim, topodimTmp, itopo
       integer, allocatable :: topodim(:, :) ! For each topology index the topology dimension
       integer, allocatable :: mesh2topo(:, :) ! A mapping from meshid to topology index
@@ -232,9 +355,15 @@ contains
       character(len=:), allocatable :: att_value
       integer :: ilink1d2dglob, idimtime, idimlink1d2d, idimstring, idim
       integer :: id_dimTwo
+      integer :: firstfile, max_face_globalnr, max_node_globalnr, global_max
+      integer, allocatable :: global_ids(:), node_global_to_output(:)
 
-      if (nfiles <= 1) then
-         write (*, '(a)') 'Error: mapmerge: At least two input files required.'
+      noutfile = nfiles + 1
+      ncids = -1
+      ioncids = -1
+      ierr = 0
+      if (nfiles == 0) then
+         write (*, '(a)') 'Error: mapmerge: At least one input file required.'
          ierr = 12
          goto 888
       else
@@ -243,25 +372,33 @@ contains
          end if
       end if
 
-      noutfile = nfiles + 1
-      ncids = -1
       id_time = -1
-      id_timedim = -1
       id_timestep = -1
       id_dimTwo = -1
       nMeshOld = 1 ! For old format input file, the number of meshes is 1
+      jasedmor = 0
+      jamorfac = 0
 
    !! 0a. Open input files
-      call dfm_order_by_partition(infiles, nfiles)
-
       ierr = nf90_noerr
       isNetCDF4 = .false.
+      firstfile = 0
       do ii = 1, nfiles
+         if (len_trim(infiles(ii)) == 0) then
+            write (*, '(a,i0)') 'Info: mapmerge: no input supplied for partition ', ii - 1
+            cycle
+         end if
+         inquire(file=trim(infiles(ii)), exist=exist)
+         if (.not. exist) then
+            write (*, '(a)') 'Error: mapmerge: input file not found: `'//trim(infiles(ii))//'''.'
+            ierr = 1
+            goto 888
+         end if
          ierri = ionc_open(infiles(ii), NF90_NOWRITE, ioncids(ii), iconvtype, convversion)
          if (ierri /= nf90_noerr) then
             write (*, '(a)') 'Error: mapmerge: could not open file `'//trim(infiles(ii))//'''.'
             ierr = ierri
-            ncids(ii) = -1
+            goto 888
          else
             if (iconvtype == IONC_CONV_UGRID .and. convversion >= 1.0) then
                jaugridi(ii) = 1
@@ -270,21 +407,28 @@ contains
             end if
          end if
          ierri = ionc_get_ncid(ioncids(ii), ncids(ii))
+         if (firstfile == 0) then
+            firstfile = ii
+         end if
          ierri = nf90_inquire(ncids(ii), formatNum=formatCode)
          isNetCDF4 = (isNetCDF4 .or. formatCode == nf90_format_netcdf4 .or. formatCode == nf90_format_netcdf4_classic)
       end do
-      if (any(ncids(1:nfiles) == -1)) then
+      if (firstfile == 0) then
+         write (*, '(a)') 'Error: mapmerge: no existing input files.'
+         ierr = 12
          goto 888
       end if
 
       ! check if all the map files are the same format
-      jaugrid = jaugridi(1)
-      do ii = 2, nfiles
+      jaugrid = jaugridi(firstfile)
+      do ii = 1, nfiles
+         if (ncids(ii) == -1) then
+            cycle
+         end if
          if (jaugridi(ii) /= jaugrid) then
             write (*, '(a)') 'Error: mapmerge: map files are not the same format.'
             ierr = 1
-            ncids(ii) = -1
-            exit
+            goto 888
          end if
       end do
       if (ierr /= nf90_noerr .and. .not. verbose_mode) then
@@ -298,6 +442,9 @@ contains
       end if
 
       do ii = 1, nfiles
+         if (ncids(ii) == -1) then
+            cycle
+         end if
          ierr = ionc_get_ncid(ioncids(ii), ncids(ii))
          if (ierr /= nf90_noerr) then
             write (*, '(a)') 'Error: mapmerge: could not get ncID for file: `'//trim(infiles(ii))//'''.'
@@ -307,26 +454,26 @@ contains
 
    !! 0b. Open output file
       if (len_trim(outfile) == 0) then
-         nlen = len_trim(infiles(1))
-         n3 = index(infiles(1) (1:nlen), '.', .true.) - 1 ! pos of '.nc'
+         nlen = len_trim(infiles(firstfile))
+         n3 = index(infiles(firstfile) (1:nlen), '.', .true.) - 1 ! pos of '.nc'
          if (n3 < 0) then
             n3 = nlen
          end if
-         Lrst_m = index(infiles(1), '_rst.nc')
+         Lrst_m = index(infiles(firstfile), '_rst.nc')
          if (Lrst_m > 0) then ! If they are _rst files
-            n1 = index(infiles(1) (1:Lrst_m), '_0000_', .true.)
-            outfile = infiles(1) (1:n1)//'merged_'//infiles(1) (n1 + 6:Lrst_m)//'rst.nc'
+            n1 = index(infiles(firstfile) (1:Lrst_m), '_0000_', .true.)
+            outfile = infiles(firstfile) (1:n1)//'merged_'//infiles(firstfile) (n1 + 6:Lrst_m)//'rst.nc'
             jamerge_cntv = 0
             write (*, '(a)') 'Info: mapmerge: for *_rst.nc files, topology connectivity variables (except for "FlowLink") are not merged.'
          else
-            n2 = index(infiles(1) (1:n3), '_', .true.) - 1 ! pos of '_map'
-            n1 = index(infiles(1) (1:n2), '_', .true.) - 1 ! pos of '_0000'
+            n2 = index(infiles(firstfile) (1:n3), '_', .true.) - 1 ! pos of '_map'
+            n1 = index(infiles(firstfile) (1:n2), '_', .true.) - 1 ! pos of '_0000'
             if (n1 >= 0) then ! mdident_0000_typ.nc --> mdident_merged_typ.nc
-               outfile = infiles(1) (1:n1)//'_merged_'//infiles(1) (n2 + 2:n3)//'.nc'
+               outfile = infiles(firstfile) (1:n1)//'_merged_'//infiles(firstfile) (n2 + 2:n3)//'.nc'
             else if (n2 >= 0) then ! mdident_typ.nc      --> mdident_merged_typ.nc
-               outfile = infiles(1) (1:n2)//'_merged_'//infiles(1) (n2 + 2:n3)//'.nc'
+               outfile = infiles(firstfile) (1:n2)//'_merged_'//infiles(firstfile) (n2 + 2:n3)//'.nc'
             else ! mdident.nc          --> mdident_merged_map.nc
-               outfile = infiles(1) (1:n3)//'_merged_map.nc'
+               outfile = infiles(firstfile) (1:n3)//'_merged_map.nc'
             end if
          end if
       end if
@@ -362,6 +509,9 @@ contains
          ! Compute nMesh and maximal mesh number.
          nMaxMeshes = 0
          do ii = 1, nfiles
+            if (ncids(ii) == -1) then
+               cycle
+            end if
             ierr = ionc_get_mesh_count(ioncids(ii), nMesh(ii))
             if (nMesh(ii) > nMaxMeshes) then
                nMaxMeshes = nMesh(ii)
@@ -401,7 +551,8 @@ contains
             minTopodim = 1
             maxTopodim = 1
             mesh2topo = 1
-            call realloc(topo2mesh, (/maxTopodim, nfiles/), keepExisting=.false., fill=1)
+            call realloc(topo2mesh, (/maxTopodim, nfiles/), keepExisting=.false., fill=-1)
+            where (nMesh > 0) topo2mesh(1, :) = 1
          end if
       else ! old format
          nMaxMeshes = nMeshOld
@@ -425,8 +576,15 @@ contains
       call realloc(id_netfacedim, (/maxTopodim, nfiles + 1/), keepExisting=.false., fill=-1)
       call realloc(id_netfacemaxnodesdim, (/maxTopodim, nfiles + 1/), keepExisting=.false., fill=-1)
       call realloc(id_bnddim, (/maxTopodim, nfiles + 1/), keepExisting=.false., fill=-1)
+      call realloc(id_morft, nfiles + 1, keepExisting=.false., fill=-1)
+      call realloc(id_morfac, nfiles + 1, keepExisting=.false., fill=-1)
+      call realloc(id_strlendim, nfiles + 1, keepExisting=.false., fill=-1)
+      call realloc(id_frac_name, nfiles + 1, keepExisting=.false., fill=-1)
+      call realloc(id_susfrac_name, nfiles + 1, keepExisting=.false., fill=-1)
 
       call realloc(nt, nfiles + 1, keepExisting=.false., fill=0)
+      call realloc(nsedtot, nfiles + 1, keepExisting=.false., fill=0)
+      call realloc(nsedsus, nfiles + 1, keepExisting=.false., fill=0)
       call realloc(ndx, (/maxTopodim, nfiles + 1/), keepExisting=.false., fill=0)
       call realloc(lnx, (/maxTopodim, nfiles + 1/), keepExisting=.false., fill=0)
       call realloc(ndxg, (/maxTopodim, nfiles + 1/), keepExisting=.false., fill=0)
@@ -455,13 +613,16 @@ contains
    !! 0e. Find the input file 'ifile', which has the most variables. This file will be the reference file where later we scan variables.
       ! For old format input file, ifile(maxTopodim) is the index of file that has the most variables.
       ! For Ugrid format, ifile(im) is index of file that have the most variables on mesh topology im.
-      allocate (file_ndims(nfiles))
-      call realloc(ifile, maxTopodim, keepExisting=.false., fill=1)
+      call realloc(file_ndims, nfiles, keepExisting=.false., fill=0)
+      call realloc(ifile, maxTopodim, keepExisting=.false., fill=firstfile)
       call realloc(nvars, (/maxTopodim, nfiles/), keepExisting=.false., fill=0)
       call realloc(max_nvars, maxTopodim, keepExisting=.false., fill=0)
 
       if (jaugrid == 0) then ! old format
          do ii = 1, nfiles
+            if (ncids(ii) == -1) then
+               cycle
+            end if
             ierr = nf90_inquire(ncids(ii), nVariables=nvars(maxTopodim, ii))
             if (ierr /= nf90_noerr) then
                write (*, '(a)') 'Error: mapmerge: no variables found in file `'//trim(infiles(ii))//'''.'
@@ -481,6 +642,9 @@ contains
          nDims = file_ndims(ifile(maxTopodim)) ! nDims is equal to Nr. dimensions in ifile
       else ! UGrid
          do ii = 1, nfiles
+            if (ncids(ii) == -1) then
+               cycle
+            end if
             ierr = nf90_inquire(ncids(ii), nDimensions=file_ndims(ii))
             do imesh = 1, nMesh(ii)
                itopo = mesh2topo(imesh, ii)
@@ -619,12 +783,16 @@ contains
                      ! check if it is a dimension for sediment variables.
                      ! The sediment related dimensions cannot be dinstinguished on mesh 1d or 2d.
                      if (strcmpi(dimname, 'nSedTot')) then
+                        jasedmor = 1
                         id_sedtotdim(itopo, ii) = id
                         dimids(id, itopo, ii) = id
+                        nsedtot(ii) = nlen
                         cycle
                      else if (strcmpi(dimname, 'nSedSus')) then
+                        jasedmor = 1
                         id_sedsusdim(itopo, ii) = id
                         dimids(id, itopo, ii) = id
+                        nsedsus(ii) = nlen
                         cycle
                      else if (strcmpi(dimname, 'nBedLayers')) then
                         id_nlyrdim(itopo, ii) = id
@@ -718,8 +886,10 @@ contains
 
                      ! check if it is a dimension for sediment variables
                      if (strcmpi(dimname, 'nSedTot')) then
+                        jasedmor = 1
                         id_sedtotdim(itopo, ii) = id
                      else if (strcmpi(dimname, 'nSedSus')) then
+                        jasedmor = 1
                         id_sedsusdim(itopo, ii) = id
                      else if (strcmpi(dimname, 'nBedLayers')) then
                         id_nlyrdim(itopo, ii) = id
@@ -731,6 +901,52 @@ contains
       end do ! ii
 
    !! Prepare for the big loop on mesh topology, i.e. allocating relative arrays.
+      ! Masked maps can retain global flow-node numbers larger than the number of supplied nodes.
+      max_face_globalnr = 0
+      max_node_globalnr = 0
+      do ii = 1, nfiles
+         if (ncids(ii) == -1) then
+            cycle
+         end if
+         do itopo = minTopodim, maxTopodim
+            if (ndx(itopo, ii) == 0) then
+               cycle
+            end if
+            if (jaugrid == 1) then
+               imesh = topo2mesh(itopo, ii)
+               topodimTmp = topodim(imesh, ii)
+               ierr = ionc_inq_varid(ioncids(ii), imesh, 'flowelem_globalnr', id_flownodeglobnr)
+            else
+               topodimTmp = 2
+               ierr = nf90_inq_varid(ncids(ii), 'FlowElemGlobalNr', id_flownodeglobnr)
+            end if
+            if (ierr /= nf90_noerr) then
+               cycle
+            end if
+            global_max = 0
+            ierri = nf90_get_att(ncids(ii), id_flownodeglobnr, 'valid_max', global_max)
+            if (ierri /= nf90_noerr) then
+               call realloc(global_ids, ndx(itopo, ii), keepExisting=.false.)
+               ierr = nf90_get_var(ncids(ii), id_flownodeglobnr, global_ids)
+               if (ierr /= nf90_noerr) then
+                  write (*, '(a)') 'Error: mapmerge: cannot read global flow-node numbers from `'//trim(infiles(ii))//'''.'
+                  goto 888
+               end if
+               if (any(global_ids <= 0)) then
+                  write (*, '(a)') 'Error: mapmerge: nonpositive global flow-node number in `'//trim(infiles(ii))//'''.'
+                  ierr = 1
+                  goto 888
+               end if
+               global_max = maxval(global_ids)
+            end if
+            if (topodimTmp == 1) then
+               max_node_globalnr = max(max_node_globalnr, global_max)
+            else
+               max_face_globalnr = max(max_face_globalnr, global_max)
+            end if
+         end do
+      end do
+      ierr = nf90_noerr
       maxnvars = maxval(max_nvars)
       allocate (varids(nfiles, maxnvars, maxTopodim)); 
       allocate (varids_out(maxnvars, maxTopodim))
@@ -771,7 +987,7 @@ contains
       ndxt = sum(ndxc) ! total number of faces on all meshes
       call realloc(face_domain, (/ndxMax, maxTopodim/), keepExisting=.false., fill=-1)
       call realloc(face_c2g, (/ndxMax, maxTopodim/), keepExisting=.false., fill=-1)
-      call realloc(face_g2c, ndxt, keepExisting=.false., fill=-1)
+      call realloc(face_g2c, max(ndxt, max_face_globalnr), keepExisting=.false., fill=-1)
       call realloc(face_c2cc, ndxt, keepExisting=.false., fill=-1)
 
       lnxMax = maxval(lnxc)
@@ -784,7 +1000,7 @@ contains
       numkt = sum(numkc) ! total number of nodes on all meshes
       call realloc(node_domain, (/numkMax, maxTopodim/), keepExisting=.false., fill=huge(1))
       call realloc(node_c2g, (/numkMax, maxTopodim/), keepExisting=.false., fill=-1)
-      call realloc(node_g2c, numkt, keepExisting=.false., fill=-1)
+      call realloc(node_g2c, max(numkt, max_node_globalnr), keepExisting=.false., fill=-1)
 
       numlMax = maxval(numlc)
       numlt = sum(numlc) ! total number of net edges on all meshes
@@ -810,7 +1026,6 @@ contains
    !! constructing merged flow geometry (3a.),
    !! defining dimensions (3b), and
    !! defining variables (4.).
-      jareadglob = 0
       jaTopLevel = 0
       do itopo = minTopodim, maxTopodim ! Scan on different mesh topology
          ifileScan = ifile(itopo) ! will scan variables in ifileScan in the following
@@ -987,6 +1202,10 @@ contains
                end if
                ! Set IDs of current variable to other input files, if those files does not have this variable, then set ID to -1
                do ii = 1, nfiles
+                  if (ncids(ii) == -1) then
+                     varids(ii, nvarsel(itopo), itopo) = -1
+                     cycle
+                  end if
                   if (ii /= ifileScan) then
                      ierr = nf90_inq_varid(ncids(ii), varname, varids(ii, nvarsel(itopo), itopo))
                      if (ierr /= nf90_noerr) then
@@ -1063,6 +1282,26 @@ contains
                   if (ierr /= 0) write (*, *) 'nf90_def_var_chunking failed for var timestep'
                end if
             end if
+            
+            ! copy attributes of morft and morfac if they exist
+            if (jasedmor == 1) then
+               ierr = nf90_inq_varid(ncids(ifileScan), 'morft', id_morft(ifileScan))
+               ierr = nf90_def_var(ncids(noutfile), 'morft', nf90_double, (/id_timedim(itopo, noutfile)/), id_morft(noutfile))
+               ierr = ncu_copy_atts(ncids(ifileScan), ncids(noutfile), id_morft(ifileScan), id_morft(noutfile))
+                  if (isNetCDF4) then
+                     ierr = ncu_copy_chunking_deflate(ncids(ifileScan), ncids(noutfile), id_morft(ifileScan), id_morft(noutfile))
+                  end if
+            
+               ierr = nf90_inq_varid(ncids(ifileScan), 'morfac', id_morfac(ifileScan))
+               if  (ierr == nf90_noerr) then
+                  jamorfac = 1
+                  ierr = nf90_def_var(ncids(noutfile), 'morfac', nf90_double, (/id_timedim(itopo, noutfile)/), id_morfac(noutfile))
+                  ierr = ncu_copy_atts(ncids(ifileScan), ncids(noutfile), id_morfac(ifileScan), id_morfac(noutfile))
+                  if (isNetCDF4) then
+                     ierr = ncu_copy_chunking_deflate(ncids(ifileScan), ncids(noutfile), id_morfac(ifileScan), id_morfac(noutfile))
+                  end if
+               end if
+            end if
 
             ! Only for ugrid format, because this variable will be defined in step 4 for old format
             if (jaugrid == 1) then
@@ -1111,6 +1350,9 @@ contains
                ' : ', '   flow nodes', ' | flow links', ' |  net nodes', ' |  net links', ' | times'
          end if
          do ii = 1, nfiles
+            if (ncids(ii) == -1) then
+               cycle
+            end if
             if (jaugrid == 1) then
                imesh = topo2mesh(itopo, ii)
                if (imesh <= 0) then ! file ii does not have the mesh of topodim == itopo
@@ -1163,7 +1405,6 @@ contains
                   ierr = nf90_get_var(ncids(ii), id_flownodeglobnr, face_c2g(nfacecount(itopo) + 1:nfacecount(itopo) + ndx(itopo, ii), itopo), count=(/ndx(itopo, ii)/))
                else
                   ierr = nf90_get_var(ncids(ii), id_flownodeglobnr, node_c2g(nnodecount(itopo) + 1:nnodecount(itopo) + ndx(itopo, ii), itopo), count=(/ndx(itopo, ii)/))
-                  jareadglob = 1
                end if
                if (ierr /= nf90_noerr) then
                   if (jaugrid == 0) then
@@ -1485,6 +1726,40 @@ contains
          else
             topodimTmp = 2 ! For old format, the mesh topology is 2d
          end if
+         if (topodimTmp == 1) then
+            ! Renumber 1D nodes starting from 1, skipping any masked holes.
+            ! This is necessary because the writing of merged (global) output for 1D directly uses
+            ! the node_c2g mapping, contrary to the 2D face writing. The latter uses so-called
+            ! concatenated numbering for its output, which by construction is correct even for
+            ! input with masked grid parts (see earlier how face_c2cc uses nfaceglob for constructing
+            ! the 2D output numbering.
+            call realloc(node_global_to_output, size(node_g2c), keepExisting=.false., fill=-1)
+            inodeglob = 0
+            do ip = 1, size(node_g2c)
+               if (node_g2c(ip) > 0) then
+                  inodeglob = inodeglob + 1
+                  node_global_to_output(ip) = inodeglob
+               end if
+            end do
+            do ip = 1, sum(numk(itopo, 1:nfiles))
+               inodeglob = node_c2g(ip, itopo)
+               if (node_global_to_output(inodeglob) < 0) then
+                  write (*, '(a,i0)') 'Error: mapmerge: missing owning partition for global node ', inodeglob
+                  ierr = 1
+                  goto 888
+               end if
+               node_c2g(ip, itopo) = node_global_to_output(inodeglob)
+            end do
+         else
+            do ip = 1, sum(ndx(itopo, 1:nfiles))
+               ifaceglob = face_c2g(ip, itopo)
+               if (face_g2c(ifaceglob) < 0) then
+                  write (*, '(a,i0)') 'Error: mapmerge: missing owning partition for global cell ', ifaceglob
+                  ierr = 1
+                  goto 888
+               end if
+            end do
+         end if
          if (jamerge_cntv == 1) then
             if (topodimTmp /= 1) then ! for 1D map file, node_c2g has been read from the input map files, so skip
             !! fulfill node_c2g, because in domain that is larger than 0000, there are nodes which are in this domain but
@@ -1537,8 +1812,20 @@ contains
             !  but their domain numbers are another domain.
             if (topodimTmp /= 1) then
                do ii = 2, nfiles
+                  if (numl(itopo, ii) == 0) then
+                     cycle
+                  end if
                   netedgecount = sum(numl(itopo, 1:ii - 1))
                   nfacecount(itopo) = sum(nump(itopo, 1:ii - 1))
+                  if (jaugrid == 0) then
+                     ierr = nf90_inq_varid(ncids(ii), 'ElemLink', id_netedgefaces)
+                  else
+                     ierr = ionc_inq_varid(ioncids(ii), topo2mesh(itopo, ii), 'edge_faces', id_netedgefaces)
+                  end if
+                  if (ierr /= nf90_noerr) then
+                     write (*, '(a)') 'Error: mapmerge: cannot find edge-face connectivity in `'//trim(infiles(ii))//'''.'
+                     goto 888
+                  end if
                   ierr = ncu_inq_var_fill(ncids(ii), id_netedgefaces, nofill, ifill_value)
                   do ip = 1, numl(itopo, ii)
                      k1 = netedgefaces(1, netedgecount + ip) ! flowelem that edge L connects
@@ -1561,7 +1848,7 @@ contains
                            ifacec = face_g2c(ifaceglob) ! and this is now from the OTHER domain.
                            ! in which domain (iii) does iface belong
                            do iii = 1, nfiles
-                              if (ifacec > sum(nump(itopo, 1:iii - 1)) .and. ifacec < sum(nump(itopo, 1:iii))) then
+                              if (ifacec > sum(nump(itopo, 1:iii - 1)) .and. ifacec <= sum(nump(itopo, 1:iii))) then
                                  ifacefile = iii
                                  exit
                               end if
@@ -1621,8 +1908,16 @@ contains
                end do
             end if
          end if
-         nkmxglob = kmx(itopo, 1)
-         do ii = 2, nfiles
+         nkmxglob = kmx(itopo, ifileScan)
+         do ii = 1, nfiles
+            if (ncids(ii) == -1) then
+               cycle
+            end if
+            if (jaugrid == 1) then
+               if (topo2mesh(itopo, ii) <= 0) then
+                  cycle
+               end if
+            end if
             if (kmx(itopo, ii) /= nkmxglob) then
                write (*, '(a,i0,a,i0,a)') 'Error: mapmerge: Numbers of layers are different in files: ', kmx(itopo, ii), 'layers in file`'//trim(infiles(ii))//''' and', &
                   nkmxglob, 'layers in other files.'
@@ -1711,6 +2006,10 @@ contains
                   if (.not. verbose_mode) goto 888
                else if (dimname == 'Two') then
                   id_dimTwo = dimids(id, itopo, noutfile)
+               else if (dimname == 'nSedTot') then
+                  id_sedtotdim(itopo, noutfile) = dimids(id, itopo, noutfile)
+               else if (dimname == 'nSedSus') then
+                  id_sedsusdim(itopo, noutfile) = dimids(id, itopo, noutfile)
                end if
             end if
          end do
@@ -1794,12 +2093,27 @@ contains
          end do
       end do ! itopo
 
-      ! When both 1D and 2D meshes are present, the global numbering of 1D nodes (read from input files) includes the 2D faces.
-      ! In merged map file, we make the global numbering of 1D nodes only for 1D nodes, not including 2D faces.
-      if (minTopodim == 1 .and. maxTopodim == 2 .and. jareadglob == 1) then
-         node_c2g(:, 1) = node_c2g(:, 1) - ndx(2, noutfile)
+      ! copy the attrubutes of sedfrac_name and sussedfrac_name
+      if (jasedmor == 1) then
+         ifileScan = ifile(minTopodim)
+         ierr = nf90_inq_varid(ncids(ifileScan), 'sedfrac_name', id_frac_name(ifileScan))
+         ierr = nf90_inquire_variable(ncids(ifileScan), id_frac_name(ifileScan), dimids=tmpdimids)
+         ierr = nf90_inquire_dimension(ncids(ifileScan), tmpdimids(1), len=nlen)
+         ierr = nf90_def_dim(ncids(noutfile), 'nStringlen', nlen, id_strlendim(noutfile))
+         ierr = nf90_def_var(ncids(noutfile), 'sedfrac_name', nf90_char, (/id_strlendim(noutfile), id_sedtotdim(minTopodim, noutfile)/), id_frac_name(noutfile))
+         ierr = ncu_copy_atts(ncids(ifileScan), ncids(noutfile), id_frac_name(ifileScan), id_frac_name(noutfile))
+         if (isNetCDF4) then
+            ierr = ncu_copy_chunking_deflate(ncids(ifileScan), ncids(noutfile), id_frac_name(ifileScan), id_frac_name(noutfile))
+         end if
+      
+         ierr = nf90_inq_varid(ncids(ifileScan), 'sussedfrac_name', id_susfrac_name(ifileScan))
+         ierr = nf90_def_var(ncids(noutfile), 'sussedfrac_name', nf90_char, (/id_strlendim(noutfile), id_sedsusdim(minTopodim, noutfile)/), id_susfrac_name(noutfile))
+         ierr = ncu_copy_atts(ncids(ifileScan), ncids(noutfile), id_susfrac_name(ifileScan), id_susfrac_name(noutfile))
+         if (isNetCDF4) then
+            ierr = ncu_copy_chunking_deflate(ncids(ifileScan), ncids(noutfile), id_susfrac_name(ifileScan), id_susfrac_name(noutfile))
+         end if
       end if
-
+      
       ! The partitions variables are used for restart. Since restart from a ugrid file is not supported yet, do not write these variables if it is ugrid.
       ! TODO: see UNST-4947 which aims to enable restart from ugrid file.
       if (jaugrid == 0) then
@@ -1832,6 +2146,9 @@ contains
          maxNcontacts = 0
          call realloc(ncontacts, nfiles, keepExisting=.false., fill=0)
          do ii = 1, nfiles
+            if (ncids(ii) == -1) then
+               cycle
+            end if
             ierr = ionc_get_contact_topo_count(ioncids(ii), ncontacts(ii))
             if (ncontacts(ii) > maxNcontacts) then
                maxNcontacts = ncontacts(ii)
@@ -1870,6 +2187,8 @@ contains
             ! 'contact2' at im==1. This is a TODO task.
             do icontact = 1, maxNcontacts
                do ii = 1, nfiles
+                  nnodecount(1) = sum(numk(1, 1:ii - 1))
+                  nfacecount(2) = sum(ndx(2, 1:ii - 1))
                   if (icontact > ncontacts(ii)) then
                      cycle
                   end if
@@ -1894,7 +2213,8 @@ contains
                         link1d2d_c2g(nlink1d2dcount(icontact) + ip, icontact) = nlink1d2dglob(icontact)
 
                         links1d2dnodes_g(1, nlink1d2dglob(icontact), icontact) = node_c2g(nnodecount(1) + k1, 1)
-                        links1d2dnodes_g(2, nlink1d2dglob(icontact), icontact) = face_c2g(nfacecount(2) + k2, 2)
+                        ifaceglob = face_c2g(nfacecount(2) + k2, 2)
+                        links1d2dnodes_g(2, nlink1d2dglob(icontact), icontact) = face_c2cc(face_g2c(ifaceglob))
                      end if
                   end do
 
@@ -1910,6 +2230,9 @@ contains
             call realloc(nMaxvars_contact_icontact, maxNcontacts, keepExisting=.false., fill=0)
             do icontact = 1, maxNcontacts
                do ii = 1, nfiles
+                  if (icontact > ncontacts(ii)) then
+                     cycle
+                  end if
                   ierr = ionc_get_var_total_count(ioncids(ii), icontact, 1, 0, nvars_contact(icontact, ii)) ! Get total number of variables on the current mesh contact in file ii
 
                   if (nvars_contact(icontact, ii) > 0) then
@@ -1932,6 +2255,9 @@ contains
                do iv = 1, nvarsScan
                   ierr = nf90_inquire_variable(ncids(ifileScan), varids_contact(iv, icontact, ifileScan), varname)
                   do ii = 1, nfiles
+                     if (icontact > ncontacts(ii)) then
+                        cycle
+                     end if
                      if (ii /= ifileScan) then
                         ierr = nf90_inq_varid(ncids(ii), varname, varids_contact(iv, icontact, ii))
                         if (ierr /= nf90_noerr) then
@@ -1970,16 +2296,51 @@ contains
          nt(noutfile) = ntsel
          allocate (itimsel(ntsel))
          itimsel = (/(it, it=1, ntsel)/)
-         allocate (times(ntsel), timestep(ntsel))
+         allocate (times(ntsel), timestep(ntsel), morft(ntsel), morfac(ntsel))
          do it = 1, ntsel
             ierr = nf90_get_var(ncids(ifileScan), id_time(ifileScan), times(it), start=(/itimsel(it)/)) ! count=1
             ierr = nf90_get_var(ncids(ifileScan), id_timestep(ifileScan), timestep(it), start=(/itimsel(it)/)) ! count=1
+            ! copy morft/morfac if they exist
+            if (jasedmor == 1) then
+               ierr = nf90_get_var(ncids(ifileScan), id_morft(ifileScan), morft(it), start=(/itimsel(it)/))
+               if (jamorfac == 1) then
+                  ierr = nf90_get_var(ncids(ifileScan), id_morfac(ifileScan), morfac(it), start=(/itimsel(it)/))
+               end if
+            end if
          end do
 
          ierr = nf90_put_var(ncids(noutfile), id_time(noutfile), times, count=(/ntsel/))
          ierr = nf90_put_var(ncids(noutfile), id_timestep(noutfile), timestep, count=(/ntsel/))
+         ! copy morft/morfac if they exist
+         if (jasedmor == 1) then
+            ierr = nf90_put_var(ncids(noutfile), id_morft(noutfile), morft, count=(/ntsel/))
+            if (jamorfac == 1) then
+               ierr = nf90_put_var(ncids(noutfile), id_morfac(noutfile), morfac, count=(/ntsel/))
+            end if
+         end if
       end if
-
+      
+      !copy the sediment fraction name to the merged file
+      if (jasedmor == 1) then
+         nsedtotsel = nsedtot(ifileScan)
+         nsedtot(noutfile) = nsedtotsel
+         allocate (sedfrac_name(nsedtotsel))
+         do it = 1, nsedtotsel
+             nlen = len(trim(sedfrac_name(it)))
+             ierr = nf90_get_var(ncids(ifileScan), id_frac_name(ifileScan), sedfrac_name(it), start=(/1, it/), count=(/nlen, 1/))
+         end do
+         ierr = nf90_put_var(ncids(noutfile), id_frac_name(noutfile), sedfrac_name)
+      
+         nsedsussel = nsedsus(ifileScan)
+         nsedsus(noutfile) = nsedsussel
+         allocate (sussedfrac_name(nsedsussel))
+         do it = 1, nsedsussel
+             nlen = len(trim(sedfrac_name(it)))
+             ierr = nf90_get_var(ncids(ifileScan), id_susfrac_name(ifileScan), sussedfrac_name(it), start=(/1, it/), count=(/nlen, 1/))
+         end do
+         ierr = nf90_put_var(ncids(noutfile), id_susfrac_name(noutfile), sussedfrac_name)
+      end if
+      
       ! 6b. A loop on meshe topology to write the merged variables to the output file.
       do itopo = minTopodim, maxTopodim
          if (verbose_mode .and. jaugrid == 1) then
@@ -2000,7 +2361,7 @@ contains
          end if
 
          ! 1D tmp array: take largest of all topological position counts:
-         maxitems = max(sum(nedgecount(1:maxTopodim)), sum(nfacecount(1:maxTopodim)), sum(nnodecount(1:maxTopodim)), sum(nnetedgecount(1:maxTopodim)), sum(nbndcount(1:maxTopodim)), kmx(itopo, noutfile) + 1)
+         maxitems = max(sum(lnx(:, 1:nfiles)), sum(ndx(:, 1:nfiles)), sum(numk(:, 1:nfiles)), sum(numl(:, 1:nfiles)), sum(ndxbnd(:, 1:nfiles)), kmx(itopo, noutfile) + 1)
          call realloc(tmpvar1D, maxitems, keepExisting=.false.)
          call realloc(itmpvar1D, maxitems, keepExisting=.false.)
          call realloc(itmpvar1D_tmp, maxitems, keepExisting=.false.)
@@ -2056,8 +2417,6 @@ contains
             if (var_laydimpos(iv, itopo) /= -1) then
                count_read(var_laydimpos(iv, itopo)) = kmx(itopo, noutfile)
                count_write(var_laydimpos(iv, itopo)) = kmx(itopo, noutfile)
-               ! TODO: AvD: UNST-993: support w-position quantities: difference between kmx and kmx1 !!
-               ! TODO: AvD: future work: what if kmx varies between input files?
             end if
             if (var_wdimpos(iv, itopo) /= -1) then
                count_read(var_wdimpos(iv, itopo)) = kmx(itopo, noutfile) + 1
@@ -2140,11 +2499,17 @@ contains
                   call realloc(tmpvar3D, (/count_read(var_kxdimpos(ikx0, iv, itopo)), count_read(var_laydimpos(iv, itopo)), maxitems/), keepExisting=.false.)
                   ! use maxitems instead of items_count(noutfile) to try and have as few reallocs as possible.
                   tmpvarptr => tmpvar3D
+                  if (topodimTmp == 1 .and. var_loctype(iv, itopo) == UNC_LOC_CN) then
+                     call realloc(tmpvar3D_tmp, shape(tmpvar3D), keepExisting=.false., fill=fill_value_double)
+                  end if
                   tmpvarDim = 3
                else if (numkx(iv, itopo) > 1) then ! for 4 dimensional sediment variables which has more than 1 sediment dimension, e.g. msed
                   call realloc(tmpvar3D, (/count_read(var_kxdimpos(ikx0, iv, itopo)), count_read(var_kxdimpos(2, iv, itopo)), maxitems/), keepExisting=.false.)
                   ! use maxitems instead of items_count(noutfile) to try and have as few reallocs as possible.
                   tmpvarptr => tmpvar3D
+                  if (topodimTmp == 1 .and. var_loctype(iv, itopo) == UNC_LOC_CN) then
+                     call realloc(tmpvar3D_tmp, shape(tmpvar3D), keepExisting=.false., fill=fill_value_double)
+                  end if
                   tmpvarDim = 3
                else ! Only a vectormax dim
                   if (is_float_kind(var_types(iv,itopo))) then
@@ -2228,6 +2593,9 @@ contains
                   nitemglob = 0
                   nitemcount = 0
                   do ii = 1, nfiles
+                     if (ncids(ii) == -1) then
+                        cycle
+                     end if
                      nitemglob0 = nitemglob
 
                      if (var_spacedimpos(iv, itopo) /= -1) then
@@ -2351,9 +2719,6 @@ contains
                               end if
                            end if
                         end do
-                        if (ii == nfiles) then ! When finished, copy to itmpvar2D for writting
-                           itmpvar2D(:, 1:nitemglob) = itmpvar2D_tmp(:, 1:nitemglob)
-                        end if
                      else if (var_names(iv, itopo) == 'NetElemLink') then
                         nfacecount(itopo) = sum(nump(itopo, 1:ii - 1))
                         nnetedgecount(itopo) = sum(numl(itopo, 1:ii - 1))
@@ -2373,9 +2738,6 @@ contains
                               end if
                            end if
                         end do
-                        if (ii == nfiles) then
-                           itmpvar2D(:, 1:nitemglob) = itmpvar2D_tmp(:, 1:nitemglob)
-                        end if
                      else if (var_names(iv, itopo) == 'ElemLink' .or. var_names(iv, itopo) == trim(meshname(itopo, ifile(itopo)))//'_edge_faces') then
                         nnetedgecount(itopo) = sum(numl(itopo, 1:ii - 1))
                         nfacecount(itopo) = sum(nump(itopo, 1:ii - 1))
@@ -2426,12 +2788,7 @@ contains
                               end if
                            end if
                         end do
-                        if (ii == nfiles) then
-                           itmpvar2D(:, 1:nitemglob) = itmpvar2D_tmp(:, 1:nitemglob)
-                        end if
-                     else if (jaugrid == 1 .and. topodim(imesh, ii) == 1 .and. var_loctype(iv, itopo) == UNC_LOC_CN) then
-                        ! For 1D mesh, the node indices in the merged file are read directly from flowelem_globalnr into node_c2g.
-                        ! So for variables that locate on nodes, we do not use the shift method, but use the global numbers in node_c2g.
+                     else if (jaugrid == 1 .and. topodimTmp == 1 .and. var_loctype(iv, itopo) == UNC_LOC_CN) then
                         ja1DCNVar = 1
                         nnodecount(itopo) = sum(numk(itopo, 1:ii - 1))
                         do ip = 1, item_counts(ii)
@@ -2439,13 +2796,24 @@ contains
                               inodeglob = node_c2g(nnodecount(itopo) + ip, itopo)
                               if (inodeglob > 0) then
                                  if (is_float_kind(var_types(iv,itopo))) then
-                                    tmpvar1D_tmp(inodeglob) = tmpvar1D(nnodecount(itopo) + ip)
+                                    select case (tmpvarDim)
+                                    case (1)
+                                       tmpvar1D_tmp(inodeglob) = tmpvar1D(nitemglob0 + ip)
+                                    case (2)
+                                       tmpvar2D_tmp(:, inodeglob) = tmpvar2D(:, nitemglob0 + ip)
+                                    case (3)
+                                       tmpvar3D_tmp(:, :, inodeglob) = tmpvar3D(:, :, nitemglob0 + ip)
+                                    end select
                                  else if (is_integer_kind(var_types(iv,itopo))) then
-                                    itmpvar1D_tmp(inodeglob) = itmpvar1D(nnodecount(itopo) + ip)
+                                    if (tmpvarDim == 2) then
+                                       itmpvar2D_tmp(:, inodeglob) = itmpvar2D(:, nitemglob0 + ip)
+                                    else
+                                       itmpvar1D_tmp(inodeglob) = itmpvar1D(nitemglob0 + ip)
+                                    end if
                                  else if (var_types(iv, itopo) == nf90_byte) then
-                                    btmpvar1D_tmp(inodeglob, itm:itm) = btmpvar1D(nnodecount(itopo) + ip, itm:itm)
+                                    btmpvar1D_tmp(inodeglob, itm:itm) = btmpvar1D(nitemglob0 + ip, itm:itm)
                                  else if (var_types(iv, itopo) == nf90_char) then
-                                    ctmpvar2D_tmp(:, inodeglob) = ctmpvar2D(:, nnodecount(itopo) + ip)
+                                    ctmpvar2D_tmp(:, inodeglob) = ctmpvar2D(:, nitemglob0 + ip)
                                  end if
                               end if
                            end if
@@ -2491,13 +2859,30 @@ contains
                      end if
                   end do ! ii
 
+                  if (var_names(iv, itopo) == 'NetElemNode' .or. &
+                      var_names(iv, itopo) == trim(meshname(itopo, ifile(itopo)))//'_face_nodes' .or. &
+                      var_names(iv, itopo) == 'NetElemLink' .or. var_names(iv, itopo) == 'FlowLink') then
+                     itmpvar2D(:, 1:nitemglob) = itmpvar2D_tmp(:, 1:nitemglob)
+                  end if
+
                   ! For 1D mesh variables, after merging among all files, copy tmp array to 1D array for later writing to the merged file.
                   if (ja1DCNVar == 1) then
                      nitemglob = item_counts(noutfile) ! Update nitemglob, otherwise the check on nitemglob after the outer do-loop will show unexpected error message.
                      if (is_float_kind(var_types(iv,itopo))) then
-                        tmpvar1D(1:nitemglob) = tmpvar1D_tmp(1:nitemglob)
+                        select case (tmpvarDim)
+                        case (1)
+                           tmpvar1D(1:nitemglob) = tmpvar1D_tmp(1:nitemglob)
+                        case (2)
+                           tmpvar2D(:, 1:nitemglob) = tmpvar2D_tmp(:, 1:nitemglob)
+                        case (3)
+                           tmpvar3D(:, :, 1:nitemglob) = tmpvar3D_tmp(:, :, 1:nitemglob)
+                        end select
                      else if (is_integer_kind(var_types(iv,itopo))) then
-                        itmpvar1D(1:nitemglob) = itmpvar1D_tmp(1:nitemglob)
+                        if (tmpvarDim == 2) then
+                           itmpvar2D(:, 1:nitemglob) = itmpvar2D_tmp(:, 1:nitemglob)
+                        else
+                           itmpvar1D(1:nitemglob) = itmpvar1D_tmp(1:nitemglob)
+                        end if
                      else if (var_types(iv, itopo) == nf90_byte) then
                         btmpvar1D(1:nitemglob, itm:itm) = btmpvar1D_tmp(1:nitemglob, itm:itm)
                      else if (var_types(iv, itopo) == nf90_char) then
@@ -2715,17 +3100,16 @@ contains
                         end do
                         nitemglob = nlink1d2dcount(icontact) + numl1d2d(icontact, ii) ! This variable needs to be updated for reading variables from input map files.
 
-                        if (ii == nfiles) then
-                           nitemglob = numl1d2d(icontact, noutfile)
-                           if (is_float_kind(vartype)) then
-                              tmpvar1D(1:nitemglob) = tmpvar1D_tmp(1:nitemglob)
-                           else if (is_integer_kind(vartype)) then
-                              itmpvar1D(1:nitemglob) = itmpvar1D_tmp(1:nitemglob)
-                           else if (vartype == nf90_char) then
-                              ctmpvar2D(:, 1:nitemglob) = ctmpvar2D_tmp(:, 1:nitemglob)
-                           end if
-                        end if
                      end do ! ii
+
+                     nitemglob = numl1d2d(icontact, noutfile)
+                     if (is_float_kind(vartype)) then
+                        tmpvar1D(1:nitemglob) = tmpvar1D_tmp(1:nitemglob)
+                     else if (is_integer_kind(vartype)) then
+                        itmpvar1D(1:nitemglob) = itmpvar1D_tmp(1:nitemglob)
+                     else if (vartype == nf90_char) then
+                        ctmpvar2D(:, 1:nitemglob) = ctmpvar2D_tmp(:, 1:nitemglob)
+                     end if
 
                      ! 8b.4 Write to output file
                      count_write(idimlink1d2d) = numl1d2d(icontact, noutfile)
@@ -2758,9 +3142,15 @@ contains
    !! Cleanup:
 888   continue
       do ii = 1, nfiles
-         ierr = nf90_close(ncids(ii))
+         if (ncids(ii) /= -1) then
+            ierri = nf90_close(ncids(ii))
+            if (ierr == 0) ierr = ierri
+         end if
       end do
-      ierr = nf90_close(ncids(noutfile))
+      if (ncids(noutfile) /= -1) then
+         ierri = nf90_close(ncids(noutfile))
+         if (ierr == 0) ierr = ierri
+      end if
 
       if (allocated(varids)) deallocate (varids)
       if (allocated(varids_out)) deallocate (varids_out)
@@ -2783,26 +3173,30 @@ contains
       if (allocated(tmpvar2D_tmp)) deallocate (tmpvar2D_tmp)
       if (allocated(tmpvar2D_tmpmax)) deallocate (tmpvar2D_tmpmax)
       if (allocated(tmpvar3D)) deallocate (tmpvar3D)
+      if (allocated(tmpvar3D_tmp)) deallocate (tmpvar3D_tmp)
       if (allocated(btmpvar1D)) deallocate (btmpvar1D)
       if (allocated(btmpvar1D_tmp)) deallocate (btmpvar1D_tmp)
       if (allocated(ctmpvar2D)) deallocate (ctmpvar2D)
       if (allocated(ctmpvar2D_tmp)) deallocate (ctmpvar2D_tmp)
 
-   end function dfm_merge_mapfiles
+   end function dfm_merge_partitioned_mapfiles
 
-!> Orders a filename list by increasing partition number.
-!! Sorting is done in place.
-   subroutine dfm_order_by_partition(files, nfiles)
-      use m_alloc
+!> Create an array of ordered partition filenames, with empty entries for missing partitions.
+   subroutine dfm_order_by_partition(files, ierr)
       implicit none
 
-      character(len=MAXNAMELEN), intent(inout) :: files(:) !< List files names, will be replaced by the sorted list.
-      integer, intent(in) :: nfiles !< Number of input files.
+      character(len=MAXNAMELEN), allocatable, intent(inout) :: files(:) !< List of filenames, will be reordered and expanded as needed.
+      integer, intent(out) :: ierr !< Zero on success, nonzero for invalid or duplicate partition numbers.
 
       integer, allocatable :: idom(:)
       character(len=MAXNAMELEN), allocatable :: filesorig(:)
-      integer :: ii, ierr, nlen
+      integer :: ii, nlen, nfiles, ios
 
+      ierr = 0
+      nfiles = size(files)
+      if (nfiles == 0) then
+         return
+      end if
       allocate (idom(nfiles))
       allocate (filesorig(nfiles))
 
@@ -2812,19 +3206,28 @@ contains
          ! modelname_xxxx_map.nc'
          !           0  76  3  0
          if (files(ii) (max(1, nlen - 6):nlen) == '_map.nc') then
-            read (files(ii) (max(1, nlen - 10):nlen - 7), '(i4.4)', iostat=ierr) idom(ii)
+            read (files(ii) (max(1, nlen - 10):nlen - 7), '(i4.4)', iostat=ios) idom(ii)
          else
-            ierr = 1
+            ios = 1
          end if
-         if (ierr /= 0) then
+         if (ios /= 0) then
             idom(ii) = ii - 1
+         end if
+         if (idom(ii) < 0) then
+            write (*, '(a)') 'Error: mapmerge: negative partition number in `'//trim(files(ii))//'''.'
+            ierr = 1
+            return
          end if
       end do
 
+      deallocate(files)
+      allocate(files(max(nfiles, maxval(idom) + 1)))
+      files = ''
       do ii = 1, nfiles
-         if (idom(ii) + 1 > nfiles) then
-            write (*, '(a,i0,a,i0,a)') 'Error: mapmerge: found domain number ', idom(ii), ', which exceeds the number of files: ', nfiles, '.'
-            exit ! We can't really recover from this.
+         if (len_trim(files(idom(ii) + 1)) > 0) then
+            write (*, '(a,i0)') 'Error: mapmerge: duplicate partition number ', idom(ii)
+            ierr = 1
+            return
          end if
 
          files(idom(ii) + 1) = filesorig(ii)
@@ -2870,4 +3273,3 @@ contains
    end function is_integer_kind
 
 end module dfm_merge
-

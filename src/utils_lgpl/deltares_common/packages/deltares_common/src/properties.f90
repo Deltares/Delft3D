@@ -1771,6 +1771,7 @@ contains
       isFirst = .true.
       if (associated(anode)) then
          do
+            anode%node_visit = anode%node_visit + 1
             call tree_get_data_alloc_string(anode, localvaluetemp, success_)
             localvalue = localvaluetemp
 
@@ -1818,9 +1819,6 @@ contains
                exit
             end if
          end do
-         if (size(anode%node_data) > 0) then
-            anode%node_visit = anode%node_visit + 1 ! Count visits (request of the value)
-         end if
       else
          ! Key not found
       end if
@@ -1927,6 +1925,7 @@ contains
       integer :: length
       integer :: valcount
       integer :: ierr
+      integer :: parsed_value
       character(12) :: intchars = '0123456789-+'
       character(2) :: spacechars = ' '//achar(9)
       character(20) :: fmt
@@ -1982,13 +1981,14 @@ contains
             length = len_trim(avalue)
             if (length /= 0) then
                write (fmt, '(a,i5,a)') '(i', length, ')'
-               read (avalue, fmt, iostat=ierr) value(valcount)
+               read (avalue, fmt, iostat=ierr) parsed_value
                if (ierr /= 0) then
                   if (present(success)) then
                      success = .false.
                   end if
                   return
                end if
+               value(valcount) = parsed_value
                exit
             else
                if (valuesfirst_) then
@@ -2091,6 +2091,7 @@ contains
       integer :: length
       integer :: valcount
       integer :: ierr
+      real(kind=sp) :: parsed_value
       character(15) :: realchars = '0123456789-+.eE'
       character(2) :: spacechars = ' '//achar(9)
       character(20) :: fmt
@@ -2154,13 +2155,14 @@ contains
             !
             if (digitfound .and. length /= 0) then
                write (fmt, '(a,i0,a)') '(f', length, '.0)'
-               read (avalue, fmt, iostat=ierr) value(valcount)
+               read (avalue, fmt, iostat=ierr) parsed_value
                if (ierr /= 0) then
                   if (present(success)) then
                      success = .false.
                   end if
                   return
                end if
+               value(valcount) = parsed_value
                exit
             else
                if (valuesfirst_) then
@@ -2233,6 +2235,7 @@ contains
       integer :: length
       integer :: valcount
       integer :: ierr
+      real(kind=hp) :: parsed_value
       character(17) :: realchars = '0123456789-+.eEdD'
       character(2) :: spacechars = ' '//achar(9)
       character(20) :: fmt
@@ -2297,13 +2300,14 @@ contains
             !
             if (digitfound .and. length /= 0) then
                write (fmt, '(a,i0,a)') '(f', length, '.0)'
-               read (avalue, fmt, iostat=ierr) value(valcount)
+               read (avalue, fmt, iostat=ierr) parsed_value
                if (ierr /= 0) then
                   if (present(success)) then
                      success = .false.
                   end if
                   return
                end if
+               value(valcount) = parsed_value
                exit
             else
                if (valuesfirst_) then

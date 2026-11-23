@@ -77,7 +77,7 @@ subroutine difuvl(icreep    ,timest    ,lundia    ,nst       ,icx       , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     use dfparall 
     use flow2d3d_timers
     use sediment_basics_module

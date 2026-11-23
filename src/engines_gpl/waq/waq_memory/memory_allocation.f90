@@ -278,7 +278,7 @@ contains
         ! module for computing the pointers into the arrays
         use m_array_manipulation, only : make_pointer, memory_partition, char_type
         ! System characteristics
-        use m_waq_memory_dimensions, only : num_substances_total, num_monitoring_points, num_boundary_conditions, num_boundary_types, num_waste_loads, num_waste_load_types, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, num_cells_v_dir, num_processes_activated, &
+        use m_waq_memory_dimensions, only : num_substances_total, num_monitoring_points, num_boundary_conditions, num_boundary_types, num_waste_loads, num_waste_load_types, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_functions, num_cells_v_dir, num_processes_activated, &
                 num_output_variables_extra, num_dispersion_arrays, num_velocity_arrays, NDMPAR, num_transects, char_arr_buffer_len, num_unformat_files
         ! Timer characteristics
         use m_timer_variables
@@ -393,7 +393,7 @@ contains
         arrdm1(index_func_name) = num_time_functions
 
         arrnam(index_segment_func) = 'SFNAM '
-        arrdm1(index_segment_func) = num_spatial_time_fuctions
+        arrdm1(index_segment_func) = num_spatial_time_functions
 
         arrnam(index_edit) = 'CGRID '
         arrdm1(index_edit) = num_cells_v_dir * 6
@@ -517,7 +517,7 @@ contains
         use m_array_manipulation, only : make_pointer, memory_partition, int_type
         ! System characteristics
         use m_waq_memory_dimensions, only : num_cells, num_cells_bottom, num_substances_transported, num_substances_total, num_exchanges, num_exchanges_bottom_dir, num_monitoring_points, num_boundary_conditions, num_boundary_types, num_waste_loads, num_waste_load_types, num_constants, num_spatial_parameters, &
-                num_time_functions, num_spatial_time_fuctions, num_cells_v_dir, num_processes_activated, num_output_variables_extra, num_dispersion_arrays, num_velocity_arrays, NDMPAR, num_transects, char_arr_buffer_len, num_unformat_files, num_harmonics, num_items_time_fn, &
+                num_time_functions, num_spatial_time_functions, num_cells_v_dir, num_processes_activated, num_output_variables_extra, num_dispersion_arrays, num_velocity_arrays, NDMPAR, num_transects, char_arr_buffer_len, num_unformat_files, num_harmonics, num_items_time_fn, &
                 num_cells_u_dir, process_space_int_len, num_output_files, file_option_attributes, num_indices, num_grids, ntdmpq, num_transect_exchanges, newisp, fast_solver_arr_size, insize, ntdmps, num_rows, num_columns, &
                 num_vars, num_input_ref, num_dispersion_arrays_new, num_velocity_arrays_new, num_threads
         ! Timer characteristics
@@ -1171,7 +1171,7 @@ contains
         use m_array_manipulation, only : make_pointer, memory_partition, real_type
         ! System characteristics
         use m_waq_memory_dimensions, only : num_layers, num_substances_transported, num_substances_total, num_threads, num_cells, num_cells_bottom, num_grids, num_exchanges_bottom_dir, num_exchanges, num_boundary_conditions, num_waste_loads, num_constants, num_spatial_parameters, &
-                num_time_functions, num_spatial_time_fuctions, num_dispersion_arrays_new, num_dispersion_arrays, num_velocity_arrays_new, num_velocity_arrays, harmonics_arr_len, nlines, num_codiagonals, fast_solver_arr_size, ndmpar, num_local_vars, num_defaults, &
+                num_time_functions, num_spatial_time_functions, num_dispersion_arrays_new, num_dispersion_arrays, num_velocity_arrays_new, num_velocity_arrays, harmonics_arr_len, nlines, num_codiagonals, fast_solver_arr_size, ndmpar, num_local_vars, num_defaults, &
                 num_fluxes, num_monitoring_cells, output_buffer_len, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, ndmpq, num_transects, newrsp, num_exchanges_z_dir, num_columns, num_rows, num_fast_solver_vectors
         ! Timer characteristics
         use m_timer_variables
@@ -1394,7 +1394,7 @@ contains
         arrnam(iisfun) = 'SFUNC '
         arrknd(iisfun) = 3
         arrdm1(iisfun) = num_cells + num_cells_bottom
-        arrdm2(iisfun) = num_spatial_time_fuctions
+        arrdm2(iisfun) = num_spatial_time_functions
         arrdm3(iisfun) = num_grids
 
         arrnam(iidnew) = 'DISPNW'

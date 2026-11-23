@@ -46,7 +46,7 @@ subroutine calseddf2004(ustarc    ,ws        ,tp        ,hrms      ,h1        , 
 !
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     use sediment_basics_module
     use m_calseddf1993, only: calseddf1993
 !

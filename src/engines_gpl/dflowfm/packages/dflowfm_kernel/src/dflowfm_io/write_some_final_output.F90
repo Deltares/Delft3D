@@ -54,7 +54,8 @@ contains
       use m_observations_data, only: mxls
       use unstruc_files, only: defaultFilename
       use m_sediment, only: stm_included
-      use m_transport, only: maserrsed
+      use m_fm_wq_processes, only: wq_processes_active
+      use m_transport, only: maserrsed, tracer_limiter_mass_error, ITRA1, ITRAN, const_names
       use mass_balance_areas_routines, only: mba_final
       use m_datum, only: datum
       use m_write_timestep_limiting_cells, only: write_timestep_limiting_cells
@@ -65,7 +66,7 @@ contains
 
       implicit none
 
-      integer :: k, i
+      integer :: k, i, constituent_index, tracer_index
       real(kind=dp) :: frac, tot, dtav
       real(kind=dp) :: f
       real(kind=dp) :: tstop
@@ -212,7 +213,7 @@ contains
       if (jatimer == 1) then
          write (msgbuf, '(a,F25.10)') 'time transport         (s)  :', gettimer(1, ITRANSPORT)
          call msg_flush()
-         if (ti_waqproc /= 0) then
+         if (wq_processes_active) then
             write (msgbuf, '(a,F25.10)') 'time processes         (s)  :', gettimer(1, IFMWAQ)
             call msg_flush()
          end if
@@ -239,6 +240,30 @@ contains
             call msg_flush()
             write (msgbuf, '(a,F25.3)') 'mass error from ssc limitation (10^6 kg)  :', maserrsed / 1.0e6_dp
             call msg_flush()
+         end if
+         if (ITRA1 > 0) then
+            if (tracer_concentration_min_enabled) then
+               msgbuf = ' '
+               call msg_flush()
+               write (msgbuf, '(a,ES15.6E3)') 'tracerConcentrationMin is set to: ', tracer_concentration_min
+               call msg_flush()
+               do constituent_index = ITRA1, ITRAN
+                  tracer_index = constituent_index - ITRA1 + 1
+                  write (msgbuf, '(a,ES15.6E3)') 'mass added to "'//trim(const_names(constituent_index))//'" due to minimum tracer concentration limitation:', tracer_limiter_mass_error(tracer_index, 1)
+                  call msg_flush()
+               end do
+            end if
+            if (tracer_concentration_max_enabled) then
+               msgbuf = ' '
+               call msg_flush()
+               write (msgbuf, '(a,ES15.6E3)') 'tracerConcentrationMax is set to: ', tracer_concentration_max
+               call msg_flush()
+               do constituent_index = ITRA1, ITRAN
+                  tracer_index = constituent_index - ITRA1 + 1
+                  write (msgbuf, '(a,ES15.6E3)') 'mass removed from "'//trim(const_names(constituent_index))//'" due to maximum tracer concentration limitation:', tracer_limiter_mass_error(tracer_index, 2)
+                  call msg_flush()
+               end do
+            end if
          end if
       end if
 

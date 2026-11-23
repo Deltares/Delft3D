@@ -54,7 +54,7 @@ contains
       use messagehandling, only: LEVEL_FATAL, LEVEL_ERROR, mess, setmessage
       use m_flowparameters
       use m_flowgeom
-      use m_physcoef, only: ifrctypuni
+      use m_physcoef, only: uniform_friction_type
       use m_flow, only: kmx, zslay, z0urou
       use m_flowtimes, only: dt_user
       use m_trachy ! (FM module containing trachy data structure)
@@ -249,22 +249,30 @@ contains
       ! determine if umag is needed.
       !
       update_umag = .false.
+      trachy_resistance = .false.
       itrt = 0
-      do while ((.not. update_umag) .and. (itrt < trachy_fl%gen%ntrt))
-         itrt = itrt + 1
-         ! The statement could be optimized a bit more to be evaluated only if such area definitions exist.
-         if ((trachy_fl%gen%ittdef(itrt, 2) == 103) .or. (trachy_fl%gen%ittdef(itrt, 2) == 104) .or. (trachy_fl%gen%ittdef(itrt, 2) == 155)) then ! if Van Rijn roughness predictor or Struiksma roughness predictor or Vaestila vegetation roughness
-            update_umag = .true.
-         end if
-      end do
+      ! # `update_umag`
+      ! Velocity magnitude `umag` is needed by the roughness predictors and vegetation formulations
+      ! that use flow velocity to compute trachytope roughness. This flag enables the computation 
+      ! of the velocity magnitude before calling `trtrou`. It is a waste of time to compute it if
+      ! it is not needed by any of the roughness predictors or vegetation formulations.
       !
-      itrt = 0
-      do while ((.not. trachy_resistance) .and. (itrt < trachy_fl%gen%ntrt))
+      ! # `trachy_resistance`
+      ! Some trachytope formulations require additional vegetation resistance not via friction but 
+      ! through a loss in the momentum equation (computed in `furu`). This flag enables the computation 
+      ! of additional vegetation resistance in variable `alfav`.
+      do while ((.not. update_umag .or. .not. trachy_resistance) .and. &
+                (itrt < trachy_fl%gen%ntrt))
          itrt = itrt + 1
-         ! The statement could be optimized a bit more to be evaluated only if such area definitions exist (see above).
-         if ((trachy_fl%gen%ittdef(itrt, 2) == 154) .or. (trachy_fl%gen%ittdef(itrt, 2) == 155) .or. (trachy_fl%gen%ittdef(itrt, 2) == 156)) then ! if Baptist type 154
+         select case (trachy_fl%gen%ittdef(itrt, 2))
+         case (103, 104)
+            update_umag = .true.
+         case (154, 156)
             trachy_resistance = .true.
-         end if
+         case (155, 160, 162)
+            update_umag = .true.
+            trachy_resistance = .true.
+         end select
       end do
       if (trachy_resistance .and. (jabaptist >= 2)) then
          call mess(LEVEL_ERROR, 'Trachytopes and Vegetationmodelnr >= 2 cannot be used in the same simulation', mdia)
@@ -272,13 +280,13 @@ contains
       !
       ! Connection to FM definitions
       !
-      if (ifrctypuni == 0) then
+      if (uniform_friction_type == 0) then
          rouflo = 'CHEZ'
-      elseif (ifrctypuni == 1) then
+      elseif (uniform_friction_type == 1) then
          rouflo = 'MANN'
-      elseif (ifrctypuni == 2) then
+      elseif (uniform_friction_type == 2) then
          rouflo = 'WHIT'
-      elseif (ifrctypuni == 3) then
+      elseif (uniform_friction_type == 3) then
          rouflo = 'WHIT'
       else
          call SetMessage(LEVEL_FATAL, 'Unsupported friction type specified in combination with trachytopes')

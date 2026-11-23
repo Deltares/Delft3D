@@ -35,7 +35,7 @@ find "${VAHOME}/${JSON_CONFIGS_PATH}" -type f -name '*.json' -iregex "${MODEL_RE
             --volume="${VAHOME}/${JSON_CONFIGS_PATH}:/data/config:ro" \
             --volume="${VAHOME}/reference:/data/reference:ro" \
             --volume="${VERSCHILLENTOOL_DIR}:/data/verschillentool" \
-            containers.deltares.nl/verschillentool/verschillentool:release_v1.1.1 \
+            containers.deltares.nl/verschillentool/verschillentool:release_v1.1.2 \
             --config "/data/config/${rel_path}"; then
             >&2 echo "Verschillentool failed with config: ${rel_path}"
         fi

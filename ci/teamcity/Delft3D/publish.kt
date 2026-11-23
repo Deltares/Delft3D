@@ -229,7 +229,6 @@ object Publish : BuildType({
                 tar -vczf %brand%_%new_tag%.tar.gz \
                     %brand%_%new_tag%.sif \
                     readme.txt \
-                    run_singularity.sh \
                     execute_singularity_h7.sh \
                     submit_singularity_h7.sh
                 

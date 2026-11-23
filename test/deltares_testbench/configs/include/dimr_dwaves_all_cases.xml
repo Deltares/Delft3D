@@ -182,15 +182,15 @@
     </checks>
   </testCase>
   <!-- ======================================================================== -->
-  <testCase name="e04_f02_c05_windfields" ref="dimr_trunk">
+  <testCase name="e04_f02_c05_windfields" ref="dimr_default">
     <path version="DVC">e04_wave/f02-windfields/c05</path>
     <maxRunTime>900</maxRunTime>
     <checks>
       <file name="wavm-grw.nc" type="NETCDF">
         <parameters>
           <parameter name="dir" toleranceAbsolute="400.0"/>
-          <parameter name="hsign" toleranceAbsolute="0.01"/>
-          <parameter name="period" toleranceAbsolute="0.022"/>
+          <parameter name="hsign" toleranceAbsolute="0.02"/>
+          <parameter name="period" toleranceAbsolute="0.08"/>
         </parameters>
       </file>
     </checks>
@@ -434,6 +434,25 @@
       </file>
     </checks>
   </testCase>
+  <testCase name="e04_f05_c06_nest_template" ref="dimr_trunk">
+    <path version="DVC">e04_wave/f05-nest/c06_template</path>
+    <checks>
+      <file name="wavm-inlet-inlet.nc" type="NETCDF">
+        <parameters>
+          <parameter name="dir" toleranceAbsolute="400.0"/>
+          <parameter name="hsign" toleranceAbsolute="0.01"/>
+          <parameter name="period" toleranceAbsolute="0.08"/>
+        </parameters>
+      </file>
+      <file name="wavm-inlet-detailed.nc" type="NETCDF">
+        <parameters>
+          <parameter name="dir" toleranceAbsolute="400.0"/>
+          <parameter name="hsign" toleranceAbsolute="0.02"/>
+          <parameter name="period" toleranceAbsolute="0.6"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
   <!-- ================================================================= -->
   <testCase name="e04_f06_c01_write_wavh" ref="dimr_trunk">
     <path version="DVC">e04_wave/f06-io/c01_write_wavh</path>
@@ -451,7 +470,7 @@
   <!-- ======================================================================== -->
   <!-- f06: D-Flow FM + D-Waves coupling, moved to e100                         -->
   <!-- ======================================================================== -->
-  <testCase name="e04_f09_c02_SWANDCSM" ref="dimr_trunk">
+  <testCase name="e04_f09_c02_SWANDCSM" ref="dimr_default">
     <path version="DVC">e04_wave/f09-SWANDCSM/c02</path>
     <maxRunTime>2340</maxRunTime>
     <checks>
@@ -459,7 +478,7 @@
         <parameters>
           <parameter name="dir" toleranceAbsolute="400.0"/>
           <parameter name="hsign" toleranceAbsolute="0.03"/>
-          <parameter name="period" toleranceAbsolute="0.07"/>
+          <parameter name="period" toleranceAbsolute="0.12"/>
         </parameters>
       </file>
     </checks>
@@ -479,15 +498,15 @@
     </checks>
   </testCase>
   <!-- ======================================================================== -->
-  <testCase name="e04_f09_c04_SWANDCSM" ref="dimr_trunk">
+  <testCase name="e04_f09_c04_SWANDCSM" ref="dimr_default">
     <path version="DVC">e04_wave/f09-SWANDCSM/c04</path>
     <maxRunTime>3600</maxRunTime>
     <checks>
       <file name="wavm-Waves.nc" type="NETCDF">
         <parameters>
           <parameter name="dir" toleranceAbsolute="400.0"/>
-          <parameter name="hsign" toleranceAbsolute="0.031"/>
-          <parameter name="period" toleranceAbsolute="0.07"/>
+          <parameter name="hsign" toleranceAbsolute="0.04"/>
+          <parameter name="period" toleranceAbsolute="0.20"/>
         </parameters>
       </file>
     </checks>

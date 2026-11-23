@@ -39,7 +39,7 @@ subroutine ua_rvr(facas,    facsk,    sws,    h,    hrms, &
 ! Ruessink et al. 2009 JGR
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     !
     ! Arguments
     !

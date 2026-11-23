@@ -44,7 +44,7 @@ subroutine euler(j         ,nmmax     ,nmmaxj    ,kmax      ,icx       , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     use dfparall
     use globaldata
     !

@@ -51,7 +51,7 @@ contains
         use grid_search_mod
         use spec_feat_par
         use m_sferic, only: jsferic
-        use mathconsts, only: pi
+        use m_mathconstants, only: pi
         use random_generator
         use m_part_modeltypes
         use m_fm_particles_in_grid, only: displace_spherical, part_findcellsingle

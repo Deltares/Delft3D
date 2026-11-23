@@ -40,7 +40,7 @@ subroutine calksc(nmmax     ,dps       ,s1        ,lsedtot   , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     use sediment_basics_module
     !
     use globaldata

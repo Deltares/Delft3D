@@ -90,7 +90,7 @@ end subroutine write_ff2nf_files
 !!
 !!==============================================================================
 subroutine wri_FF2NF(idis)
-    use mathconsts, only: pi, raddeg
+    use m_mathconstants, only: pi, raddeg
     use m_nfl_data
     use precision
     use properties

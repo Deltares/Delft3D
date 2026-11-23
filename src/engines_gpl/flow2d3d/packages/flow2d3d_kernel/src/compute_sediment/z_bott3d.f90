@@ -371,6 +371,10 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
     dtmor   = dt*morfac
     nm_pos  = 1
     dim_real = real(nmmax*lsedtot,hp)
+    if (iflufflyr > 0) then
+       depflxf = 0.0_fp
+       eroflxf = 0.0_fp
+    endif
     !
     !   Calculate suspended sediment transport correction vector (for SAND)
     !   Note: uses GLM velocites, consistent with DIFU
@@ -820,11 +824,9 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
                    ! Update fluff layer
                    !
                    if (iflufflyr>0) then
-                      mfluff(l, nm) = mfluff(l, nm) + &
-                                    & dt*(  sinkf(l, nm)*r1(nm, k, ll)*thick1   &
-                                    &     - sourf(l, nm)              *thick0  )
                       depflxf(l, nm) = sinkf(l, nm)*r1(nm, k, ll)*thick1
                       eroflxf(l, nm) = sourf(l, nm)              *thick0
+                      mfluff(l, nm) = mfluff(l, nm) + dt*(depflxf(l, nm) - eroflxf(l, nm))
                    endif
                    !
                    ! add suspended transport correction vector

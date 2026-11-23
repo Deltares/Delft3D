@@ -53,6 +53,7 @@ module m_bedform_data
       logical :: lfbedfrmADV !< Logical flag for ADVection
       logical :: lfbdfmor !< Logical flag for morphological time scale
       logical :: spatial_bedform !< sediment diameters are spatial varying (even if no sediment simulated)
+      logical :: seddia_from_bfm !< sediment diameters are read from bfm file, and override D50, D90 from morpholgy module
 
       integer :: bedformheighttype !< Type number of duneheight predictor
       integer :: bedformlengthtype !< Type number of duneheight predictor

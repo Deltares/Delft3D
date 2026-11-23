@@ -516,7 +516,7 @@ contains
       use m_flow, only: kmx, u0, plotlin, adve
       use m_flowtimes, only: Dts
       use messagehandling, only: LEVEL_ERROR, mess
-      use m_saad, only: jasafe, amuxXXX, solveSystem
+      use m_saad, only: amuxXXX, solveSystem
       use m_partitioninfo, only: jampi, update_ghosts, ITYPE_U, reduce_int1_max
       use m_timer
       use m_get_Lbot_Ltop
@@ -535,8 +535,6 @@ contains
 
       integer :: japrecond
 
-      integer :: jasafe_store
-
       integer :: ierror ! error (1) or not (0)
 
       integer :: lunfil
@@ -550,12 +548,6 @@ contains
       call starttimer(IFILT)
 
       ierror = 1
-
-!  store jasafe
-      jasafe_store = jasafe
-
-!  force thread safe
-      jasafe = 1
 
       dsign = 1.0_dp ! sign of Lvec2 in matrix
       if (itype == 1) then
@@ -745,9 +737,6 @@ contains
 
 1234  continue
 
-!  restore jasafe
-      jasafe = jasafe_store
-
       if (ierror /= 0) then
          call mess(LEVEL_ERROR, 'filter_furu: error')
          continue
@@ -930,7 +919,7 @@ contains
       real(kind=dp) :: Q
       real(kind=dp) :: wcx, wcy, w, alpha
       real(kind=dp) :: volu
-      real(kind=dp) :: vicouv !< typical viscosity
+      real(kind=dp) :: uniform_horizontal_eddy_viscosity !< typical viscosity
 
       integer :: klay
       integer :: LL
@@ -1057,13 +1046,13 @@ contains
          do L = Lbot(LL), Ltop(LL)
             klay = L - Lbot(LL) + 1
 
-            vicouv = vicLu(L)
+            uniform_horizontal_eddy_viscosity = vicLu(L)
 
 !       compute third-order filter coefficient from first-order filter coefficient
             eps3 = 0.25 * Deltax(LL)**2 * eps1(klay)
 
 !       compute second-order filter coefficient
-            eps2 = max(eps3, 0.25 * Deltax(LL)**2 * vicouv)
+            eps2 = max(eps3, 0.25 * Deltax(LL)**2 * uniform_horizontal_eddy_viscosity)
 
             if (order == 1) then
                eps(klay, LL) = eps1(klay)

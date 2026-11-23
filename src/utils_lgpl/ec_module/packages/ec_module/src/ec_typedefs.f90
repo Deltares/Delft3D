@@ -106,8 +106,8 @@ module m_ec_typedefs
       integer :: func
       integer :: timecolumn !< Number of the column holding the time strings, compul
       character(len=50) :: timeunit !< netcdf-convention time unit definition
-      logical :: periodic = .False. !< should a timeseries be rewinded beyond the last entry ?
-      integer :: timeint !< Type of time interpolation
+      logical :: periodic = .false. !< should a timeseries be rewinded beyond the last entry ?
+      integer :: timeint = timeint_lin !< Type of time interpolation
       integer :: vptyp !< Type of specification of vertical position
       real(hp), pointer :: vp(:) => null() !< vertical positions
       integer :: numlay = 1 !< number of vertical layers
@@ -129,7 +129,7 @@ module m_ec_typedefs
       integer :: nctimndx = 1 !< record number to be read
       integer, dimension(:), allocatable :: ncdimvector !< List of dimensions in NetCDF describing the chosen variable
       integer, allocatable, dimension(:) :: dimvector !< dimension ID's indexing the variable of interest
-      logical :: feof = .False. !< End-Of-File signal
+      logical :: feof = .false. !< End-Of-File signal
       real(hp), dimension(:), allocatable :: buffer !< buffer for temporary storage in readers
       !
       integer :: astro_component_column = -1 !< number of the column, containing astronomic components
@@ -246,7 +246,7 @@ module m_ec_typedefs
    type tEcTimeseries
       integer :: id
       integer :: ntimes = 0
-      logical :: finalized = .False. !< no further updates for this timeseries; start from beginning
+      logical :: finalized = .false. !< no further updates for this timeseries; start from beginning
       real(hp) :: tmin, tmax !< time span of this series
       real(hp), dimension(:), allocatable :: times !< 1-dim times array
       real(hp), dimension(:, :), allocatable :: values !< 1-dim values array
@@ -345,11 +345,22 @@ module m_ec_typedefs
    end type tEcFieldPtr
 
    !===========================================================================
-   !>
+   !> Fixed spatial projection of a NetCDF harmonic component for one source/target mapping.
+   type tEcHarmonicProjection
+      integer :: sourceItemId = ec_undef_int !< Source quantity whose amplitudes were projected.
+      integer :: targetItemId = ec_undef_int !< Target item receiving the projected coefficients.
+      integer :: converterId = ec_undef_int !< Converter supplying the fixed spatial mapping.
+      real(dp), dimension(:), allocatable :: cos_weight !< Interpolated amplitude times cosine of phase.
+      real(dp), dimension(:), allocatable :: sin_weight !< Interpolated amplitude times sine of phase.
+      integer, dimension(:), allocatable :: mask !< One for valid targets, zero for untouched or extrapolated targets.
+   end type tEcHarmonicProjection
+
+   !> Harmonic source metadata and cached projections, owned by the file reader.
    type tEcHarmonicsFrame
       integer :: ec_period !< Period in seconds.
       real(hp), dimension(:, :), allocatable :: phases !< Phase data in degrees.
       integer, dimension(2) :: phase_dims !< Number of phase points in each dimension.
+      type(tEcHarmonicProjection), dimension(:), allocatable :: projections !< Separate cached coefficients for each source/target mapping.
    end type
    !>
    type tEcFileReader

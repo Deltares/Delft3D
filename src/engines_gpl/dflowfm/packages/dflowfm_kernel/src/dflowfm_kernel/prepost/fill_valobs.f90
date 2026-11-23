@@ -49,13 +49,13 @@ contains
                         s1, nshiptxy, zsp, wave_surfbeat, ucx, ucy, zws, hs, epshu, ucz, jasal, temperature_model, &
                         TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, &
                         potential_density, apply_thermobaricity, in_situ_density, squ, sqi, iturbulencemodel, vicwws, difwws, &
-                        drhodz, brunt_vaisala_coefficient, idensform, jarichardsononoutput, richs, hu, vicwwu, turkin1, tureps1, viskin, &
+                        drhodz, brunt_vaisala_coefficient, idensform, jarichardsononoutput, richs, hu, vicwwu, turkin1, tureps1, VISKIN, &
                         rich, infiltrationmodel, dfm_hyd_infilt_const, dfm_hyd_infilt_horton, &
                         infiltcap, infilt, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, qtotmap, wdsu_x, wdsu_y, &
                         use_density, w_star, obukhov_length, transfer_coeff_momentum, transfer_coeff_sensible_heat, transfer_coeff_latent_heat, &
-                        u1, v, ltop
-      use m_flowparameters, only: air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
-      use m_flowtimes, only: handle_extra  ! , time0, tstart_user
+                        u1, v, ltop, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU
+      use m_flowparameters, only: air_sea_interaction_model, AIR_SEA_INTERACTION_MODEL_MOST
+      use m_flowtimes, only: handle_extra
       use m_transport, only: constituents, isalt, itemp, itra1, ised1
       use m_flowgeom, only: ndx, lnx, bl, nd, ln, wcl, bob, ba, snu, csu
       use m_observations_data, only: valobs, numobs, nummovobs, kobs, lobs, ipnt_s1, ipnt_hs, ipnt_bl, ipnt_cmx, cmxobs, &
@@ -92,7 +92,7 @@ contains
       use m_fm_wq_processes, only: kbx, wqbot, waqoutputs
       use m_xbeach_data, only: R
       use m_turbulence, only: vicwwu_total, vicwws_total, difwws_total, SIGRHO
-      use m_physcoef, only: vicoww
+      use m_physcoef, only: background_vertical_eddy_viscosity
       use fm_statistical_output, only: model_is_3d
       use m_links_to_centers, only: links_to_centers
       use m_wind, only: wx, wy, jawind, air_pressure_available, air_pressure, jarain, rain, air_density, air_temperature, relative_humidity, cloudiness, relativewind
@@ -172,13 +172,13 @@ contains
          call getucxucyeulmag(ndkx, ueux, ueuy, ucmag, jaeulervel, his_write_settings%velocity)
       end if
 
-      if (model_is_3D() .and. his_write_settings%tur > 0 .and. iturbulencemodel >= 2) then
+      if (model_is_3D() .and. his_write_settings%tur > 0 .and. any(iturbulencemodel == [TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU])) then
          vicwwu_total = 0.0_dp
          vicwws_total = 0.0_dp
          do LL = 1, lnx
             call getLbotLtop(LL, Lb, Lt)
             do L = Lb - 1, Lt
-               vicwwu_total(L) = viskin + vicwwu(L) + vicoww%get(LL)
+               vicwwu_total(L) = VISKIN + vicwwu(L) + background_vertical_eddy_viscosity%get(LL)
             end do
          end do
          call links_to_centers(vicwws_total, vicwwu_total)
@@ -399,7 +399,7 @@ contains
                end do
             end if
 
-            ! Frome here: everything as snapped!!!
+            ! From here, everything as snapped observation points (as before). This is because the quantities are not needed for offline nesting and therefore not interpolated.
             if (jawind > 0) then
                valobs(i, IPNT_wx) = 0.0_dp
                valobs(i, IPNT_wy) = 0.0_dp
@@ -423,7 +423,7 @@ contains
                   end if
                end do
 
-               if (his_write_settings%bulk_exchange_coeff > 0 .and. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+               if (his_write_settings%bulk_exchange_coeff > 0 .and. air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST) then
                   valobs(i, IPNT_wstar) = dmiss
                   valobs(i, IPNT_obukhov_length) = dmiss
                   valobs(i, IPNT_TRANSFER_COEFF_MOMENTUM) = dmiss
@@ -668,7 +668,7 @@ contains
                   klay = kk - kb + nlayb + 1
                   ! Taken care of by interpolate_horizontal
 !                  valobs(i, IPNT_ZWS + klay - 1) = zws(kk)
-                  if (iturbulencemodel >= 2 .and. his_write_settings%tur > 0) then
+                  if (any(iturbulencemodel == [TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU]) .and. his_write_settings%tur > 0) then
                      valobs(i, IPNT_VICWWS + klay - 1) = vicwws(kk)
                      valobs(i, IPNT_VICWWS_TOTAL + klay - 1) = vicwws_total(kk)
                      valobs(i, IPNT_DIFWWS + klay - 1) = difwws(kk)
@@ -703,10 +703,10 @@ contains
                   do L = Lb - 1, Lt
                      klay = L - Lb + nlaybL + 1
                      valobs(i, IPNT_ZWU + klay - 1) = min(bob(1, link_id_nearest), bob(2, link_id_nearest)) + hu(L)
-                     if (iturbulencemodel >= 2 .and. his_write_settings%tur > 0) then
+                     if (any(iturbulencemodel == [TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU]) .and. his_write_settings%tur > 0) then
                         valobs(i, IPNT_VICWWU + klay - 1) = vicwwu(L)
                      end if
-                     if (iturbulencemodel >= 3 .and. his_write_settings%tur > 0) then
+                     if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU]) .and. his_write_settings%tur > 0) then
                         valobs(i, IPNT_TKIN + klay - 1) = turkin1(L)
                         valobs(i, IPNT_TEPS + klay - 1) = tureps1(L)
                      end if
@@ -738,7 +738,7 @@ contains
 
 !        Heatflux
             if (his_write_settings%heatflux > 0) then
-               if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+               if (air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST) then
                   valobs(i, IPNT_QSUN) = Qsunmap(k)
                   valobs(i, IPNT_QEVA) = Qevamap(k)
                   valobs(i, IPNT_QCON) = Qconmap(k)

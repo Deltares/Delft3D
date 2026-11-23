@@ -54,11 +54,11 @@ contains
       real(kind=dp), intent(out) :: XH(NPL), YH(NPL) !< Output points interpolated on polyline.
       real(kind=dp), intent(in) :: DPLA(NPL) !< Desired distances for all points.
 
-      integer :: ja
+      logical :: inside_polyline
       integer :: n
 
       do N = 1, NPL
-         call interpolateOnPolyline(XHO, YHO, YHO, DPL, NO, XH(N), YH(N), YH(N), DPLA(N), JA)
+         call interpolateOnPolyline(XHO, YHO, YHO, DPL, NO, XH(N), YH(N), YH(N), DPLA(N), inside_polyline)
       end do
 
    end subroutine mapToPolyline

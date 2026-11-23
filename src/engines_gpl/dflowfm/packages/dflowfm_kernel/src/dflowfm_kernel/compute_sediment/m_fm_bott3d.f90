@@ -92,7 +92,7 @@ contains
       use Timers
       use m_reconstruct_sed_transports
       use m_waveconst
-      use m_physcoef, only: ag, rhomean, dynroughveg
+      use m_physcoef, only: ag, rhomean, dynamic_vegetation_roughness_enabled
       use m_get_kbot_ktop, only: getkbotktop
       use m_bedform, only: bfmpar
       implicit none
@@ -324,7 +324,7 @@ contains
 
       end if ! time1<tmor
 
-      if (dynroughveg > 0) then
+      if (dynamic_vegetation_roughness_enabled > 0) then
          call determine_linkbased_cumblchg()
       end if
       
@@ -988,8 +988,8 @@ contains
       use sediment_basics_module
       use m_flowgeom, only: bai_mor, ndxi, bl, wu, wu_mor, xz, yz
       use m_flow, only: kmx, s1, vol1
-      use m_fm_erosed, only: dbodsd, lsedtot, cdryb, tratyp, e_sbn, sus, neglectentrainment, duneavalan, bed, bedupd, e_scrn, iflufflyr, kmxsed, sourf, sourse, mfluff, ndxi_mor
-      use m_fm_erosed, only: nd => nd_mor, sedtyp, depfac, max_mud_sedtyp, ndx => ndx_mor
+      use m_fm_erosed, only: dbodsd, lsedtot, cdryb, tratyp, e_sbn, sus, neglectentrainment, duneavalan, bed, bedupd, e_scrn, iflufflyr, kmxsed, sourf, sourse, mfluff, depflxf, eroflxf
+      use m_fm_erosed, only: ndxi_mor, nd => nd_mor, sedtyp, depfac, max_mud_sedtyp, ndx => ndx_mor
       use m_sediment, only: avalflux, ssccum
       use m_flowtimes, only: dts, dnt
       use m_transport, only: fluxhortot, ised1, sinksetot, sinkftot
@@ -1114,7 +1114,9 @@ contains
                      ! Update sedflx icw fluff layer
                      !
                      ! 1. update fluff layer mass
-                     mfluff(l, nm) = mfluff(l, nm) + dts * (sinkftot(j, nm) * bai_mor(nm) - sourf(l, nm) * thick1)
+                     depflxf(l, nm) = sinkftot(j, nm) * bai_mor(nm)
+                     eroflxf(l, nm) = sourf(l, nm) * thick1
+                     mfluff(l, nm) = mfluff(l, nm) + dts * (depflxf(l, nm) - eroflxf(l, nm))
                      !
                      ! 2. sand to bed layer
                      sedflx = sinksetot(j, nm) * bai_mor(nm)
@@ -1858,7 +1860,7 @@ contains
       use morphology_data_module, only: bedbndtype
       use fm_external_forcings_data, only: nopenbndsect
       use m_fm_dredge, only: fm_dredge
-      use m_physcoef, only: dynroughveg
+      use m_physcoef, only: dynamic_vegetation_roughness_enabled
 
       implicit none
 
@@ -1937,7 +1939,7 @@ contains
                blchg(nm) = bl_ave(nm) - bl_ave0(nm) ! get average bed level change
             end do
             !
-            if (dynroughveg > 0) then
+            if (dynamic_vegetation_roughness_enabled > 0) then
                call determine_linkbased_cumblchg()
             end if
             !

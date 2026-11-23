@@ -27,20 +27,17 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 !> Update the cumulative waq sink source fluxes for the just set timestep.
 !!
 !! Should be called at the end of each computational timestep. In the waq-output, the cumulative values should be divided
 !! by ti_waq, as the cumulative values are multiplied by each timestep dts (necessary because of non-constant timestep).
 !!
-!! The code uses similair ways to distribute discharges over layers as the calling subroutine setsorsin. Changes in the
+!! The code uses similar ways to distribute discharges over layers as the calling subroutine source_sinks%update_discharges. Changes in the
 !! calling subroutine should also be taken over in this routine!
 module m_update_waq_sink_source_fluxes
-
    use precision, only: dp
-   implicit none
+
+   implicit none(type, external)
 
    private
 
@@ -54,7 +51,7 @@ contains
       use m_flow
       use m_flowgeom
       use m_flowtimes
-      use m_source_sink, only: source_sinks
+      use m_source_sink, only: source_sinks, FLOWCELL_SINK, FLOWCELL_SOURCE, BOTTOM_LAYER_SINK, TOP_LAYER_SINK, BOTTOM_LAYER_SOURCE, TOP_LAYER_SOURCE
 
       integer :: k, k1, k2, isrc, ip, ilaysin, ilaysor
       integer :: kksin, kbsin, ktsin, kksor, kbsor, ktsor
@@ -73,12 +70,12 @@ contains
                end if
             else
                ! 3D case
-               kksin = source_sinks%indices(isrc, 1) ! 2D segment number of sink
-               kbsin = source_sinks%indices(isrc, 2) ! actual kbot of sink
-               ktsin = source_sinks%indices(isrc, 3) ! actual ktop of sink
-               kksor = source_sinks%indices(isrc, 4) ! 2D segment number of source
-               kbsor = source_sinks%indices(isrc, 5) ! actual kbot of source
-               ktsor = source_sinks%indices(isrc, 6) ! actual ktop source
+               kksin = source_sinks%indices(isrc, FLOWCELL_SINK) ! 2D segment number of sink
+               kbsin = source_sinks%indices(isrc, BOTTOM_LAYER_SINK) ! actual kbot of sink
+               ktsin = source_sinks%indices(isrc, TOP_LAYER_SINK) ! actual ktop of sink
+               kksor = source_sinks%indices(isrc, FLOWCELL_SOURCE) ! 2D segment number of source
+               kbsor = source_sinks%indices(isrc, BOTTOM_LAYER_SOURCE) ! actual kbot of source
+               ktsor = source_sinks%indices(isrc, TOP_LAYER_SOURCE) ! actual ktop source
                if (kksin == 0 .and. kksor /= 0) then
                   ! there is only a source side
                   call getkbotktopmax(kksor, kkbsor, kktsor, kktxsor)

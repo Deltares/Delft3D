@@ -36,7 +36,7 @@ subroutine constwave(nmmax     ,dps       ,s0        ,alfas     ,ubot      , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     !
     use globaldata
     !

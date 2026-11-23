@@ -48,7 +48,7 @@ subroutine santoss_core(pl_effects, sw_effects, g, d50, d, hw, rhos, rhow, &
 !
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts, only: pi, eps_fp
+    use m_mathconstants, only: pi, eps_fp
     use ieee_arithmetic, only: ieee_is_nan
 !
 ! arguments

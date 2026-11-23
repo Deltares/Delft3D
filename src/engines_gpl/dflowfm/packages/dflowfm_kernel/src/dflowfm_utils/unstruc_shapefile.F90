@@ -1028,7 +1028,7 @@ contains
 
 !> Write a shape file for source-sinks
    subroutine unc_write_shp_src()
-      use m_source_sink, only: source_sinks, source_sink_all_discharges
+      use m_source_sink, only: source_sinks, source_sink_all_discharges, FLOWCELL_SINK, FLOWCELL_SOURCE
       use m_flowgeom, only: xz, yz
       
       implicit none
@@ -1097,8 +1097,8 @@ contains
          !call mess(LEVEL_INFO, 'SHAPEFILE: Creating shape: '''//trim(objectid)//'''.')
 
          ! create a shape object with the "simple" method, for each shape 2 components are added x, y
-         k1 = source_sinks%indices(i, 1) ! flownode
-         k2 = source_sinks%indices(i, 4)
+         k1 = source_sinks%indices(i, FLOWCELL_SINK) ! flownode
+         k2 = source_sinks%indices(i, FLOWCELL_SOURCE)
          if (k1 <= 0 .and. k2 <= 0) then ! if both points are not in the domain
             cycle
          else

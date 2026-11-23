@@ -18,27 +18,56 @@ contains
       integer(kind=c_int), intent(in) :: count_layers
       real(kind=c_double), dimension(:), intent(in) :: zws
       real(kind=c_double), dimension(:), intent(out) :: cell_center_mesh_coordinates_3d
-      ! Names of local variables are matching the original code
-      integer :: i
-      integer :: k
-      integer :: id_3d
-      integer :: kb
-      integer :: kt
-      integer :: nlayb
-      integer :: nrlay
 
-      do i = 1, count_2d_cells
-         call getkbotktop(i, kb, kt)
-         call getlayerindices(i, nlayb, nrlay)
-         do k = 1, count_layers
-            id_3d = (i - 1) * count_layers + k
-            if (k < nlayb .OR. k > nrlay) then
-               cell_center_mesh_coordinates_3d(3 * id_3d) = -999.0_dp ! or some other invalid value to indicate out-of-domain points
-            else
-               cell_center_mesh_coordinates_3d(3 * id_3d) = 0.5 * (zws(kb + k - 1) + zws(kb + k - 2))
-            end if
+      integer :: cell_index_2d
+      integer :: cell_index_3d
+      integer :: bottom_cell_index_3d
+      integer :: top_cell_index_3d
+      integer :: bottom_layer_index
+      integer :: max_layer_count_from_bottom
+      integer :: precice_index
+
+      cell_center_mesh_coordinates_3d(3::3) = -999.0_dp
+      do cell_index_2d = 1, count_2d_cells
+         call getkbotktop(cell_index_2d, bottom_cell_index_3d, top_cell_index_3d)
+         call getlayerindices(cell_index_2d, bottom_layer_index, max_layer_count_from_bottom)
+         do cell_index_3d = bottom_cell_index_3d, top_cell_index_3d
+            precice_index = (cell_index_2d - 1) * count_layers + cell_index_3d - bottom_cell_index_3d + bottom_layer_index
+            cell_center_mesh_coordinates_3d(3 * precice_index) = 0.5_dp * (zws(cell_index_3d) + zws(cell_index_3d - 1))
          end do
       end do
    end subroutine set_cell_center_mesh_zcoords
+
+   !> Pack a flow-node scalar field in the same cell/layer order as the preCICE 3D mesh.
+   !! Excludes the 2D prefix and column ghost entries; inactive mesh layers receive zero.
+   subroutine pack_cell_center_mesh_data(count_2d_cells, count_layers, flow_values, mesh_values)
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_get_layer_indices, only: getlayerindices
+
+      implicit none(type, external)
+
+      integer(kind=c_int), intent(in) :: count_2d_cells !< Number of horizontal mesh cells.
+      integer(kind=c_int), intent(in) :: count_layers !< Number of mesh layer slots per cell.
+      real(kind=c_double), dimension(:), intent(in) :: flow_values !< Field indexed by FM flow nodes.
+      real(kind=c_double), dimension(:), intent(out) :: mesh_values !< Packed preCICE vertex values.
+
+      integer :: cell_index_2d
+      integer :: cell_index_3d
+      integer :: bottom_cell_index_3d
+      integer :: top_cell_index_3d
+      integer :: bottom_layer_index
+      integer :: max_layer_count_from_bottom
+      integer :: precice_index
+
+      mesh_values = 0.0_c_double
+      do cell_index_2d = 1, count_2d_cells
+         call getkbotktop(cell_index_2d, bottom_cell_index_3d, top_cell_index_3d)
+         call getlayerindices(cell_index_2d, bottom_layer_index, max_layer_count_from_bottom)
+         do cell_index_3d = bottom_cell_index_3d, top_cell_index_3d
+            precice_index = (cell_index_2d - 1) * count_layers + cell_index_3d - bottom_cell_index_3d + bottom_layer_index
+            mesh_values(precice_index) = flow_values(cell_index_3d)
+         end do
+      end do
+   end subroutine pack_cell_center_mesh_data
 
 end module precice_adapter_utils

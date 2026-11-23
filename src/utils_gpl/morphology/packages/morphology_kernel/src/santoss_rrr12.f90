@@ -45,7 +45,7 @@ subroutine santoss_rrr12(g, hs, tp, h, sk, as, phi_ab, r_ab, ur, km)
 !!--declarations----------------------------------------------------------------
     use precision
     use sed_support_routines, only: ruessink_etal_2012
-    use mathconsts, only: pi
+    use m_mathconstants, only: pi
 !
 ! arguments
 !

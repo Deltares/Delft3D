@@ -37,7 +37,7 @@ subroutine inised(lundia    ,error     ,nmax      ,mmax      ,nmaxus    , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants
     !
     use globaldata
     use bedcomposition_module

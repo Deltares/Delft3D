@@ -171,8 +171,12 @@ contains
          file_type = BCASCII
       case ('curvigrid')
          file_type = CURVI
+      case ('map')
+         file_type = NCFLOW
       case ('geotiff')
          file_type = GEOTIFF
+      case ('datavalue')
+         file_type = DATAVALUE
       case ('netcdf')
          file_type = NCGRID
       case ('polygon')
@@ -226,6 +230,14 @@ contains
       select case (str_tolower(trim(string)))
       case ('bcascii')
          method = SPACEANDTIME
+      case ('unimagdir')
+         method = SPACEANDTIME
+      case ('curvigrid')
+         method = WEIGHTFACTORS
+      case ('geotiff')
+         method = METHOD_BILINEAR
+      case ('map')
+         method = METHOD_TRIANGULATION
       case ('netcdf')
          method = WEIGHTFACTORS
       case ('sample')
@@ -238,8 +250,10 @@ contains
          method = METHOD_CONSTANT
       case ('1dfield')
          method = JUSTUPDATE
+      case ('spiderweb')
+         method = WEIGHTFACTORS
       case ('datavalue')
-         method = JUSTUPDATE
+         method = METHOD_CONSTANT
       case default
          method = METHOD_UNKNOWN
       end select
@@ -252,23 +266,25 @@ contains
    !!
    !! Mainly used to hide EC-module inconsistencies from the user.
    !! For example: uniform timeseries must always have interpolation type SPACEANDTIME.
+   !! Also overrides and warns about deprecated triangulation interpolation for GeoTIFF files.
    subroutine update_method_with_weightfactor_fallback(file_type, method)
+      use messageHandling, only: mess, LEVEL_WARN
+
       character(len=*), intent(in) :: file_type !< File type string.
       integer, intent(inout) :: method !< Interpolation method integer (will keep its original value if no updated is needed).
 
-      if (method /= WEIGHTFACTORS) then
+      select case (str_tolower(trim(file_type)))
+      case ('arcinfo', 'uniform', 'unimagdir', 'bcascii')
          ! Only fix weightfactors method, other wrong input methods are true
          ! user input errors and should lead to an error message.
-         return
-      end if
-
-      select case (str_tolower(trim(file_type)))
-      case ('arcinfo')
-         method = SPACEANDTIME
-      case ('uniform', 'unimagdir')
-         method = SPACEANDTIME
-      case ('bcascii')
-         method = SPACEANDTIME
+         if (method == WEIGHTFACTORS) then
+            method = SPACEANDTIME
+         end if
+      case ('geotiff')
+         if (method == METHOD_TRIANGULATION) then
+            call mess(LEVEL_WARN, 'Interpolation method ''triangulation'' for GeoTIFF files is deprecated. Use Bilinear instead.')
+            method = METHOD_BILINEAR
+         end if
       end select
 
    end subroutine update_method_with_weightfactor_fallback

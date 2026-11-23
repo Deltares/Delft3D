@@ -326,7 +326,7 @@ contains
         use m_part_mesh, only: xzwcell, yzwcell, zzwcell, cell2nod
         use geometry_module, only: Cart3Dtospher, sphertocart3D
         use physicalconsts, only: earth_radius
-        use mathconsts, only: raddeg_hp
+        use m_mathconstants, only: raddeg_hp
         use random_generator
         use timers
         use m_part_modeltypes
@@ -454,7 +454,7 @@ contains
                 vyw       = - wvelo(mpart(ipart)) * cos(wdirr_lee)
 
                 ! drag on the difference vector: cd * (wind - flow)
-                if ( abs(vxw-ux0old) == 0.0 .and. abs(vyw-uy0old) == 0.0 ) then    ! if no net wind velocity (so no drag) then nothing will happen
+                if ( abs(vxw-ux0old) /= 0.0 .or. abs(vyw-uy0old) /= 0.0 ) then    ! if no net wind velocity (so no drag) then nothing will happen
                     dwx = (cdrag*(vxw-ux0old) + leeway_modifier * sin(wdirr_lee)) * dts    ! THis modifier may need to be adjusted de to the angle
                     dwy = (cdrag*(vyw-uy0old) + leeway_modifier * cos(wdirr_lee)) * dts    !
                 endif

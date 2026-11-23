@@ -236,15 +236,11 @@
      rank = 1
   case("ucy_mor")
      rank = 1
-  case("sa0")
-     rank = 1
   case("sa1")
      rank = 1
   case("satop")
      rank = 1
   case("sabot")
-     rank = 1
-  case("tem0")
      rank = 1
   case("tem1")
      rank = 1

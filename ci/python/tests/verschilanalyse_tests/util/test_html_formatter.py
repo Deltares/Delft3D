@@ -80,8 +80,12 @@ def test_make_summary_page__find_all_sections_and_check_tags() -> None:
         "prefix-list": "ul",
         "his-water-level-tolerance-list": "ul",
         "his-flow-velocity-tolerance-list": "ul",
+        "his-salinity-tolerance-list": "ul",
+        "his-temperature-tolerance-list": "ul",
         "map-water-level-tolerance-list": "ul",
         "map-flow-velocity-tolerance-list": "ul",
+        "map-salinity-tolerance-list": "ul",
+        "map-temperature-tolerance-list": "ul",
         "links": "ul",
     }
 
@@ -168,13 +172,13 @@ def test_make_summary_page__model_run_table() -> None:
 @pytest.mark.parametrize("output_type", OutputType)
 def test_make_summary_page__tolerance_list(output_type: OutputType) -> None:
     # Arrange
-    foo_output = helper.make_verschillentool_output(  # All variables within tolerance.
+    foo_output = helper.make_verschillentool_output_2d(  # All variables within tolerance.
         output_type=output_type,
         water_level=helper.tolerance_stats(output_type, Variable.WATER_LEVEL, -1e-6),
         flow_velocity=helper.tolerance_stats(output_type, Variable.FLOW_VELOCITY, -1e-6),
         row_count=42,
     )
-    bar_output = helper.make_verschillentool_output(  # Flow velocity above tolerance.
+    bar_output = helper.make_verschillentool_output_2d(  # Flow velocity above tolerance.
         output_type=output_type,
         water_level=helper.tolerance_stats(output_type, Variable.WATER_LEVEL, -1e-6),
         flow_velocity=helper.tolerance_stats(output_type, Variable.FLOW_VELOCITY, 1e-6),
