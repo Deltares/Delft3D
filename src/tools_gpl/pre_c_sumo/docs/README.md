@@ -41,8 +41,10 @@ The main files used for this module are:
 
 #### Option 2: PowerShell command line
 
+With `doxygen` and `dot` on `PATH`, run this from the `docs` directory:
+
 ```powershell
-& "C:\Program Files\doxygen\bin\doxygen.exe" "C:\checkouts\Delft3D\src\tools_gpl\pre_c_sumo\docs\preC-SUMO-doxyfile.dxg"
+doxygen .\preC-SUMO-doxyfile.dxg
 ```
 
 This reads the project Doxygen configuration and writes the generated output to the `result_doc` folder.
@@ -63,10 +65,10 @@ For the official Doxygen user guide, see: https://www.doxygen.nl/manual/starting
 
 ## Exchange responsibilities
 
-Utility headers live in [include/utils/](../include/utils/), with corresponding
-implementations in [src/utils/](../src/utils/). They are part of `pre_c_sumo_lib`;
-include them using paths such as `utils/file_io.hpp`. Their unit tests are in
-[test/utils/](../test/utils/).
+Utility headers live in `include/utils/`, with corresponding implementations in
+`src/utils/`. They are part of `pre_c_sumo_lib`; for example,
+[utils/file_io.hpp](../include/utils/file_io.hpp) is implemented in
+[utils/file_io.cpp](../src/utils/file_io.cpp). Their unit tests are in `test/utils/`.
 
 Project code uses `pre_c_sumo`, with C-SUMO and preCICE components in
 `pre_c_sumo::c_sumo` and `pre_c_sumo::precice`, respectively. Conversions
