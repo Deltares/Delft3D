@@ -1,17 +1,19 @@
 #include "pre_c_sumo_lib.hpp"
 
+#include <cstddef>
+#include <cstdio>
 #include <precice/precice.hpp>
 #include <print>
 #include <string_view>
-#include <stdexcept>
+#include <utility>
 #include <vector>
-#include <map>
 
-#include "csumo/settings_reader.hpp"
-#include "precice/sink_source_connections.hpp"
-#include "csumo/exchange.hpp"
 #include "conversions.hpp"
+#include "csumo/exchange.hpp"
+#include "csumo/ff2nf_writer.hpp"
+#include "precice/data.hpp"
 #include "precice/exchange.hpp"
+#include "precice/sink_source_connections.hpp"
 
 namespace pre_c_sumo
 {
@@ -96,13 +98,25 @@ namespace pre_c_sumo
             double coupling_time_step = participant.getMaxTimeStepSize();
 
             precice::receiveFFData(participant, csumo_2d_mesh, csumo_3d_mesh, coupling_time_step);
-            const auto ff2nf_result =
-                c_sumo::writeFF2NFFiles(csumo_settings.value(), csumo_2d_mesh, csumo_3d_mesh, current_time_seconds);
-            if (!ff2nf_result.has_value())
+            for (std::size_t index = 0; index < csumo_settings->diffusers.size(); ++index)
             {
-                std::println(stderr, "Error: Unable to write FF2NF data at time {} s: {}", current_time_seconds,
-                             ff2nf_result.error().message);
-                return -1;
+                auto input = convertPreciceToCSumo(csumo_settings->diffusers[index], index, csumo_2d_mesh,
+                                                   csumo_3d_mesh, current_time_seconds);
+                if (!input)
+                {
+                    std::println(stderr,
+                                 "Error: Unable to write FF2NF data at time {} s: "
+                                 "Failed to convert preCICE data for diffuser {}: {}",
+                                 current_time_seconds, index + 1, input.error().message);
+                    return -1;
+                }
+                const auto ff2nf_result = c_sumo::FF2NFWriter(std::move(*input)).write();
+                if (!ff2nf_result)
+                {
+                    std::println(stderr, "Error: Unable to write FF2NF data at time {} s: {}", current_time_seconds,
+                                 ff2nf_result.error().message);
+                    return -1;
+                }
             }
             if (!c_sumo::waitForNF2FFFiles(csumo_settings.value(), current_time_seconds))
             {

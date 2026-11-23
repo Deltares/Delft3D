@@ -1,6 +1,9 @@
 #ifndef SRC_TOOLS_GPL_PRE_C_SUMO_CSUMO_FILE_PATHS_HPP
 #define SRC_TOOLS_GPL_PRE_C_SUMO_CSUMO_FILE_PATHS_HPP
 
+#include <filesystem>
+#include <vector>
+
 #include "csumo/data.hpp"
 
 namespace pre_c_sumo::c_sumo

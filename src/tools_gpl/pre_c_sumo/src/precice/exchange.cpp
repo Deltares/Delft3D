@@ -1,8 +1,15 @@
 #include "precice/exchange.hpp"
 
-#include <precice/precice.hpp>
+#include <cstddef>
+#include <expected>
 #include <format>
+#include <precice/precice.hpp>
 #include <ranges>
+#include <string_view>
+#include <vector>
+
+#include "precice/data.hpp"
+#include "precice/sink_source_connections.hpp"
 
 namespace pre_c_sumo::precice
 {

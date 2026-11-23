@@ -1,5 +1,8 @@
 #include <gtest/gtest.h>
 
+#include <cstddef>
+#include <vector>
+
 #include "precice/sink_source_connections.hpp"
 
 TEST(PreciceSinkSourceConnectionsTest, CanInitializeAddItemAndClear)

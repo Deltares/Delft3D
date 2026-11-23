@@ -1,15 +1,23 @@
 #include "csumo/nf2ff_reader.hpp"
+
+#include <algorithm>
+#include <boost/algorithm/string.hpp>
+#include <cassert>
+#include <cstddef>
+#include <expected>
+#include <format>
+#include <pugixml.hpp>
+#include <ranges>
+#include <string>
+#include <string_view>
+#include <utility>
+#include <vector>
+
+#include "csumo/data.hpp"
 #include "csumo/xml.hpp"
+#include "utils/io_errors.hpp"
 #include "utils/monadic.hpp"
 #include "utils/xml_parsing.hpp"
-#include "utils/io_errors.hpp"
-
-#include <expected>
-#include <cassert>
-#include <format>
-#include <utility>
-#include <boost/algorithm/string.hpp>
-#include <ranges>
 
 namespace pre_c_sumo::c_sumo
 {

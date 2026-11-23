@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
+#include <pugixml.hpp>
 
+#include "csumo/data.hpp"
 #include "csumo/xml.hpp"
 #include "utils/xml_parsing.hpp"
 

@@ -1,16 +1,23 @@
 #include "csumo/ff2nf_writer.hpp"
 
 #include <algorithm>
+#include <cstddef>
 #include <expected>
+#include <filesystem>
 #include <format>
 #include <iterator>
+#include <print>
 #include <pugixml.hpp>
 #include <ranges>
 #include <sstream>
 #include <string>
 #include <string_view>
-#include <type_traits>
+#include <utility>
+#include <vector>
 
+#include "csumo/data.hpp"
+#include "utils/file_io.hpp"
+#include "utils/io_errors.hpp"
 #include "utils/monadic.hpp"
 
 namespace pre_c_sumo::c_sumo
@@ -116,7 +123,7 @@ namespace pre_c_sumo::c_sumo
 
         std::expected<void, utils::io_errors::WriteError> validatePoint(const FarFieldPoint2D& point,
                                                                         const std::string_view section_name,
-                                                                        const size_t expected_constituent_count)
+                                                                        const std::size_t expected_constituent_count)
         {
             if (point.layers.empty())
             {
@@ -139,7 +146,7 @@ namespace pre_c_sumo::c_sumo
 
         std::expected<void, utils::io_errors::WriteError> validatePoints(const std::vector<FarFieldPoint2D>& points,
                                                                          const std::string_view section_name,
-                                                                         const size_t expected_constituent_count)
+                                                                         const std::size_t expected_constituent_count)
         {
             auto point_results = points | std::views::transform(
                                               [section_name, expected_constituent_count](const FarFieldPoint2D& point) {
@@ -154,7 +161,7 @@ namespace pre_c_sumo::c_sumo
             return {};
         }
 
-        constexpr size_t indent_size = 4;
+        constexpr std::size_t indent_size = 4;
         constexpr char indent_chars[] = "    "; // indent_size spaces
         static_assert(std::char_traits<char>::length(indent_chars) == indent_size);
 
@@ -173,7 +180,7 @@ namespace pre_c_sumo::c_sumo
                     // Inline text does not need indentation
                     return true;
                 }
-                const auto current_depth = static_cast<size_t>(depth());
+                const auto current_depth = static_cast<std::size_t>(depth());
                 const std::string indent(current_depth * indent_size, ' ');
                 const std::string parent_indent(current_depth > 0 ? (current_depth - 1) * indent_size : 0, ' ');
 
@@ -209,6 +216,15 @@ namespace pre_c_sumo::c_sumo
         std::ostringstream oss;
         document.save(oss, indent_chars);
         return oss.str();
+    }
+
+    std::expected<void, utils::io_errors::WriteError> FF2NFWriter::write() const
+    {
+        const auto filename = std::filesystem::path(config_.ff2nf_filename);
+        ASSIGN_OR_RETURN(const auto xml, generate());
+        RETURN_IF_ERROR(utils::file_io::writeFile(filename, xml));
+        std::println("Wrote FF2NF file: {}", filename.string());
+        return {};
     }
 
     std::expected<void, utils::io_errors::WriteError> FF2NFWriter::validate() const

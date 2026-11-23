@@ -1,8 +1,10 @@
 #include <gtest/gtest.h>
 
+#include <initializer_list>
 #include <string>
 #include <string_view>
 
+#include "csumo/data.hpp"
 #include "csumo/nf2ff_reader.hpp"
 
 namespace

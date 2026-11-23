@@ -1,8 +1,12 @@
 #include <gtest/gtest.h>
 
+#include <cstddef>
+#include <initializer_list>
 #include <vector>
 
 #include "conversions.hpp"
+#include "csumo/data.hpp"
+#include "precice/data.hpp"
 
 TEST(CSumoToPreciceTest, Builds2DAnd3DMeshesAndMappingsForDifferentDiffusers)
 {

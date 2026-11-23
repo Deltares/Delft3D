@@ -2,9 +2,11 @@
 #define SRC_TOOLS_GPL_PRE_C_SUMO_PRECICE_EXCHANGE_HPP
 
 #include <expected>
+#include <string_view>
+#include <vector>
 
-#include "precice/sink_source_connections.hpp"
 #include "precice/data.hpp"
+#include "precice/sink_source_connections.hpp"
 
 namespace precice
 {

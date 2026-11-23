@@ -1,21 +1,24 @@
 #include "csumo/exchange.hpp"
 
 #include <chrono>
+#include <cstdio>
+#include <expected>
 #include <filesystem>
 #include <format>
 #include <fstream>
 #include <print>
 #include <string>
+#include <string_view>
 #include <thread>
 #include <utility>
+#include <vector>
 
+#include "csumo/data.hpp"
 #include "csumo/file_paths.hpp"
+#include "csumo/nf2ff_reader.hpp"
 #include "csumo/settings_reader.hpp"
 #include "utils/file_io.hpp"
-#include "csumo/ff2nf_writer.hpp"
-#include "csumo/nf2ff_reader.hpp"
-#include "utils/monadic.hpp"
-#include "conversions.hpp"
+#include "utils/io_errors.hpp"
 
 namespace pre_c_sumo::c_sumo
 {
@@ -53,28 +56,6 @@ namespace pre_c_sumo::c_sumo
         }
         std::println("Successfully parsed C-SUMO configuration file version: {}", settings->file_version);
         return std::move(*settings);
-    }
-
-    std::expected<void, utils::io_errors::WriteError> writeFF2NFFiles(const Settings& csumo_settings,
-                                                                      const precice::Mesh& mesh_2d,
-                                                                      const precice::Mesh& mesh_3d,
-                                                                      double current_time_seconds)
-    {
-        for (std::size_t index = 0; index < csumo_settings.diffusers.size(); ++index)
-        {
-            auto input =
-                convertPreciceToCSumo(csumo_settings.diffusers[index], index, mesh_2d, mesh_3d, current_time_seconds);
-            if (!input)
-            {
-                return std::unexpected(utils::io_errors::WriteError{std::format(
-                    "Failed to convert preCICE data for diffuser {}: {}", index + 1, input.error().message)});
-            }
-            const auto filename = std::filesystem::path(input->ff2nf_filename);
-            ASSIGN_OR_RETURN(const auto xml, FF2NFWriter(std::move(*input)).generate());
-            RETURN_IF_ERROR(utils::file_io::writeFile(filename, xml));
-            std::println("Wrote FF2NF file: {}", filename.string());
-        }
-        return {};
     }
 
     bool waitForNF2FFFiles(const Settings& csumo_settings, double current_time_seconds)

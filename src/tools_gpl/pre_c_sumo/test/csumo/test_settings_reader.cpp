@@ -7,6 +7,7 @@
 #include <string_view>
 
 #include "cosumo_test_data.hpp"
+#include "csumo/data.hpp"
 #include "csumo/settings_reader.hpp"
 
 namespace

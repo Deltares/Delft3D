@@ -52,7 +52,7 @@ digraph preCSUMOWorkflow {
 
     task6 [label="receiveFFData()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_receive_ff_data", tooltip="Open receiveFFData docs"];
 
-    task7 [label="writeFF2NFFiles()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_write_ff2nf", tooltip="Open writeFF2NFFiles docs"];
+    task7 [label="write FF2NF files", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_write_ff2nf", tooltip="Open FF2NFWriter::write docs"];
 
     task8 [label="C-SUMO near-field", shape=box, fillcolor="#1285f0", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_write_ff2nf", tooltip="FF2NF to NF2FF exchange"];
 

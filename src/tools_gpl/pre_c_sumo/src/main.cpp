@@ -1,9 +1,10 @@
 #include <boost/program_options.hpp>
+#include <cstdio>
 #include <cstdlib>
 #include <print>
 #include <sstream>
+#include <stdexcept>
 #include <string>
-#include <string_view>
 
 #include "pre_c_sumo_lib.hpp"
 

@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
+#include <expected>
 #include <filesystem>
 #include <optional>
 #include <pugixml.hpp>
@@ -12,8 +13,10 @@
 #include <utility>
 #include <vector>
 
-#include "utils/monadic.hpp"
+#include "csumo/data.hpp"
 #include "csumo/xml.hpp"
+#include "utils/io_errors.hpp"
+#include "utils/monadic.hpp"
 #include "utils/xml_parsing.hpp"
 
 namespace pre_c_sumo::c_sumo

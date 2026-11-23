@@ -1,6 +1,8 @@
 #ifndef SRC_TOOLS_GPL_PRE_C_SUMO_CSUMO_DIFFUSER_HPP
 #define SRC_TOOLS_GPL_PRE_C_SUMO_CSUMO_DIFFUSER_HPP
 
+#include <vector>
+
 #include "csumo/data.hpp"
 
 namespace pre_c_sumo::c_sumo

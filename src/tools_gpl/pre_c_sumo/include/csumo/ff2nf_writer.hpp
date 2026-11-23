@@ -11,12 +11,16 @@
 
 namespace pre_c_sumo::c_sumo
 {
-    /// Validates and serializes FF2NF data to XML without accessing the filesystem.
+    /// Validates and serializes FF2NF data, and optionally writes it to a file.
     class FF2NFWriter
     {
     public:
         explicit FF2NFWriter(FF2NFConfig config);
         [[nodiscard]] std::expected<std::string, utils::io_errors::WriteError> generate() const;
+
+        /// @anchor pre_c_sumo_write_ff2nf
+        /// Generate and write the FF2NF file without overwriting an existing file.
+        [[nodiscard]] std::expected<void, utils::io_errors::WriteError> write() const;
 
     private:
         constexpr static std::string_view root_element_name = "COSUMO";

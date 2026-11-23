@@ -6,14 +6,17 @@
 #include <cmath>
 #include <expected>
 #include <format>
+#include <initializer_list>
 #include <optional>
 #include <pugixml.hpp>
 #include <ranges>
 #include <string>
 #include <string_view>
+#include <system_error>
 #include <utility>
 #include <vector>
 
+#include "utils/io_errors.hpp"
 #include "utils/monadic.hpp"
 
 namespace pre_c_sumo::utils::xml_parsing

@@ -1,5 +1,10 @@
 #include "precice/sink_source_connections.hpp"
 
+#include <cstddef>
+#include <vector>
+
+#include "precice/data.hpp"
+
 namespace pre_c_sumo::precice
 {
     void SinkSourceConnections::add_entry(double sink_x, double sink_y, double sink_z_bottom, double sink_z_top,

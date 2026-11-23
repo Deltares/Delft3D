@@ -82,7 +82,7 @@ Main implementation entry points:
 - \ref pre_c_sumo::run in pre_c_sumo_lib.hpp / pre_c_sumo_lib.cpp
 - \ref pre_c_sumo::c_sumo::readSettingsFile in csumo/exchange.hpp / csumo/exchange.cpp
 - \ref pre_c_sumo::precice::receiveFFData in precice/exchange.hpp / precice/exchange.cpp
-- \ref pre_c_sumo::c_sumo::writeFF2NFFiles in csumo/exchange.hpp / csumo/exchange.cpp
+- \ref pre_c_sumo::c_sumo::FF2NFWriter::write in csumo/ff2nf_writer.hpp / csumo/ff2nf_writer.cpp
 - \ref pre_c_sumo::c_sumo::waitForNF2FFFiles in csumo/exchange.hpp / csumo/exchange.cpp
 - \ref pre_c_sumo::c_sumo::readNF2FFFiles in csumo/exchange.hpp / csumo/exchange.cpp
 - \ref pre_c_sumo::convertPreciceToCSumo in conversions.hpp / conversions.cpp

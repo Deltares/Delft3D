@@ -2,7 +2,9 @@
 
 #include <cassert>
 #include <cmath>
-#include <numbers>
+#include <vector>
+
+#include "csumo/data.hpp"
 
 namespace pre_c_sumo::c_sumo
 {
@@ -29,10 +31,10 @@ namespace pre_c_sumo::c_sumo
         assert(sources.size() == 1);
         assert(sinks.size() > 0);
 
-        double ang_end = atan2(sources[0].y_coordinate - sinks[sinks.size() - 1].y_coordinate,
-                               sources[0].x_coordinate - sinks[sinks.size() - 1].x_coordinate);
-        double unit_perpendicular_x = -sin(ang_end);
-        double unit_perpendicular_y = cos(ang_end);
+        double ang_end = std::atan2(sources[0].y_coordinate - sinks[sinks.size() - 1].y_coordinate,
+                                    sources[0].x_coordinate - sinks[sinks.size() - 1].x_coordinate);
+        double unit_perpendicular_x = -std::sin(ang_end);
+        double unit_perpendicular_y = std::cos(ang_end);
         double ds = 2.0 * sources[0].half_plume_width / (num_steps - 1);
         double dx = ds * unit_perpendicular_x;
         double dy = ds * unit_perpendicular_y;

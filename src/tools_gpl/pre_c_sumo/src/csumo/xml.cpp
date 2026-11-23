@@ -1,8 +1,14 @@
 #include "csumo/xml.hpp"
 
 #include <boost/algorithm/string.hpp>
+#include <expected>
 #include <format>
+#include <optional>
+#include <pugixml.hpp>
+#include <string_view>
 
+#include "csumo/data.hpp"
+#include "utils/io_errors.hpp"
 #include "utils/monadic.hpp"
 #include "utils/xml_parsing.hpp"
 

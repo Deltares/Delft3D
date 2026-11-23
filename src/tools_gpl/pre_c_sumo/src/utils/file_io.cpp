@@ -1,10 +1,17 @@
 #include "utils/file_io.hpp"
 
 #include <cerrno>
+#include <expected>
+#include <filesystem>
 #include <format>
 #include <fstream>
+#include <ios>
 #include <sstream>
+#include <string>
+#include <string_view>
 #include <system_error>
+
+#include "utils/io_errors.hpp"
 
 namespace pre_c_sumo::utils::file_io
 {

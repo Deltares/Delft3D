@@ -1,9 +1,11 @@
 #include <gtest/gtest.h>
 
 #include <cstddef>
+#include <vector>
 
-#include "precice/data.hpp"
 #include "conversions.hpp"
+#include "csumo/data.hpp"
+#include "precice/data.hpp"
 
 TEST(PreciceToCSumoTest, ConvertsPointAndLayersAtNonzeroIndices)
 {

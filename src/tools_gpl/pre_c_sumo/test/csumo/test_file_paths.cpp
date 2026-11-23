@@ -1,5 +1,8 @@
 #include <gtest/gtest.h>
 
+#include <filesystem>
+
+#include "csumo/data.hpp"
 #include "csumo/file_paths.hpp"
 
 TEST(CSumoFilePathsTest, BuildsSinglePathsWithoutParentDirectory)

@@ -45,7 +45,7 @@ digraph preCSUMOSwimlanes {
     s4 [label="check initial data +\ninit participant", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::run()", tooltip="Reject required outgoing initial data, then initialize"];
 
     l0 [label="receiveFFData()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::precice::receiveFFData", tooltip="Open receiveFFData docs"];
-    l1 [label="writeFF2NF()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::c_sumo::writeFF2NFFiles", tooltip="Open writeFF2NFFiles docs"];
+    l1 [label="writeFF2NF()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo_write_ff2nf", tooltip="Open FF2NFWriter::write docs"];
     l2 [label="waitNF2FF()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::c_sumo::waitForNF2FFFiles", tooltip="Open waitForNF2FFFiles docs"];
     l3 [label="readNF2FF()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::c_sumo::readNF2FFFiles", tooltip="Open readNF2FFFiles docs"];
     l4 [label="convert()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::convertCSumoToPrecice", tooltip="Open convertCSumoToPrecice docs"];
@@ -68,7 +68,7 @@ digraph preCSUMOSwimlanes {
     style="rounded";
 
     c_initial [label="Initial NF2FF files\nfor startup", fillcolor="#DDEBFF", tooltip="Read before preCICE initialization"];
-    c0 [label="FF2NF Files", fillcolor="#DDEBFF", tooltip="Produced by writeFF2NFFiles"];
+    c0 [label="FF2NF Files", fillcolor="#DDEBFF", tooltip="Produced by FF2NFWriter::write"];
     c1 [label="Near-field Calculation", fillcolor="#DDEBFF",  tooltip="External step consuming FF2NF and generating NF2FF files"];
     c2 [label="NF2FF Files", fillcolor="#DDEBFF", tooltip="Consumed by readNF2FFFiles"];
     c0 -> c1 -> c2;

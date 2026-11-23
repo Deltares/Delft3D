@@ -1,15 +1,19 @@
-#include <boost/algorithm/string.hpp>
 #include <charconv>
-#include <expected>
+#include <chrono>
+#include <filesystem>
 #include <gtest/gtest.h>
 #include <pugixml.hpp>
 #include <ranges>
 #include <string>
 #include <string_view>
+#include <system_error>
+#include <utility>
 #include <vector>
 
+#include "cosumo_test_data.hpp"
+#include "csumo/data.hpp"
 #include "csumo/ff2nf_writer.hpp"
-#include "utils/monadic.hpp"
+#include "utils/file_io.hpp"
 #include "utils/xml_parsing.hpp"
 
 namespace
@@ -504,6 +508,60 @@ TEST(CSumoFF2NFWriterTest, DiffuserPointWithNoLayersIsRejected)
     const auto xml = pre_c_sumo::c_sumo::FF2NFWriter(std::move(config)).generate();
     ASSERT_FALSE(xml.has_value());
     EXPECT_EQ(xml.error().message, "FFDiff: every point must have at least one layer");
+}
+
+TEST(CSumoFF2NFWriterTest, WriteReportsInvalidConfiguration)
+{
+    const auto result =
+        pre_c_sumo::c_sumo::FF2NFWriter(pre_c_sumo::c_sumo::FF2NFConfig{}).write();
+    ASSERT_FALSE(result.has_value());
+    EXPECT_EQ(result.error().message, "FF2NF filename must not be empty");
+}
+
+TEST(CSumoFF2NFWriterTest, WriteReportsFileFailure)
+{
+    const std::filesystem::path existing_file(pre_c_sumo::test::full_settings_path);
+    ASSERT_TRUE(std::filesystem::is_regular_file(existing_file));
+    auto config = buildExampleConfig();
+    config.ff2nf_filename = (existing_file / "FF2NF.xml").string();
+
+    const auto result = pre_c_sumo::c_sumo::FF2NFWriter(std::move(config)).write();
+    ASSERT_FALSE(result.has_value());
+    EXPECT_TRUE(result.error().message.starts_with("Failed to create directory"));
+}
+
+TEST(CSumoFF2NFWriterTest, WriteSavesGeneratedXmlWithoutOverwriting)
+{
+    const auto directory = std::filesystem::temp_directory_path() /
+                           ("pre_c_sumo_ff2nf_" +
+                            std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
+    ASSERT_TRUE(std::filesystem::create_directory(directory));
+    const auto filename = directory / "FF2NF.xml";
+    struct Cleanup
+    {
+        std::filesystem::path filename;
+        std::filesystem::path directory;
+        ~Cleanup()
+        {
+            std::error_code error;
+            std::filesystem::remove(filename, error);
+            EXPECT_FALSE(error) << error.message();
+            std::filesystem::remove(directory, error);
+            EXPECT_FALSE(error) << error.message();
+        }
+    } cleanup{filename, directory};
+
+    auto config = buildExampleConfig();
+    config.ff2nf_filename = filename.string();
+    const pre_c_sumo::c_sumo::FF2NFWriter writer(std::move(config));
+    const auto xml = writer.generate();
+    ASSERT_TRUE(xml.has_value());
+    const auto result = writer.write();
+    ASSERT_TRUE(result.has_value()) << result.error().message;
+    const auto contents = pre_c_sumo::utils::file_io::readFile(filename);
+    ASSERT_TRUE(contents.has_value()) << contents.error().message;
+    EXPECT_EQ(*contents, *xml);
+    EXPECT_FALSE(writer.write().has_value());
 }
 
 TEST(CSumoFF2NFWriterTest, IntakePointWithNoLayersIsRejected)

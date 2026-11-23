@@ -92,7 +92,8 @@ The C-SUMO and preCICE headers, sources and tests are grouped in corresponding
   independently of transport and XML parsing.
 - [csumo/settings_reader.hpp](../include/csumo/settings_reader.hpp) and
   [csumo/nf2ff_reader.hpp](../include/csumo/nf2ff_reader.hpp) parse XML strings into data.
-  [csumo/ff2nf_writer.hpp](../include/csumo/ff2nf_writer.hpp) validates and generates XML only.
+  [csumo/ff2nf_writer.hpp](../include/csumo/ff2nf_writer.hpp) validates and generates
+  XML in memory, and writes FF2NF files using the shared file I/O helper.
 - [file_io.hpp](../include/utils/file_io.hpp) reads text and writes
   already-serialized content. Writing creates parent directories and refuses to
   overwrite existing files. [csumo/file_paths.hpp](../include/csumo/file_paths.hpp)
@@ -104,7 +105,9 @@ The C-SUMO and preCICE headers, sources and tests are grouped in corresponding
   maintains aligned sink/source buffers;
   transport clears those buffers after a successful write.
 
-The workflow in [csumo/exchange.cpp](../src/csumo/exchange.cpp) explicitly performs
-conversion, XML generation, and file writing as separate steps. NF2FF read/parse
-errors are returned to the caller rather than skipping a diffuser and shifting
-the remaining mappings.
+The workflow in [pre_c_sumo_lib.cpp](../src/pre_c_sumo_lib.cpp) converts preCICE
+data before passing C-SUMO records to [csumo/ff2nf_writer.cpp](../src/csumo/ff2nf_writer.cpp)
+for XML generation and file writing. C-SUMO and preCICE components do not depend
+on each other; cross-domain coordination stays at the project level. NF2FF
+read/parse errors are returned rather than skipping a diffuser and shifting the
+remaining mappings.

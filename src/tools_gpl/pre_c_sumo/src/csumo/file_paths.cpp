@@ -1,7 +1,12 @@
 #include "csumo/file_paths.hpp"
 
+#include <filesystem>
 #include <format>
 #include <ranges>
+#include <string>
+#include <vector>
+
+#include "csumo/data.hpp"
 
 namespace pre_c_sumo::c_sumo
 {

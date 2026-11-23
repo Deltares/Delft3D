@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include "csumo/data.hpp"
 #include "csumo/diffuser.hpp"
 
 TEST(CSumoDiffuserTest, DeterminesWhetherDiffuserIsModelledFromSourcesAndSinks)

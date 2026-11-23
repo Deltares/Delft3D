@@ -1,6 +1,7 @@
 #include "precice/data.hpp"
 
 #include <cassert>
+#include <cstddef>
 
 namespace pre_c_sumo::precice
 {

@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
+#include <pugixml.hpp>
 
 #include <array>
+#include <initializer_list>
 #include <string_view>
 #include <vector>
 

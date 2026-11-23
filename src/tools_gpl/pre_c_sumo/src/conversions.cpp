@@ -1,9 +1,8 @@
 #include "conversions.hpp"
-#include "csumo/diffuser.hpp"
-#include "csumo/file_paths.hpp"
-#include "utils/monadic.hpp"
 
 #include <algorithm>
+#include <cstddef>
+#include <expected>
 #include <format>
 #include <functional>
 #include <limits>
@@ -11,8 +10,16 @@
 #include <ranges>
 #include <span>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
+
+#include "csumo/data.hpp"
+#include "csumo/diffuser.hpp"
+#include "csumo/file_paths.hpp"
+#include "precice/data.hpp"
+#include "precice/sink_source_connections.hpp"
+#include "utils/monadic.hpp"
 
 namespace pre_c_sumo
 {
