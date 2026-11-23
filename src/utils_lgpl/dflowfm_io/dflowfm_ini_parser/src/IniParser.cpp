@@ -218,7 +218,7 @@ namespace ini
                 throw std::format_error(std::format("Error on line {}: section name cannot be empty.", lineNumber));
             }
 
-            if (!options.allowDuplicateSections && !foundSections.insert(name).second)
+            if (!options.allowDuplicateSections && !foundSections.insert(tolower(name)).second)
             {
                 throw std::format_error(
                     std::format("Error on line {}: duplicate section with name '{}'.", lineNumber, name));
@@ -284,7 +284,7 @@ namespace ini
                     std::format("Error on line {}: property key cannot contain spaces.", lineNumber));
             }
 
-            if (!options.allowDuplicateProperties && !foundProperties.insert(key).second)
+            if (!options.allowDuplicateProperties && !foundProperties.insert(tolower(key)).second)
             {
                 throw std::format_error(
                     std::format("Error on line {}: duplicate property with key '{}'.", lineNumber, key));

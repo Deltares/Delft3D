@@ -19,6 +19,16 @@ namespace ini
                });
     }
 
+    /// @brief Returns a lowercased copy of the specified string.
+    /// @param str The string to convert.
+    /// @return A copy of @p str with each character converted to lowercase.
+    inline std::string tolower(std::string_view str)
+    {
+        std::string result(str);
+        std::ranges::transform(result, result.begin(), [](unsigned char c) { return std::tolower(c); });
+        return result;
+    }
+
     /// @brief Removes leading and trailing whitespace from the specified string.
     /// @param s The string to trim.
     /// @return A copy of @p s with leading and trailing whitespace removed.

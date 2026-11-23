@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <format>
 #include <string>
+#include <utility>
 
 #include "ini/IniData.h"
 #include "ini/IniParser.h"
@@ -29,7 +30,6 @@ namespace ini::test
 
         EXPECT_TRUE(iniData.GetSections().empty());
     }
-
 
     // -------------------------------------------------------------------------
     // Parse - sections
@@ -125,12 +125,19 @@ namespace ini::test
 
     INSTANTIATE_TEST_SUITE_P(IniParserTest, IniParserEmptySectionNameTest, ::testing::Values("[]", "[ ]", "[\t\t]"));
 
-    TEST(IniParserTest, Parse_DuplicateSectionNamesAndAllowDuplicateSectionsIsFalse_ThrowsFormatError)
+    class IniParserDuplicateSectionNamesTest : public ::testing::TestWithParam<std::pair<std::string, std::string>>
+    {
+    };
+
+    TEST_P(IniParserDuplicateSectionNamesTest,
+           Parse_DuplicateSectionNamesAndAllowDuplicateSectionsIsFalse_ThrowsFormatError)
     {
         IniParserOptions options;
         options.allowDuplicateSections = false;
 
-        const std::string ini = "[section]\n[section]";
+        const auto& [firstName, secondName] = GetParam();
+        const std::string ini = std::format("[{}]\n[{}]", firstName, secondName);
+        const std::string expectedError = std::format("Error on line 2: duplicate section with name '{}'.", secondName);
 
         EXPECT_THROW(
             {
@@ -140,25 +147,31 @@ namespace ini::test
                 }
                 catch (const std::format_error& ex)
                 {
-                    EXPECT_STREQ(ex.what(), "Error on line 2: duplicate section with name 'section'.");
+                    EXPECT_STREQ(ex.what(), expectedError.c_str());
                     throw;
                 }
             },
             std::format_error);
     }
 
-    TEST(IniParserTest, Parse_DuplicateSectionNamesAndAllowDuplicateSectionsIsTrue_IniDataHasMultipleSections)
+    TEST_P(IniParserDuplicateSectionNamesTest,
+           Parse_DuplicateSectionNamesAndAllowDuplicateSectionsIsTrue_IniDataHasMultipleSections)
     {
         IniParserOptions options;
         options.allowDuplicateSections = true;
 
-        const std::string ini = "[section]\n[section]";
+        const auto& [firstName, secondName] = GetParam();
+        const std::string ini = std::format("[{}]\n[{}]", firstName, secondName);
 
         const IniData iniData = Parse(ini, {}, options);
 
         EXPECT_EQ(iniData.GetSections().size(), 2);
-        ASSERT_TRUE(iniData.HasSection("section"));
+        ASSERT_TRUE(iniData.HasSection(firstName));
     }
+
+    INSTANTIATE_TEST_SUITE_P(IniParserTest, IniParserDuplicateSectionNamesTest,
+                             ::testing::Values(std::make_pair("section", "section"),
+                                               std::make_pair("Section", "SECTION")));
 
     TEST(IniParserTest, Parse_MultipleSections_SectionsHaveLineNumbers)
     {
@@ -438,12 +451,19 @@ namespace ini::test
     INSTANTIATE_TEST_SUITE_P(IniParserTest, IniParserPropertyKeyWithSpacesAllowedTest,
                              ::testing::Values("property with spaces", "property\twith\ttabs"));
 
-    TEST(IniParserTest, Parse_DuplicatePropertyKeysAndAllowDuplicatePropertiesIsFalse_ThrowsFormatError)
+    class IniParserDuplicatePropertyKeysTest : public ::testing::TestWithParam<std::pair<std::string, std::string>>
+    {
+    };
+
+    TEST_P(IniParserDuplicatePropertyKeysTest,
+           Parse_DuplicatePropertyKeysAndAllowDuplicatePropertiesIsFalse_ThrowsFormatError)
     {
         IniParserOptions options;
         options.allowDuplicateProperties = false;
 
-        const std::string ini = "[section]\nproperty=value1\nproperty=value2";
+        const auto& [firstKey, secondKey] = GetParam();
+        const std::string ini = std::format("[section]\n{}=value1\n{}=value2", firstKey, secondKey);
+        const std::string expectedError = std::format("Error on line 3: duplicate property with key '{}'.", secondKey);
 
         EXPECT_THROW(
             {
@@ -453,26 +473,32 @@ namespace ini::test
                 }
                 catch (const std::format_error& ex)
                 {
-                    EXPECT_STREQ(ex.what(), "Error on line 3: duplicate property with key 'property'.");
+                    EXPECT_STREQ(ex.what(), expectedError.c_str());
                     throw;
                 }
             },
             std::format_error);
     }
 
-    TEST(IniParserTest, Parse_DuplicatePropertyKeysAndAllowDuplicatePropertiesIsTrue_SectionHasProperties)
+    TEST_P(IniParserDuplicatePropertyKeysTest,
+           Parse_DuplicatePropertyKeysAndAllowDuplicatePropertiesIsTrue_SectionHasProperties)
     {
         IniParserOptions options;
         options.allowDuplicateProperties = true;
 
-        const std::string ini = "[section]\nproperty=value1\nproperty=value2";
+        const auto& [firstKey, secondKey] = GetParam();
+        const std::string ini = std::format("[section]\n{}=value1\n{}=value2", firstKey, secondKey);
 
         const IniData iniData = Parse(ini, {}, options);
         const IniSection section = iniData.GetSection("section");
 
         EXPECT_EQ(section.GetProperties().size(), 2);
-        ASSERT_TRUE(section.HasProperty("property"));
+        ASSERT_TRUE(section.HasProperty(firstKey));
     }
+
+    INSTANTIATE_TEST_SUITE_P(IniParserTest, IniParserDuplicatePropertyKeysTest,
+                             ::testing::Values(std::make_pair("property", "property"),
+                                               std::make_pair("Property", "PROPERTY")));
 
     TEST(IniParserTest, Parse_MultipleProperties_PropertiesHaveLineNumbers)
     {
