@@ -1,11 +1,13 @@
 if(TARGET GDAL::GDAL)
     set(geotiff_test_source src/test_bilinear_geotiff.f90)
 endif()
+set_source_files_properties(src/test_dflowfm_version.F90 PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 add_fortran_gtest(test_dflowfm_kernel_gtest
     TEST_TEARDOWN reset_dflowfm_after_test
     SOURCES
         src/dflowfm_test_cleanup.f90
         src/test_dflowfm_kernel_example.f90
+        src/test_dflowfm_version.F90
         src/test_interpolate_on_polyline.f90
         src/test_fdster.f90
         src/test_tridag.f90
