@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 
 #include <map>
+#include <ranges>
+#include <vector>
 
 #include <dflowfm_io/MduData.h>
 #include <dflowfm_io/StringUtils.h>
@@ -21,6 +23,85 @@ namespace dflowfm_io::test
             return MduData(std::move(entries));
         }
     } // namespace
+
+    // -------------------------------------------------------------------------
+    // construction
+    // -------------------------------------------------------------------------
+
+    TEST(MduDataTest, Constructor_Vector_NormalizesKeys)
+    {
+        const std::vector<std::pair<std::string, Value>> entries{
+            {"Geometry.NetFile", std::string("mesh.nc")},
+            {"Time.TStop", 42}
+        };
+
+        MduData data(entries);
+
+        EXPECT_EQ(data.size(), 2);
+        EXPECT_EQ(data.getValueAs<std::string>("geometry.netfile"), "mesh.nc");
+        EXPECT_EQ(data.getValueAs<int>("TIME.TSTOP"), 42);
+        data.setValue("Time.TSTOP", 84);
+        EXPECT_EQ(data.getValueAs<int>("time.tstop"), 84);
+        EXPECT_EQ(std::get<int>(entries[1].second), 42);
+    }
+
+    TEST(MduDataTest, Constructor_OrderedMap_AcceptsEntries)
+    {
+        const std::map<std::string, Value> entries{{"Time.TStop", 42}};
+
+        const MduData data(entries);
+
+        EXPECT_EQ(data.getValueAs<int>("time.tstop"), 42);
+    }
+
+    TEST(MduDataTest, Constructor_View_AcceptsEntries)
+    {
+        const std::vector<std::pair<std::string, Value>> entries{
+            {"Time.TStop", 42},
+            {"Time.TStart", 0}
+        };
+
+        const MduData data(entries | std::views::take(1));
+
+        EXPECT_EQ(data.size(), 1);
+        EXPECT_EQ(data.getValueAs<int>("time.tstop"), 42);
+        EXPECT_FALSE(data.hasValue("time.tstart"));
+    }
+
+    TEST(MduDataTest, Constructor_DuplicateKeys_ThrowsRuntimeError)
+    {
+        const std::vector<std::pair<std::string, Value>> entries{
+            {"time.tstop", 42},
+            {"time.tstop", 84}
+        };
+
+        EXPECT_THROW(MduData{entries}, std::runtime_error);
+    }
+
+    TEST(MduDataTest, Constructor_CaseInsensitiveDuplicateKeys_ThrowsRuntimeError)
+    {
+        const std::unordered_map<std::string, Value> entries{
+            {"Time.TStop", 42},
+            {"time.tstop", 84}
+        };
+
+        EXPECT_THROW(MduData{entries}, std::runtime_error);
+    }
+
+    TEST(MduDataTest, Constructor_MixedCaseKeys_VisitsLowercaseKeys)
+    {
+        const std::vector<std::pair<std::string, Value>> entries{{"Time.TStop", 42}};
+        const MduData data(entries);
+        std::size_t visited = 0;
+
+        data.visitKeyValuePairs([&](std::string_view key, const Value& value) {
+            EXPECT_EQ(key, "time.tstop");
+            EXPECT_EQ(std::get<int>(value), 42);
+            ++visited;
+        });
+
+        EXPECT_EQ(visited, 1);
+    }
 
     // -------------------------------------------------------------------------
     // size
@@ -100,10 +181,11 @@ namespace dflowfm_io::test
     TEST(MduDataTest, HasValue_KeyStoredUppercase_LookupCaseInsensitive)
     {
         MduData data = MakeMduData({
-            {"somekey", 1}
+            {"SOMEKEY", 1}
         });
 
         EXPECT_TRUE(data.hasValue("SOMEKEY"));
+        EXPECT_TRUE(data.hasValue("somekey"));
     }
 
     // -------------------------------------------------------------------------

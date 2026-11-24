@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <functional>
+#include <ranges>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -20,9 +21,21 @@ namespace dflowfm_io
     /// whose type is determined by the @ref MduSchema.
     struct MduData
     {
-        /// @brief Constructs an @ref MduData from a raw key-value mapping.
-        /// @param raw_data A mapping of fully qualified property keys to their values.
-        explicit MduData(std::unordered_map<std::string, Value> raw_data) : data_entries(std::move(raw_data)) {}
+        /// @brief Constructs an @ref MduData from a range of key-value pairs, normalizing keys to lowercase.
+        /// @param entries An input range of fully qualified property keys paired with their values.
+        /// @throws std::runtime_error if keys are duplicated, ignoring case.
+        template <std::ranges::input_range Entries>
+        explicit MduData(Entries&& entries)
+        {
+            for (const auto& [key, value] : entries)
+            {
+                const auto [it, inserted] = data_entries.try_emplace(dflowfm_io::tolower(key), value);
+                if (!inserted)
+                {
+                    throw std::runtime_error("duplicate key: " + it->first);
+                }
+            }
+        }
 
         /// @brief Returns the number of stored key-value pairs.
         /// @return The number of entries in the storage.
