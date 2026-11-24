@@ -169,6 +169,8 @@ contains
    end function ecConnectionSetConverter
 
    !> Assign the target mask to the connection, unless it consists of only non-zero values.
+   !! The mask array is assumed to apply to all (current or future) target elementsets that are
+   !! part of this connection. Specifically, their respective sizes should all be equal.
    function ecConnectionSetTargetMask(instancePtr, connectionId, mask) result(success)
       type(tEcInstance), pointer, intent(in) :: instancePtr !< EC instance owning the connection.
       integer, intent(in) :: connectionId !< Connection to configure.
