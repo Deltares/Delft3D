@@ -50,7 +50,7 @@ subroutine bngham(j         ,nmmaxj    ,kmax      ,nmmax     ,lstsci    , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts
+    use m_mathconstants, only: EPS_FP
     use globaldata
     use sediment_basics_module
     use morphology_data_module
@@ -413,7 +413,7 @@ subroutine bngham(j         ,nmmaxj    ,kmax      ,nmmax     ,lstsci    , &
            ! copilot flags the following exit as leaving the upper-layer rheology undefined, but
            ! we're working from k = 1,kmax so from surface to bed (sigma) and it could stop
            ! too early ... what should clyint, sltint (not computed at all), and sndint be?
-           ! if ( clyint(nm) <= eps_fp) exit  ! if clay concentration close to zero, exit from the loop.
+           ! if ( clyint(nm) <= EPS_FP) exit  ! if clay concentration close to zero, exit from the loop.
            clyint(nm)   = max (0.0_fp,clyint(nm))
            sltint(nm)   = max (0.0_fp,sltint(nm))
            sndint(nm)   = max (0.0_fp,sndint(nm))
@@ -421,8 +421,8 @@ subroutine bngham(j         ,nmmaxj    ,kmax      ,nmmax     ,lstsci    , &
            ! clayint/rhosol_clay => Jill::unesco::phicl
            ! sandint/rhosol_sand => Jill::unesco::phisa
            !
-           phiclay(nm,k) = clyint(nm) / max(rhosol_clay , eps_fp)
-           phisand(nm,k) = sndint(nm) / max(rhosol_sand , eps_fp)
+           phiclay(nm,k) = clyint(nm) / max(rhosol_clay , EPS_FP)
+           phisand(nm,k) = sndint(nm) / max(rhosol_sand , EPS_FP)
            ! the Bingham model including viscosity of the mixture:
            !
            ! volcon => Jill::mudvic::phiss

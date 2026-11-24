@@ -26,21 +26,13 @@ subroutine shearsettle(dll_function, dll_handle, max_integers, max_reals, max_st
 !  are registered trademarks of Stichting Deltares, and remain the property of
 !  Stichting Deltares. All rights reserved.
 !
-!-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$
 !!--description-----------------------------------------------------------------
 !
 ! Compute fall velocity of mud based on Parameterised flocculation model
 ! Winterwerp 2004
 !
-!
-!!--pseudo code and references--------------------------------------------------
-! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use mathconsts, only: pi, ee
-    use sediment_basics_module, only: dgravel, dsand, SEDTYP_CLAY, SEDTYP_SAND
     use morphology_data_module
     use message_module, only: write_error
     !
@@ -73,8 +65,6 @@ subroutine shearsettle(dll_function, dll_handle, max_integers, max_reals, max_st
     real(fp)                              :: rhocf
     real(fp)                              :: rhosol
     real(fp)                              :: wss
-    ! real(fp)                              :: salint
-    ! real(fp)                              :: silint
     real(fp)                              :: rets
     real(fp)                              :: retco
     real(fp)                              :: sasim
@@ -116,15 +106,6 @@ subroutine shearsettle(dll_function, dll_handle, max_integers, max_reals, max_st
     Shearsettle_w_opt = real(dll_reals(WS_RP_FOROPT),fp)
     !
     rhoint  = real(dll_reals(WS_RP_RHOWT),fp)
-    !temint  = real(dll_reals(WS_RP_TEMP ),fp)
-    !salint  = real(dll_reals(WS_RP_SALIN),fp)
-    !d50     = real(dll_reals(WS_RP_D50  ),fp)
-    !ctot    = real(dll_reals(WS_RP_CTOT ),fp)
-    !ctotab  = real(dll_reals(WS_RP_CTOTA),fp)
-    !csoil   = real(dll_reals(WS_RP_CSOIL),fp)
-    !phiclay = real(dll_reals(WS_RP_PHICL),fp)
-    !phisand = real(dll_reals(WS_RP_PHISA),fp)
-    !shear   = real(dll_reals(WS_RP_SHR  ),fp)
     !
     csoil  = real(dll_reals(WS_RP_CSOIL),fp)  ! cref, cgel.
     !
@@ -168,11 +149,4 @@ subroutine shearsettle(dll_function, dll_handle, max_integers, max_reals, max_st
     endif
     wsloc   = wss * rets
 
-    ! rets    = max( 0.0_fp , (1.0_fp-phisandint/sasim) )  ! return flow
-    ! buoyan  = max( 0.0_fp , (1.0_fp-(phiclayint+phisandint)) )
-    ! wsloc   = wss * buoyan * rets**SluSettParam2
-
-    ! for test 8-2-2018
-    ! ws = 0.0001_fp
-    !
  end subroutine shearsettle
