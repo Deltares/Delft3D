@@ -72,19 +72,79 @@ Choose one executable-setting group for the calculation and set `mormergeexedir`
 | `queue` | Site partition used by the generated batch job. The script default is `16vcpu`. Set the site's partition explicitly. |
 | `timeLimit` | Allocation wall-clock limit. The script default is `01:00:00`. |
 | `nodes` | Total allocation nodes. The default is `1`. |
-| `slurmControlNodes` | Node-equivalent capacity deducted when calculating packing. The default is `0`. |
+| `slurmControlNodes` | Number of nodes subtracted from `nodes` in the packing calculation. The default is `0`. This setting does not reserve a dedicated control node; see Section 1.4.1. |
 | `slurmNodesPerCondition` | Nodes requested by one DIMR condition. `0` selects `1`. |
 | `slurmTasksPerNode` | Tasks per node for one DIMR condition. The default is `1`. |
 | `slurmConditionsPerNode` | Concurrent condition slices per allocation node. `0` derives the packing factor. |
 | `slurmCpusPerTask` | CPUs reserved for each task and its `OMP_NUM_THREADS` value. The default is `1`. |
-| `slurmMPI` | Direct DIMR `srun --mpi` selection. Unset or `none` leaves the command-line MPI option unset. Multi-rank DIMR requires a compatible plugin. |
+| `slurmMPI` | Direct DIMR `srun --mpi` selection. Unset or `none` leaves the command-line MPI option unset. Multi-rank DIMR requires a compatible plugin; see Section 1.4.2. |
 | `slurmModuleCommand` | Optional shell command inserted into the generated batch script. `none` omits it. |
 | `debug` | The default is `0`. `1` retains generated scripts and prints debug information. |
 | `workdir` | The examples leave this unset so model processes use the case root and shared condition directories. |
 
-Numeric geometry settings must be integers. `nodes`, `slurmTasksPerNode`, and `slurmCpusPerTask` must be at least `1`. The other three numeric Slurm geometry settings allow `0`. `slurmControlNodes` must be smaller than `nodes`. It changes the capacity calculation, while Slurm can place model ranks on any allocation node, including the batch node.
+Numeric geometry settings must be integers. `nodes`, `slurmTasksPerNode`, and `slurmCpusPerTask` must be at least `1`. The other three numeric Slurm geometry settings allow `0`. `slurmControlNodes` must be smaller than `nodes`.
 
 The `.mm` reader preserves embedded `=` characters, allowing shell assignments such as `slurmModuleCommand = export SLURM_MPI_TYPE=none`. Use the site's compiler and MPI module commands when required by the installed binaries.
+
+#### 1.4.1. Control-node capacity and placement
+
+Use `slurmControlNodes = 0` for the packed examples in this manual. The Tcl coordinator and MorMerge servers run on the allocation's batch node, including when this setting is `0`. They run as ordinary child processes of the batch script, so a separate node is not required just to start them.
+
+`nodes` always gives the total number of requested allocation nodes. `slurmControlNodes` changes the number used to calculate condition packing:
+
+```text
+available nodes for packing = nodes - slurmControlNodes
+```
+
+For example, `nodes = 3` with `slurmControlNodes = 1` calculates condition packing using two nodes while requesting three allocation nodes. The setting does not add a fourth node.
+
+The current launcher applies the derived task density to every allocation node. Its condition steps leave the node list and host exclusions unset, so Slurm can place model ranks on the batch node as well. Setting `slurmControlNodes = 1` therefore does not keep a physical node or an exclusive CPU set free for MorMerge. A dedicated coordination node requires additional placement and resource controls beyond this setting. [MorMerge packing and launch implementation](../scripts/mormerge.tcl)
+
+With automatic packing, increasing `slurmControlNodes` can increase the derived condition density and make the requested CPUs per node exceed the node's capacity. With an explicit `slurmConditionsPerNode` value, it reduces the calculated condition-slot capacity and can cause the geometry check to reject the layout.
+
+For the 22-condition examples with automatic packing, two FLOW ranks per condition, one node per condition, and one CPU per rank:
+
+| Allocation nodes | Available vCPUs per node | `slurmControlNodes` | Nodes used for packing | Derived conditions per node | Requested CPUs per node | Fits the node CPU capacity |
+| ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| 2 | 24 | 0 | 2 | 11 | 22 | Yes |
+| 2 | 24 | 1 | 1 | 22 | 44 | No |
+| 3 | 16 | 0 | 3 | 8 | 16 | Yes |
+| 3 | 16 | 1 | 2 | 11 | 22 | No |
+
+The minimum allocations in Section 2.5.3 use `slurmControlNodes = 0`. Choose a nonzero value only when deliberately reducing the node count used for packing, and check the resulting CPU request and placement separately.
+
+#### 1.4.2. PMI-2, PMIx, and MPI plugin selection
+
+The MPI library used by DIMR and its engines provides communication between ranks. Slurm's MPI plugin supplies the process-management support needed to initialize those ranks together. Select the plugin for the installed MPI library and the site's Slurm configuration. The number of vCPUs on a node does not determine this choice.
+
+| Plugin | Meaning | Selection |
+| --- | --- | --- |
+| `pmi2` | PMI-2 process-management support | Use with an MPI library configured for Slurm's PMI-2 interface. Intel MPI commonly uses this setup. |
+| `pmix` or a site-provided version such as `pmix_v4` | PMIx process-management support | Use with a compatible PMIx-enabled MPI build, such as an appropriately configured Open MPI installation. |
+| `none` | No special MPI startup processing by Slurm | Use for the single-rank serial recipes. The current direct DIMR path requires a named MPI plugin for more than one rank. |
+
+The `pmi2` values in this manual are examples, not a universal default. Some Intel MPI installations also require `I_MPI_PMI_LIBRARY` to select the site's PMI-2 library. Obtain the compatible plugin, library path, and module setup from the installation or cluster instructions. [Slurm MPI guide](https://slurm.schedmd.com/mpi_guide.html)
+
+List the plugins available on the cluster with:
+
+```bash
+srun --mpi=list
+```
+
+An available plugin still needs to match the application's MPI library. A successful two-rank run is the relevant check, including when both ranks run on one physical node.
+
+For a site using PMI-2, the `.mm` settings can be:
+
+```text
+slurmMPI           = pmi2
+slurmModuleCommand = export SLURM_MPI_TYPE=pmi2 OMP_NUM_THREADS_SWAN=1
+```
+
+`slurmMPI = pmi2` makes MorMerge add `--mpi=pmi2` to each direct DIMR step. `SLURM_MPI_TYPE` supplies an environment default for `srun`; an explicit command-line `--mpi` takes precedence. Setting both to the same value keeps the examples consistent. Exporting `SLURM_MPI_TYPE` alone does not satisfy MorMerge's requirement for a nonempty `slurmMPI` in a multi-rank direct DIMR run. [Slurm environment options](https://slurm.schedmd.com/srun.html#SECTION_INPUT-ENVIRONMENT-VARIABLES)
+
+In the current script, `slurmMPI = none` is normalized to an unset value and leaves `--mpi` out of the command. It does not generate `--mpi=none`. The serial examples explicitly export `SLURM_MPI_TYPE=none` to select Slurm's serial startup mode. The separate `d_hydro`/WAVE steps also inherit this environment default because those generated commands omit `--mpi`.
+
+Before a multi-rank DIMR calculation, MorMerge runs a preflight step using the selected plugin and geometry. It checks for an MPI rank environment recognized by DIMR and stops on failure before cloning inputs or starting servers. This check does not initialize the model's MPI library, so verify the actual engine rank count, coupling, and model completion as well. [MorMerge MPI launch implementation](../scripts/mormerge.tcl)
 
 ### 1.5. Calculate allocation resources
 
@@ -418,6 +478,73 @@ dimrargs               = -c 1 --NNODES 1 dimr_flow.xml
 
 Each condition then uses one node and one rank, and the allocation requests one task per node. For online WAVE, use the coupled XML with both component process lists set to `0` and select `dimr_flow_wave.xml` in `dimrargs`. Setting `nodes = 1` packs those two single-rank conditions onto one node with two allocation tasks.
 
+#### 2.5.3. 22 coupled conditions on nodes with 16 or 24 vCPUs
+
+These examples run all 22 conditions concurrently. Each condition uses one physical node, one CPU per MPI rank, and a serial WAVE component sharing FLOW rank `0`. Use `[General] SwanMode = exe` and one SWAN thread. Two FLOW MPI domains can run on the same node.
+
+The table gives the minimum node counts for the condition CPU requirements. Each node also needs enough memory for its concurrent coupled models. Automatic packing requests the same CPU capacity on every allocation node.
+
+| FLOW ranks per condition | Available vCPUs per node | Minimum nodes | Derived conditions per node | Requested CPUs per node | Total requested CPUs |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 1 | 16 | 2 | 11 | 11 | 22 |
+| 2 | 16 | 3 | 8 | 16 | 48 |
+| 2 | 24 | 2 | 11 | 22 | 44 |
+
+Use the following common settings, followed by one of the layout blocks below. Replace the installation paths and partition with the site's values, choose a suitable wall time, and append all 22 `condition:weight` entries with the model's condition names and weights. Save the selected coupled DIMR configuration as `input/dimr_config.xml`.
+
+```text
+dimrexedir             = /opt/delft3d/lnx64/bin
+mormergeexedir         = /opt/delft3d/lnx64/bin
+dimrargs               = dimr_config.xml
+queueSystem            = slurm
+queue                  = normal
+timeLimit              = 04:30:00
+slurmControlNodes      = 0
+slurmNodesPerCondition = 1
+slurmConditionsPerNode = 0
+slurmCpusPerTask       = 1
+debug                  = 1
+```
+
+**One FLOW rank per condition on two nodes with 16 vCPUs each**
+
+```text
+nodes              = 2
+slurmTasksPerNode  = 1
+slurmMPI           = none
+slurmModuleCommand = export SLURM_MPI_TYPE=none OMP_NUM_THREADS_SWAN=1
+```
+
+Use the unpartitioned FLOW MDU and mesh. In the coupled DIMR XML from Section 2.3, set both component process lists to `0`. Automatic packing selects 11 conditions per node, with one DIMR rank and one CPU per condition.
+
+**Two FLOW MPI domains per condition on three nodes with 16 vCPUs each**
+
+```text
+nodes              = 3
+slurmTasksPerNode  = 2
+slurmMPI           = pmi2
+slurmModuleCommand = export SLURM_MPI_TYPE=pmi2 OMP_NUM_THREADS_SWAN=1
+```
+
+Prepare two corresponding FLOW partitions for every condition as described in Section 2.1. Set FLOW's `<process>` list to `0 1` and WAVE's list to `0`, using the coupled XML from Section 2.3. Each condition uses two ranks on one physical node. The 22 conditions need 44 ranks, so two nodes with 16 vCPUs each are insufficient. Three nodes provide capacity for eight conditions per node and request 16 CPUs per node. The warning about two unused condition slots is expected for this layout.
+
+**Two FLOW MPI domains per condition on two nodes with 24 vCPUs each**
+
+```text
+nodes              = 2
+slurmTasksPerNode  = 2
+slurmMPI           = pmi2
+slurmModuleCommand = export SLURM_MPI_TYPE=pmi2 OMP_NUM_THREADS_SWAN=1
+```
+
+Use the same two-partition FLOW model and DIMR component process lists as the previous example. Automatic packing selects 11 conditions per node, requesting 22 CPUs per node for the 44 condition ranks.
+
+For both MPI examples, replace `pmi2` in `slurmMPI` and `SLURM_MPI_TYPE` with the plugin compatible with the installed MPI library and cluster, and include any required module setup in `slurmModuleCommand`. A two-rank condition requires a working MPI launch environment. [Slurm MPI guide](https://slurm.schedmd.com/mpi_guide.html)
+
+The common `dimrargs = dimr_config.xml` value is sufficient because the Slurm geometry comes from the `.mm` settings. Optional explicit equivalents are `dimrargs = -c 1 --NNODES 1 dimr_config.xml` for the single-rank example and `dimrargs = -c 2 --NNODES 1 dimr_config.xml` for both two-rank examples. Here `-c` describes ranks per node per condition, and `--NNODES` describes nodes per condition. The `.mm` setting `nodes` describes the whole allocation. MorMerge validates these optional flags against the geometry and removes them before invoking DIMR.
+
+Submit each case from `merge/` using `run_mormerge.sh model.mm`. With `debug = 1`, check the generated allocation resources against the table and verify that each condition's `dimr.scr` reports the selected FLOW rank count, successful WAVE updates, and completion through the intended stop time.
+
 ### 2.6. Other component and engine configurations
 
 DIMR starts the components and couplers described in its XML. The references below demonstrate component or engine features available in the repository. Preparing their combination with MorMerge requires the morphology settings, matching condition definitions, and verification of the combined model. These references provide configuration patterns for that preparation.
@@ -447,12 +574,14 @@ Prepare the chosen example's engine configuration and associated input files, re
 
 ### 2.7. DIMR arguments, threads, and checks
 
-`dimrargs` must be a Tcl list with exactly one configuration filename. A filename can be given directly, after `-m` or `--masterfile`, or after a final `--`. The launcher checks and translates these options.
+The `.mm` keyword is `dimrargs`, without an underscore. The translation below applies to direct DIMR launches under Slurm. Local Linux and Windows runs follow their installed wrapper interfaces, as described in Sections 1.6.2 and 2.9.
+
+For direct Slurm execution, `dimrargs` must be a Tcl list with exactly one configuration filename. A filename can be given directly, after `-m` or `--masterfile`, or after a final `--`. The launcher checks and translates these options.
 
 | Option | Handling |
 | --- | --- |
-| `-c <ranks>` or `--corespernode <ranks>` | Validate against `slurmTasksPerNode` |
-| `--NNODES <nodes>` | Validate against `slurmNodesPerCondition` |
+| `-c <ranks>` or `--corespernode <ranks>` | Optional ranks-per-node metadata for one condition. Validate against `slurmTasksPerNode`, then consume the option. |
+| `--NNODES <nodes>` | Optional nodes-per-condition metadata. Validate against `slurmNodesPerCondition`, then consume the option. |
 | `--debug <level>` | Translate to DIMR `-d <level>` |
 | `-d <value>`, `-l <value>`, `-S <value>` | Pass option and value to DIMR |
 | `-v`, `-i`, `-?` | Pass flag to DIMR |
@@ -461,7 +590,45 @@ Prepare the chosen example's engine configuration and associated input files, re
 
 Geometry flags are optional, and supplied values must agree with the `.mm` geometry. `--cleanup`, unknown options, missing values, and multiple filenames produce errors. Multi-rank direct DIMR also requires `slurmMPI` to name a site-compatible plugin. The preflight checks that the step supplies a rank environment recognized by DIMR before any servers start. The actual model run verifies the component and MPI library combination.
 
+#### 2.7.1. What `-c` means in `dimrargs`
+
+In `dimrargs`, `-c` is the wrapper-compatible name for the number of MPI ranks per node for one condition. The total rank count for that condition is `slurmNodesPerCondition * slurmTasksPerNode`. The complete allocation node count is specified separately by `nodes`.
+
+| Context | Meaning of `-c` | Corresponding `.mm` setting |
+| --- | --- | --- |
+| `dimrargs = -c 2 --NNODES 1 dimr_config.xml` | Two MPI ranks per node within one condition | `slurmTasksPerNode = 2` |
+| `srun -c 1 ...`, equivalent to `srun --cpus-per-task=1 ...` | One allocated CPU for each MPI rank | `slurmCpusPerTask = 1` |
+
+The two interfaces give `-c` different meanings. MorMerge writes the long `--cpus-per-task` form in its generated Slurm commands. [Slurm CPUs per task](https://slurm.schedmd.com/srun.html#OPT_cpus-per-task)
+
+For the 22-condition examples with two FLOW ranks per condition, use:
+
+```text
+slurmNodesPerCondition = 1
+slurmTasksPerNode      = 2
+slurmCpusPerTask       = 1
+dimrargs               = dimr_config.xml
+```
+
+An optional explicit equivalent is:
+
+```text
+dimrargs = -c 2 --NNODES 1 dimr_config.xml
+```
+
+Both forms produce a condition step with `--nodes=1 --ntasks=2 --ntasks-per-node=2 --cpus-per-task=1`. They apply to both the three-node layout with 16 vCPUs per node and the two-node layout with 24 vCPUs per node. The allocation size does not change the geometry of one condition.
+
+For comparison, a two-rank condition spanning two physical nodes uses `slurmNodesPerCondition = 2`, `slurmTasksPerNode = 1`, and optionally `dimrargs = -c 1 --NNODES 2 dimr_config.xml`. Its total rank count is still two.
+
+MorMerge consumes `-c` and `--NNODES` before invoking the DIMR executable. A conflicting `-c 1` with `slurmTasksPerNode = 2` is rejected. These flags validate the requested layout; the DIMR XML process lists and prepared FLOW partitions must also match that layout. [DIMR argument translation](../scripts/mormerge.tcl)
+
+#### 2.7.2. OpenMP threads per rank
+
 For hybrid MPI/OpenMP, increase `slurmCpusPerTask` to the intended threads per rank. For example, `slurmCpusPerTask = 2` doubles the CPU requests in the layout table while keeping the same task counts. Set a SWAN override within that CPU count when using the SWAN executable wrapper.
+
+With two ranks per condition and two threads per rank, the condition requires four CPUs. Its optional `dimrargs -c` value remains `2`, while `OMP_NUM_THREADS` follows `slurmCpusPerTask = 2`.
+
+#### 2.7.3. Generated step and verification
 
 The generated step has the following form.
 
