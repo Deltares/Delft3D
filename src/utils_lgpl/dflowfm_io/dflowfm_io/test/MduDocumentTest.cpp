@@ -38,38 +38,38 @@ namespace dflowfm_io::test
     }
 
     // -------------------------------------------------------------------------
-    // LoadString
+    // LoadFromString
     // -------------------------------------------------------------------------
 
-    TEST_F(MduDocumentTest, LoadString_ValidString_NoErrors)
+    TEST_F(MduDocumentTest, LoadFromString_ValidString_NoErrors)
     {
-        const IssueReport report = doc.LoadString(TestMduString());
+        const IssueReport report = doc.LoadFromString(TestMduString());
 
         EXPECT_FALSE(HasIssue(report, Severity::Error));
     }
 
-    TEST_F(MduDocumentTest, LoadString_ValidString_PopulatesMduData)
+    TEST_F(MduDocumentTest, LoadFromString_ValidString_PopulatesMduData)
     {
-        doc.LoadString(TestMduString());
+        doc.LoadFromString(TestMduString());
 
         EXPECT_FALSE(doc.GetData().empty());
     }
 
-    TEST_F(MduDocumentTest, LoadString_EmptyString_ReportsErrorsAndRetainsSchemaDefaults)
+    TEST_F(MduDocumentTest, LoadFromString_EmptyString_ReportsErrorsAndRetainsSchemaDefaults)
     {
-        const IssueReport report = doc.LoadString("");
+        const IssueReport report = doc.LoadFromString("");
         EXPECT_TRUE(HasIssue(report, Severity::Error));
         EXPECT_EQ(doc.GetValue<int>("numerics.maxNonLinearIterations"), 100);
     }
 
-    TEST_F(MduDocumentTest, LoadString_ValidString_OverridesDefaultValues)
+    TEST_F(MduDocumentTest, LoadFromString_ValidString_OverridesDefaultValues)
     {
         auto iniData = TestIniData();
         iniData.GetSection("general").SetPropertyValue("fileVersion", "overriden");
         iniData.GetSection("numerics").SetPropertyValue("maxNonLinearIterations", -1212);
         iniData.GetSection("geometry").SetPropertyValue("bedLevUni", 32424.22);
 
-        doc.LoadString(ini::Format(iniData));
+        doc.LoadFromString(ini::Format(iniData));
 
         const std::string fileVersionKey = FormatKey("general", "fileVersion");
         const std::string maxIterKey = FormatKey("numerics", "maxNonLinearIterations");
@@ -80,14 +80,14 @@ namespace dflowfm_io::test
         EXPECT_DOUBLE_EQ(doc.GetValue<double>(bedLevKey), 32424.22);
     }
 
-    TEST_F(MduDocumentTest, LoadString_ValidString_RetainsDefaultForAbsentProperty)
+    TEST_F(MduDocumentTest, LoadFromString_ValidString_RetainsDefaultForAbsentProperty)
     {
         auto iniData = TestIniData();
         iniData.GetSection("general").RemoveAllProperties("fileVersion");
         iniData.GetSection("numerics").RemoveAllProperties("maxNonLinearIterations");
         iniData.GetSection("geometry").RemoveAllProperties("bedLevUni");
 
-        doc.LoadString(ini::Format(iniData));
+        doc.LoadFromString(ini::Format(iniData));
 
         const std::string fileVersionKey = FormatKey("general", "fileVersion");
         const std::string maxIterKey = FormatKey("numerics", "maxNonLinearIterations");
@@ -99,40 +99,40 @@ namespace dflowfm_io::test
     }
 
     // -------------------------------------------------------------------------
-    // Load(path)
+    // LoadFromFile
     // -------------------------------------------------------------------------
 
-    TEST_F(MduDocumentTest, Load_EmptyPath_ThrowsInvalidArgument)
+    TEST_F(MduDocumentTest, LoadFromFile_EmptyPath_ThrowsInvalidArgument)
     {
-        EXPECT_THROW(doc.Load(std::filesystem::path{}), std::invalid_argument);
+        EXPECT_THROW(doc.LoadFromFile(std::filesystem::path{}), std::invalid_argument);
     }
 
-    TEST_F(MduDocumentTest, Load_NonExistingPath_ThrowsIosBaseFailure)
+    TEST_F(MduDocumentTest, LoadFromFile_NonExistingPath_ThrowsIosBaseFailure)
     {
         const auto path = std::filesystem::path{"nonexistent_file_xyz.mdu"};
 
-        EXPECT_THROW(doc.Load(path), std::ios_base::failure);
+        EXPECT_THROW(doc.LoadFromFile(path), std::ios_base::failure);
     }
 
     // -------------------------------------------------------------------------
-    // ToString
+    // SaveToString
     // -------------------------------------------------------------------------
 
-    TEST_F(MduDocumentTest, ToString_LoadedData_WritesNonEmptyContent)
+    TEST_F(MduDocumentTest, SaveToString_LoadedData_WritesNonEmptyContent)
     {
-        doc.LoadString(TestMduString());
+        doc.LoadFromString(TestMduString());
 
-        EXPECT_FALSE(doc.ToString().empty());
+        EXPECT_FALSE(doc.SaveToString().empty());
     }
 
-    TEST_F(MduDocumentTest, ToStringThenLoadString_PreservesValues)
+    TEST_F(MduDocumentTest, SaveToStringThenLoadFromString_PreservesValues)
     {
-        doc.LoadString(TestMduString());
+        doc.LoadFromString(TestMduString());
         doc.SetValue("numerics.maxNonLinearIterations", 42);
         doc.SetValue("geometry.bedLevUni", -12.5);
 
         MduDocument reader{schema};
-        const IssueReport report = reader.LoadString(doc.ToString());
+        const IssueReport report = reader.LoadFromString(doc.SaveToString());
 
         EXPECT_FALSE(HasIssue(report, Severity::Error));
         EXPECT_EQ(reader.GetValue<int>("numerics.maxNonLinearIterations"), 42);
@@ -140,25 +140,25 @@ namespace dflowfm_io::test
     }
 
     // -------------------------------------------------------------------------
-    // Save(path)
+    // SaveToFile
     // -------------------------------------------------------------------------
 
-    TEST_F(MduDocumentTest, Save_EmptyPath_ThrowsInvalidArgument)
+    TEST_F(MduDocumentTest, SaveToFile_EmptyPath_ThrowsInvalidArgument)
     {
-        EXPECT_THROW(doc.Save(std::filesystem::path{}), std::invalid_argument);
+        EXPECT_THROW(doc.SaveToFile(std::filesystem::path{}), std::invalid_argument);
     }
 
-    TEST_F(MduDocumentTest, SaveThenLoad_FileContent_MatchesStringRoundTrip)
+    TEST_F(MduDocumentTest, SaveToFileThenLoadFromFile_FileContent_MatchesStringRoundTrip)
     {
-        doc.LoadString(TestMduString());
+        doc.LoadFromString(TestMduString());
         doc.SetValue("numerics.maxNonLinearIterations", 42);
-        doc.Save(path);
+        doc.SaveToFile(path);
 
         MduDocument reader{schema};
-        const IssueReport report = reader.Load(path);
+        const IssueReport report = reader.LoadFromFile(path);
 
         EXPECT_FALSE(HasIssue(report, Severity::Error));
-        EXPECT_EQ(reader.ToString(), doc.ToString());
+        EXPECT_EQ(reader.SaveToString(), doc.SaveToString());
         EXPECT_EQ(reader.GetValue<int>("numerics.maxNonLinearIterations"), 42);
     }
 

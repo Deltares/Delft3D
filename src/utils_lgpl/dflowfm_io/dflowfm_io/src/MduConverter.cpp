@@ -127,7 +127,7 @@ namespace dflowfm_io
 
     } // namespace
 
-    std::pair<MduData, IssueReport> MduConverter::Convert(const ini::IniData& iniData, const MduSchema& schema)
+    std::pair<MduData, IssueReport> MduConverter::ToMduData(const ini::IniData& iniData, const MduSchema& schema)
     {
         IssueReport report = MduValidator::Validate(iniData, schema);
         MduData mduData(schema.CreateDefaultValues());
@@ -165,7 +165,7 @@ namespace dflowfm_io
         return {std::move(mduData), std::move(report)};
     }
 
-    ini::IniData MduConverter::Convert(const MduData& mduData, const MduSchema& schema)
+    ini::IniData MduConverter::ToIniData(const MduData& mduData, const MduSchema& schema)
     {
         ini::IniData iniData;
 

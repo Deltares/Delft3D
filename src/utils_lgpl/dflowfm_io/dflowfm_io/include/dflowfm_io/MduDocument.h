@@ -17,14 +17,6 @@ namespace dflowfm_io
     ///
     /// Individual property values can be read and written via @ref GetValue and @ref SetValue,
     /// or the full dataset can be accessed directly via @ref GetData.
-    ///
-    /// @code
-    /// MduDocument doc;
-    /// IssueReport report = doc.Load("mymodel.mdu");
-    /// for (const Issue& issue : report.GetIssues()) { /* handle */ }
-    /// doc.SetValue("time.tstop", 3600);
-    /// doc.Save("mymodel_updated.mdu");
-    /// @endcode
     class MduDocument
     {
     public:
@@ -32,27 +24,29 @@ namespace dflowfm_io
         /// @param schema The schema to validate and convert against. Defaults to the global MDU schema.
         explicit MduDocument(const MduSchema& schema = MDU_SCHEMA);
 
-        /// @brief Loads and validates MDU content from a string.
-        /// @param text The MDU-formatted text to parse.
-        /// @return Issues found during loading.
-        IssueReport LoadString(const std::string& text);
+        /// @brief Loads and validates MDU data from a string.
+        /// @param text The MDU-formatted text to load.
+        /// @return The issues found during loading.
+        /// @throws std::format_error if the text violates the INI parsing rules.
+        IssueReport LoadFromString(const std::string& text);
 
-        /// @brief Loads and validates an MDU file from a file path.
-        /// @param path Path to the MDU file to load.
+        /// @brief Loads and validates MDU data from a file.
+        /// @param path The path of the file to load.
+        /// @return The issues found during loading.
         /// @throws std::invalid_argument if @p path is empty.
-        /// @throws std::ios_base::failure if the file cannot be opened.
-        /// @return Issues found during loading.
-        IssueReport Load(const std::filesystem::path& path);
+        /// @throws std::ios_base::failure if the file cannot be read.
+        /// @throws std::format_error if the file contents violate the INI parsing rules.
+        IssueReport LoadFromFile(const std::filesystem::path& path);
 
-        /// @brief Formats the current MDU data as a string.
-        /// @return The formatted MDU text.
-        std::string ToString() const;
+        /// @brief Saves the current MDU data to a string.
+        /// @return The MDU-formatted text.
+        std::string SaveToString() const;
 
-        /// @brief Writes the current MDU data to a file.
-        /// @param path Path of the file to write. The file is created or overwritten.
+        /// @brief Saves the current MDU data to a file.
+        /// @param path The path of the file to write. The file is created or overwritten.
         /// @throws std::invalid_argument if @p path is empty.
-        /// @throws std::ios_base::failure if the file cannot be opened for writing.
-        void Save(const std::filesystem::path& path) const;
+        /// @throws std::ios_base::failure if the file cannot be written.
+        void SaveToFile(const std::filesystem::path& path) const;
 
         /// @brief Returns the parsed and validated MDU data.
         /// @return Reference to the internal @ref MduData instance.

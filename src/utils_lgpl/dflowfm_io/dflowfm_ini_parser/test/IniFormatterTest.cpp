@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <sstream>
 #include <string>
 
 #include "ini/IniData.h"
@@ -351,6 +352,49 @@ namespace ini::test
             "\n";
 
         EXPECT_EQ(ini, expected);
+    }
+
+    // -------------------------------------------------------------------------
+    // Format - stream
+    // -------------------------------------------------------------------------
+
+    TEST(IniFormatterTest, Format_EmptyIniData_WritesEmptyStringToStream)
+    {
+        IniData iniData = CreateEmptyIniData();
+
+        std::ostringstream oss;
+        Format(iniData, oss);
+
+        EXPECT_EQ(oss.str(), "");
+    }
+
+    TEST(IniFormatterTest, Format_SectionWithPropertiesAndComments_WritesToStream)
+    {
+        IniData iniData = CreateIniDataWithSingleSection();
+
+        std::ostringstream oss;
+        Format(iniData, oss);
+
+        const std::string expected =
+            "[section]\n"
+            "property1             = value1               # comment\n"
+            "property2             = value2               # comment\n"
+            "property3             = value3               # comment\n"
+            "\n";
+
+        EXPECT_EQ(oss.str(), expected);
+    }
+
+    TEST(IniFormatterTest, Format_FormatToStreamAndFormatToString_ReturnSameResult)
+    {
+        IniData iniData = CreateIniDataWithSingleSection();
+
+        const std::string fromString = Format(iniData);
+
+        std::ostringstream oss;
+        Format(iniData, oss);
+
+        EXPECT_EQ(fromString, oss.str());
     }
 
 } // namespace ini::test

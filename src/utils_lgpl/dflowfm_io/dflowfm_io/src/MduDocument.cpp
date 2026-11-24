@@ -1,15 +1,17 @@
 #include <dflowfm_io/MduConverter.h>
 #include <dflowfm_io/MduDocument.h>
 
-#include <ini/IniFileIO.h>
+#include <ini/IniFile.h>
+#include <ini/IniFormatter.h>
 #include <ini/IniOptions.h>
+#include <ini/IniParser.h>
 
 #include <format>
 #include <stdexcept>
 
 namespace dflowfm_io
 {
-    static const ini::IniFileIOOptions mduIniOptions = {
+    static const ini::IniFileOptions mduIniOptions = {
         .parserOptions =
             {
                 .allowDuplicateSections = false,
@@ -27,32 +29,32 @@ namespace dflowfm_io
     MduDocument::MduDocument(const MduSchema& schema)
         : schema(schema), mduData(schema.CreateDefaultValues()) {}
 
-    IssueReport MduDocument::LoadString(const std::string& text)
+    IssueReport MduDocument::LoadFromString(const std::string& text)
     {
-        const ini::IniData iniData = ini::file_io::LoadString(text, mduIniOptions);
-
-        std::pair<MduData, IssueReport> result = MduConverter::Convert(iniData, schema);
+        const ini::IniData iniData = ini::Parse(text, mduIniOptions.scheme, mduIniOptions.parserOptions);
+        std::pair<MduData, IssueReport> result = MduConverter::ToMduData(iniData, schema);
         mduData = std::move(result.first);
         return std::move(result.second);
     }
 
-    IssueReport MduDocument::Load(const std::filesystem::path& path)
+    IssueReport MduDocument::LoadFromFile(const std::filesystem::path& path)
     {
-        const ini::IniData iniData = ini::file_io::Load(path, mduIniOptions);
-
-        std::pair<MduData, IssueReport> result = MduConverter::Convert(iniData, schema);
+        const ini::IniData iniData = ini::Load(path, mduIniOptions);
+        std::pair<MduData, IssueReport> result = MduConverter::ToMduData(iniData, schema);
         mduData = std::move(result.first);
         return std::move(result.second);
     }
 
-    std::string MduDocument::ToString() const
+    std::string MduDocument::SaveToString() const
     {
-        return ini::file_io::ToString(MduConverter::Convert(mduData, schema), mduIniOptions);
+        const ini::IniData iniData = MduConverter::ToIniData(mduData, schema);
+        return ini::Format(iniData, mduIniOptions.scheme, mduIniOptions.formatterOptions);
     }
 
-    void MduDocument::Save(const std::filesystem::path& path) const
+    void MduDocument::SaveToFile(const std::filesystem::path& path) const
     {
-        ini::file_io::Save(path, MduConverter::Convert(mduData, schema), mduIniOptions);
+        const ini::IniData iniData = MduConverter::ToIniData(mduData, schema);
+        ini::Save(path, iniData, mduIniOptions);
     }
 
     void MduDocument::EnsureKeyInSchema(const std::string& key) const

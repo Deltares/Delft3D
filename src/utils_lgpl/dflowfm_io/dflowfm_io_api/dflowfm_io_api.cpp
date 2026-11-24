@@ -142,7 +142,7 @@ dflowfm_io_result_t mdu_load_from_file(mdu_handle_t* handle, const char* filenam
 
     return exceptionToResult([&]()
     {
-        handle->lastIssueReport = handle->mduDocument.Load(std::filesystem::path(filename));
+        handle->lastIssueReport = handle->mduDocument.LoadFromFile(std::filesystem::path(filename));
     });
 }
 
@@ -153,7 +153,7 @@ dflowfm_io_result_t mdu_load_from_string(mdu_handle_t* handle, const char* data,
 
     return exceptionToResult([&]()
     {
-        handle->lastIssueReport = handle->mduDocument.LoadString(std::string(data, size));
+        handle->lastIssueReport = handle->mduDocument.LoadFromString(std::string(data, size));
     });
 }
 
@@ -164,7 +164,7 @@ dflowfm_io_result_t mdu_save_to_file(mdu_handle_t* handle, const char* filename)
 
     return exceptionToResult([&]()
     {
-        handle->mduDocument.Save(std::filesystem::path(filename));
+        handle->mduDocument.SaveToFile(std::filesystem::path(filename));
     });
 }
 
@@ -175,7 +175,7 @@ dflowfm_io_result_t mdu_save_to_string(mdu_handle_t* handle, const char** data_o
 
     return exceptionToResult([&]()
     {
-        *data_out = handle->stringStorage.clearAndStore(handle->mduDocument.ToString());
+        *data_out = handle->stringStorage.clearAndStore(handle->mduDocument.SaveToString());
     });
 }
 

@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
-#include <algorithm>
 #include <format>
+#include <sstream>
 #include <string>
 #include <utility>
 
@@ -850,29 +850,39 @@ namespace ini::test
         section.AddProperty(property);
         expected.AddSection(std::move(section));
 
-        EXPECT_TRUE(std::ranges::equal(iniData.GetSections(), expected.GetSections()));
+        EXPECT_EQ(iniData, expected);
     }
 
     // -------------------------------------------------------------------------
-    // Parse - encoding
+    // Parse - stream
     // -------------------------------------------------------------------------
 
-    TEST(IniParserTest, Parse_AnsiEncodedTextWithUnicodeCharacters_ReadsFromString)
+    TEST(IniParserTest, Parse_ValidStream_KeepsStreamOpen)
+    {
+        std::istringstream stream("");
+        Parse(stream);
+
+        EXPECT_FALSE(stream.bad());
+    }
+
+    TEST(IniParserTest, Parse_AnsiEncodedTextWithUnicodeCharacters_ReadsFromStream)
     {
         const std::string ini = "[section]\nproperty1=value¹²³";
+        std::istringstream stream(ini);
 
-        const IniData iniData = Parse(ini);
+        const IniData iniData = Parse(stream);
         const IniSection section = iniData.GetSection("section");
         const IniProperty property = section.GetProperty("property1");
 
         EXPECT_EQ(property.GetValue(), "value¹²³");
     }
 
-    TEST(IniParserTest, Parse_Utf8BomEncodedTextWithUnicodeCharacters_ReadsFromString)
+    TEST(IniParserTest, Parse_Utf8BomEncodedTextWithUnicodeCharacters_ReadsFromStream)
     {
         const std::string ini = "\xEF\xBB\xBF[section]\nproperty=value¹²³";
+        std::istringstream stream(ini);
 
-        const IniData iniData = Parse(ini);
+        const IniData iniData = Parse(stream);
         const IniSection section = iniData.GetSection("section");
         const IniProperty property = section.GetProperty("property");
 

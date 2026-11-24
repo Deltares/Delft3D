@@ -198,7 +198,8 @@ namespace ini
 
             const std::size_t endIndex = sectionPart.rfind(scheme.sectionEndDelimiter);
 
-            if (endIndex == std::string::npos || sectionPart.back() != scheme.sectionEndDelimiter ||
+            if (endIndex == std::string::npos ||
+                sectionPart.back() != scheme.sectionEndDelimiter ||
                 sectionPart.find(scheme.sectionStartDelimiter, 1) != std::string::npos ||
                 sectionPart.find(scheme.sectionEndDelimiter) != endIndex)
             {
@@ -390,6 +391,11 @@ namespace ini
     IniData Parse(const std::string& ini, IniScheme scheme, IniParserOptions options)
     {
         std::istringstream stream(ini);
+        return Parse(stream, std::move(scheme), std::move(options));
+    }
+
+    IniData Parse(std::istream& stream, IniScheme scheme, IniParserOptions options)
+    {
         return ParsingContext(scheme, options).Parse(stream);
     }
 
