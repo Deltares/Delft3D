@@ -54,7 +54,7 @@ contains
       use messagehandling, only: LEVEL_FATAL, LEVEL_ERROR, mess, setmessage
       use m_flowparameters
       use m_flowgeom
-      use m_physcoef, only: ifrctypuni
+      use m_physcoef, only: uniform_friction_type
       use m_flow, only: kmx, zslay, z0urou
       use m_flowtimes, only: dt_user
       use m_trachy ! (FM module containing trachy data structure)
@@ -280,13 +280,13 @@ contains
       !
       ! Connection to FM definitions
       !
-      if (ifrctypuni == 0) then
+      if (uniform_friction_type == 0) then
          rouflo = 'CHEZ'
-      elseif (ifrctypuni == 1) then
+      elseif (uniform_friction_type == 1) then
          rouflo = 'MANN'
-      elseif (ifrctypuni == 2) then
+      elseif (uniform_friction_type == 2) then
          rouflo = 'WHIT'
-      elseif (ifrctypuni == 3) then
+      elseif (uniform_friction_type == 3) then
          rouflo = 'WHIT'
       else
          call SetMessage(LEVEL_FATAL, 'Unsupported friction type specified in combination with trachytopes')

@@ -11,11 +11,36 @@ import Delft3D.template.*
 import Delft3D.ciUtilities.*
 import Delft3D.verschilanalyse.*
 
-version = "2026.1"
+version = "2026.2"
 
 project {
 
     description = "Build, test, collect, and publish Delft3D. Contact: BlackOps (black-ops@deltares.nl)."
+
+    cleanup {
+        baseRule {
+            artifacts(builds = 5, artifactPatterns = "+:**/*")
+            // Count days from the last successful build; protect the artifacts of the latest five successes.
+            history(days = 90, builds = 5)
+            preventDependencyCleanup = false
+        }
+        // Preserve history and statistics after the logs and artifacts expire.
+        keepRule {
+            id = "KeepHistoryAndStatistics"
+            keepAtLeast = allBuilds()
+            dataToKeep = historyAndStatistics()
+        }
+        keepRule {
+            id = "KeepMainAndReleaseLogs"
+            keepAtLeast = allBuilds()
+            dataToKeep = logs()
+            applyToBuilds {
+                inBranches {
+                    branchFilter = patterns("+:main", "+:all/release/*")
+                }
+            }
+        }
+    }
 
     params {
         param("delft3d-user", DslContext.getParameter("delft3d-user"))
@@ -29,7 +54,6 @@ project {
         password("nexus_nuget_apikey", DslContext.getParameter("nexus_nuget_apikey"))
         param("nexus_iq_username", DslContext.getParameter("nexus_iq_username"))
         password("nexus_iq_password", DslContext.getParameter("nexus_iq_password"))
-        param("env.UV_INDEX_URL", "https://%nexus_username%:%nexus_password%@internal-artifacts.deltares.nl/repository/python-internal/simple/")
         param("product", "dummy_value")
 
     }

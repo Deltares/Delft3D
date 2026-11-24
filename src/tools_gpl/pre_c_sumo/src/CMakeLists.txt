@@ -61,6 +61,5 @@ endif()
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files} main.cpp)
 set_target_properties(preC-SUMO pre_c_sumo_lib PROPERTIES FOLDER tools_gpl/pre_c_sumo)
 
-install(TARGETS preC-SUMO
-    RUNTIME DESTINATION bin
-)
+install(TARGETS preC-SUMO RUNTIME DESTINATION bin)
+install(FILES $<TARGET_RUNTIME_DLLS:preC-SUMO> DESTINATION bin)

@@ -2712,7 +2712,7 @@ contains
 
          balance => water_flow%bal_area(imba)
          do iflux = 1, balance%n_entries
-            write (luncsvmb, 3) trim(datetimmbambs), balance%group(iflux), balance%name(iflux), &
+            write (luncsvmb, 3) trim(datetimmbambs), trim(balance%group(iflux)), trim(balance%name(iflux)), &
                balance%values(1, iflux), balance%values(2, iflux), balance%values(1, iflux) - balance%values(2, iflux)
          end do
 
@@ -2726,7 +2726,7 @@ contains
 
             balance => const_flux(imbs)%bal_area(imba)
             do iflux = 1, balance%n_entries
-               write (luncsvmb, 3) trim(datetimmbambs), balance%group(iflux), balance%name(iflux), &
+               write (luncsvmb, 3) trim(datetimmbambs), trim(balance%group(iflux)), trim(balance%name(iflux)), &
                   balance%values(1, iflux), balance%values(2, iflux), balance%values(1, iflux) - balance%values(2, iflux)
             end do
          end do
@@ -2745,7 +2745,7 @@ contains
 
       balance => water_flow%bal_area(nomba + 1)
       do iflux = 1, balance%n_entries
-         write (luncsvmb, 3) trim(datetimmbambs), balance%group(iflux), balance%name(iflux), &
+         write (luncsvmb, 3) trim(datetimmbambs), trim(balance%group(iflux)), trim(balance%name(iflux)), &
             balance%values(1, iflux), balance%values(2, iflux), balance%values(1, iflux) - balance%values(2, iflux)
       end do
 
@@ -2761,7 +2761,7 @@ contains
 
          balance => const_flux(imbs)%bal_area(nomba + 1)
          do iflux = 1, balance%n_entries
-            write (luncsvmb, 3) trim(datetimmbambs), balance%group(iflux), balance%name(iflux), &
+            write (luncsvmb, 3) trim(datetimmbambs), trim(balance%group(iflux)), trim(balance%name(iflux)), &
                balance%values(1, iflux), balance%values(2, iflux), balance%values(1, iflux) - balance%values(2, iflux)
          end do
       end do

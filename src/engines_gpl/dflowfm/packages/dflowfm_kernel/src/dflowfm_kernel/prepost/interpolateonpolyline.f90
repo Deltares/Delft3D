@@ -34,35 +34,31 @@ module m_interpolateOnPolyline
 contains
    !> Find a point on a polyline at a certain distance from the start.
       !! The distance is measured along the consecutive polyline segments.
-   subroutine interpolateOnPolyline(X, Y, Z, T, MMAX, XP, YP, ZP, TP, JA)
+   subroutine interpolateOnPolyline(polyline_x, polyline_y, polyline_z, cumulative_distance, num_points, &
+                                    interpolated_x, interpolated_y, interpolated_z, target_distance, inside_polyline)
       use precision, only: dp
-      integer, intent(in) :: mmax !< Nr. of polyline points.
-      real(kind=dp), intent(in) :: X(MMAX), Y(MMAX), Z(mmax) !< The polyline coordinates.
-      real(kind=dp), intent(in) :: T(MMAX) !< Accumulated segment lengths at all points.
-      real(kind=dp), intent(out) :: XP, YP, ZP !< interpolated point coordinates at distance TP.
-      real(kind=dp), intent(in) :: TP !< Distance from polyline start at which to place point XP,YP.
-      integer, intent(out) :: ja !< Whether distance is within polyline length (1) or not (0).
+      integer, intent(in) :: num_points !< Number of polyline points.
+      real(kind=dp), dimension(num_points), intent(in) :: polyline_x, polyline_y, polyline_z !< The polyline coordinates.
+      real(kind=dp), dimension(num_points), intent(in) :: cumulative_distance !< Accumulated distances along the polyline.
+      real(kind=dp), intent(out) :: interpolated_x, interpolated_y, interpolated_z !< Coordinates at the target distance.
+      real(kind=dp), intent(in) :: target_distance !< Distance from the polyline start at which to interpolate.
+      logical, intent(out) :: inside_polyline !< Whether the target distance is within the polyline length.
 
-      integer :: i
-      real(kind=dp) :: DT, TI
-      I = 0
-10    continue
-      I = I + 1
-      JA = 0
-      if (T(I) <= TP) then
-         if (I <= MMAX - 1) then
-            goto 10
-         end if
+      integer :: point_index
+      real(kind=dp) :: segment_length, segment_fraction
+      point_index = 2
+      do while (point_index < num_points .and. cumulative_distance(point_index) <= target_distance)
+         point_index = point_index + 1
+      end do
+      inside_polyline = target_distance >= cumulative_distance(1) .and. target_distance <= cumulative_distance(num_points)
+      segment_length = cumulative_distance(point_index) - cumulative_distance(point_index - 1)
+      segment_fraction = 0.0_dp
+      if (segment_length /= 0.0_dp) then
+         segment_fraction = (target_distance - cumulative_distance(point_index - 1)) / segment_length
       end if
-      JA = 1
-      DT = T(I) - T(I - 1)
-      TI = 0.0_dp
-      if (DT /= 0.0_dp) then
-         TI = (TP - T(I - 1)) / DT
-      end if
-      XP = (1.0_dp - TI) * X(I - 1) + TI * X(I)
-      YP = (1.0_dp - TI) * Y(I - 1) + TI * Y(I)
-      ZP = (1.0_dp - TI) * Z(I - 1) + TI * Z(I)
+      interpolated_x = (1.0_dp - segment_fraction) * polyline_x(point_index - 1) + segment_fraction * polyline_x(point_index)
+      interpolated_y = (1.0_dp - segment_fraction) * polyline_y(point_index - 1) + segment_fraction * polyline_y(point_index)
+      interpolated_z = (1.0_dp - segment_fraction) * polyline_z(point_index - 1) + segment_fraction * polyline_z(point_index)
       return
    end subroutine interpolateOnPolyline
 end module m_interpolateOnPolyline

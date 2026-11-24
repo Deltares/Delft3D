@@ -238,7 +238,7 @@ contains
       call connectdbn(p_centernode, q_centernode, new_link)
    end subroutine place_2d2d_link
 
-   !$f90tw TESTCODE(TEST, test_getprof_1d, test_getprof_1d__network1d, test_getprof_1d__network1d,
+   !$gtest
    subroutine test_getprof_1d__network1d() bind(C)
       use network_data, only: numl
       use m_flow_geominit, only: flow_geominit
@@ -258,7 +258,9 @@ contains
          rows=1, columns=2, array_size_margin=2 &
          )
       call place_2d2d_link([5.0_dp, 5.0_dp], [15.0_dp, 5.0_dp], new_link=new_link, error_code=error_code)
-      call f90_assert_eq(error_code, 0, "Failed to place 2D2D link"//c_null_char)
+      if (.not. f90_assert_eq(error_code, 0, "Failed to place 2D2D link")) then
+         return
+      end if
       call flow_geominit(0)
 
       call default_channel_flow()
@@ -279,16 +281,15 @@ contains
       ! Surface water width: 2 (Same as rectangular cross section width)
       ! Water cross section area: 2x1 = 2
       ! Wet perimeter: 1+2+1 = 4
-      call f90_assert_near(width, 2.0_dp, 1e-7_dp, "Unexpected width result"//c_null_char)
-      call f90_assert_near(area, 2.0_dp, 1e-7_dp, "Unexpected area result"//c_null_char)
-      call f90_assert_near(perim, 4.0_dp, 1e-7_dp, "Unexpected perim result"//c_null_char)
+      call f90_expect_near(width, 2.0_dp, 1e-7_dp, "Unexpected width result")
+      call f90_expect_near(area, 2.0_dp, 1e-7_dp, "Unexpected area result")
+      call f90_expect_near(perim, 4.0_dp, 1e-7_dp, "Unexpected perim result")
    end subroutine test_getprof_1d__network1d
-   !$f90tw )
 
-   !$f90tw TESTCODE(TEST, test_getprof_1d, test_getprof_1d__network1d__friction, test_getprof_1d__network1d__friction,
+   !$gtest
    subroutine test_getprof_1d__network1d__friction() bind(C)
       use network_data, only: numl
-      use m_flow, only: u1, q1, hu, cfuhi, frcu, frcu_mor, u_to_umain, q1_main
+      use m_flow, only: u1, q1, hu, cfuhi, frcu, frcu_mor, u_to_umain, q1_main, q1_floodplain1, q1_floodplain2
       use m_flowgeom, only: lnx
       use m_flow_geominit, only: flow_geominit
       use m_network, only: initialize_1dadmin, deallocnetwork
@@ -312,7 +313,9 @@ contains
          rows=1, columns=2, array_size_margin=2 &
          )
       call place_2d2d_link([5.0_dp, 5.0_dp], [15.0_dp, 5.0_dp], new_link=new_link, error_code=error_code)
-      call f90_assert_eq(error_code, 0, "Failed to place 2D2D link"//c_null_char)
+      if (.not. f90_assert_eq(error_code, 0, "Failed to place 2D2D link")) then
+         return
+      end if
 
       call flow_geominit(0)
 
@@ -324,6 +327,8 @@ contains
       call realloc(frcu, lnx)
       call realloc(frcu_mor, lnx)
       call realloc(q1_main, lnx)
+      call realloc(q1_floodplain1, lnx)
+      call realloc(q1_floodplain2, lnx)
 
       call default_channel_flow()
       call initialize_1dadmin(network, network%numl, numl)
@@ -344,17 +349,19 @@ contains
       ! Surface water width: 2 (Same as rectangular cross section width)
       ! Water cross section area: 2x1 = 2
       ! Wet perimeter: 1+2+1 = 4
-      call f90_assert_near(width, 2.0_dp, 1e-7_dp, "Unexpected width result"//c_null_char)
-      call f90_assert_near(area, 2.0_dp, 1e-7_dp, "Unexpected area result"//c_null_char)
-      call f90_assert_near(perim, 4.0_dp, 1e-7_dp, "Unexpected perim result"//c_null_char)
+      call f90_expect_near(width, 2.0_dp, 1e-7_dp, "Unexpected width result")
+      call f90_expect_near(area, 2.0_dp, 1e-7_dp, "Unexpected area result")
+      call f90_expect_near(perim, 4.0_dp, 1e-7_dp, "Unexpected perim result")
 
+      if (.not. f90_assert_true(area > 0.0_dp .and. perim > 0.0_dp, "Friction requires positive area and perimeter")) then
+         return
+      end if
       hydrad = area / perim
       chezy = get_chezy(hydrad, 0.013_dp, 1.0_dp, 1.0_dp, R_MANNING)
-      call f90_assert_near(cfuhi(1), ag / (hydrad * chezy * chezy), 1e-7_dp, "Unexpected friction result"//c_null_char)
+      call f90_expect_near(cfuhi(1), ag / (hydrad * chezy * chezy), 1e-7_dp, "Unexpected friction result")
    end subroutine test_getprof_1d__network1d__friction
-   !$f90tw )
 
-   !$f90tw TESTCODE(TEST, test_getprof_1d, test_getprof_1d__network1d__full, test_getprof_1d__network1d__full,
+   !$gtest
    subroutine test_getprof_1d__network1d__full() bind(C)
       use network_data, only: numl
       use m_flow_geominit, only: flow_geominit
@@ -376,7 +383,9 @@ contains
          rows=1, columns=2, array_size_margin=2 &
          )
       call place_2d2d_link([5.0_dp, 5.0_dp], [15.0_dp, 5.0_dp], new_link=new_link, error_code=error_code)
-      call f90_assert_eq(error_code, 0, "Failed to place 2D2D link"//c_null_char)
+      if (.not. f90_assert_eq(error_code, 0, "Failed to place 2D2D link")) then
+         return
+      end if
 
       call flow_geominit(0)
 
@@ -398,13 +407,12 @@ contains
       ! Surface water width is 0 for some reason. Maybe due to Preismann slot?
       ! Water cross section area: 2x1.5 = 3m^2
       ! Wet perimeter: 2*(1.5 + 2) = 7m
-      call f90_assert_near(width, 0.0_dp, 1e-7_dp, "Unexpected width result"//c_null_char)
-      call f90_assert_near(area, 3.0_dp + PREISMANN_SLOT_AREA, 1e-7_dp, "Unexpected area result"//c_null_char)
-      call f90_assert_near(perim, 7.0_dp, 1e-7_dp, "Unexpected perim result"//c_null_char)
+      call f90_expect_near(width, 0.0_dp, 1e-7_dp, "Unexpected width result")
+      call f90_expect_near(area, 3.0_dp + PREISMANN_SLOT_AREA, 1e-7_dp, "Unexpected area result")
+      call f90_expect_near(perim, 7.0_dp, 1e-7_dp, "Unexpected perim result")
    end subroutine test_getprof_1d__network1d__full
-   !$f90tw )
 
-   !$f90tw TESTCODE(TEST, test_getprof_1d, test_getprof_1d__prof1d_without_profile, test_getprof_1d__prof1d_without_profile,
+   !$gtest
    subroutine test_getprof_1d__prof1d_without_profile() bind(C)
       use m_flow_geominit, only: flow_geominit
       use unstruc_channel_flow, only: network
@@ -424,7 +432,9 @@ contains
          rows=1, columns=2, array_size_margin=2 &
          )
       call place_2d2d_link([5.0_dp, 5.0_dp], [15.0_dp, 5.0_dp], new_link=new_link, error_code=error_code)
-      call f90_assert_eq(error_code, 0, "Failed to place 2D2D link"//c_null_char)
+      if (.not. f90_assert_eq(error_code, 0, "Failed to place 2D2D link")) then
+         return
+      end if
 
       ! Initialize flow geometry
       call flow_geominit(0)
@@ -440,13 +450,12 @@ contains
       ! Surface water width: 2 (Same as rectangular cross section width)
       ! Water cross section area: 2x1 = 2
       ! Wet perimeter: 1+2+1 = 4
-      call f90_assert_near(width, 2.0_dp, 1e-7_dp, "Unexpected width result"//c_null_char)
-      call f90_assert_near(area, 2.0_dp, 1e-7_dp, "Unexpected area result"//c_null_char)
-      call f90_assert_near(perim, 4.0_dp, 1e-7_dp, "Unexpected perim result"//c_null_char)
+      call f90_expect_near(width, 2.0_dp, 1e-7_dp, "Unexpected width result")
+      call f90_expect_near(area, 2.0_dp, 1e-7_dp, "Unexpected area result")
+      call f90_expect_near(perim, 4.0_dp, 1e-7_dp, "Unexpected perim result")
    end subroutine test_getprof_1d__prof1d_without_profile
-   !$f90tw )
 
-   !$f90tw TESTCODE(TEST, test_getprof_1d, test_getprof_1d__prof1d_without_profile__friction, test_getprof_1d__prof1d_without_profile__friction,
+   !$gtest
    subroutine test_getprof_1d__prof1d_without_profile__friction() bind(C)
       use m_flow, only: u1, v, cfuhi, frcu, ifrcutp
       use m_flowgeom, only: lnx
@@ -472,7 +481,9 @@ contains
          rows=1, columns=2, array_size_margin=2 &
          )
       call place_2d2d_link([5.0_dp, 5.0_dp], [15.0_dp, 5.0_dp], new_link=new_link, error_code=error_code)
-      call f90_assert_eq(error_code, 0, "Failed to place 2D2D link"//c_null_char)
+      if (.not. f90_assert_eq(error_code, 0, "Failed to place 2D2D link")) then
+         return
+      end if
 
       ! Initialize flow geometry
       call flow_geominit(0)
@@ -495,17 +506,19 @@ contains
       ! Surface water width: 2 (Same as rectangular cross section width)
       ! Water cross section area: 2x1 = 2
       ! Wet perimeter: 1+2+1 = 4
-      call f90_assert_near(width, 2.0_dp, 1e-7_dp, "Unexpected width result"//c_null_char)
-      call f90_assert_near(area, 2.0_dp, 1e-7_dp, "Unexpected area result"//c_null_char)
-      call f90_assert_near(perim, 4.0_dp, 1e-7_dp, "Unexpected perim result"//c_null_char)
+      call f90_expect_near(width, 2.0_dp, 1e-7_dp, "Unexpected width result")
+      call f90_expect_near(area, 2.0_dp, 1e-7_dp, "Unexpected area result")
+      call f90_expect_near(perim, 4.0_dp, 1e-7_dp, "Unexpected perim result")
 
+      if (.not. f90_assert_true(area > 0.0_dp .and. perim > 0.0_dp, "Friction requires positive area and perimeter")) then
+         return
+      end if
       hydrad = area / perim
       chezy = get_chezy(hydrad, 0.013_dp, 1.0_dp, 1.0_dp, R_MANNING)
-      call f90_assert_near(cfuhi(1), ag / (hydrad * chezy * chezy), 1e-7_dp, "Unexpected friction result"//c_null_char)
+      call f90_expect_near(cfuhi(1), ag / (hydrad * chezy * chezy), 1e-7_dp, "Unexpected friction result")
    end subroutine test_getprof_1d__prof1d_without_profile__friction
-   !$f90tw )
 
-   !$f90tw TESTCODE(TEST, test_getprof_1d, test_frozen_1d_profile_velocity, test_frozen_1d_profile_velocity,
+   !$gtest
    subroutine test_frozen_1d_profile_velocity() bind(C)
       use m_flow, only: au, q1, qa, u1
       use m_flowgeom, only: lnx
@@ -551,9 +564,8 @@ contains
       call f90_assert_near(qa(1), 4.0_dp, 1e-12_dp)
       call f90_assert_near(u1(1), 4.0_dp, 1e-12_dp)
    end subroutine test_frozen_1d_profile_velocity
-   !$f90tw )
 
-   !$f90tw TESTCODE(TEST, test_getprof_1d, test_getprof_1d__prof1d_without_profile__full, test_getprof_1d__prof1d_without_profile__full,
+   !$gtest
    subroutine test_getprof_1d__prof1d_without_profile__full() bind(C)
       use m_flow_geominit, only: flow_geominit
       use unstruc_channel_flow, only: network
@@ -574,7 +586,9 @@ contains
          rows=1, columns=2, array_size_margin=2 &
          )
       call place_2d2d_link([5.0_dp, 5.0_dp], [15.0_dp, 5.0_dp], new_link=new_link, error_code=error_code)
-      call f90_assert_eq(error_code, 0, "Failed to place 2D2D link"//c_null_char)
+      if (.not. f90_assert_eq(error_code, 0, "Failed to place 2D2D link")) then
+         return
+      end if
 
       ! Initialize flow geometry
       call flow_geominit(0)
@@ -593,13 +607,12 @@ contains
       ! Surface water width: 2m (Same as rectangular cross section width)
       ! Water cross section area: 2x1.5 = 3m^2
       ! Wet perimeter: 2*(1.5 + 2) = 7m
-      call f90_assert_near(width, 2.0_dp, 1e-7_dp, "Unexpected width result"//c_null_char)
-      call f90_assert_near(area, 3.0_dp, 1e-7_dp, "Unexpected area result"//c_null_char)
-      call f90_assert_near(perim, 7.0_dp, 1e-7_dp, "Unexpected perim result"//c_null_char)
+      call f90_expect_near(width, 2.0_dp, 1e-7_dp, "Unexpected width result")
+      call f90_expect_near(area, 3.0_dp, 1e-7_dp, "Unexpected area result")
+      call f90_expect_near(perim, 7.0_dp, 1e-7_dp, "Unexpected perim result")
    end subroutine test_getprof_1d__prof1d_without_profile__full
-   !$f90tw )
 
-   !$f90tw TESTCODE(TEST, test_getprof_1d, test_getprof_1d__prof1d_with_profile, test_getprof_1d__prof1d_with_profile,
+   !$gtest
    subroutine test_getprof_1d__prof1d_with_profile() bind(C)
       use m_flow_geominit, only: flow_geominit
       use unstruc_channel_flow, only: network
@@ -618,7 +631,9 @@ contains
          rows=1, columns=2, array_size_margin=2 &
          )
       call place_2d2d_link([5.0_dp, 5.0_dp], [15.0_dp, 5.0_dp], new_link=new_link, error_code=error_code)
-      call f90_assert_eq(error_code, 0, "Failed to place 2D2D link"//c_null_char)
+      if (.not. f90_assert_eq(error_code, 0, "Failed to place 2D2D link")) then
+         return
+      end if
 
       call flow_geominit(0)
       call setup_prof1d_rectangular_cross_section_with_profile(width=2.0_dp, height=1.5_dp)
@@ -630,13 +645,12 @@ contains
       ! Surface water width: 2 (Same as rectangular cross section width)
       ! Water cross section area: 2x1 = 2
       ! Wet perimeter: 1+2+1 = 4
-      call f90_assert_near(width, 2.0_dp, 1e-7_dp, "Unexpected width result"//c_null_char)
-      call f90_assert_near(area, 2.0_dp, 1e-7_dp, "Unexpected area result"//c_null_char)
-      call f90_assert_near(perim, 4.0_dp, 1e-7_dp, "Unexpected perim result"//c_null_char)
+      call f90_expect_near(width, 2.0_dp, 1e-7_dp, "Unexpected width result")
+      call f90_expect_near(area, 2.0_dp, 1e-7_dp, "Unexpected area result")
+      call f90_expect_near(perim, 4.0_dp, 1e-7_dp, "Unexpected perim result")
    end subroutine test_getprof_1d__prof1d_with_profile
-   !$f90tw )
 
-   !$f90tw TESTCODE(TEST, test_getprof_1d, test_getprof_1d__prof1d_with_profile__friction, test_getprof_1d__prof1d_with_profile__friction,
+   !$gtest
    subroutine test_getprof_1d__prof1d_with_profile__friction() bind(C)
       use m_flow, only: u1, v, cfuhi
       use m_flowgeom, only: lnx
@@ -661,7 +675,9 @@ contains
          rows=1, columns=2, array_size_margin=2 &
          )
       call place_2d2d_link([5.0_dp, 5.0_dp], [15.0_dp, 5.0_dp], new_link=new_link, error_code=error_code)
-      call f90_assert_eq(error_code, 0, "Failed to place 2D2D link"//c_null_char)
+      if (.not. f90_assert_eq(error_code, 0, "Failed to place 2D2D link")) then
+         return
+      end if
 
       call flow_geominit(0)
       call setup_prof1d_rectangular_cross_section_with_profile( &
@@ -678,17 +694,19 @@ contains
       ! Surface water width: 2 (Same as rectangular cross section width)
       ! Water cross section area: 2x1 = 2
       ! Wet perimeter: 1+2+1 = 4
-      call f90_assert_near(width, 2.0_dp, 1e-7_dp, "Unexpected width result"//c_null_char)
-      call f90_assert_near(area, 2.0_dp, 1e-7_dp, "Unexpected area result"//c_null_char)
-      call f90_assert_near(perim, 4.0_dp, 1e-7_dp, "Unexpected perim result"//c_null_char)
+      call f90_expect_near(width, 2.0_dp, 1e-7_dp, "Unexpected width result")
+      call f90_expect_near(area, 2.0_dp, 1e-7_dp, "Unexpected area result")
+      call f90_expect_near(perim, 4.0_dp, 1e-7_dp, "Unexpected perim result")
 
+      if (.not. f90_assert_true(area > 0.0_dp .and. perim > 0.0_dp, "Friction requires positive area and perimeter")) then
+         return
+      end if
       hydrad = area / perim
       chezy = get_chezy(hydrad, 0.013_dp, 1.0_dp, 1.0_dp, R_MANNING)
-      call f90_assert_near(cfuhi(1), ag / (hydrad * chezy * chezy), 1e-7_dp, "Unexpected friction result"//c_null_char)
+      call f90_expect_near(cfuhi(1), ag / (hydrad * chezy * chezy), 1e-7_dp, "Unexpected friction result")
    end subroutine test_getprof_1d__prof1d_with_profile__friction
-   !$f90tw )
 
-   !$f90tw TESTCODE(TEST, test_getprof_1d, test_getprof_1d__prof1d_with_profile__full, test_getprof_1d__prof1d_with_profile__full,
+   !$gtest
    subroutine test_getprof_1d__prof1d_with_profile__full() bind(C)
       use m_flow_geominit, only: flow_geominit
       use unstruc_channel_flow, only: network
@@ -708,7 +726,9 @@ contains
          rows=1, columns=2, array_size_margin=2 &
          )
       call place_2d2d_link([5.0_dp, 5.0_dp], [15.0_dp, 5.0_dp], new_link=new_link, error_code=error_code)
-      call f90_assert_eq(error_code, 0, "Failed to place 2D2D link"//c_null_char)
+      if (.not. f90_assert_eq(error_code, 0, "Failed to place 2D2D link")) then
+         return
+      end if
 
       call flow_geominit(0)
       call setup_prof1d_rectangular_cross_section_with_profile(width=2.0_dp, height=1.5_dp)
@@ -723,11 +743,9 @@ contains
       ! Surface water width: 2m (Same as rectangular cross section width)
       ! Water cross section area: 2x1.5 = 3m^2
       ! Wet perimeter: 2*(1.5 + 2) = 7m
-      call f90_assert_near(width, 2.0_dp, 1e-7_dp, "Unexpected width result"//c_null_char)
-      call f90_assert_near(area, 3.0_dp, 1e-7_dp, "Unexpected area result"//c_null_char)
-      call f90_assert_near(perim, 7.0_dp, 1e-7_dp, "Unexpected perim result"//c_null_char)
+      call f90_expect_near(width, 2.0_dp, 1e-7_dp, "Unexpected width result")
+      call f90_expect_near(area, 3.0_dp, 1e-7_dp, "Unexpected area result")
+      call f90_expect_near(perim, 7.0_dp, 1e-7_dp, "Unexpected perim result")
    end subroutine test_getprof_1d__prof1d_with_profile__full
-   !$f90tw )
 
 end module m_test_getprof_1d
-

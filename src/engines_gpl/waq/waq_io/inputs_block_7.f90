@@ -204,7 +204,7 @@ contains
         num_constants = constants%no_item
         num_spatial_parameters = parameters%no_item
         num_time_functions = functions%no_item
-        num_spatial_time_fuctions = segfuncs%no_item
+        num_spatial_time_functions = segfuncs%no_item
 
         write (file_unit, 2050) constants%no_item
         write (file_unit, 2060) parameters%no_item

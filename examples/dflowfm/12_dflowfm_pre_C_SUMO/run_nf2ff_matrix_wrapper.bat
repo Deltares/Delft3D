@@ -47,7 +47,8 @@ set "ALL_CASES=i0si2so2 i0si2so1 i1si2so2 i10si2so1 i1si40so1 i0si2so2m i0si2so3
 set "CASES=%ALL_CASES%"
 set "RUN_MODES=precice dimr"
 if defined MATRIX_RUN_MODES set "RUN_MODES=%MATRIX_RUN_MODES%"
-set "REQUIRED_FILES=NF2FF__FlowFM_SubMod001_0.000.xml NF2FF__FlowFM_SubMod001_120.000.xml NF2FF__FlowFM_SubMod001_240.000.xml NF2FF__preC-SUMO_SubMod001_0.000.xml NF2FF__preC-SUMO_SubMod001_120.000.xml NF2FF__preC-SUMO_SubMod001_240.000.xml"
+rem NF2FF filenames use minutes: cover initialization and the six-hour coupling window.
+set "REQUIRED_FILES=NF2FF__FlowFM_SubMod001_0.000.xml NF2FF__FlowFM_SubMod001_120.000.xml NF2FF__FlowFM_SubMod001_240.000.xml NF2FF__FlowFM_SubMod001_360.000.xml NF2FF__preC-SUMO_SubMod001_0.000.xml NF2FF__preC-SUMO_SubMod001_120.000.xml NF2FF__preC-SUMO_SubMod001_240.000.xml"
 set "WRITE_AGGREGATES=1"
 set "ALLOW_DELETE_OLD=0"
 set "RAW_ARGS=%*"
@@ -341,7 +342,6 @@ for %%F in (%REQUIRED_FILES%) do (
     if errorlevel 1 exit /b 1
 )
 
-if exist "%NFROOT%\NF2FF__FLowFM_SubMod001_240.000.xml" del /f /q "%NFROOT%\NF2FF__FLowFM_SubMod001_240.000.xml"
 exit /b 0
 
 :cleanup_processes

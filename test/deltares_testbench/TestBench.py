@@ -11,7 +11,9 @@ from src.utils.logging.logger import Logger
 from src.utils.test_bench_parameter_parser import TestBenchParameterParser
 from src.utils.xml_config_parser import XmlConfigParser
 
-if __name__ == "__main__":
+
+def main() -> None:
+    """Run the TestBench; entry point for both `python TestBench.py` and the `testbench` command."""
     logging.getLogger("matplotlib").setLevel(level=logging.CRITICAL)
 
     command_line_settings = TestBenchParameterParser.parse_arguments_to_settings()
@@ -25,3 +27,7 @@ if __name__ == "__main__":
 
     test_bench = TestBench(run_settings, logger)
     test_bench.run()
+
+
+if __name__ == "__main__":
+    main()

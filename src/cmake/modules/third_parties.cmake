@@ -9,9 +9,6 @@ set(kdtree_module ${third_party_open_path}/kdtree2/${cmake_directory})
 # md5
 set(md5_module ${third_party_open_path}/md5/${cmake_directory})
 
-# metis
-set(metis_module ${third_party_open_path}/metis/${cmake_directory})
-
 # libsigwatch
 set(libsigwatch_module ${third_party_open_path}/libsigwatch/${cmake_directory})
 
@@ -48,6 +45,3 @@ endif(WIN32)
 
 # precicef (preCICE fortran bindings)
 set(precicef_module "${third_party_open_path}/precicef")
-
-# pugixml
-set(pugixml_module ${third_party_open_path}/pugixml)
