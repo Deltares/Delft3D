@@ -497,7 +497,7 @@ contains
       type(tree_data), pointer :: key_value_ptr
       character(len=300) :: error_message
       integer :: operand, ibndu, facdis
-      logical :: is_successful
+      logical :: is_successful, position_success
       integer :: method, num_items_in_block, j
 
       ! Initialization
@@ -623,14 +623,17 @@ contains
                   if (quantity == 'dischargebnd') then
                      facdis = 1
                      if (index(trim(forcing_file)//'|', '_his.nc|') > 0 ) then
-                        call det_net2pli_position(location_file,facdis)
+                        call det_net2pli_position(location_file, facdis, position_success)
+                        is_successful = is_successful .and. position_success
                      end if
-                     ! fill kbndu(8,:) with multiplification discharge boundaries
-                     do ibndu = 1, size(kbndu,2)
-                        if (kbndu(7,ibndu) == ib) then
-                            kbndu(8,ibndu) = facdis
-                        end if
-                     end do
+                     if (is_successful) then
+                        ! fill kbndu(8,:) with multiplification discharge boundaries
+                        do ibndu = 1, size(kbndu,2)
+                           if (kbndu(7,ibndu) == ib) then
+                               kbndu(8,ibndu) = facdis
+                           end if
+                        end do
+                     end if
                  end if
                end if
                res = res .and. is_successful ! Remember any previous errors.
@@ -2340,7 +2343,7 @@ contains
    end function adduniformtimerelation_objects
 
    
-   subroutine det_net2pli_position(pliFile,position)
+   subroutine det_net2pli_position(pliFile, position, success)
      ! Fuction: determines position of network relative to a boundary pli
      !          position =  1: network on the right/on top of a pli
      !          position = -1: network on the left /below  of a pli
@@ -2351,22 +2354,34 @@ contains
      use m_GlobalParameters, only: INDTP_2D
      use m_find_flownode,    only: find_nearest_flownodes
      use m_flowgeom,         only: xz, yz
+     use messagehandling,    only: idlen, mess, LEVEL_ERROR
+     use m_partitioninfo,    only: jampi, reduce_intN_sum
      implicit none
   
       character(len=*), intent(in) :: pliFile
       integer         , intent(out):: position
+      logical         , intent(out):: success
       
       integer                        :: mpli, i_first, i_last, jakdtree ! i_bndpnt
       real(kind=dp)                  :: xpli_centre, ypli_centre, xbnd_centre, ybnd_centre, vx,vy, wx, wy,cross ! dist, distmin,    
 
-      character(len=5), dimension(1) :: tmpname
+      character(len=idlen), dimension(1) :: tmpname
       integer         , dimension(1) :: kbnd_centre
+      integer         , dimension(2) :: local_result, global_result
       real(kind=dp)   , dimension(1) :: x_tmp, y_tmp   
       
+      position = 0
+      success = .false.
+
       ! Read the boundary pli
       call oldfil(mpli, pliFile)
       call reapol(mpli, 0)
       call doclose(mpli)
+
+      if (npl < 2) then
+         call mess(LEVEL_ERROR, 'Boundary polyline '''//trim(pliFile)//''' must have at least two points.')
+         return
+      end if
       
       ! determine centre point of boundary pli 
       i_first = floor(npl/2.0_dp)
@@ -2381,27 +2396,41 @@ contains
       y_tmp(1)        = ypli_centre
       kbnd_centre(1)  = 0
       jakdtree        = 0
-      call find_nearest_flownodes(1, x_tmp, y_tmp, tmpname(1),kbnd_centre(1), jakdtree, 1, INDTP_2D)
-      ! Only look for internal 2D points, Boundary pli might be within network
-      xbnd_centre = xz(kbnd_centre(1))
-      ybnd_centre = yz(kbnd_centre(1))
-      
-      ! Determine cross product of pli and centre point bnd
-      ! orientation vector pli
-      vx = xpl(i_first + 1) - xpl(i_first)
-      vy = ypl(i_first + 1) - ypl(i_first)
-      ! orientation vector from centre bnd point to firts pli point
-      wx = xbnd_centre - xpl(i_first)
-      wy = ybnd_centre - ypl(i_first)
-      ! cross product
-      cross = (vx*wy) - (vy*wx)
-      
-      ! cross < 0 ==> Model right of pli or obove pli
-      if (cross < 0.0_dp) then
-         position = 1
-      else if (cross > 0.0_dp) then 
-         position = -1
+      call find_nearest_flownodes(1, x_tmp, y_tmp, tmpname, kbnd_centre, jakdtree, 1, INDTP_2D)
+      local_result = 0
+      if (kbnd_centre(1) > 0) then
+         xbnd_centre = xz(kbnd_centre(1))
+         ybnd_centre = yz(kbnd_centre(1))
+
+         vx = xpl(i_first + 1) - xpl(i_first)
+         vy = ypl(i_first + 1) - ypl(i_first)
+         wx = xbnd_centre - xpl(i_first)
+         wy = ybnd_centre - ypl(i_first)
+         cross = (vx*wy) - (vy*wx)
+
+         local_result(2) = 1
+         if (cross < 0.0_dp) then
+            local_result(1) = 1
+         else if (cross > 0.0_dp) then
+            local_result(1) = -1
+         end if
       end if
+
+      ! The node lookup assigns the point to one partition; share its result.
+      global_result = local_result
+      if (jampi == 1) then
+         call reduce_intN_sum(2, local_result, global_result)
+      end if
+      if (global_result(2) == 0) then
+         call mess(LEVEL_ERROR, 'Cannot determine the network position for boundary polyline '''//trim(pliFile)//''': no 2D flow cell found.')
+         return
+      else if (global_result(1) == 0) then
+         call mess(LEVEL_ERROR, 'Cannot determine the network position for boundary polyline '''//trim(pliFile)//''': the flow cell is collinear with the polyline.')
+         return
+      else
+         position = global_result(1)
+      end if
+      success = .true.
 
    end subroutine det_net2pli_position
    

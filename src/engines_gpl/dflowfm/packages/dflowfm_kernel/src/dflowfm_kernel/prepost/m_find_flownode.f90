@@ -109,10 +109,9 @@ contains
                      end if
                   else if (k1b /= 0) then
                      k = k1b
-                  ! For nesting of discharge boundaries; find nearest internal point!  
-                  else if  (iLocTp == INDTP_2D) then
-                     call find_nearest_2D_internal_bruteforce(xx(i), yy(i), k)
                   end if
+               else if (iLocTp == INDTP_2D) then
+                  call find_nearest_2D_internal_bruteforce(xx(i), yy(i), k)
                end if
             end if   
             
@@ -338,7 +337,7 @@ contains
    !! Brute-force approach: simply check all flownodes in the entire grid
    subroutine find_nearest_2D_internal_bruteforce(x, y, node_nr_nearest)
       use stdlib_kinds, only: dp
-      use m_flowgeom, only: xz, yz,ndxi
+      use m_flowgeom, only: xz, yz, ndx2d
       use geometry_module, only: dbdistance
       use m_sferic, only: jsferic, jasfer3D
       use m_missing, only: dmiss
@@ -356,7 +355,7 @@ contains
 
       distmin = huge(1.0_dp)
       
-      do i_node = 1, ndxi
+      do i_node = 1, ndx2d
           dist = dbdistance(x, y, xz(i_node), yz(i_node), jsferic, jasfer3D, dmiss)
           if (dist < distmin) then
               distmin = dist
