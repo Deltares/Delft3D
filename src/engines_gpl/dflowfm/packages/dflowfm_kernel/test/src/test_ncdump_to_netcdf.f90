@@ -15,14 +15,12 @@ contains
       use m_file_helpers, only: create_netcdf_from_cdl
       use netcdf, only: nf90_open, nf90_nowrite, nf90_inq_varid, nf90_get_var, nf90_close, nf90_noerr, nf90_strerror
 
-      character(len=*), parameter :: cdl_file = "bubblescreen_swan_fixture.cdl"
       character(len=*), parameter :: nc_file = "bubblescreen_swan_fixture.nc"
       character(len=512) :: cmdmsg
       integer :: cmdstat, exitstat, ncid, varid, status, close_status
       real(kind=dp), dimension(1, 1, 2) :: wave_height
 
       call create_netcdf_from_cdl( &
-         cdl_file, &
          nc_file, &
          [character(len=72) :: &
             "netcdf swan_fixture {", &
