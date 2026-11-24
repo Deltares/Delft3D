@@ -98,7 +98,9 @@ The C-SUMO and preCICE headers, sources and tests are grouped in corresponding
   XML in memory, and writes FF2NF files using the shared file I/O helper.
 - [file_io.hpp](../include/utils/file_io.hpp) reads text and writes
   already-serialized content. Writing creates parent directories and refuses to
-  overwrite existing files. [csumo/file_paths.hpp](../include/csumo/file_paths.hpp)
+  overwrite existing files. The existence check and creation are not atomic;
+  concurrent writers to the same path are not supported.
+  [csumo/file_paths.hpp](../include/csumo/file_paths.hpp)
   provides the exchange filename policy without accessing the filesystem.
 - [xml_parsing.hpp](../include/utils/xml_parsing.hpp) provides shared XML parsing helpers;
   C-SUMO-specific parsing belongs to [csumo/xml.hpp](../include/csumo/xml.hpp).

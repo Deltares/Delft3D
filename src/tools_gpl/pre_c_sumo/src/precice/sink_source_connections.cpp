@@ -49,9 +49,9 @@ namespace pre_c_sumo::precice
         data_.discharge_vector.clear();
         data_.momentum_magnitude_weighted_vector.clear();
         data_.momentum_direction_vector.clear();
-        for (int constituent_index = 0; constituent_index < max_number_of_constituents; constituent_index++)
+        for (auto& constituents : data_.constituents_vectors)
         {
-            data_.constituents_vectors[constituent_index].clear();
+            constituents.clear();
         }
     }
 

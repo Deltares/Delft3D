@@ -30,21 +30,21 @@ namespace pre_c_sumo::precice
     /// Interleaved coordinates and per-quantity buffers exchanged with preCICE.
     struct Mesh
     {
-        std::string name;
-        std::vector<double> coordinates;
-        std::vector<int> vertex_ids;
-        std::vector<DiffuserMapping> forward_map;
+        std::string name{};
+        std::vector<double> coordinates{};
+        std::vector<int> vertex_ids{};
+        std::vector<DiffuserMapping> forward_map{};
         std::size_t number_of_nodes{};
         std::size_t number_of_zcoordinates{};
-        std::unordered_map<std::string_view, std::vector<double>> quantities;
+        std::unordered_map<std::string_view, std::vector<double>> quantities{};
     };
 
     struct ZSpecification
     {
-        bool is_2d;
-        double z_min;
-        double z_step;
-        double z_max;
+        bool is_2d{};
+        double z_min{};
+        double z_step{};
+        double z_max{};
 
         std::size_t numberOfDimensions() const;
         std::size_t numberOfZCoordinates() const;
@@ -54,8 +54,8 @@ namespace pre_c_sumo::precice
     /// Registration buffers for the preCICE sink/source mesh.
     struct SinkSourceConnectionsMesh
     {
-        std::vector<double> coordinates;
-        std::vector<int> precice_ids;
+        std::vector<double> coordinates{};
+        std::vector<int> precice_ids{};
         void setVertexCount(std::size_t vertex_count);
     };
 } // namespace pre_c_sumo::precice

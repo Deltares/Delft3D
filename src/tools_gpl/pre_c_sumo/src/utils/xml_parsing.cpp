@@ -13,7 +13,6 @@
 #include <string>
 #include <string_view>
 #include <system_error>
-#include <utility>
 #include <vector>
 
 #include "utils/io_errors.hpp"
@@ -27,9 +26,10 @@ namespace pre_c_sumo::utils::xml_parsing
         const pugi::xml_parse_result parse_result = document.load_buffer(xml.data(), xml.size());
         if (!parse_result)
         {
-            return std::unexpected(io_errors::ParseError{std::format("Failed to parse XML: {}", parse_result.description())});
+            return std::unexpected(
+                io_errors::ParseError{std::format("Failed to parse XML: {}", parse_result.description())});
         }
-        return std::move(document);
+        return document;
     }
 
     std::expected<pugi::xml_node, io_errors::ParseError> validateRoot(
@@ -49,14 +49,14 @@ namespace pre_c_sumo::utils::xml_parsing
             expected_names, [&root](const std::string_view name) { return boost::iequals(root.name(), name); });
         if (!valid_root)
         {
-            return std::unexpected(
-                io_errors::ParseError{std::format("Root element must be <{}>, got: <{}>", *expected_names.begin(), root.name())});
+            return std::unexpected(io_errors::ParseError{
+                std::format("Root element must be <{}>, got: <{}>", *expected_names.begin(), root.name())});
         }
         return root;
     }
 
     std::expected<std::vector<double>, io_errors::ParseError> parseDoubleVector(const std::string_view text,
-                                                                     const std::string_view element_name)
+                                                                                const std::string_view element_name)
     {
         std::vector<std::string> space_separated_tokens;
         boost::algorithm::split(space_separated_tokens, text, boost::algorithm::is_space(),
@@ -91,7 +91,8 @@ namespace pre_c_sumo::utils::xml_parsing
         return expected_doubles | std::ranges::views::transform(monadic::unwrap) | std::ranges::to<std::vector>();
     }
 
-    std::expected<double, io_errors::ParseError> parseDouble(const std::string_view text, const std::string_view element_name)
+    std::expected<double, io_errors::ParseError> parseDouble(const std::string_view text,
+                                                             const std::string_view element_name)
     {
         ASSIGN_OR_RETURN(const auto values, parseDoubleVector(text, element_name));
         if (values.size() != 1)
@@ -107,13 +108,10 @@ namespace pre_c_sumo::utils::xml_parsing
         return parent.find_child([name](const pugi::xml_node child) { return boost::iequals(child.name(), name); });
     }
 
-    std::string_view nodeText(const pugi::xml_node node)
-    {
-        return node.child_value();
-    }
+    std::string_view nodeText(const pugi::xml_node node) { return node.child_value(); }
 
     std::expected<std::string, io_errors::ParseError> requiredChildText(const pugi::xml_node parent,
-                                                             const std::string_view child_name)
+                                                                        const std::string_view child_name)
     {
         const pugi::xml_node child = findChild(parent, child_name);
         if (!child)
@@ -129,7 +127,7 @@ namespace pre_c_sumo::utils::xml_parsing
     }
 
     std::expected<double, io_errors::ParseError> requiredChildDouble(const pugi::xml_node parent,
-                                                          const std::string_view child_name)
+                                                                     const std::string_view child_name)
     {
         ASSIGN_OR_RETURN(const auto text, requiredChildText(parent, child_name));
         return parseDouble(text, child_name);

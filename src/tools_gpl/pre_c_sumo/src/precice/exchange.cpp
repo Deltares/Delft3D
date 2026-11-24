@@ -4,7 +4,6 @@
 #include <expected>
 #include <format>
 #include <precice/precice.hpp>
-#include <ranges>
 #include <string_view>
 #include <vector>
 
@@ -75,9 +74,9 @@ namespace pre_c_sumo::precice
         write_or_zero("sources_sinks_discharge", data.discharge_vector);
         write_or_zero("sources_momentum_magnitude_weighted", data.momentum_magnitude_weighted_vector);
         write_or_zero("sources_momentum_direction", data.momentum_direction_vector);
-        for (const auto& [index, id] : constituent_ids | std::views::enumerate)
+        for (std::size_t index = 0; index < constituent_ids.size(); ++index)
         {
-            write_or_zero(id, data.constituents_vectors[index]);
+            write_or_zero(constituent_ids[index], data.constituents_vectors[index]);
         }
 
         // After the write, we can clear the list.

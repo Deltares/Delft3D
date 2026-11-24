@@ -33,26 +33,26 @@ namespace pre_c_sumo::c_sumo
 
     struct DiffuserSettings
     {
-        std::optional<std::string> id;
-        std::optional<std::string> sub_grid_model;
-        std::optional<std::string> far_field_model;
-        Point2D position;
-        std::vector<Point2D> ambient_positions;
-        std::optional<Point2D> intake;
-        Discharge discharge;
-        double nozzle_diameter{}; ///< Nozzle diameter [m].
+        std::optional<std::string> id{};
+        std::optional<std::string> sub_grid_model{};
+        std::optional<std::string> far_field_model{};
+        Point2D position{};
+        std::vector<Point2D> ambient_positions{};
+        std::optional<Point2D> intake{};
+        Discharge discharge{};
+        double nozzle_diameter{};  ///< Nozzle diameter [m].
         double nozzle_elevation{}; ///< Height above the bed [m].
-        double vertical_angle{}; ///< Discharge angle [degrees].
+        double vertical_angle{};   ///< Discharge angle [degrees].
         double horizontal_angle{}; ///< Discharge angle, 0=east, 90=north [degrees].
-        std::filesystem::path ff2nf_dir;
-        std::filesystem::path ff_run_dir;
-        std::string settings_xml; ///< Serialized settings passed through to FF2NF.
+        std::filesystem::path ff2nf_dir{};
+        std::filesystem::path ff_run_dir{};
+        std::string settings_xml{}; ///< Serialized settings passed through to FF2NF.
     };
 
     struct Settings
     {
-        std::string file_version;
-        std::vector<DiffuserSettings> diffusers;
+        std::string file_version{};
+        std::vector<DiffuserSettings> diffusers{};
     };
 
     struct FarFieldLayer
@@ -60,32 +60,32 @@ namespace pre_c_sumo::c_sumo
         double z_coordinate{};
         double x_velocity{}; ///< Horizontal velocity [m/s].
         double y_velocity{}; ///< Horizontal velocity [m/s].
-        double density{}; ///< Density [kg/m3].
-        std::vector<double> constituents;
+        double density{};    ///< Density [kg/m3].
+        std::vector<double> constituents{};
     };
 
     struct FarFieldPoint2D
     {
-        Point2D position;
+        Point2D position{};
         double water_depth{}; ///< Total water depth [m].
-        std::vector<FarFieldLayer> layers;
+        std::vector<FarFieldLayer> layers{};
     };
 
     /// Complete FF2NF content, including the owned settings XML to pass through.
     struct FF2NFConfig
     {
-        std::string ff2nf_filename;
-        std::string wait_for_file;
-        std::string ff_run_directory;
-        std::string run_id;
-        std::string unique_id;
+        std::string ff2nf_filename{};
+        std::string wait_for_file{};
+        std::string ff_run_directory{};
+        std::string run_id{};
+        std::string unique_id{};
         int subgrid_model_nr{};
         double current_time_seconds{};
-        std::vector<std::string> constituent_names;
-        FarFieldPoint2D diffuser;
-        std::optional<FarFieldPoint2D> intake;
-        std::vector<FarFieldPoint2D> ambient_points;
-        std::string settings_xml;
+        std::vector<std::string> constituent_names{};
+        FarFieldPoint2D diffuser{};
+        std::optional<FarFieldPoint2D> intake{};
+        std::vector<FarFieldPoint2D> ambient_points{};
+        std::string settings_xml{};
     };
 
     struct SinkOrSourceData
