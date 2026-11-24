@@ -71,14 +71,23 @@ contains
       use m_waves
       use m_subsidence, only: jasubsupl
       use m_fm_bott3d, only: fm_bott3d
-      use m_fm_erosed, only: ti_sedtrans
+      use m_fm_erosed, only: bedupd, ti_sedtrans
       use m_curvature, only: get_curvature
       use m_xbeach_netcdf, only: xbeach_mombalance
       use mass_balance_areas_routines, only: comp_bedload_fluxmba, comp_fixedbed_fluxmba, comp_bedflowmba
       use m_mass_balance_area_data, only: jamba
       use m_set_kbot_ktop
+      use m_set_bobs, only: setbobs, setbobs_after_morphology
       use m_fm_erosed_sub, only: fm_erosed
       use m_source_sink, only: source_sinks
+
+      logical :: morphology_active, update_morphology_geometry
+
+      morphology_active = jased > 0 .and. stm_included
+      update_morphology_geometry = .false.
+      if (morphology_active) then
+         update_morphology_geometry = bedupd
+      end if
 
       numnodneg = 0
       if (wrwaqon) then
@@ -110,7 +119,7 @@ contains
       hs = s1 - bl
       hs = max(hs, 0.0_dp)
 
-      if (jased > 0 .and. stm_included) then
+      if (morphology_active) then
          if (time1 >= tstart_user + ti_sedtrans * tfac) then
             if (jatimer == 1) then
                call starttimer(IEROSED)
@@ -151,10 +160,10 @@ contains
          call stoptimer(ITRANSPORT)
       end if
 
-      if (jamba > 0 .and. ((jased > 0 .and. stm_included) .or. jasubsupl > 0)) then
+      if (jamba > 0 .and. (update_morphology_geometry .or. jasubsupl > 0)) then
          call comp_bedflowmba(before_update=.true.)
       end if
-      if (jased > 0 .and. stm_included) then
+      if (morphology_active) then
          if (jamba > 0) then
             call comp_fixedbed_fluxmba()
          end if
@@ -163,43 +172,35 @@ contains
          call comp_bedload_fluxmba()
       end if
 
+      if (update_morphology_geometry) then
+         ! Complete the morphology volume change before saving the subsidence volumes.
+         call setbobs_after_morphology()
+         call update_bed_volumes()
+      end if
       if (jasubsupl > 0) then
-         if (jased > 0 .and. stm_included) then
-            ! Complete the morphology volume change before saving the subsidence volumes.
-            call update_bed_geometry(adjust_water_level=.false.)
-         end if
          call apply_subsupl()
+         call setbobs()
+         call subsupl_update_s1()
+         call update_bed_volumes()
+         call subsupl_update_constituents()
       end if
 
-      if ((jased > 0 .and. stm_included) .or. (jasubsupl > 0)) then
-         call update_bed_geometry(adjust_water_level=jasubsupl > 0)
-         if (jasubsupl > 0) then
-            call subsupl_update_constituents()
-         end if
-         if (jamba > 0) then
-            call comp_bedflowmba(before_update=.false.)
-         end if
+      if (jamba > 0 .and. (update_morphology_geometry .or. jasubsupl > 0)) then
+         call comp_bedflowmba(before_update=.false.)
       end if
 
    end subroutine step_reduce_transport_morpho
 
    !> Rebuild cell volumes after bed movement, including all vertical layers.
-   subroutine update_bed_geometry(adjust_water_level)
-      use m_set_bobs, only: setbobs
+   subroutine update_bed_volumes()
       use m_volsur, only: volsur
       use m_set_kbot_ktop, only: set_kbot_ktop
       use m_flow, only: kmx
 
-      logical, intent(in) :: adjust_water_level !< Apply the configured subsidence water-level adjustment.
-
-      call setbobs()
-      if (adjust_water_level) then
-         call subsupl_update_s1()
-      end if
       call volsur()
       if (kmx > 0) then
          call set_kbot_ktop(jazws0=0)
       end if
-   end subroutine update_bed_geometry
+   end subroutine update_bed_volumes
 
 end module m_step_reduce_transport_morpho

@@ -7332,6 +7332,24 @@
       </file>
     </checks>
   </testCase>
+  <testCase name="e02_f037_c92_fixed_bed_link_levels" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f037_mor1d_tabulated_crosssections/c92_fixed_bed_link_levels</path>
+    <checks>
+      <file name="output/reach_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh1d_hu" toleranceAbsolute="1e-6"/>
+          <parameter name="mesh1d_q1" toleranceAbsolute="1e-5"/>
+          <parameter name="mesh1d_s1" toleranceAbsolute="1e-6"/>
+          <parameter name="mesh1d_mor_bl" toleranceAbsolute="1e-8"/>
+        </parameters>
+      </file>
+      <file name="output/reach_mass_balances.nc" type="netCDF">
+        <parameters>
+          <parameter name="water_balance_error" toleranceAbsolute="1e-8"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
   <testCase name="e02_f040_c01_uniform_ibed_1" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f040_subsidence/c01_uniform_ibed_1</path>
 
