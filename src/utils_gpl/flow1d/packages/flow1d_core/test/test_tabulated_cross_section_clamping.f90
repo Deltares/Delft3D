@@ -50,7 +50,7 @@ contains
 
       crossDef%crossType = CS_TABULATED
       crossDef%levelsCount = 3
-      crossDef%plains = [5.0_dp, 6.0_dp, 0.0_dp]
+      crossDef%plains = [5.0_dp, 6.0_dp, -1.0_dp]
       crossDef%plainsLocation = [2, 0, 3]
 
       allocate (crossDef%height(3), crossDef%flowWidth(3), crossDef%totalWidth(3))
