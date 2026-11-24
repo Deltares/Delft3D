@@ -77,7 +77,7 @@ contains
       use mass_balance_areas_routines, only: comp_bedload_fluxmba, comp_fixedbed_fluxmba, comp_bedflowmba
       use m_mass_balance_area_data, only: jamba
       use m_set_kbot_ktop
-      use m_set_bobs, only: setbobs, setbobs_after_morphology
+      use m_set_bobs, only: setbobs_after_morphology, setbobs_after_subsupl
       use m_fm_erosed_sub, only: fm_erosed
       use m_source_sink, only: source_sinks
 
@@ -179,7 +179,7 @@ contains
       end if
       if (jasubsupl > 0) then
          call apply_subsupl()
-         call setbobs()
+         call setbobs_after_subsupl()
          call subsupl_update_s1()
          call update_bed_volumes()
          call subsupl_update_constituents()

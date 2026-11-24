@@ -43,13 +43,16 @@ contains
 
    subroutine apply_subsupl()
       use m_flowtimes, only: dts, dt_user
-      use m_subsidence, only: sdu_blp, subsupl, subsupl_tp, sdu_volp
+      use precision, only: dp
+      use m_subsidence, only: sdu_blp, subsupl, subsupl_tp, sdu_volp, sdu_1d_offset
       use m_alloc, only: realloc
       use m_flow, only: vol1
       use m_transport, only: numconst
-      use m_flowparameters, only: ibedlevtyp
-      use m_flowgeom, only: lnx, ndx, bl, blu
-      use network_data, only: numk, zk
+      use m_flowparameters, only: ibedlevtyp, BEDLEV_TYPE_WATERLEVEL
+      use m_flowgeom, only: lnx, ndx, ndxi, ndx2d, lnxi, kcu, ln, bl, blu
+      use network_data, only: numk, zk, LINK_1D_BOUNDARY
+      use unstruc_channel_flow, only: network
+      use m_VolumeTables, only: vltb
 
       implicit none
 
@@ -81,10 +84,26 @@ contains
       !   iprimpos = 3 ; mx = numk
       !end select
       select case (ibedlevtyp)
-      case (1)
+      case (BEDLEV_TYPE_WATERLEVEL)
          do k = 1, ndx
             bl(k) = bl(k) + (subsupl(k) - subsupl_tp(k)) / dt_user * dts
          end do
+         if (network%loaded .and. ndxi > ndx2d) then
+            if (.not. allocated(sdu_1d_offset)) then
+               allocate (sdu_1d_offset(ndx), source=0.0_dp)
+            end if
+            ! A boundary ghost follows the displacement of the adjacent 1D cell.
+            do L = lnxi + 1, lnx
+               if (kcu(L) == LINK_1D_BOUNDARY) then
+                  bl(ln(1, L)) = sdu_blp(ln(1, L)) + (bl(ln(2, L)) - sdu_blp(ln(2, L)))
+               end if
+            end do
+            sdu_1d_offset(ndx2d + 1:ndxi) = sdu_1d_offset(ndx2d + 1:ndxi) + &
+                                            (bl(ndx2d + 1:ndxi) - sdu_blp(ndx2d + 1:ndxi))
+            if (allocated(vltb)) then
+               vltb%bedlevel = vltb%bedlevel + (bl(ndx2d + 1:ndx) - sdu_blp(ndx2d + 1:ndx))
+            end if
+         end if
       case (2)
          do L = 1, lnx
             blu(L) = blu(L) + (subsupl(L) - subsupl_tp(L)) / dt_user * dts

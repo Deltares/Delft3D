@@ -67,6 +67,9 @@ module unstruc_netcdf
 
    implicit none(type, external)
 
+   logical, private :: restored_1d_profiles = .false.
+   private :: restore_1d_restart_profiles, num_saved_1d_profiles
+
    private :: nerr_, err_firsttime_, err_firstline_, &
               t_unc_netelem_ids, unc_def_net_elem, unc_write_net_elem, &
               unc_def_idomain, unc_def_iglobal, fill_netlink_geometry, &
@@ -109,6 +112,7 @@ contains
       unc_nounlimited = 0 !< NetCDF output with time dimension set to full length of simulation, avoids "unlimited dimension" overhead. Often requires md_ncformat=4/unc_cmode=NF90_NETCDF4.
       unc_noforcedflush = 0 !< Do not force NetCDF file flushing every output timestep (map-like files).
       unc_uuidgen = 1
+      restored_1d_profiles = .false.
    end subroutine init_unstruc_netcdf
 
 !> Sets the default NetCDF cmode flag values for all D-Flow FM's created files.
@@ -1383,6 +1387,7 @@ contains
 !! The netnode and -links have been written already.
    subroutine unc_write_rst_filepointer(irstfile, tim)
       use precision, only: dp
+      use m_subsidence, only: sdu_1d_offset
       use m_flow, only: jarstbnd, ndxbnd_own, kmx, threttim, jasal, nbnds, temperature_model, TEMPERATURE_MODEL_NONE, &
                         bndsf, numtracers, nbndtr, dmiss, corioadamsbashfordfac, iturbulencemodel, ncdamsg, ifixedweirscheme, his_write_settings, map_write_settings, &
                         jawave, jasecflow, intmiss, s1, s0, no_waves, flow_without_waves, jawaveswartdelwaq, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU, &
@@ -1463,7 +1468,7 @@ contains
          id_unorma, id_vicwwu, id_tureps1, id_turkin1, id_qw, id_qa, id_squ, id_sqi, &
          id_squbnd, id_sqibnd, &
          id_weirdte, &
-         id_jmax, id_flowelemcrsz, id_ncrs, id_morft, id_morCrsName, id_strlendim, &
+         id_jmax, id_flowelemcrsz, id_flowelemcrsn, id_ncrs, id_morft, id_morCrsName, id_strlendim, &
          id_culvert_openh, id_longculvert_valveopen, &
          id_genstru_crestl, id_genstru_edgel, id_genstru_gateh, id_genstru_openw, id_genstru_fu, id_genstru_ru, id_genstru_au, id_genstru_crestw, &
          id_genstru_area, id_genstru_linkw, id_genstru_state, id_genstru_sOnCrest, &
@@ -1477,6 +1482,7 @@ contains
          id_ucxqbnd, id_ucyqbnd, &
          id_fvcoro
 
+      integer :: id_ground_offset
       integer, allocatable, save :: id_tr1(:), id_rwqb(:), id_bndtradim(:), id_ttrabnd(:), id_ztrabnd(:)
       integer, allocatable, save :: id_sf1(:), id_bndsedfracdim(:), id_tsedfracbnd(:), id_zsedfracbnd(:)
       integer, allocatable, save :: id_sf1_bnd(:)
@@ -1677,6 +1683,11 @@ contains
       ierr = nf90_put_att(irstfile, id_bl, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
       ierr = nf90_put_att(irstfile, id_bl, 'long_name', 'bed level at flow element circumcenter')
       ierr = nf90_put_att(irstfile, id_bl, 'units', 'm')
+      if (allocated(sdu_1d_offset)) then
+         ierr = nf90_def_var(irstfile, 'subsupl_1d_offset', nf90_double, [id_flowelemdim, id_timedim], id_ground_offset)
+         call check_error(ierr, 'Defining the 1D ground displacement in the restart file')
+         ierr = nf90_put_att(irstfile, id_ground_offset, 'units', 'm')
+      end if
 
       ! Definition of 3D data
       if (kmx > 0) then
@@ -2084,14 +2095,8 @@ contains
          ierr = nf90_put_att(irstfile, id_morbl, 'units', 'days')
          !
          if (ndx1d > 0 .and. stm_included) then
-            if (stmpar%morpar%bedupd) then
-               nCrs = 0
-               do i = 1, size(network%crs%cross)
-                  if (network%crs%cross(i)%crossindx == 0) then
-                     exit
-                  end if
-                  nCrs = nCrs + 1
-               end do
+            if (stmpar%morpar%bedupd .or. restored_1d_profiles) then
+               nCrs = num_saved_1d_profiles()
                pCSs => network%CSDefinitions%CS
                jmax = 0
                do i = 1, size(pCSs)
@@ -2106,6 +2111,9 @@ contains
                ierr = nf90_def_var(irstfile, trim(mesh1dname)//'_mor_crs_z', nf90_double, [id_jmax, id_ncrs, id_timedim], id_flowelemcrsz)
                ierr = nf90_put_att(irstfile, id_flowelemcrsz, 'long_name', 'cross-section points level')
                ierr = nf90_put_att(irstfile, id_flowelemcrsz, 'unit', 'm')
+               ierr = nf90_def_var(irstfile, trim(mesh1dname)//'_mor_crs_n', nf90_double, &
+                                   [id_jmax, id_ncrs, id_timedim], id_flowelemcrsn)
+               ierr = nf90_put_att(irstfile, id_flowelemcrsn, 'unit', 'm')
                ierr = nf90_def_var(irstfile, trim(mesh1dname)//'_mor_crs_name', nf90_char, [id_strlendim, id_nCrs], id_morCrsName)
                ierr = nf90_put_att(irstfile, id_morCrsName, 'long_name', 'name of cross-section')
             end if
@@ -2620,7 +2628,7 @@ contains
 
       ! 1D profile names
       if (ndx1d > 0 .and. stm_included) then
-         if (stmpar%morpar%bedupd) then
+         if (stmpar%morpar%bedupd .or. restored_1d_profiles) then
             do i = 1, nCrs
                ierr = nf90_put_var(irstfile, id_morCrsName, trim(network%crs%cross(i)%CSID), [1, i], [len(trim(network%crs%cross(i)%CSID)), 1]) ! only write once
             end do
@@ -2744,6 +2752,10 @@ contains
 
       ! Write the data: bed level
       ierr = nf90_put_var(irstfile, id_bl, bl, [1, itim], [ndxi, 1])
+      if (allocated(sdu_1d_offset)) then
+         ierr = nf90_put_var(irstfile, id_ground_offset, sdu_1d_offset(1:ndxi), [1, itim], [ndxi, 1])
+         call check_error(ierr, 'Writing the 1D ground displacement to the restart file')
+      end if
 
       ! Write the data: tau current
       if (jawave == NO_WAVES) then ! Else, get taus from subroutine tauwave (taus = taucur + tauwave). Bas; Mind for jawind!
@@ -3307,7 +3319,7 @@ contains
 
       ! Write 1D cross sections
       if (ndx1d > 0 .and. stm_included) then
-         if (stmpar%morpar%bedupd) then
+         if (stmpar%morpar%bedupd .or. restored_1d_profiles) then
             if (.not. allocated(work1d_z)) then
                allocate (work1d_z(jmax, nCrs))
             end if
@@ -3319,6 +3331,14 @@ contains
                end do
             end do
             ierr = nf90_put_var(irstfile, id_flowelemcrsz, work1d_z(1:jmax, 1:nCrs), start=[1, 1, itim], count=[jmax, nCrs, 1])
+            call check_error(ierr, 'Writing the 1D cross-section levels to the restart file')
+            work1d_z = dmiss
+            do i = 1, nCrs
+               pCS => network%crs%cross(i)%tabdef
+               work1d_z(1:pCS%levelscount, i) = pCS%flowwidth(1:pCS%levelscount)
+            end do
+            ierr = nf90_put_var(irstfile, id_flowelemcrsn, work1d_z, start=[1, 1, itim], count=[jmax, nCrs, 1])
+            call check_error(ierr, 'Writing the 1D cross-section widths to the restart file')
             deallocate (work1d_z)
          end if
       end if
@@ -4766,13 +4786,7 @@ contains
             ! 1D cross sections
             if (ndx1d > 0 .and. stm_included) then
                if (stmpar%morpar%bedupd) then
-                  nCrs = 0
-                  do i = 1, size(network%crs%cross)
-                     if (network%crs%cross(i)%crossindx == 0) then
-                        exit
-                     end if
-                     nCrs = nCrs + 1
-                  end do
+                  nCrs = num_saved_1d_profiles()
                   pCSs => network%CSDefinitions%CS
                   jmax = 0
                   do i = 1, size(pCSs)
@@ -12022,6 +12036,8 @@ contains
 !! Processing is done elsewhere.
 !subroutine unc_read_map(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
    subroutine unc_read_map_or_rst(filename, ierr)
+      use m_subsidence, only: sdu_1d_offset
+      use network_data, only: LINK_1D_BOUNDARY
       use precision, only: dp
       use time_module, only: datetimestring_to_seconds, seconds_to_datetimestring
       use m_flow
@@ -12039,7 +12055,6 @@ contains
       use m_timer
       use m_turbulence
       use m_CrossSections
-      use m_save_ugrid_state, only: mesh1dname
       use unstruc_channel_flow, only: network
       use m_GlobalParameters
       use netcdf_utils, only: ncu_get_att
@@ -12086,7 +12101,6 @@ contains
                  id_blbnd, id_s0bnd, id_s1bnd, &
                  id_squbnd, id_sqibnd, &
                  id_morft, &
-                 id_jmax, id_ncrs, id_flowelemcrsz, id_flowelemcrsn, &
                  id_ucxqbnd, id_ucyqbnd
 
       integer :: id_tmp
@@ -12124,8 +12138,7 @@ contains
       character(len=2) :: numtrastr, numsedfracstr
       character(len=255) :: tmpstr, tmpstr1
 
-      integer :: jmax, ndx1d, nCrs
-      real(kind=dp), dimension(:, :), allocatable :: work1d_z, work1d_n
+      real(kind=dp), allocatable :: initial_1d_bed(:)
 
       ierr = DFM_GENERICERROR
 
@@ -12392,12 +12405,45 @@ contains
       call readyy('Reading map data', 0.375_dp)
 
       ! Read bedlevels (flow elem)
-      if (jaoldrstfile == 1) then
+      if (jarstignorebl == 0 .and. stm_included .and. network%loaded .and. ndxi > ndx2d) then
+         initial_1d_bed = bl(ndx2d + 1:ndxi)
+      end if
+      restored_1d_profiles = .false.
+      if (jarstignorebl == 0 .and. network%loaded .and. ndxi > ndx2d) then
+         ierr = nf90_inq_varid(imapfile, 'subsupl_1d_offset', id_tmp)
+         if (ierr == nf90_noerr) then
+            call realloc(sdu_1d_offset, ndx, keepExisting=.false., fill=0.0_dp)
+            ierr = get_var_and_shift(imapfile, 'subsupl_1d_offset', sdu_1d_offset, tmpvar1, UNC_LOC_S, kmx, kstart, &
+                                     um%ndxi_own, it_read, um%jamergedmap, um%inode_own, um%inode_merge)
+            if (ierr /= nf90_noerr) then
+               call mess(LEVEL_ERROR, 'Could not read 1D ground displacement at the requested restart time.')
+               ierr = DFM_WRONGINPUT
+               goto 999
+            end if
+            do L = lnxi + 1, lnx
+               if (kcu(L) == LINK_1D_BOUNDARY) then
+                  sdu_1d_offset(ln(1, L)) = sdu_1d_offset(ln(2, L))
+               end if
+            end do
+            if (allocated(initial_1d_bed)) then
+               initial_1d_bed = initial_1d_bed + sdu_1d_offset(ndx2d + 1:ndxi)
+            end if
+         end if
+      end if
+      if (allocated(sdu_1d_offset) .and. jarstignorebl == 0) then
+         ierr = get_var_and_shift(imapfile, 'FlowElem_bl', bl, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, &
+                                  um%jamergedmap, um%inode_own, um%inode_merge)
+         if (ierr /= nf90_noerr) then
+            call mess(LEVEL_ERROR, 'The restart contains 1D ground displacement but its bed levels could not be read.')
+            ierr = DFM_WRONGINPUT
+            goto 999
+         end if
+      else if (jaoldrstfile == 1) then
          call mess(LEVEL_INFO, 'The restart file is of an old version, therefore no bedlevel info is read')
       else if (jarstignorebl == 1) then
          call mess(LEVEL_INFO, 'Ignoring bedlevel information on restart file')
       else if (jased > 0) then
-         ierr = get_var_and_shift(imapfile, 'FlowElem_bl', bl, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, 1, um%jamergedmap, &
+         ierr = get_var_and_shift(imapfile, 'FlowElem_bl', bl, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, &
                                   um%inode_own, um%inode_merge)
          call check_error(ierr, 'FlowElem_bl')
       end if
@@ -13134,48 +13180,10 @@ contains
             end select
          end if
 
-         ! Read 1D cross sections
-         ndx1d = ndxi - ndx2d
-         if (ndx1d > 0 .and. stm_included) then
-            if (stmpar%morpar%bedupd) then
-               if (jarstignorebl == 0) then
-                  ierr = nf90_inq_dimid(imapfile, trim(mesh1dname)//'_crs_maxdim', id_jmax)
-                  if (ierr == 0) then
-                     ierr = nf90_inquire_dimension(imapfile, id_jmax, len=jmax)
-                  end if
-                  ierr = nf90_inq_dimid(imapfile, trim(mesh1dname)//'_ncrs', id_ncrs)
-                  if (ierr == 0) then
-                     ierr = nf90_inquire_dimension(imapfile, id_ncrs, len=nCrs)
-                  end if
-                  if (ierr /= nf90_noerr) then
-                     write (msgbuf, '(a)') 'Restart file '''//trim(filename)//''' contains no 1D cross section data, but model does.'
-                     call msg_flush()
-                  else
-                     if (allocated(work1d_z)) then
-                        deallocate (work1d_z, work1d_n)
-                     end if
-                     allocate (work1d_z(1:jmax, 1:nCrs), work1d_n(1:jmax, 1:nCrs))
-                     ierr = nf90_inq_varid(imapfile, trim(mesh1dname)//'_mor_crs_z', id_flowelemcrsz)
-                     ierr = nf90_get_var(imapfile, id_flowelemcrsz, work1d_z(1:jmax, 1:nCrs), start=[1, 1], count=[jmax, nCrs])
-                     do i = 1, nCrs
-                        do j = 1, network%crs%cross(i)%tabdef%levelscount
-                           network%crs%cross(i)%tabdef%height(j) = work1d_z(j, i)
-                        end do
-                        network%crs%cross(i)%bedlevel = work1d_z(1, i)
-                     end do
-                     ierr = nf90_inq_varid(imapfile, trim(mesh1dname)//'_mor_crs_n', id_flowelemcrsn)
-                     if (ierr == 0) then
-                        ierr = nf90_get_var(imapfile, id_flowelemcrsn, work1d_n(1:jmax, 1:nCrs), start=[1, 1], count=[jmax, nCrs])
-                     end if
-                     if (ierr == 0) then
-                        do i = 1, nCrs
-                           do j = 1, network%crs%cross(i)%tabdef%levelscount
-                              network%crs%cross(i)%tabdef%flowwidth(j) = work1d_n(j, i)
-                           end do
-                        end do
-                     end if
-                  end if
-               end if
+         if (allocated(initial_1d_bed)) then
+            call restore_1d_restart_profiles(imapfile, it_read, initial_1d_bed, ierr)
+            if (ierr /= DFM_NOERR) then
+               goto 999
             end if
          end if
          ! Update the D50 based on the info in the restart file
@@ -13395,6 +13403,152 @@ contains
       end if
 
    end subroutine unc_read_map_or_rst
+
+   !> Count the indexed profiles used by morphology, excluding the unindexed default profile.
+   integer function num_saved_1d_profiles() result(num_profiles)
+      use unstruc_channel_flow, only: network
+
+      integer :: i
+
+      num_profiles = 0
+      do i = 1, network%crs%count
+         if (network%crs%cross(i)%crossindx == 0) then
+            exit
+         end if
+         num_profiles = num_profiles + 1
+      end do
+   end function num_saved_1d_profiles
+
+   !> Restore the 1D geometry paired with the saved nodal bed, regardless of future bed updating.
+   subroutine restore_1d_restart_profiles(ncid, time_index, initial_bed, ierr)
+      use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
+      use m_CrossSections, only: t_CSType, CS_TABULATED
+      use m_flowgeom, only: bl, ndx2d, ndxi
+      use m_flow, only: dmiss
+      use m_save_ugrid_state, only: mesh1dname
+      use unstruc_channel_flow, only: network
+      use ieee_arithmetic, only: ieee_is_finite
+      use iso_fortran_env, only: real32
+
+      integer, intent(in) :: ncid, time_index
+      real(kind=dp), intent(in) :: initial_bed(:)
+      integer, intent(out) :: ierr
+
+      integer :: status, z_id, width_id, bed_id, bed_type, num_levels, num_profiles, configured_profiles
+      integer :: i, nlevels, old_levels, missing_level, rank
+      integer :: dims(nf90_max_var_dims)
+      real(kind=dp), allocatable :: heights(:, :), widths(:, :)
+      integer, allocatable :: level_counts(:)
+      type(t_CSType), pointer :: profile
+      logical :: bed_matches_input
+
+      ierr = DFM_WRONGINPUT
+      rank = 0
+      num_levels = 0
+      num_profiles = 0
+      status = nf90_inq_varid(ncid, trim(mesh1dname)//'_mor_crs_z', z_id)
+      if (status == nf90_enotvar) then
+         ! Compare with the configured bed at the precision used to save the nodal levels.
+         bed_type = nf90_double
+         status = nf90_inq_varid(ncid, 'mor_bl', bed_id)
+         if (status == nf90_noerr) then
+            status = nf90_inquire_variable(ncid, bed_id, xtype=bed_type)
+         end if
+         if (bed_type == nf90_float) then
+            bed_matches_input = all(bl(ndx2d + 1:ndxi) == real(real(initial_bed, real32), dp))
+         else
+            bed_matches_input = all(abs(bl(ndx2d + 1:ndxi) - initial_bed) <= &
+                                    8.0_dp * epsilon(1.0_dp) * max(1.0_dp, abs(initial_bed)))
+         end if
+         if (bed_matches_input) then
+            bl(ndx2d + 1:ndxi) = initial_bed
+            ierr = DFM_NOERR
+         else
+            call mess(LEVEL_ERROR, 'The restart contains a changed 1D bed but no 1D cross sections. '// &
+                      'Use a restart with cross sections, or RstIgnoreBl=1 to retain the input bed.')
+         end if
+         return
+      end if
+
+      if (status == nf90_noerr) then
+         status = nf90_inquire_variable(ncid, z_id, ndims=rank, dimids=dims)
+      end if
+      if (status /= nf90_noerr .or. rank /= 3) then
+         call mess(LEVEL_ERROR, 'Invalid 1D cross-section levels in the restart file.')
+         return
+      end if
+      status = nf90_inquire_dimension(ncid, dims(1), len=num_levels)
+      if (status == nf90_noerr) then
+         status = nf90_inquire_dimension(ncid, dims(2), len=num_profiles)
+      end if
+      configured_profiles = num_saved_1d_profiles()
+      if (status /= nf90_noerr .or. num_levels <= 0 .or. num_profiles /= configured_profiles) then
+         write (msgbuf, '(a,i0,a,i0,a)') 'The restart contains ', num_profiles, ' 1D cross sections, expected ', configured_profiles, '.'
+         call mess(LEVEL_ERROR, trim(msgbuf))
+         return
+      end if
+      allocate (heights(num_levels, num_profiles), level_counts(num_profiles))
+      status = nf90_get_var(ncid, z_id, heights, start=[1, 1, time_index], count=[num_levels, num_profiles, 1])
+      if (status /= nf90_noerr) then
+         call mess(LEVEL_ERROR, 'Could not read 1D cross-section levels at the requested restart time.')
+         return
+      end if
+
+      status = nf90_inq_varid(ncid, trim(mesh1dname)//'_mor_crs_n', width_id)
+      if (status == nf90_noerr) then
+         allocate (widths(num_levels, num_profiles))
+         status = nf90_get_var(ncid, width_id, widths, start=[1, 1, time_index], count=[num_levels, num_profiles, 1])
+      end if
+      if (status /= nf90_noerr .and. status /= nf90_enotvar) then
+         call mess(LEVEL_ERROR, 'Could not read 1D cross-section widths at the requested restart time.')
+         return
+      end if
+
+      do i = 1, num_profiles
+         profile => network%crs%cross(i)%tabdef
+         missing_level = findloc(heights(:, i), dmiss, dim=1)
+         nlevels = num_levels
+         if (missing_level > 0) then
+            nlevels = missing_level - 1
+         end if
+         if (profile%crosstype /= CS_TABULATED .or. nlevels < 1 .or. nlevels > profile%levelscount) then
+            call mess(LEVEL_ERROR, 'The restart profile does not match the configured 1D cross section ', trim(network%crs%cross(i)%csid))
+            return
+         end if
+         if (.not. all(ieee_is_finite(heights(1:nlevels, i))) .or. &
+             any(abs(heights(1:nlevels, i)) >= nf90_fill_float)) then
+            call mess(LEVEL_ERROR, 'The restart contains invalid 1D cross-section levels.')
+            return
+         end if
+         if (allocated(widths)) then
+            if (.not. all(ieee_is_finite(widths(1:nlevels, i))) .or. &
+                any(widths(1:nlevels, i) < 0.0_dp .or. widths(1:nlevels, i) >= nf90_fill_float)) then
+               call mess(LEVEL_ERROR, 'The restart contains invalid 1D cross-section widths.')
+               return
+            end if
+         end if
+         level_counts(i) = nlevels
+      end do
+
+      do i = 1, num_profiles
+         profile => network%crs%cross(i)%tabdef
+         nlevels = level_counts(i)
+         old_levels = profile%levelscount
+         profile%height(1:nlevels) = heights(1:nlevels, i)
+         if (allocated(widths)) then
+            profile%flowwidth(1:nlevels) = widths(1:nlevels, i)
+         else if (nlevels < old_levels) then
+            ! Legacy restart files save elevations only. Deposition removes the lowest levels.
+            profile%flowwidth(1:nlevels) = profile%flowwidth(old_levels - nlevels + 1:old_levels)
+         end if
+         profile%levelscount = nlevels
+         network%crs%cross(i)%bedlevel = heights(1, i)
+         network%crs%cross(i)%surfacelevel = heights(nlevels, i)
+         network%crs%cross(i)%charheight = heights(nlevels, i) - heights(1, i)
+      end do
+      restored_1d_profiles = .true.
+      ierr = DFM_NOERR
+   end subroutine restore_1d_restart_profiles
 
 !> helper routine for unc_read_map_or_rst
    function unc_read_merged_map(um, imapfile, filename, ierr) result(success)

@@ -146,7 +146,67 @@ endforeach()
 add_test(NAME mass_balance_subsupl.volume_remap COMMAND test_subsupl_balance volume_remap)
 add_test(NAME mass_balance_subsupl.sigma_boundary COMMAND test_subsupl_balance sigma_boundary)
 
-foreach(runtime_target IN ITEMS ${test_target} test_bedload_balance test_bedload_areas test_subsupl_balance)
+add_executable(test_1d_bed_geometry src/test_1d_bed_geometry.f90)
+target_link_libraries(test_1d_bed_geometry PRIVATE dflowfm_kernel test_helpers netCDF::netcdff)
+set_target_properties(test_1d_bed_geometry PROPERTIES
+    FOLDER engines_gpl/dflowfm/test
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/test_1d_bed_geometry"
+)
+if(WIN32)
+    target_link_options(test_1d_bed_geometry PRIVATE /STACK:${DFLOWFM_STACK_SIZE_BYTES})
+    add_custom_command(TARGET test_1d_bed_geometry POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:test_1d_bed_geometry> $<TARGET_RUNTIME_DLLS:test_1d_bed_geometry>
+        COMMAND_EXPAND_LISTS
+    )
+endif()
+
+function(add_1d_bed_test name case_dir)
+    add_test(NAME ${name} COMMAND ${ARGN})
+    set_tests_properties(${name} PROPERTIES
+        WORKING_DIRECTORY "${case_dir}"
+        ENVIRONMENT "OMP_NUM_THREADS=1"
+        TIMEOUT 30
+    )
+endfunction()
+
+set(reach_resources "${CMAKE_CURRENT_SOURCE_DIR}/resources/1d_bed_geometry")
+foreach(morphology IN ITEMS off fixed moving)
+    foreach(update_s1 IN ITEMS 0 1)
+        foreach(direction IN ITEMS -1 0 1)
+            set(case_name "bed_geometry_1d.${morphology}_s1${update_s1}_${direction}")
+            set(case_dir "${CMAKE_CURRENT_BINARY_DIR}/bed_geometry_1d_cases/${case_name}")
+            file(COPY "${reach_resources}/" DESTINATION "${case_dir}")
+            add_1d_bed_test(${case_name} "${case_dir}" test_1d_bed_geometry ground ${morphology} ${update_s1} ${direction})
+        endforeach()
+    endforeach()
+endforeach()
+
+foreach(restart IN ITEMS complete missing_fixed missing_changed displaced)
+    set(seed moving)
+    if(restart STREQUAL "missing_fixed")
+        set(seed fixed)
+    elseif(restart STREQUAL "missing_changed")
+        set(seed small_change)
+    elseif(restart STREQUAL "displaced")
+        set(seed displaced)
+    endif()
+    set(case_name "bed_geometry_1d.restart_${restart}")
+    set(case_dir "${CMAKE_CURRENT_BINARY_DIR}/bed_geometry_1d_cases/${case_name}")
+    file(COPY "${reach_resources}/" DESTINATION "${case_dir}")
+    add_1d_bed_test(${case_name}_seed "${case_dir}" test_1d_bed_geometry seed ${seed})
+    set_tests_properties(${case_name}_seed PROPERTIES FIXTURES_SETUP ${case_name})
+    if(restart STREQUAL "missing_changed")
+        add_1d_bed_test(${case_name} "${case_dir}" ${CMAKE_COMMAND}
+            -Dtest_executable=$<TARGET_FILE:test_1d_bed_geometry>
+            -P "${CMAKE_CURRENT_SOURCE_DIR}/check_1d_restart_rejection.cmake"
+        )
+    else()
+        add_1d_bed_test(${case_name} "${case_dir}" test_1d_bed_geometry restart ${restart})
+    endif()
+    set_tests_properties(${case_name} PROPERTIES FIXTURES_REQUIRED ${case_name})
+endforeach()
+
+foreach(runtime_target IN ITEMS ${test_target} test_bedload_balance test_bedload_areas test_subsupl_balance test_1d_bed_geometry)
     # Copy MSVC runtime DLLs to test output directory
     foreach(runtime_lib IN LISTS CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS)
         add_custom_command(TARGET ${runtime_target} PRE_BUILD
