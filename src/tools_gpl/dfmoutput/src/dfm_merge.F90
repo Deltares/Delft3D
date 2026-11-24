@@ -2346,7 +2346,7 @@ contains
       end if
       
       if (jasedmor == 1) then
-         !copy the sediment fraction name to the merged file
+         ! copy the sediment fraction name to the merged file
          nsedtotsel = nsedtot(ifileScan)
          nsedtot(noutfile) = nsedtotsel
          allocate (sedfrac_name(nsedtotsel))
@@ -2365,7 +2365,7 @@ contains
          end do
          ierr = nf90_put_var(ncids(noutfile), id_susfrac_name(noutfile), sussedfrac_name)
          
-         !copy the sediment transport averaging interval to the merged file
+         ! copy the sediment transport averaging interval to the merged file
          ntwosel = ntwo(ifileScan)
          ntwo(noutfile) = ntwosel
          allocate (sedavgtim(ntwosel))
