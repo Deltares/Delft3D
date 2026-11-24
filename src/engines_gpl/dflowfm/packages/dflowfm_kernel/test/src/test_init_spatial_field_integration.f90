@@ -3350,8 +3350,8 @@ contains
       lnx1d = 1
       lnx = 2
       call realloc(ln, [2, lnx], keepExisting=.false., fill=0)
-      ln(:, 1) = [2, 3]
-      ln(:, 2) = [1, 4]
+      ln(:, 1) = [2, 3] ! Fictive example: 1D2D link from flow node 2 (2D internal node) to flow node 3 (1D bnd node)
+      ln(:, 2) = [1, 4] ! 2D boundary link from flow node 1 (2D internal node) to flow node 4 (2D bnd node)
       call realloc(prof1d, [3, lnx1d], keepExisting=.false., fill=0.0_dp)
       prof1d(1, 1) = -1.0_dp
 
