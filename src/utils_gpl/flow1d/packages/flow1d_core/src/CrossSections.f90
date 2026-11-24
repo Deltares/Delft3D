@@ -1957,9 +1957,9 @@ contains
 
             d1 = heights(ilev) - heights(1)
             d2 = heights(ilev + 1) - heights(1)
-            e1 = min(widths(ilev) - widthplains(isec), widthplains(isec + 1) - widthplains(isec))
+            e1 = min(max(0d0, widths(ilev) - widthplains(isec)), widthplains(isec + 1) - widthplains(isec))
             maxwidth = max(maxwidth, widths(ilev))
-            e2 = min(widths(ilev + 1) - widthplains(isec), widthplains(isec + 1) - widthplains(isec))
+            e2 = min(max(0d0, widths(ilev + 1) - widthplains(isec)), widthplains(isec + 1) - widthplains(isec))
             if (dpt > d2) then
                af_sub(isec) = af_sub(isec) + 0.5d0 * (d2 - d1) * (e1 + e2)
                perim_sub(isec) = perim_sub(isec) + 2.0d0 * sqrt(0.25d0 * (e2 - e1)**2 + (d2 - d1)**2)
@@ -1998,7 +1998,7 @@ contains
          dTop = heights(levelsCount) - heights(1)
          if (dpt > dTop) then
 
-            eTop = min(widths(levelsCount) - widthplains(isec), widthplains(isec + 1) - widthplains(isec))
+            eTop = min(max(0d0, widths(levelsCount) - widthplains(isec)), widthplains(isec + 1) - widthplains(isec))
 
             af_sub(isec) = af_sub(isec) + (dpt - dTop) * eTop
             area_min = area_min + (dpt - dTop) * width_min
