@@ -157,6 +157,9 @@ module m_flow
    real(kind=dp), allocatable, target, dimension(:) :: vol1 !< [m3] total volume at end of timestep. {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
    real(kind=dp), allocatable, target, dimension(:) :: vol0 !< [m3] total volume at start of timestep. {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
    real(kind=dp), allocatable, target, dimension(:) :: vol1_f !< [m3] Flow volume at end of timestep. {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
+   real(kind=dp), allocatable, target, dimension(:) :: vol0_f !< [m3] flow volume volume at end of timestep {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
+   real(kind=dp), allocatable, target, dimension(:) :: volume_change !< flow volume change during last timestep at nodes, dim=ndx
+   real(kind=dp), allocatable, target, dimension(:) :: lateral_correction !< [m3] Flow volume change due to lateral inflow during last timestep at nodes, dim=ndx
    real(kind=dp), allocatable, dimension(:) :: sq !< [m3/s] Total influx at water level point.
    real(kind=dp), allocatable, dimension(:) :: sqa !< [m3/s] Total outflux at s point, u1 based, non-conservative for iadvec==38.
    real(kind=dp), allocatable, target, dimension(:) :: hs !< [m] Waterdepth at cell centre = s1 - bl. {"location": "face", "shape": ["ndx"]}
@@ -266,9 +269,23 @@ module m_flow
    real(kind=dp), allocatable, target, dimension(:) :: u_to_umain !< [-] Factor for translating general velocity to the flow velocity in the main channel at end of timestep. {"location": "edge", "shape": ["lnkx"]}
    real(kind=dp), allocatable, target, dimension(:) :: q1 !< [m3/s] Discharge at end of timestep n, used as q0 in timestep n+1, statement q0 = q1 is out of code, saves 1 array. {"location": "edge", "shape": ["lnkx"]}
    real(kind=dp), allocatable, target, dimension(:) :: q1_main !< [m3/s] Discharge in main channel at end of timestep. {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: q1_floodplain1 !< [m3/s] Discharge in first floodplain, computed with q1_main. {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: q1_floodplain2 !< [m3/s] Discharge in second floodplain, computed with q1_main. {"location": "edge", "shape": ["lnkx"]}
+
    real(kind=dp), allocatable, dimension(:) :: qa !< [m3/s] Discharge used in advection, qa=au(n)*u1(n+1) instead of u1(n+1) alone.
    real(kind=dp), allocatable, dimension(:) :: map_fixed_weir_energy_loss !< [m2/s2] Fixed weir energy loss at end of timestep. {"location": "edge", "shape": ["lnkx"]}
    real(kind=dp), allocatable, target, dimension(:) :: au !< [m2] Flow area at u point. {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: au_main !< [m2] Main channel flow area from cross-section geometry. {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: au_floodplain1 !< [m2] First floodplain flow area from cross-section geometry. {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: au_floodplain2 !< [m2] Second floodplain flow area from cross-section geometry. {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: hydraulic_radius !< [m] Total 1D flow area divided by wet perimeter; missing where a wet profile has no perimeter. {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: hydraulic_radius_main !< [m] Main channel flow area divided by its wet perimeter. {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: hydraulic_radius_floodplain1 !< [m] First floodplain flow area divided by its wet perimeter. {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: hydraulic_radius_floodplain2 !< [m] Second floodplain flow area divided by its wet perimeter. {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: flow_width !< [m] Total 1D water-surface flow width from profile geometry, not maximum width wu. {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: flow_width_main !< [m] Main channel water-surface flow width. {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: flow_width_floodplain1 !< [m] First floodplain water-surface flow width. {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: flow_width_floodplain2 !< [m] Second floodplain water-surface flow width. {"location": "edge", "shape": ["lnkx"]}
    real(kind=dp), allocatable, target, dimension(:) :: au_nostrucs !< [m2] Flow area at u point without structures. {"location": "edge", "shape": ["lnkx"]}
    real(kind=dp), allocatable, dimension(:) :: ucxu !< [m/s] Upwind link ucx.
    real(kind=dp), allocatable, dimension(:) :: ucyu !< [m/s] Upwind link ucy.
@@ -296,6 +313,11 @@ module m_flow
    real(kind=dp), allocatable, target, dimension(:) :: cftrtfac !< [?] Array for optional multiplication factor for trachytopes's returned roughness values.
    integer :: jacftrtfac !< [-] Whether or not (1/0) a multiplication factor field was specified for trachytopes's Chezy roughness values.
    real(kind=dp), allocatable, dimension(:) :: czu !< [?] Array for chezy friction at flow links. {"location": "edge", "shape": ["lnx"]}
+   !> Subsection Chezy coefficients used in the latest conveyance calculation.
+   !! Their conveyances add; these coefficients are not additive parts of czu.
+   real(kind=dp), allocatable, target, dimension(:) :: czu_main !< [m0.5/s] Main channel Chezy value on flow links. {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: czu_floodplain1 !< [m0.5/s] First floodplain Chezy value on flow links. {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, target, dimension(:) :: czu_floodplain2 !< [m0.5/s] Second floodplain Chezy value on flow links. {"location": "edge", "shape": ["lnkx"]}
    real(kind=dp), allocatable :: frcu0(:) !< [?] Array for Manning friction at flow links at start of the run. {"location": "edge", "shape": ["lnx"]}
    logical, allocatable :: dynveg(:) !< [-] Vegetation present or not. {"location": "edge", "shape": ["lnx"]}
    real(kind=dp), allocatable, target, dimension(:) :: frculin !< [?] Friction coefficient set by initial fields.
@@ -681,7 +703,7 @@ contains
    subroutine map_ndkx_to_ndx()
       use m_cell_geometry, only: ndx
       use m_alloc, only: realloc
-      
+
       integer :: n, k
 
       call realloc(ndkx_to_ndx, ndkx)

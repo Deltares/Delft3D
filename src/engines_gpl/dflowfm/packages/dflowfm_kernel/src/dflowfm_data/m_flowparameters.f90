@@ -142,6 +142,11 @@ module m_flowparameters
    integer, parameter :: SALINITY_DEPENDENT_EVAPORATION_LINEAR = 2 !< salinity_reduction_factor_saturation_humidity is a linear function of local salinity
    type(t_array_or_scalar), target :: salinity_reduction_factor_saturation_humidity !< Salinity reduction factor for saturation humidity in bulk formulae
 
+   integer :: rain_temperature_method !< Method for determining rain temperature, use one of RAIN_TEMPERATURE_... parameters.
+   integer, parameter :: RAIN_TEMPERATURE_AIR = 1 !< Use the air temperature in rain temperature calculations.
+   integer, parameter :: RAIN_TEMPERATURE_WET_BULB = 2 !< Use the wet bulb temperature in rain temperature calculations.
+   logical :: rain_temperature_from_dew_point !< True if rain temperature is determined from dew point temperature
+
    real(kind=dp) :: sensor_height_wind_velocity !< Sensor height of prescribed wind velocity [m]
    real(kind=dp) :: sensor_height_air_temperature !< Sensor height of prescribed air temperature [m]
    real(kind=dp) :: sensor_height_humidity !< Sensor height of prescribed humidity [m]
@@ -373,6 +378,7 @@ module m_flowparameters
    !                                                     5 = 0.7*dts, reduce au
    integer :: jsolpos !< in iterative solver force solution above bottom level
    integer :: Icgsolver !< Solver type: 1 = Sobek Guus Stelling OMP, 2 = Sobek Guus Stelling OMP (thread-safe), 4 = Sobek Guus Stelling + Saadilud, 6 = parallel/PETSc
+   integer :: max_preconditioner_reuses !< Number of PETSc solves reusing a preconditioner after a rebuild; default 10, zero disables reuse.
    integer :: Noderivedtypes !< 0=use derived types in gauss and substi, 5=use simple Fortran arrays (faster)
    integer :: jacheckmatrix !< checkmatrix
 
@@ -546,7 +552,8 @@ module m_flowparameters
       integer :: hs = 1 !< Water depths to map file, 0: no, 1: yes
       integer :: hu = 0 !< Water depths on u point to map file, 0: no, 1: yes
       integer :: anc = 0 !< Ancillary variables attribute added to map file, 0: no, 1: yes (http://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#ancillary-data)
-      integer :: au = 0 !< Normal flow areas au to map file, 0: no, 1: yes
+      integer :: au = 0 !< Total flow areas, 1D hydraulic radii and flow widths to map file, 0: no, 1: yes
+      integer :: au_1d_sections = 0 !< Main channel and floodplain flow areas, hydraulic radii and flow widths to map file, 0: no, 1: yes
       integer :: u1 = 1 !< velocities to map file, 0: no, 1: yes
       integer :: u0 = 1 !< previous step velocities to map file, 0: no, 1: yes
       integer :: ucvec = 1 !< velocity vectors to map file, 0: no, 1: yes
@@ -558,6 +565,7 @@ module m_flowparameters
       integer :: z0 = 0 !< roughness heights to map file, 0: no, 1: yes
       integer :: chezy_elements = 0 !< chezy roughness in flow elements to map file, 0: no, 1: yes
       integer :: chezy_links = 0 !< chezy roughness on flow links to map file, 0: no, 1: yes
+      integer :: chezy_links_1d_sections = 0 !< Main channel and both floodplain Chezy values on flow links to map file, 0: no, 1: yes
       integer :: chezy_input = 0 !< chezy input roughness on flow links to map file, 0: no, 1: yes
       integer :: tem = 1 !< temperature to map file, 0: no, 1: yes
       integer :: heatflux = 0 !< heatflux to map file, 0: no, 1: yes
@@ -576,7 +584,7 @@ module m_flowparameters
       integer :: diu = 1 !< horizontal diffusity to map file, 0: no, 1: yes
       integer :: rho = 1 !< flow density to map file, 0: no, 1: yes
       integer :: q1 = 1 !< flow flux to map file, 0: no, 1: yes
-      integer :: q1main = 0 !< main channel flow flux to map file, 0: no, 1: yes
+      integer :: q1_1d_sections = 0 !< Main channel and both floodplain flow fluxes to map file, 0: no, 1: yes
       integer :: fw = 0 !< fixed weir energy loss to map file, 0: no, 1: yes
       integer :: spir = 1 !< spiral flow to map file, 0: no, 1: yes
       integer :: tidep = 1 !< tidal potential to map file, 0: no, 1: yes
@@ -764,6 +772,8 @@ contains
       atmospheric_stability_function = ATMOSPHERIC_STABILITY_FUNCTION_NONE ! Atmospheric stability function
       free_convection = FREE_CONVECTION_OFF ! Free convection model
       salinity_dependent_evaporation_method = SALINITY_DEPENDENT_EVAPORATION_NONE ! Switch for methods for determining salinity_reduction_factor_saturation_humidity
+      rain_temperature_method = RAIN_TEMPERATURE_AIR ! Method for determining rain temperature
+      rain_temperature_from_dew_point = .false.
       salinity_reduction_factor_saturation_humidity%scalar = 1.0_dp ! Reduction factor for salinity in saturation humidity calculation, 1.0 means no reduction
       sensor_height_wind_velocity = 10.0_dp ! Height of prescribed wind velocity
       sensor_height_air_temperature = 2.0_dp ! Height of prescribed air temperature
@@ -939,6 +949,7 @@ contains
       !                                5 = 0.7*dts, reduce au
       jsolpos = 0 ! in iterative solver force solution above bottom level
       Icgsolver = 4
+      max_preconditioner_reuses = 10
       Noderivedtypes = 5 ! 0=use derived types in gauss and substi, 5=use simple Fortran arrays (faster)
 
       hwetbed = 0.2_dp ! for case wetbed
@@ -1176,5 +1187,39 @@ contains
       end select
 
    end subroutine convert_salinity_dependent_evaporation_method_integer_to_string
+
+   !> Converts a rain temperature method string to its corresponding integer representation.
+   subroutine convert_rain_temperature_string_to_integer(method_string, method_integer)
+      ! Arguments
+      character(len=*), intent(in) :: method_string !< String representation of the rain temperature method.
+      integer, intent(out) :: method_integer !< Integer representation of the rain temperature method.
+
+      select case (trim(str_tolower(method_string)))
+      case ('airtemperature')
+         method_integer = RAIN_TEMPERATURE_AIR
+      case ('wetbulbtemperature')
+         method_integer = RAIN_TEMPERATURE_WET_BULB
+      case default
+         method_integer = -1
+      end select
+
+   end subroutine convert_rain_temperature_string_to_integer
+
+   !> Converts a rain temperature method integer to its corresponding string representation.
+   subroutine convert_rain_temperature_integer_to_string(method_integer, method_string)
+      ! Arguments
+      integer, intent(in) :: method_integer !< Integer representation of the rain temperature method.
+      character(len=*), intent(out) :: method_string !< String representation of the rain temperature method.
+
+      select case (method_integer)
+      case (RAIN_TEMPERATURE_AIR)
+         method_string = 'airTemperature'
+      case (RAIN_TEMPERATURE_WET_BULB)
+         method_string = 'wetBulbTemperature'
+      case default
+         method_string = ''
+      end select
+
+   end subroutine convert_rain_temperature_integer_to_string
 
 end module m_flowparameters

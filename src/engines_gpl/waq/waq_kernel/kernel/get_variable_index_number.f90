@@ -225,7 +225,7 @@ contains
         ivpar = ivcns + num_constants
         ivfun = ivpar + num_spatial_parameters
         ivsfu = ivfun + num_time_functions
-        ivcnc = ivsfu + num_spatial_time_fuctions
+        ivcnc = ivsfu + num_spatial_time_functions
         ivmas = ivcnc + num_substances_total
         ivder = ivmas + num_substances_total
         ivdsp = ivder + num_substances_total
@@ -275,7 +275,7 @@ contains
         endif
         !
         if (iar_nr == iisfun) then
-            if (indx > num_spatial_time_fuctions) goto 900
+            if (indx > num_spatial_time_functions) goto 900
             ivar = ivsfu + indx - 1
         endif
         !

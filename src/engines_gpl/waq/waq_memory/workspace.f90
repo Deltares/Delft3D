@@ -29,7 +29,7 @@ module workspace
             set_character_array_indices
 
     ! System characteristics
-    use m_waq_memory_dimensions, only : num_substances_total, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, num_dispersion_arrays, num_velocity_arrays, num_defaults, num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes
+    use m_waq_memory_dimensions, only : num_substances_total, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_functions, num_dispersion_arrays, num_velocity_arrays, num_defaults, num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes
     ! Timer characteristics
     use m_timer_variables
     ! Pointers in real array workspace
@@ -85,7 +85,7 @@ CONTAINS
         cname = ' '
 
         ! total number of "separate" variables
-        num_vars = 5 + num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_fuctions + num_substances_total + num_substances_total + &
+        num_vars = 5 + num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_functions + num_substances_total + num_substances_total + &
                 num_substances_total + num_dispersion_arrays + num_velocity_arrays + num_defaults + num_local_vars + num_dispersion_arrays_extra + &
                 num_velocity_arrays_extra + num_local_vars_exchange + num_fluxes
 
@@ -178,7 +178,7 @@ CONTAINS
 
     end subroutine set_array_indexes
 
-    subroutine initialize_variables(logical_unit, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, &
+    subroutine initialize_variables(logical_unit, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_functions, &
             num_substances_transported, num_substances_total, num_dispersion_arrays, num_velocity_arrays, num_defaults, &
             num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes, &
             nopred, num_vars, vararr, varidx, vartda, &
@@ -188,7 +188,7 @@ CONTAINS
         use m_array_manipulation, only : initialize_integer_array
         use timers
 
-        integer(kind = int_wp) :: logical_unit, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, &
+        integer(kind = int_wp) :: logical_unit, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_functions, &
                 num_substances_transported, num_substances_total, num_dispersion_arrays, num_velocity_arrays, num_defaults, &
                 num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes, &
                 nopred, num_vars, num_grids
@@ -294,7 +294,7 @@ CONTAINS
         ivpar = ivcns + num_constants
         ivfun = ivpar + num_spatial_parameters
         ivsfu = ivfun + num_time_functions
-        ivcnc = ivsfu + num_spatial_time_fuctions
+        ivcnc = ivsfu + num_spatial_time_functions
         ivmas = ivcnc + num_substances_total
         ivder = ivmas + num_substances_total
         ivdsp = ivder + num_substances_total
@@ -342,7 +342,7 @@ CONTAINS
         enddo
 
         ! seg func
-        do isfun = 1, num_spatial_time_fuctions
+        do isfun = 1, num_spatial_time_functions
             ivar = ivar + 1
             vgrset(ivar, 1) = 1
         enddo
