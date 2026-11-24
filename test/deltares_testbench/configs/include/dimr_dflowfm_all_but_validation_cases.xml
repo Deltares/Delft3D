@@ -7350,6 +7350,24 @@
       </file>
     </checks>
   </testCase>
+  <testCase name="e02_f039_c12_settling_transport_substeps" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f039_morphology_3d/c12_settling_transport_substeps</path>
+    <checks>
+      <file name="output/box_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_sedfrac_concentration" toleranceAbsolute="1e-5"/>
+        </parameters>
+      </file>
+      <file name="output/box_mass_balances.nc" type="netCDF">
+        <parameters>
+          <parameter name="const2_mass" toleranceAbsolute="1e-7"/>
+          <parameter name="const2_bed_mass" toleranceAbsolute="1e-7"/>
+          <parameter name="const2_balance_error" toleranceAbsolute="1e-9"/>
+          <parameter name="const2_balance_cumerror" toleranceAbsolute="1e-9"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
   <testCase name="e02_f040_c01_uniform_ibed_1" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f040_subsidence/c01_uniform_ibed_1</path>
 
