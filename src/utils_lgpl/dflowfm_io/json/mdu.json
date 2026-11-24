@@ -1262,7 +1262,25 @@
                     "enum_values": {
                         "0": "original advection using velocity vector",
                         "1": "pure 1D using flow volume vol1_f",
-                        "2": "pure 1D using volume vol1"
+                        "2": "pure 1D using volume vol1",
+                        "3": {
+                            "description": "SOBEK-style link-based advection, momentum conserving",
+                            "status": {
+                                "value": "research"
+                            }
+                        },
+                        "4": {
+                            "description": "SOBEK-style link-based advection, weighted by the ratio of cross-sectional areas",
+                            "status": {
+                                "value": "research"
+                            }
+                        },
+                        "5": {
+                            "description": "SOBEK-style link-based advection, energy conserving",
+                            "status": {
+                                "value": "research"
+                            }
+                        }
                     }
                 },
                 {
@@ -3553,7 +3571,7 @@
                 {
                     "key": "d50",
                     "default_value": 0.0002,
-                    "value_type": "float",
+                    "value_type": "list[float]",
                     "description": "Mean Sandgrain diameter (m), e.g. 0.0001"
                 },
                 {
@@ -3565,7 +3583,7 @@
                 {
                     "key": "rhoSed",
                     "default_value": 2650.0,
-                    "value_type": "float",
+                    "value_type": "list[float]",
                     "description": "Mean Sandgrain rho (kg/m3) , e.g. 2650"
                 },
                 {
@@ -3589,13 +3607,13 @@
                 {
                     "key": "initialSedimentConcentration",
                     "default_value": 0.0,
-                    "value_type": "float",
+                    "value_type": "list[float]",
                     "description": "Initial Sediment Concentration in jased==3 (kg/m3)  "
                 },
                 {
                     "key": "uniformErodableThickness",
                     "default_value": 1.0,
-                    "value_type": "float",
+                    "value_type": "list[float]",
                     "description": "Uniform erodable layer thickness (m)"
                 },
                 {
@@ -4957,241 +4975,241 @@
                 {
                     "key": "wriHis_balance",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write mass balance totals to his file."
                 },
                 {
                     "key": "wriHis_structure_gen",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write general structure parameters to his file."
                 },
                 {
                     "key": "wriHis_structure_dam",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write dam parameters to his file."
                 },
                 {
                     "key": "wriHis_structure_pump",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write pump parameters to his file."
                 },
                 {
                     "key": "wriHis_structure_gate",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write gate parameters to his file."
                 },
                 {
                     "key": "wriHis_structure_weir",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write weir parameters to his file."
                 },
                 {
                     "key": "wriHis_structure_orifice",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write orifice parameters to his file."
                 },
                 {
                     "key": "wriHis_structure_bridge",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write bridge parameters to his file."
                 },
                 {
                     "key": "wriHis_structure_culvert",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write culvert parameters to his file."
                 },
                 {
                     "key": "wriHis_structure_longculvert",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write long culvert parameters to his file."
                 },
                 {
                     "key": "wriHis_structure_damBreak",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write dam break parameters to his file."
                 },
                 {
                     "key": "wriHis_structure_uniWeir",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write universal weir parameters to his file."
                 },
                 {
                     "key": "wriHis_structure_compound",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write compound structure parameters to his file."
                 },
                 {
                     "key": "wriHis_lateral",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write lateral data."
                 },
                 {
                     "key": "wriHis_velocity",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write velocity magnitude in observation point to his file."
                 },
                 {
                     "key": "wriHis_discharge",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write discharge magnitude in observation point to his file."
                 },
                 {
                     "key": "wriHis_sourcesink",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write sources-sinks data to his file."
                 },
                 {
                     "key": "wriHis_bubblescreens",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write bubblescreens data to his file."
                 },
                 {
                     "key": "wriHis_turbulence",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write k, eps and vicww to his file."
                 },
                 {
                     "key": "wriHis_windstress",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write wind stress to his file."
                 },
                 {
                     "key": "wriHis_wind",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write wind velocities to his file."
                 },
                 {
                     "key": "wriHis_rain",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write precipitation to his file."
                 },
                 {
                     "key": "wriHis_airdensity",
                     "default_value": 0,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write air density to his file."
                 },
                 {
                     "key": "wriHis_infiltration",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write infiltration to his file."
                 },
                 {
                     "key": "wriHis_temperature",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write temperature to his file."
                 },
                 {
                     "key": "wriHis_waves",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write wave data to his file."
                 },
                 {
                     "key": "wriHis_heat_fluxes",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write heat fluxes to his file."
                 },
                 {
                     "key": "wriHis_salinity",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write salinity to his file."
                 },
                 {
                     "key": "wriHis_density",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write density to his file."
                 },
                 {
                     "key": "wriHis_waterlevel_s1",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write water level to his file."
                 },
                 {
                     "key": "wriHis_bedlevel",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write bed level to his file."
                 },
                 {
                     "key": "wriHis_waterdepth",
                     "default_value": 0,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write water depth to his file."
                 },
                 {
                     "key": "wriHis_velocity_vector",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write velocity vectors to his file."
                 },
                 {
                     "key": "wriHis_upward_velocity_component",
                     "default_value": 0,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write upward velocity to his file."
                 },
                 {
                     "key": "wriHis_sediment",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write sediment transport to his file."
                 },
                 {
                     "key": "wriHis_constituents",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write tracers to his file."
                 },
                 {
                     "key": "wriHis_zcor",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write vertical coordinates to his file."
                 },
                 {
                     "key": "wriHis_taucurrent",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write mean bed shear stress to his file."
                 },
                 {
                     "key": "wriHis_wqBot",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write water quality bottom variables to his file."
                 },
                 {
                     "key": "wriHis_wqBot3d",
                     "default_value": 0,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write 3D water quality bottom variables to his file."
                 },
                 {
@@ -5939,7 +5957,7 @@
                 {
                     "key": "wrihis_heatflux",
                     "default_value": "",
-                    "value_type": "string",
+                    "value_type": "list[string]",
                     "description": "Keyword is obsolete.",
                     "status": {
                         "value": "obsolete",
@@ -5956,25 +5974,25 @@
                 {
                     "key": "wriHis_crs_flow",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write cross-section flow output to history file."
                 },
                 {
                     "key": "wriHis_crs_constituents",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write cross-section constituents output to history file."
                 },
                 {
                     "key": "wriHis_water_quality_output",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write water quality output to history file."
                 },
                 {
                     "key": "wriHis_runupgauge",
                     "default_value": 1,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write runup gauge output to history file."
                 }
             ]
@@ -6347,61 +6365,61 @@
                 {
                     "key": "wriHis_ice_default",
                     "default_value": 0,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Default flag for writing ice cover quantities to his-file."
                 },
                 {
                     "key": "wriHis_ice_open_water_level",
                     "default_value": 0,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write water level of open water to his-file."
                 },
                 {
                     "key": "wriHis_ice_lower_surface_height",
                     "default_value": 0,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write lower surface height of ice cover to his-file."
                 },
                 {
                     "key": "wriHis_ice_surface_height",
                     "default_value": 0,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write upper surface height of ice cover to his-file."
                 },
                 {
                     "key": "wriHis_ice_area_fraction",
                     "default_value": 0,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write area fraction covered by ice to his-file."
                 },
                 {
                     "key": "wriHis_ice_thickness",
                     "default_value": 0,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write ice thickness to his-file."
                 },
                 {
                     "key": "wriHis_ice_pressure",
                     "default_value": 0,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write ice pressure to his-file."
                 },
                 {
                     "key": "wriHis_ice_temperature",
                     "default_value": 0,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write ice temperature to his-file."
                 },
                 {
                     "key": "wriHis_snow_thickness",
                     "default_value": 0,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write snow thickness to his-file."
                 },
                 {
                     "key": "wriHis_snow_temperature",
                     "default_value": 0,
-                    "value_type": "intbool",
+                    "value_type": "list[string]",
                     "description": "Write snow temperature to his-file."
                 }
             ]
