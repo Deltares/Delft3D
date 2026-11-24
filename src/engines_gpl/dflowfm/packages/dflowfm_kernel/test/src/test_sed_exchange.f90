@@ -6,6 +6,7 @@ module test_sed_exchange
    implicit none(type, external)
    private
    public :: test_settle_cutoff, test_settle_tracer, test_settle_mass, test_settle_semi
+   public :: test_settle_waq
    public :: test_settle_bedref, test_sink_substeps, test_sink_fullstep, test_sink_closure
 
    real(dp), parameter :: tolerance = 1.0e-11_dp
@@ -41,6 +42,29 @@ contains
       call f90_expect_near(explicit_flux(2, :), [-0.5_dp, -1.5_dp], tolerance, &
                            "The tracer must retain its settling flux below the sediment reference layer")
    end subroutine test_settle_tracer
+
+   !$gtest
+   !> Water-quality settling and the sediment cutoff can operate in the same column.
+   subroutine test_settle_waq() bind(C)
+      real(dp), parameter :: volumes(3) = [1.0_dp, 2.0_dp, 4.0_dp]
+      real(dp) :: implicit_result(2, 3), explicit_result(2, 3), explicit_flux(2, 2), semi_result(2, 3)
+      integer :: j
+
+      call evaluate_settling(implicit_result, explicit_result, explicit_flux, semi_result, use_waq=.true.)
+      call f90_expect_near(implicit_result(1, :), [7.0_dp, 2.2_dp, 2.4_dp], tolerance, &
+                           "Water-quality settling must leave the sediment reference-layer cutoff in effect")
+      call f90_expect_near(implicit_result(2, :), [641.0_dp / 85.0_dp, 92.0_dp / 85.0_dp, 48.0_dp / 17.0_dp], &
+                           tolerance, "Implicit settling must use the water-quality flux at each face")
+      call f90_expect_near(explicit_flux(2, :), [-0.25_dp, -0.375_dp], tolerance, &
+                           "Explicit settling must use the water-quality flux at each face")
+      call f90_expect_near(semi_result(2, :), [8677.0_dp, 131.0_dp, 2737.0_dp] / 947.0_dp, &
+                           tolerance, "Semi-implicit advection must use the water-quality settling velocity")
+      do j = 1, 2
+         call f90_expect_near(dot_product(volumes, implicit_result(j, :)), 21.0_dp, tolerance)
+         call f90_expect_near(dot_product(volumes, explicit_result(j, :)), 21.0_dp, tolerance)
+         call f90_expect_near(dot_product(volumes, semi_result(j, :)), 21.0_dp, tolerance)
+      end do
+   end subroutine test_settle_waq
 
    !$gtest
    !> Both settling paths conserve each constituent across unequal layer volumes.
@@ -256,23 +280,26 @@ contains
 
    !> Compare actual implicit and explicit settling paths on one three-layer column.
    !! All replaced allocations, scalars and pointer associations are restored.
-   subroutine evaluate_settling(implicit_result, explicit_result, explicit_flux, semi_result, reference_layer)
+   subroutine evaluate_settling(implicit_result, explicit_result, explicit_flux, semi_result, reference_layer, use_waq)
+      use precision, only: hp
       use m_solve_vertical, only: solve_vertical
       use m_comp_fluxver, only: comp_fluxver
       use m_flowgeom, only: ndx, ndxi, kfs, ba
       use m_flowtimes, only: dts
-      use m_flow, only: kmxn, xlozmidov, a1, wsf, jaimplicitfallvelocity, s1, epshsdif, cffacver
+      use m_flow, only: kmxn, ozmidov_length_scale, a1, wsf, jaimplicitfallvelocity, s1, epshsdif, cffacver
       use m_turbulence, only: difwws, difwws_total
       use m_flowparameters, only: testdryflood
       use m_sediment, only: mtd, jased, sedtra, stm_included
       use m_fm_erosed, only: tpsnumber
       use m_transport, only: isalt, ised1, isedn, molecular_diffusion_coeff
-      use m_physcoef, only: dicoww
+      use m_physcoef, only: background_vertical_eddy_diffusivity
+      use m_fm_wq_processes, only: iconstituent_to_fall_velocity_waq, fall_velocity_waq
       use timers, only: timon
 
       real(dp), intent(out) :: implicit_result(2, 3), explicit_result(2, 3), explicit_flux(2, 2)
       real(dp), intent(out), optional :: semi_result(2, 3)
       integer, intent(in), optional :: reference_layer
+      logical, intent(in), optional :: use_waq
       real(dp), parameter :: zws(4) = [0.0_dp, 1.0_dp, 3.0_dp, 7.0_dp]
       real(dp), parameter :: volumes(4) = [1.0_dp, 1.0_dp, 2.0_dp, 4.0_dp]
       real(dp) :: qw(4), concentrations(2, 4), initial(2, 4), fluxver(2, 4), sumhorflux(2, 4)
@@ -282,11 +309,13 @@ contains
       integer :: kbot(1), ktop(1), jaupdate(1), ndeltasteps(1)
       integer :: saved_ndx, saved_ndxi, saved_jased, saved_isalt, saved_ised1, saved_isedn
       integer :: saved_implicit, saved_testdryflood
-      real(dp) :: saved_dts, saved_xlozmidov, saved_epshsdif, saved_cffacver, saved_dicoww
+      real(dp) :: saved_dts, saved_ozmidov, saved_epshsdif, saved_cffacver, saved_background_diffusivity
       logical :: saved_stm_included, saved_timon
       integer, allocatable, target :: saved_kfs(:), saved_kmxn(:)
       real(dp), allocatable, target :: saved_ba(:), saved_a1(:), saved_wsf(:), saved_s1(:)
-      real(dp), allocatable :: saved_difwws(:), saved_difwws_total(:), saved_molecular(:), saved_dicoww_values(:)
+      real(dp), allocatable :: saved_difwws(:), saved_difwws_total(:), saved_molecular(:), saved_background_values(:)
+      integer, allocatable :: saved_waq_mapping(:)
+      real(hp), allocatable :: saved_waq_velocity(:, :)
       integer, pointer :: saved_kmxsed(:, :)
       real(fp), pointer :: saved_ws(:, :), saved_seddif(:, :), saved_tpsnumber(:)
       integer, target :: local_kmxsed(1, 1)
@@ -301,10 +330,10 @@ contains
       saved_implicit = jaimplicitfallvelocity
       saved_testdryflood = testdryflood
       saved_dts = dts
-      saved_xlozmidov = xlozmidov
+      saved_ozmidov = ozmidov_length_scale
       saved_epshsdif = epshsdif
       saved_cffacver = cffacver
-      saved_dicoww = dicoww%scalar
+      saved_background_diffusivity = background_vertical_eddy_diffusivity%scalar
       saved_stm_included = stm_included
       saved_timon = timon
       saved_kmxsed => sedtra%kmxsed
@@ -320,7 +349,9 @@ contains
       call move_alloc(difwws, saved_difwws)
       call move_alloc(difwws_total, saved_difwws_total)
       call move_alloc(molecular_diffusion_coeff, saved_molecular)
-      call move_alloc(dicoww%values, saved_dicoww_values)
+      call move_alloc(background_vertical_eddy_diffusivity%values, saved_background_values)
+      call move_alloc(iconstituent_to_fall_velocity_waq, saved_waq_mapping)
+      call move_alloc(fall_velocity_waq, saved_waq_velocity)
 
       ndx = 1
       ndxi = 1
@@ -331,10 +362,10 @@ contains
       isedn = 1
       testdryflood = 0
       dts = 2.0_dp
-      xlozmidov = 0.0_dp
+      ozmidov_length_scale = 0.0_dp
       epshsdif = 1.0e-6_dp
       cffacver = 0.0_dp
-      dicoww%scalar = 0.0_dp
+      background_vertical_eddy_diffusivity%scalar = 0.0_dp
       timon = .false.
       local_kmxsed = 3
       if (present(reference_layer)) then
@@ -354,6 +385,14 @@ contains
       ba = 1.0_dp
       a1 = 1.0_dp
       wsf = 0.5_dp
+      iconstituent_to_fall_velocity_waq = [0, 0]
+      if (present(use_waq)) then
+         if (use_waq) then
+            iconstituent_to_fall_velocity_waq(2) = 1
+            allocate (fall_velocity_waq(4, 1))
+            fall_velocity_waq(:, 1) = [0.0_hp, 0.25_hp, 0.125_hp, 0.0_hp]
+         end if
+      end if
       s1 = 7.0_dp
       difwws = 0.0_dp
       difwws_total = 0.0_dp
@@ -419,7 +458,9 @@ contains
       call move_alloc(saved_difwws, difwws)
       call move_alloc(saved_difwws_total, difwws_total)
       call move_alloc(saved_molecular, molecular_diffusion_coeff)
-      call move_alloc(saved_dicoww_values, dicoww%values)
+      call move_alloc(saved_background_values, background_vertical_eddy_diffusivity%values)
+      call move_alloc(saved_waq_mapping, iconstituent_to_fall_velocity_waq)
+      call move_alloc(saved_waq_velocity, fall_velocity_waq)
       sedtra%kmxsed => saved_kmxsed
       mtd%ws => saved_ws
       mtd%seddif => saved_seddif
@@ -433,10 +474,10 @@ contains
       jaimplicitfallvelocity = saved_implicit
       testdryflood = saved_testdryflood
       dts = saved_dts
-      xlozmidov = saved_xlozmidov
+      ozmidov_length_scale = saved_ozmidov
       epshsdif = saved_epshsdif
       cffacver = saved_cffacver
-      dicoww%scalar = saved_dicoww
+      background_vertical_eddy_diffusivity%scalar = saved_background_diffusivity
       stm_included = saved_stm_included
       timon = saved_timon
    end subroutine evaluate_settling

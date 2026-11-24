@@ -58,16 +58,21 @@ contains
                         dsall, dteml, jatidep, jaselfal, tidep, limtypmom, tidef, s1init, jaselfalcorrectwlwithini, turkin0, &
                         tureps0, vicwws, turkin1, vicwwu, tureps1, tke_min, eps_min, turkinws, turepsws, sqcu, tqcu, eqcu, epsz0, z0ucur, &
                         z0urou, taus, taubxu, taubu, cfuhi, frcu, ifrcutp, u0, u1, q1, qa, map_fixed_weir_energy_loss, v, ucxu, ucyu, hu, huvli, &
-                        au, au_nostrucs, viu, vius, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, ifrctypuni, jafrculin, frculin, &
+                        au, au_nostrucs, viu, vius, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, uniform_friction_type, jafrculin, frculin, &
                         u_to_umain, q1_main, cfclval, cftrt, czs, jarhoxu, rhou, fu, czu, bb, ru, dd, STRETCH_UNI_OVER_EXP, &
+                        q1_floodplain1, q1_floodplain2, au_floodplain1, au_floodplain2, hydraulic_radius_main, hydraulic_radius_floodplain1, hydraulic_radius_floodplain2, &
                         sa1, salini, tem1, temini, background_air_temperature, background_humidity, background_cloudiness, &
-                        soiltempthick, his_write_settings, qtotmap, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, &
+                        soil_heat_buffer_thickness, his_write_settings, qtotmap, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, &
                         idensform, jarichardsononoutput, q1waq, qwwaq, itstep, sqwave, infiltrationmodel, dfm_hyd_noinfilt, infilt, &
                         dfm_hyd_infilt_const, infiltcap, infiltcapuni, jagrw, pgrw, bgrw, sgrw1, sgrw0, h_aquiferuni, bgrwuni, janudge, zcs, &
                         use_density, map_ndkx_to_ndx, air_sea_interaction_model, AIR_SEA_INTERACTION_MODEL_MOST, dynveg, frcu0, &
                         lateral_correction, vol0_f, volume_change
       use m_flowtimes, only: dtcell, time_wetground, autotimestep, AUTO_TIMESTEP_2D_OUT, AUTO_TIMESTEP_3D_HOR_OUT, &
                              AUTO_TIMESTEP_3D_HOR_INOUT, ja_timestep_nostruct, ti_waq
+      use m_flow, only: au_main, au_floodplain1, au_floodplain2
+      use m_flow, only: hydraulic_radius, hydraulic_radius_main, hydraulic_radius_floodplain1, hydraulic_radius_floodplain2
+      use m_flow, only: flow_width, flow_width_main, flow_width_floodplain1, flow_width_floodplain2
+      use m_flow, only: czu_main, czu_floodplain1, czu_floodplain2
       use m_missing, only: dmiss
       use unstruc_model, only: md_netfile, md_vertplizfile
       use m_netw, only: numk, numl
@@ -97,7 +102,7 @@ contains
       use m_set_kbot_ktop, only: set_kbot_ktop
       use m_alloc, only: realloc
       use network_data, only: LINK_2D, LINK_1D2D_STREETINLET
-      use m_physcoef, only: dynroughveg, frcuni
+      use m_physcoef, only: dynamic_vegetation_roughness_enabled, uniform_friction_coefficient_2D
 
       integer :: ierr, n, k, mxn, j, kk, LL, L, k1, k2, k3, n1, n2, n3, n4, kb1, kb2, numkmin, numkmax, kbc1, kbc2
       integer :: nlayb, nrlay, nlayb1, nrlay1, nlayb2, nrlay2, Lb, Lt, mx, ltn, mpol, Lt1, Lt2, Ldn
@@ -927,7 +932,7 @@ contains
       end if
       call realloc(frcu_mor, lnx, stat=ierr, fill=dmiss, keepexisting=.false.)
       call aerr('frcu_mor(lnx)', ierr, lnx)
-      call realloc(ifrcutp, lnx, stat=ierr, fill=abs(ifrctypuni), keepexisting=.false.)
+      call realloc(ifrcutp, lnx, stat=ierr, fill=abs(uniform_friction_type), keepexisting=.false.)
       call aerr('ifrcutp(lnx)', ierr, lnx)
 
       call realloc(u0, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
@@ -974,11 +979,48 @@ contains
          call aerr('frculin(lnx)', ierr, lnx)
       end if
 
+      if (map_write_settings%au_1d_sections == 1) then
+         call realloc(au_main, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('au_main(lnkx)', ierr, lnkx)
+         call realloc(au_floodplain1, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('au_floodplain1(lnkx)', ierr, lnkx)
+         call realloc(au_floodplain2, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('au_floodplain2(lnkx)', ierr, lnkx)
+      end if
+      if (map_write_settings%au == 1) then
+         call realloc(hydraulic_radius, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('hydraulic_radius(lnkx)', ierr, lnkx)
+      end if
+      if (map_write_settings%au_1d_sections == 1) then
+         call realloc(hydraulic_radius_main, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('hydraulic_radius_main(lnkx)', ierr, lnkx)
+         call realloc(hydraulic_radius_floodplain1, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('hydraulic_radius_floodplain1(lnkx)', ierr, lnkx)
+         call realloc(hydraulic_radius_floodplain2, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('hydraulic_radius_floodplain2(lnkx)', ierr, lnkx)
+      end if
+      if (map_write_settings%au == 1) then
+         call realloc(flow_width, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('flow_width(lnkx)', ierr, lnkx)
+      end if
+      if (map_write_settings%au_1d_sections == 1) then
+         call realloc(flow_width_main, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('flow_width_main(lnkx)', ierr, lnkx)
+         call realloc(flow_width_floodplain1, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('flow_width_floodplain1(lnkx)', ierr, lnkx)
+         call realloc(flow_width_floodplain2, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('flow_width_floodplain2(lnkx)', ierr, lnkx)
+      end if
+
       if (network%loaded .or. stm_included .or. any(kcu == LINK_1D2D_STREETINLET)) then
          call realloc(u_to_umain, lnkx, stat=ierr, fill=1.0_dp, keepexisting=.false.)
          call aerr('u_to_umain(lnkx)', ierr, lnkx)
          call realloc(q1_main, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('q1_main(lnkx)', ierr, lnkx)
+         call realloc(q1_floodplain1, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('q1_floodplain1(lnkx)', ierr, lnkx)
+         call realloc(q1_floodplain2, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('q1_floodplain2(lnkx)', ierr, lnkx)
       end if
 
       if (jacali == 1) then
@@ -999,8 +1041,16 @@ contains
          call realloc(czu, lnx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('czu(lnx)', ierr, lnx)
       end if
-      if (dynroughveg > 0) then
-         call realloc(frcu0, lnx, stat=ierr, fill=frcuni, keepexisting=.false.)
+      if (map_write_settings%chezy_links_1d_sections == 1) then
+         call realloc(czu_main, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('czu_main(lnkx)', ierr, lnkx)
+         call realloc(czu_floodplain1, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('czu_floodplain1(lnkx)', ierr, lnkx)
+         call realloc(czu_floodplain2, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('czu_floodplain2(lnkx)', ierr, lnkx)
+      end if
+      if (dynamic_vegetation_roughness_enabled > 0) then
+         call realloc(frcu0, lnx, stat=ierr, fill=uniform_friction_coefficient_2D, keepexisting=.false.)
          call aerr('frcu0(lnx)', ierr, lnx)
          call realloc(dynveg, lnx, stat=ierr, fill=.false., keepexisting=.false.)
          call aerr('dynveg(lnx)', ierr, lnx)
@@ -1074,7 +1124,7 @@ contains
             call realloc(net_solar_radiation, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
             call aerr('net_solar_radiation(ndx)', ierr, ndx)
 
-            if (Soiltempthick > 0) then
+            if (soil_heat_buffer_thickness > 0) then
                call realloc(tbed, ndx, stat=ierr, fill=temini, keepexisting=.false.)
                call aerr('tbed(ndx)', ierr, ndx)
             end if

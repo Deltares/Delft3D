@@ -36,7 +36,7 @@ contains
 
     subroutine wr_proceswrk(lurep, procesdef, num_defaults, defaul, idpnw, &
             ivpnw, dsto, vsto, locnam, nopred, &
-            num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, num_substances_total, &
+            num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_functions, num_substances_total, &
             num_local_vars, num_dispersion_arrays, num_velocity_arrays, num_dispersion_arrays_extra, num_velocity_arrays_extra, &
             num_local_vars_exchange, num_substances_transported, num_grids, dename, coname, paname, &
             funame, sfname, syname, intopt, file_unit_list, &
@@ -77,7 +77,7 @@ contains
         integer(kind = int_wp), intent(in) :: num_constants                 !< number of constants
         integer(kind = int_wp), intent(in) :: num_spatial_parameters                   !< number of parameters
         integer(kind = int_wp), intent(in) :: num_time_functions                  !< number of functions
-        integer(kind = int_wp), intent(in) :: num_spatial_time_fuctions                 !< number of segment functions
+        integer(kind = int_wp), intent(in) :: num_spatial_time_functions                 !< number of segment functions
         integer(kind = int_wp), intent(in) :: num_substances_total                  !< number of substances
         integer(kind = int_wp), intent(in) :: num_local_vars                  !< number of local values
         integer(kind = int_wp), intent(in) :: num_dispersion_arrays                 !< number of dispersions
@@ -166,7 +166,7 @@ contains
         ! calculate and fill output structure
 
         process_space_int_len = 0
-        ioffx = nopred + num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_fuctions + num_substances_total + num_local_vars + num_defaults
+        ioffx = nopred + num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_functions + num_substances_total + num_local_vars + num_defaults
         mxpmsa = no_ine + no_ins + no_ous + no_oue + no_flu
         allocate (nsvar(nbpr))
         allocate (iflux(nbpr))
@@ -179,7 +179,7 @@ contains
         allocate (pronam(nbpr))
         call intoou (procesdef, num_processes_activated, num_fluxes, nsvar, pronam, &
                 iflux, process_space_int, ipssa, process_space_int_len, ioffx, &
-                num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, num_substances_total, &
+                num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_functions, num_substances_total, &
                 num_dispersion_arrays, num_velocity_arrays, num_defaults, num_local_vars, num_dispersion_arrays_extra, &
                 num_velocity_arrays_extra, num_local_vars_exchange, nopred, prvvar, prvtyp, &
                 num_vars, progrd, prondt)
@@ -195,7 +195,7 @@ contains
         allocate(vardag(num_vars))
         allocate(vartag(num_vars))
         allocate(varagg(num_vars))
-        call setvat (lurep, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, &
+        call setvat (lurep, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_functions, &
                 num_substances_transported, num_substances_total, num_dispersion_arrays, num_velocity_arrays, num_defaults, &
                 num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes, &
                 nopred, num_vars, vararr, varidx, vartda, &
