@@ -97,7 +97,7 @@ contains
       if (jakdtree == 0) then
 
          do i = 1, n
-            call inflowcell(xx(i), yy(i), k, jaoutside, iLocTp)
+            call inflowcell(xx(i), yy(i), k, jaoutside, iLocTp, prefer_own_domain)
             if (jaoutside == 1) then
                if (iLocTp == INDTP_1D .or. iLocTp == INDTP_ALL) then
                   call find_nearest_1D_or_boundary_flownode_bruteforce(xx(i), yy(i), k1b)
@@ -110,6 +110,7 @@ contains
                   else if (k1b /= 0) then
                      k = k1b
                   end if
+               ! For nesting of discharge boundaries; find nearest internal point!                  
                else if (iLocTp == INDTP_2D) then
                   call find_nearest_2D_internal_bruteforce(xx(i), yy(i), k)
                end if
