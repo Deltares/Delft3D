@@ -16,11 +16,9 @@ from multiprocessing.synchronize import Condition
 from pathlib import Path
 from typing import Iterable, List, Optional
 
-from src.config.credentials import Credentials
 from src.config.location import Location
 from src.config.test_case_config import TestCaseConfig
 from src.config.test_case_failure import TestCaseFailure
-from src.config.types.handler_type import HandlerType
 from src.config.types.mode_type import ModeType
 from src.config.types.path_type import PathType
 from src.suite.program import Program
@@ -32,7 +30,6 @@ from src.utils.common import log_header, log_separator, log_sub_header
 from src.utils.errors.test_bench_error import TestBenchError
 from src.utils.handlers.dvc_handler import DvcHandler
 from src.utils.handlers.handler_factory import HandlerFactory
-from src.utils.handlers.resolve_handler import ResolveHandler
 from src.utils.logging.i_logger import ILogger
 from src.utils.logging.i_main_logger import IMainLogger
 from src.utils.logging.test_loggers.i_test_logger import ITestLogger
@@ -564,14 +561,9 @@ class TestSetRunner(ABC):
         if not dvc_files:
             return True
 
-        credentials = self.__find_dvc_credentials(location_infos)
         try:
             handler = DvcHandler()
-            handler.download_batch(
-                dvc_files,
-                credentials,
-                self.__logger,
-            )
+            handler.download_batch(dvc_files, self.__logger)
             return True
         except Exception as exception:
             self.__logger.error(f"Batch DVC download failed: {exception}")
@@ -579,14 +571,6 @@ class TestSetRunner(ABC):
                 self.cleanup_failed_preparation(config)
             log_separator(self.__logger, char="-")
             return False
-
-    @staticmethod
-    def __find_dvc_credentials(location_infos: list[DvcLocationInfo]) -> Credentials:
-        """Return the first credentials found in the location list, or empty defaults."""
-        for info in location_infos:
-            if info.location.credentials and info.location.credentials.username:
-                return info.location.credentials
-        return Credentials()
 
     def __apply_dvc_paths(self, location_infos: list[DvcLocationInfo]) -> None:
         """Set absolute paths on configs after a successful batch download."""
@@ -644,48 +628,20 @@ class TestSetRunner(ABC):
                             absLocation = os.path.abspath(
                                 Paths().mergeFullPath(candidate_source, program_configuration.path)
                             )
-                            if ResolveHandler.detect(absLocation, self.__logger, None) == HandlerType.PATH:
-                                if os.path.exists(absLocation):
-                                    self.__logger.debug(
-                                        f"detected local path for program {program_configuration.name}, using {absLocation}"
-                                    )
-                                    program_configuration.absolute_bin_path = absLocation
-                                    resolved = True
-                                    break
-                        if not resolved:
-                            if Paths().isPath(sourceLocation):
-                                # Use engines_path as default when not found locally
-                                absLocation = os.path.abspath(
-                                    Paths().mergeFullPath(enginesLocation, program_configuration.path)
+                            if os.path.exists(absLocation):
+                                self.__logger.debug(
+                                    f"detected local path for program {program_configuration.name}, using {absLocation}"
                                 )
-                                self.__logger.warning(f"could not yet detect specified program {absLocation}")
                                 program_configuration.absolute_bin_path = absLocation
-                            else:
-                                # download it from a remote location
-                                if loc.version:
-                                    to = loc.to_path + "_" + loc.version
-                                else:
-                                    to = loc.to_path
-                                program_local_path = Paths().rebuildToLocalPath(
-                                    os.path.join(self.__settings.local_paths.engines_path, to)
-                                )
-
-                                # if the program is remote (network or other) and it does not exist locally, download it
-                                if not os.path.exists(program_local_path):
-                                    self.__logger.debug(
-                                        f"Downloading program, {program_configuration.name} from {sourceLocation}"
-                                    )
-                                    HandlerFactory.download(
-                                        sourceLocation,
-                                        program_local_path,
-                                        self.programs,
-                                        self.__logger,
-                                        loc.credentials,
-                                        loc.version,
-                                    )
-                                program_configuration.absolute_bin_path = os.path.abspath(
-                                    Paths().mergeFullPath(program_local_path, program_configuration.path)
-                                )
+                                resolved = True
+                                break
+                        if not resolved and Paths().isPath(sourceLocation):
+                            # Use engines_path as default when not found locally
+                            absLocation = os.path.abspath(
+                                Paths().mergeFullPath(enginesLocation, program_configuration.path)
+                            )
+                            self.__logger.warning(f"could not yet detect specified program {absLocation}")
+                            program_configuration.absolute_bin_path = absLocation
 
             # If a program does not have a network path, and path is not a relative or absolute path, we assume the system can find it
             elif not Paths().isPath(program_configuration.path):
@@ -797,9 +753,10 @@ class TestSetRunner(ABC):
 
     def __process_test_case_locations(self, config: TestCaseConfig, logger: ILogger) -> None:
         """Process all locations for a test case, downloading files as needed."""
+        skip_download_list = self.settings.command_line_settings.skip_download or []
         for location in config.locations:
             # Skip CHECK locations — those are for program binaries, handled by __update_programs
-            if location.type == PathType.CHECK:
+            if location.type == PathType.CHECK or location.type in skip_download_list:
                 continue
             self.__validate_location(config, location)
             remote_path = self.__build_remote_path(config, location)

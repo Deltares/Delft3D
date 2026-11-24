@@ -16,7 +16,7 @@ mkdir -p .vscode
 # Create virtual environment for TestBench.py and install the dependencies.
 pushd "$TESTBENCH_HOME"
 if [[ ! -d ".venv" ]]; then
-    uv sync --python=3.12 --locked --extra dev
+    uv sync --locked --extra dev
 fi
 popd
 

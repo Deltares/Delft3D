@@ -27,7 +27,7 @@ Deltares developers download them directly and external developers build them lo
   If you prefer graphical user interfaces over command lines, you may want to additionally install [GitExtensions](https://gitextensions.github.io/) and/or [TortoiseGit](https://tortoisegit.org/).
   The former tool is generally considered more powerful and true to Git.
   The latter tool offers icon overlays for commit status.
-- [Python 3.12](https://www.python.org/downloads/) for the build scripts and the Conan package manager.
+- [Python](https://www.python.org/downloads/) for the build scripts and the Conan package manager.
   The recommended way to install Python within Deltares is via [uv](https://docs.astral.sh/uv/):
   ```
   uv python install
