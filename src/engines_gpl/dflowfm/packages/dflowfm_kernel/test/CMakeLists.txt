@@ -63,6 +63,16 @@ add_fortran_gtest(test_bedload_balance
     VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
 )
 
+# Use a separate working directory for the generated model inputs and diagnostics.
+add_fortran_gtest(test_bedload_areas
+    SOURCES src/test_bedload_areas.f90
+    LIBRARIES dflowfm_kernel test_helpers netCDF::netcdff
+    VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
+)
+set_target_properties(test_bedload_areas PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/test_bedload_areas"
+)
+
 copy_test_resources("${test_target}" "${CMAKE_CURRENT_SOURCE_DIR}/resources/MDUversion" "$<TARGET_FILE_DIR:${test_target}>/MDUversion")
 
 add_executable(test_subsupl_balance src/test_subsupl_balance.f90)
@@ -99,7 +109,7 @@ endforeach()
 add_test(NAME mass_balance_subsupl.volume_remap COMMAND test_subsupl_balance volume_remap)
 add_test(NAME mass_balance_subsupl.sigma_boundary COMMAND test_subsupl_balance sigma_boundary)
 
-foreach(runtime_target IN ITEMS ${test_target} test_bedload_balance test_subsupl_balance)
+foreach(runtime_target IN ITEMS ${test_target} test_bedload_balance test_bedload_areas test_subsupl_balance)
     # Copy MSVC runtime DLLs to test output directory
     foreach(runtime_lib IN LISTS CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS)
         add_custom_command(TARGET ${runtime_target} PRE_BUILD
