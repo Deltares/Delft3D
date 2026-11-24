@@ -157,7 +157,7 @@ contains
       call realloc(mbavolumebegintot, nomba, keepExisting=.false., fill=0.0_dp)
       call realloc(mbavolumeend, nomba, keepExisting=.false., fill=0.0_dp)
       if (mba_has_moving_bed) then
-         call realloc(mbabedvolume, nomba, keepExisting=.false., fill=0.0_dp)
+         call realloc(mbavolumebeforebed, nomba, keepExisting=.false., fill=0.0_dp)
          call realloc(mbaflowbed, [2, nomba], keepExisting=.false., fill=0.0_dp)
          call realloc(mbaflowbedtot, [2, nomba], keepExisting=.false., fill=0.0_dp)
          if (jampi == 1) then
@@ -954,7 +954,7 @@ contains
 
    !> Capture the actual water volume change around a bed geometry update.
    subroutine comp_bedflowmba(before_update)
-      use m_mass_balance_area_data, only: jamba, nomba, mbadefdomain, mbabedvolume, mbaflowbed, DIR_FROM, DIR_TO
+      use m_mass_balance_area_data, only: jamba, nomba, mbadefdomain, mbavolumebeforebed, mbaflowbed, DIR_FROM, DIR_TO
       use m_flowgeom, only: ndxi
       use m_flow, only: vol1
       use m_get_kbot_ktop, only: getkbotktop
@@ -977,10 +977,10 @@ contains
          volume(imba) = volume(imba) + sum(vol1(kb:kt))
       end do
       if (before_update) then
-         mbabedvolume = volume
+         mbavolumebeforebed = volume
       else
          do imba = 1, nomba
-            change = volume(imba) - mbabedvolume(imba)
+            change = volume(imba) - mbavolumebeforebed(imba)
             mbaflowbed(DIR_FROM, imba) = mbaflowbed(DIR_FROM, imba) + max(change, 0.0_dp)
             mbaflowbed(DIR_TO, imba) = mbaflowbed(DIR_TO, imba) + max(-change, 0.0_dp)
          end do

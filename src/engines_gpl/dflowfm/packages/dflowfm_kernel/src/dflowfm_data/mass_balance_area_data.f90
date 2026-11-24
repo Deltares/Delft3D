@@ -121,7 +121,7 @@ module m_mass_balance_area_data
    real(kind=dp), allocatable, target :: mbaflowrainevatot(:, :) !< total flow from rain and prescribed evaporation
    real(kind=dp), allocatable, target :: mbafloweva(:) !< periodical flow from calculated evaporation
    real(kind=dp), allocatable, target :: mbaflowevatot(:) !< total flow from calculated evaporation
-   real(kind=dp), allocatable :: mbabedvolume(:) !< local water volume before a bed geometry update
+   real(kind=dp), allocatable :: mbavolumebeforebed(:) !< Local water volume (m^3) per balance area before a bed geometry update.
    real(kind=dp), allocatable, target :: mbaflowbed(:, :) !< periodical water volume added/removed by bed geometry updates
    real(kind=dp), allocatable, target :: mbaflowbedtot(:, :) !< total water volume added/removed by bed geometry updates
    real(kind=dp), allocatable :: mbaflowbedreduce(:, :) !< water volume change reduction buffer

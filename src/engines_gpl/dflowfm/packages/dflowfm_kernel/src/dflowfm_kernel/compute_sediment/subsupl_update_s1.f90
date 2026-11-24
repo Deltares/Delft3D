@@ -82,7 +82,8 @@ contains
       use m_get_kbot_ktop, only: getkbotktop
       use messagehandling, only: mess, LEVEL_FATAL
 
-      integer :: n, k, kb, kt, old_kt, receiver
+      integer :: n, k, kb, kt, old_kt
+      integer :: k_receiver !< cell receiving the contituent mass
       real(dp) :: displaced_mass(numconst)
 
       if (numconst == 0) then
@@ -115,8 +116,8 @@ contains
                          'Use SubsUplUpdateS1=1 to retain its water volume.')
                return
             end if
-            receiver = kb - 1 + maxloc(vol1(kb:kt), dim=1)
-            constituents(:, receiver) = constituents(:, receiver) + displaced_mass / vol1(receiver)
+            k_receiver = kb - 1 + maxloc(vol1(kb:kt), dim=1)
+            constituents(:, k_receiver) = constituents(:, k_receiver) + displaced_mass / vol1(k_receiver)
          end if
       end do
    end subroutine subsupl_update_constituents
