@@ -42,7 +42,7 @@
 #
 
 global version
-set version "2.31"
+set version "2.32"
 
 global timelimit
 set timelimit "01:00:00"
@@ -59,6 +59,7 @@ set processes {}
 
 global processhandles
 set processhandles {}
+set completedProcesses {}
 
 global scriptscreated
 set scriptscreated {}
@@ -268,17 +269,24 @@ proc setPlatform { } {
 # Side effect:
 #     Command started, output will be redirected to the output window
 # --------------------------------------------------------------------
-proc runcmd {command tag {mergeLog ""}} {
+proc runcmd {command tag {screenLog ""}} {
     global processes
     global processhandles
+    global platform
+    global processfailures
 
     set name [format "|\"%s\"" $command]
     regsub -all {\\} $name {\\\\} name
-    set infile [open $name "r"]
+    if {[catch {open $name "r"} infile]} {
+        if {$platform ne "windows"} {error $infile}
+        lappend processfailures [list $tag $infile]
+        stopWindowsProcesses
+        return {}
+    }
 
     fconfigure $infile -buffering none
     #fconfigure $infile -buffering line
-    fileevent $infile readable [list getInput $infile $tag $mergeLog]
+    fileevent $infile readable [list getInput $infile $tag $screenLog]
 
     lappend processhandles $infile
     lappend processes [pid $infile]
@@ -293,34 +301,46 @@ proc runcmd {command tag {mergeLog ""}} {
 # Arguments:
 #     channel        Channel to the external program
 #     tag            The tag that identifies the program (different colours)
-#     mergeLog       Screen log for a directly launched Slurm MorMerge server
+#     screenLog      Screen log for the child process
 # Returns:
 #     Nothing
 # --------------------------------------------------------------------
-proc getInput {channel tag mergeLog} {
+proc getInput {channel tag screenLog} {
     global processes
     global processfailures
     global mergeStreamClosures
+    global platform
+    global completedProcesses
 
     if { [gets $channel line] >= 0 } {
         puts "$tag : $line"
     } else {
         set idx [lsearch $processes [pid $channel]]
         set processes [lreplace $processes $idx $idx]
-        puts "$tag : Finished"
+        lappend completedProcesses $tag
+        set childStatus Finished
         if { [catch {close $channel} errmsg options] } {
             set errorCode [dict get $options -errorcode]
-            if {$mergeLog ne "" && [lindex $errorCode 0] eq "CHILDSTATUS" &&
-                [lindex $errorCode 2] == 1 && [hasMergeStreamClosure $mergeLog]} {
+            if {$screenLog ne "" && [string match "merge:*" $tag] &&
+                [lindex $errorCode 0] eq "CHILDSTATUS" &&
+                [lindex $errorCode 2] == 1 && [hasMergeStreamClosure $screenLog]} {
                 lappend mergeStreamClosures $tag
             } else {
-                if {$mergeLog ne ""} {
-                    append errmsg " (see $mergeLog)"
+                set childStatus Failed
+                if {[lindex $errorCode 0] eq "CHILDSTATUS"} {
+                    append errmsg " (exit status [lindex $errorCode 2])"
+                }
+                if {$screenLog ne ""} {
+                    append errmsg " (see $screenLog)"
                 }
                 puts "\nERROR: tag=$tag : $errmsg"
                 lappend processfailures [list $tag $errmsg]
+                if {$platform eq "windows" && [llength $processfailures] == 1} {
+                    stopWindowsProcesses
+                }
             }
         }
+        puts "$tag : $childStatus"
         if { [llength $processes] == 0 } {
             set ::finished 1
         } else {
@@ -330,8 +350,71 @@ proc getInput {channel tag mergeLog} {
 }
 
 
+proc stopWindowsProcesses {} {
+   global processes
+   global env
+
+   # Only stop process trees launched and still tracked by this calculation.
+   foreach process $processes {
+      foreach child $process {
+         if {[catch {exec [file join $env(SystemRoot) System32 taskkill.exe] /PID $child /T /F 2>@1} errmsg]} {
+            puts stderr "WARNING: Unable to stop child process $child: $errmsg"
+         }
+      }
+   }
+}
+
+
+proc waitForStartup {files tag} {
+   global waittime
+   global maxWaitCount
+   global platform
+   global processfailures
+   global completedProcesses
+
+   set startupChecks $maxWaitCount
+   if {$platform eq "windows"} {incr startupChecks}
+   for {set count 1} {$count <= $startupChecks} {incr count} {
+      if {$platform eq "windows"} {
+         # Service child exits while waiting for engine initialization markers.
+         update
+         if {[llength $processfailures] > 0} {return}
+      }
+      set missing {}
+      foreach path $files {
+         if {![file exists $path]} {lappend missing $path}
+      }
+      if {[llength $missing] == 0} {return}
+      if {$platform eq "windows" && [lsearch -exact $completedProcesses $tag] >= 0} {
+         lappend processfailures [list $tag "Exited before initialization: [lindex $missing 0]"]
+         stopWindowsProcesses
+         return
+      }
+      if {$count > $maxWaitCount} {break}
+      putsDebug "waiting for file [lindex $missing 0] to occur ($count/$maxWaitCount)"
+      if {$platform eq "windows"} {
+         after $waittime [list set ::startupWait 1]
+         vwait ::startupWait
+      } else {
+         after $waittime
+      }
+   }
+   puts "Maximum wait time reached for file [lindex $missing 0] to occur"
+   if {$platform eq "windows"} {
+      lappend processfailures [list $tag "Initialization marker not created: [lindex $missing 0]"]
+      stopWindowsProcesses
+   } else {
+      puts "Continuing..."
+   }
+}
+
+
 proc hasMergeStreamClosure {logPath} {
+   global platform
    set diagnostic {^GetPutArrayError: ABORT Recv from .+ returns 0 bytes\. Is the peer process dead\?$}
+   if {$platform eq "windows"} {
+      set diagnostic {^GetPutArrayError: ABORT Recv from .+ (returns 0 bytes\. Is the peer process dead\?|fails \(No error\))$}
+   }
    set found 0
    if {[catch {
       set log [open $logPath r]
@@ -2018,8 +2101,9 @@ proc startMormerge { inputfilename workdir mergeexe localrun runid node } {
       }
       puts $scriptfile "\nrem Start mormerge\n"
       puts $scriptfile "set PATH=$exedir;$sharedir;%PATH%"
-      puts $scriptfile "start /b [spaceSafe $mergeexe] -i [file tail $inputfilename]\
+      puts $scriptfile "\"$mergeexe\" -i [file tail $inputfilename]\
          -w [spaceSafe $rundir] -r $runid >$screenfile 2>&1"
+      puts $scriptfile "set merge_status=%errorlevel%"
       if { $localrun } {
          puts $scriptfile "\nrem Copy rundir data back to modeldir\n"
          puts $scriptfile "copy /Y $screenfile $rundir"
@@ -2029,7 +2113,7 @@ proc startMormerge { inputfilename workdir mergeexe localrun runid node } {
          puts $scriptfile "cd .."
          puts $scriptfile "rmdir /Q $worksubdir"
       }
-      puts $scriptfile "\nexit\n"
+      puts $scriptfile "\nexit /b %merge_status%\n"
       puts $scriptfile "\nrem End of script\n"
    }
    close $scriptfile
@@ -2070,7 +2154,8 @@ proc startMormerge { inputfilename workdir mergeexe localrun runid node } {
       puts $shellscriptfile "@ echo off"
       puts $shellscriptfile \
          "\nrem This script file is automatically generated by mormerge.tcl, version $version\n"
-      puts $shellscriptfile "start /b [spaceSafe $sfilname]\n"
+      puts $shellscriptfile "call \"$sfilname\""
+      puts $shellscriptfile "exit /b %errorlevel%"
    }
    close $shellscriptfile
    after $waittime
@@ -2089,26 +2174,14 @@ proc startMormerge { inputfilename workdir mergeexe localrun runid node } {
 
    putsDebug "mormergeruncommand:$shellscriptname"
    after $waittime
-   if {$queuesys == "slurm"} {
+   if {$queuesys == "slurm" || $platform eq "windows"} {
       set returnval [runcmd $shellfilname "merge:$runid" [file join $rundir $screenfile]]
    } else {
       set returnval [runcmd $shellfilname "merge:$runid"]
    }
    #after [expr 10000 + $waittime]
    set syncfile [file nativename [file join $syncdir "merge$runid"] ]
-   set fileexists 0
-   set waitcount 0
-   while {! $fileexists} {
-      incr waitcount
-      putsDebug "waiting for file $syncfile to occur ($waitcount/$maxWaitCount)"
-      set fileexists [file exists $syncfile]
-      after $waittime
-      if { $waitcount >= $maxWaitCount } {
-         puts "Maximum wait time reached for file $syncfile to occur"
-         puts "Continuing..."
-         set fileexists 1
-      }
-   }
+   waitForStartup [list $syncfile] "merge:$runid"
    putsDebug "startMormerge:$runid finished"
    return $returnval
 }
@@ -2153,6 +2226,7 @@ proc startFlow { inflist alist condition runids waveonline tdatomexe flowexe wav
    global remoteShell
    global clusterName
    global localhost
+   global windowsStagedConditions
    upvar $inflist infillist
    upvar $alist   arglist
 
@@ -2326,28 +2400,24 @@ proc startFlow { inflist alist condition runids waveonline tdatomexe flowexe wav
       set sharedir [string map {"bin" "share"} $exedir]
       #
       set rootconddir [file nativename [file join $rootdir $condition] ]
+      set conditiondir $rootconddir
+      if {$infillist(localrun)} {
+         set conditiondir [file join $infillist(workdir) $idstring $condition]
+         file mkdir [file dirname $conditiondir]
+         file copy $rootconddir $conditiondir
+         file delete -force $rootconddir
+         lappend windowsStagedConditions [list $conditiondir $rootdir]
+      }
       puts $scriptfile "@ echo off"
       puts $scriptfile \
          "\nrem This script file is automatically generated by mormerge.tcl, version $version\n"
       puts $scriptfile "\nrem Set some environment parameters\n"
-      if { $infillist(localrun) } {
-         set worksubdir $idstring
-         puts $scriptfile "\nrem Running locally\nrem Copy modeldir to workdir\n"
-         puts $scriptfile "cd /D $infillist(workdir)"
-         puts $scriptfile "mkdir [spaceSafe $worksubdir]"
-         puts $scriptfile "cd /D $worksubdir"
-         puts $scriptfile "mkdir [spaceSafe $condition]"
-         puts $scriptfile "cd /D $condition"
-         puts $scriptfile "copy /Y [file nativename [file join $rootconddir "*"] ] ."
-         puts $scriptfile "rmdir /S /Q $rootconddir"
-      } else {
-         puts $scriptfile "\nrem Jump to run directory\n"
-         puts $scriptfile "cd /D $rootconddir"
-      }
+      puts $scriptfile "cd /D \"[file nativename $conditiondir]\" || exit /b 1"
       if { $arglist(runtdatom) } {
          puts $scriptfile "\nrem Run tdatom for each runid\n"
          foreach runid $runids {
-            puts $scriptfile "start /b [spaceSafe $tdatomexe] -r $runid >tdatom$runid.scr 2>&1"
+            puts $scriptfile "\"$tdatomexe\" -r $runid >tdatom$runid.scr 2>&1"
+            puts $scriptfile "if errorlevel 1 exit /b %errorlevel%"
          }
       }
       if { $infillist(dimrexedir) != " " } {
@@ -2357,24 +2427,10 @@ proc startFlow { inflist alist condition runids waveonline tdatomexe flowexe wav
       } else {
          puts $scriptfile "\nrem Start $infillist(flowexename)\n"
          puts $scriptfile "set PATH=$exedir;$sharedir;%PATH%"
-         puts $scriptfile "start /b [spaceSafe $flowexe] $infillist(flowargs)\
+         puts $scriptfile "\"$flowexe\" $infillist(flowargs)\
             >$infillist(flowexename).scr 2>&1"
-         if { $waveonline } {
-            puts $scriptfile "\nrem Start wave\n"
-            puts $scriptfile "set PATH=$swanbatdir;$swanexedir;$waveexedir;$sharedir;%PATH%"
-            puts $scriptfile "start /b [spaceSafe $waveexe] $infillist(waveargs) >wave.scr 2>&1"
-         }
       }
-      if { $infillist(localrun) } {
-         puts $scriptfile "\nrem Copy rundir data back to modeldir\n"
-         puts $scriptfile "mkdir [spaceSafe $rootconddir]"
-         puts $scriptfile "copy /Y * $rootconddir"
-         puts $scriptfile "cd .."
-         puts $scriptfile "rmdir /S /Q $condition"
-         puts $scriptfile "cd .."
-         puts $scriptfile "rmdir /Q $worksubdir"
-      }
-      puts $scriptfile "\nexit\n"
+      puts $scriptfile "\nexit /b %errorlevel%\n"
       puts $scriptfile "\nrem End of script\n"
    }
    close $scriptfile
@@ -2416,8 +2472,8 @@ proc startFlow { inflist alist condition runids waveonline tdatomexe flowexe wav
       puts $shellscriptfile "@ echo off"
       puts $shellscriptfile \
          "\nrem This script file is automatically generated by mormerge.tcl, version $version\n"
-      puts $shellscriptfile "start /b [spaceSafe $sfilname]\n"
-      puts $shellscriptfile "\nexit\n"
+      puts $shellscriptfile "call \"$sfilname\""
+      puts $shellscriptfile "exit /b %errorlevel%"
    }
    close $shellscriptfile
    after $waittime
@@ -2437,34 +2493,32 @@ proc startFlow { inflist alist condition runids waveonline tdatomexe flowexe wav
 
    putsDebug "Flow Run command:$shellscriptname"
    
-   if { [catch {set returnval [runcmd $shellfilname "flow:$condition"]} errmsg] } {
-     putsDebug "\nERROR : Unable to start process flow:$condition:"
-     putsDebug   "          $errmsg"
-    } else {
-     putsDebug "Successfully started proces flow:$condition"
-    }
+   if {$platform eq "windows"} {
+      set returnval [runcmd $shellfilname "flow:$condition" [file join $conditiondir "$exename.scr"]]
+      if {$returnval eq ""} {return $returnval}
+   } else {
+      set returnval [runcmd $shellfilname "flow:$condition"]
+   }
+   if {$platform eq "windows" && $waveonline && $infillist(dimrexedir) eq " "} {
+      set wavescriptname "d3d-wave_run$condition.bat"
+      lappend scriptscreated $wavescriptname
+      set wavescriptpath [file join $rundir $wavescriptname]
+      set wavescript [open $wavescriptpath w]
+      puts $wavescript "@ echo off"
+      puts $wavescript "cd /D \"[file nativename $conditiondir]\" || exit /b 1"
+      puts $wavescript "set PATH=$swanbatdir;$swanexedir;$waveexedir;$sharedir;%PATH%"
+      puts $wavescript "\"$waveexe\" $infillist(waveargs) >wave.scr 2>&1"
+      puts $wavescript "exit /b %errorlevel%"
+      close $wavescript
+      runcmd $wavescriptpath "wave:$condition" [file join $conditiondir wave.scr]
+   }
    
    #after [expr 10000 + $waittime]
-   set fileexists 0
-   set waitcount 0
-   while {! $fileexists} {
-      incr waitcount
-      set fileexists 1
-      foreach runid $runids {
-         set basename [format "%s%s%s" $condition "flow" $runid]
-         set syncfile [file nativename [file join $syncdir $basename] ]
-         if {! [file exists $syncfile] } {
-            putsDebug "waiting for file $syncfile to occur ($waitcount/$maxWaitCount)"
-            set fileexists 0
-         }
-      }
-      after $waittime
-      if { $waitcount >= $maxWaitCount } {
-         puts "Maximum wait time reached for file $syncfile to occur"
-         puts "Continuing..."
-         set fileexists 1
-      }
+   set syncfiles {}
+   foreach runid $runids {
+      lappend syncfiles [file join $syncdir "${condition}flow$runid"]
    }
+   waitForStartup $syncfiles "flow:$condition"
    putsDebug "startFlow:$condition finished"
    return $returnval
 }
@@ -2530,6 +2584,7 @@ setPlatform
 
 set processfailures {}
 set mergeStreamClosures {}
+set windowsStagedConditions {}
 
 if {$platform == "linux"} {
    if { $queuesys == "slurm" } {
@@ -2983,12 +3038,14 @@ foreach runid $runids {
                                       $runid               \
                                       $node]
    puts "merge:$runid started, pid: $pidlist($runid)"
+   if {[llength $processfailures] > 0} {break}
 }
 
 after 1000
 
 set inode -1
 foreach condition $infillist(conditions) {
+   if {[llength $processfailures] > 0} {break}
    putsDebug "Starting flow for condition $condition\
       after [expr $processStarttime / 1000] seconds ..."
    after $processStarttime
@@ -3022,7 +3079,14 @@ foreach condition $infillist(conditions) {
 #
 puts "Waiting for [llength $processes] processes to finish..."
 
-vwait finished
+if {[llength $processes] > 0} {vwait finished}
+
+foreach staged $windowsStagedConditions {
+   foreach {conditiondir targetdir} $staged {break}
+   if {[catch {file copy $conditiondir $targetdir} errmsg]} {
+      lappend processfailures [list copyback $errmsg]
+   }
+}
 
 
 #

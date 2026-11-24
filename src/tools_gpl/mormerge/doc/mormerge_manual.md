@@ -1,6 +1,6 @@
 # MorMerge user manual
 
-This manual describes `mormerge.tcl` version `2.31`, with general operation, Linux Slurm setup, and local Windows setup for D-Flow FM through DIMR and Delft3D 4 through `d_hydro`. Each engine section includes one-node and multi-node Slurm runs with and without online WAVE, other component and coupling configurations, and Windows setup and run instructions.
+This manual describes `mormerge.tcl` version `2.32`, with general operation, Linux Slurm setup, and local Windows setup for D-Flow FM through DIMR and Delft3D 4 through `d_hydro`. Each engine section includes one-node and multi-node Slurm runs with and without online WAVE, other component and coupling configurations, and Windows setup and run instructions.
 
 1. [General functioning](#1-general-functioning)
 2. [Setting up a DIMR run](#2-setting-up-a-dimr-run)
@@ -177,13 +177,19 @@ The WAVE examples in this manual use `[General] SwanMode = exe`, which is the MD
 
 Each Slurm condition launcher records its child PIDs and collects every exit status. Tcl reports `mormerge.tcl : Failed` and exits nonzero after observed child failures. The wrapper propagates that status. Peers may remain waiting after a failed condition, so inspect both the first model error and the remaining steps if the job stays running. Marker waits have a retry limit and continue with a message when it is reached.
 
-A server can exit with status `1` when successful conditions close their streams. In Slurm runs, Tcl accepts the following exact diagnostic pattern as expected shutdown when the condition launchers finish successfully.
+A server can exit with status `1` when successful conditions close their streams. In Slurm and Windows runs, Tcl accepts the following exact diagnostic pattern as expected shutdown when all engine processes finish successfully.
 
 ```text
 GetPutArrayError: ABORT Recv from <peer> returns 0 bytes. Is the peer process dead?
 ```
 
-Other receive errors and failed conditions produce a Slurm failure status once the children exit. A printed start message or initialization marker alone establishes only that initialization reached that stage. Section 1.9 describes the Windows status limitation.
+Windows servers can instead report the following stream-close diagnostic, which is accepted under the same successful-engine requirement.
+
+```text
+GetPutArrayError: ABORT Recv from <peer> fails (No error)
+```
+
+Other receive errors and failed conditions produce a failure status once the children exit. A printed start message or initialization marker alone establishes only that initialization reached that stage. Section 1.9 describes Windows child supervision and failure handling.
 
 | Symptom | First check |
 | --- | --- |
@@ -199,7 +205,7 @@ For a first cluster test, use `debug = 1`, inspect the generated geometry, confi
 
 The Windows recipes run concurrent conditions on one PC. They use `nodes = local` and the Windows launch path. The multi-node Slurm configurations earlier in this manual apply to Linux allocations.
 
-Use a complete 64-bit Windows installation of the relevant suite, preserving its `bin/` and `share/` directories and supplied runtime DLLs. A build containing D-Flow FM provides the DIMR model libraries. A Delft3D 4 build provides `d_hydro.exe` and `flow2d3d.dll`. Use the intended revision of `mormerge.tcl` in the installation.
+Use a complete 64-bit Windows installation of the relevant suite, preserving its `bin/` and `share/` directories and supplied runtime DLLs. A build containing D-Flow FM provides the DIMR model libraries. A Delft3D 4 build provides `d_hydro.exe` and `flow2d3d.dll`. Install the updated `mormerge.tcl` and `run_mormerge.bat` together: the batch wrapper must preserve Tcl's exit status for callers to receive a failure.
 
 | Purpose | Files expected in the installation's `bin/` directory |
 | --- | --- |
@@ -236,7 +242,13 @@ Set-Location 'D:\cases\mormerge_case\merge'
 & "$bin\tclkitsh852.exe" $script -i model_windows.mm -s $script
 ```
 
-The Windows batch path starts several processes with `start /b`. An engine can fail while Tcl still prints `mormerge.tcl : Finished`; this was observed during a Windows test with invalid FLOW input. Check every engine's diagnostic log and output through the stop time before accepting a run as successful.
+The Windows path waits for the actual engine processes and preserves their exit status. Tcl supervises DIMR per condition, separate FLOW and WAVE processes when used, and each MorMerge server. A nonzero engine status produces an error with its condition, exit status, and screen-log path, followed by `mormerge.tcl : Failed`. The Tcl process and `run_mormerge.bat` return a nonzero status.
+
+After detecting a failure, MorMerge stops the remaining process trees that it launched for this calculation using the Windows `taskkill` utility. It also checks child exits while waiting for initialization markers. An engine exiting before its required marker exists, even with status `0`, or reaching the initialization retry limit fails the calculation. Windows launchers keep FLOW and WAVE concurrent while tracking both results.
+
+If a separate `workdir` is configured, Windows condition results are copied back after the supervised children have stopped. Staged condition directories are retained for diagnosis. The examples leave `workdir` unset and write directly to the case directories.
+
+Engine and wrapper exit codes remain part of the runtime contract: a fatal error after initialization must return a nonzero status to be detected as a child failure. Check every engine's diagnostic log and output through the stop time as part of model verification.
 
 A modern-Windows identification warning from `setPlatform` can appear with newer Tcl runtimes because that routine recognizes XP and Vista explicitly.
 
@@ -512,6 +524,7 @@ $env:OMP_NUM_THREADS = '1'
 $env:OMP_NUM_THREADS_SWAN = '1'
 Set-Location 'D:\cases\mormerge_dimr\merge'
 & "$bin\run_mormerge.bat" model_windows.mm
+if ($LASTEXITCODE -ne 0) { throw 'MorMerge failed; inspect the engine logs.' }
 ```
 
 For online WAVE, use `input/dimr_flow_wave.xml` from Section 2.3 with both component process lists set to `0`. Set `[waves] Wavemodelnr = 3` in the unpartitioned MDU, prepare the MDW and communication-file paths, and use `[General] SwanMode = exe`. Change the local `.mm` argument to select that XML.
@@ -526,7 +539,7 @@ Use `dimrargs` accepted by the installed Windows `run_dimr.bat`, such as the XML
 
 Inspect `175/dimr.scr`, `355/dimr.scr`, and `merge/mormerge_singledomain.scr`. Confirm both conditions reach the FLOW stop time, and check successful wave updates and termination for the coupled case. The generated Windows launch files end in `.bat` and are retained with `debug = 1`.
 
-Windows verification used two serial conditions with the current Tcl script, the supplied batch wrapper, and Tcl `8.5.2`. Both FLOW-only and online WAVE runs completed, with each condition's FLOW NetCDF output reaching the configured stop time of `1800 s`.
+Windows verification used two serial conditions with the current Tcl script, the supplied batch wrapper, and Tcl `8.5.2`. Both FLOW-only and online WAVE runs completed, with each condition's FLOW NetCDF output reaching the configured stop time of `1800 s`. An online-coupled test with a missing FLOW MDU verified that a DIMR engine failure produces `mormerge.tcl : Failed`, a nonzero wrapper status, and termination of the remaining supervised processes.
 
 ## 3. Setting up a d_hydro run
 
@@ -744,6 +757,7 @@ $env:OMP_NUM_THREADS = '1'
 $env:OMP_NUM_THREADS_SWAN = '1'
 Set-Location 'D:\cases\mormerge_d_hydro\merge'
 & "$bin\run_mormerge.bat" model_windows.mm
+if ($LASTEXITCODE -ne 0) { throw 'MorMerge failed; inspect the engine logs.' }
 ```
 
 For online WAVE, set `WaveOL = #Y#` with `W` in `Sub2`, and prepare the wave input and `dioconfig.ini` as described in Section 3.3. Use the same local configuration with these extra settings.
@@ -756,8 +770,10 @@ swanbatdir = D:\Delft3D\d3d4-suite\bin
 
 Use `[General] SwanMode = exe` in the MDW and ensure `wave.exe`, `swan.bat`, and `swan_omp.exe` are present. Launch using the same PowerShell command. MorMerge starts one FLOW instance and one WAVE instance per condition. The local Windows path uses its inherited environment for these standalone processes.
 
-For the basin DDB model, check `0deg/d_hydro.scr` and `45deg/d_hydro.scr`, the `tri-diag.ove` and `tri-diag.det` diagnostic files in both condition directories, and the two MorMerge server logs. With online WAVE, check both `wave.scr` files as well. Confirm output through the stop time in each domain. The generated `.bat` files are retained with `debug = 1`.
+For the basin DDB model, check `0deg/d_hydro.scr` and `45deg/d_hydro.scr`, the `tri-diag.ove` and `tri-diag.det` diagnostic files in both condition directories, and the two MorMerge server logs. With online WAVE, check both `wave.scr` files as well. Confirm output through the stop time in each domain. The generated `.bat` files are retained with `debug = 1`; separate WAVE launchers are named `merge/d3d-wave_run<condition>.bat`.
 
 If a FLOW-only run reports `Waves activated but no COM-file present`, check `Sub2` as well as `WaveOL`. A retained `W` process flag requires wave forcing. If domain-decomposition initialization then reports coupling-point errors, inspect the first preceding error in the domain's `tri-diag` file.
 
 Windows verification used a copy of the bundled basin case with both conditions and both DDB domains (`ove` and `det`). The test shortened `Tstop` to `4 minutes` and set `MorStt = 0` to exercise morphological exchange during that period. FLOW-only and online WAVE runs completed through `240 s` in all four FLOW NetCDF outputs. In the coupled test, both WAVE processes completed repeated SWAN updates and reported normal termination. This verifies the short local launch and coupling paths; the model's full simulation period still needs its own verification.
+
+Failure tests used an unavailable FLOW library and a missing WAVE input file. Both produced `mormerge.tcl : Failed` and a nonzero wrapper status. The WAVE failure also verified that its waiting FLOW partner and MorMerge servers are stopped. Focused Windows regression tests cover failures in either engine, an early status-`0` exit without initialization, initialization timeout, expected server stream closure, paths with spaces, and staged result copying.
