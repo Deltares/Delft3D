@@ -432,7 +432,7 @@ module m_flowparameters
 
    integer :: jaustarint !< 1=integral bed layer velocity,  0=velocity at half bed layer
 
-   integer :: jaPure1D !< along 1D channels: 0 = 2D mom Perot, 1 = 1D mom Perot using vol1_f, 2 = 1D mom Perot using vol1, 3,4,5,6,7 = 1D mom on links (2 + Iadvec1D of SOBEK)
+   integer :: jaPure1D !< along 1D channels: 0 = 2D mom Perot, 1 = 1D mom Perot using vol1_f, 2 = 1D mom Perot using vol1, 3 = 1D mom on links, 4 = 1D weighted momentum/energy conserving, 5 = energy conserving
 
    integer :: jaJunction1D !< at 1D junctions: 0 = 2D mom Perot, 1 = same as along the 1D channels
 

@@ -493,7 +493,7 @@ contains
 
                else if (iadvL == IADV_PURE1D_SOBEK) then
                   call advect_pure1d_sobek(jaPure1D, u1(L), au1d(1, L), au1d(2, L), q1D(1, L), q1D(2, L), &
-                                           volu1D(L), alpha_mom_1D(k1), alpha_ene_1D(k1), alpha_mom_1D(k2), &
+                                           volu1D(L), dx(L), alpha_mom_1D(k1), alpha_ene_1D(k1), alpha_mom_1D(k2), &
                                            alpha_ene_1D(k2), lateral_correction(L), advi(L), advel)
 
                else if (iadvL == 333) then ! explicit first order mom conservative
