@@ -40,6 +40,7 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'maxItPresDens', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'filter', DEPRECATED, 'It is no longer supported, the provided value is ignored.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'sobekdfm_relax', DEPRECATED, 'It is no longer supported, the provided value is ignored. Use [numerics] lateral_fixedweir_relax instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Logprofatubndin', DEPRECATED, 'Once the keyword is removed/becomes obsolete, logProfAtUBndIn = 1 will be used.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'Jadelvappos', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'SecchiDepth2', DEPRECATED, 'Use SecchiDepthNonPenetrative instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'SecchiDepth2Fraction', DEPRECATED, 'Use SecchiDepthNonPenetrativeFraction instead.')
