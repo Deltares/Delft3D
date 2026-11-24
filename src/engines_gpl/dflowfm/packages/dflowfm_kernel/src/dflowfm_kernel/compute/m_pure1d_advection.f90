@@ -215,23 +215,6 @@ contains
       do n = ndx2D + 1, ndxi
          nx = nd(n)%lnx
 
-         ! Temporary variable to check if all connected links are 1D
-         ! 1 if all links are 1D, 0 otherwise
-         ja1D = 1
-         do LL = 1, nx
-            L = nd(n)%ln(LL)
-            La = abs(L)
-            if (abs(kcu(La)) /= 1) then
-               ja1D = 0
-            end if
-         end do
-         if (ja1D == 0) then
-            cycle
-         end if
-         if (jaJunction1D == 0 .and. nx > 2) then
-            cycle
-         end if
-
          call prepare_node_link_geometry(n, q_net_in, surface_area)
 
          call prepare_node_fluxes(n, q_net_in, surface_area, qu_in, qu_out, qu2_in, qu2_out)
@@ -252,7 +235,7 @@ contains
    !! the half-link flow volume to volu1D.
    subroutine prepare_node_link_geometry(n, q_net_in, surface_area)
       use m_flow, only: qa, s1, wu1D, au1D, sar1D, volu1D
-      use m_flowgeom, only: nd, dx, bob
+      use m_flowgeom, only: nd, dx, bob, kcu
       use m_get_prof_1D, only: getprof_1D
       use precision, only: dp
       implicit none
@@ -273,6 +256,9 @@ contains
       do LL = 1, nd(n)%lnx
          L = nd(n)%ln(LL) ! positive if link points to node, negative if link points from node
          La = abs(L)
+         if (kcu(La) /= 1) then
+            cycle
+         end if
 
          half_link_length = 0.5_dp * dx(La)
          if (L > 0) then
@@ -301,7 +287,7 @@ contains
    !! so that the reconstructed discharges satisfy mass conservation at the node.
    subroutine prepare_node_fluxes(n, q_net_in, surface_area, qu_in, qu_out, qu2_in, qu2_out)
       use m_flow, only: u1, qa, q1D, au1D, sar1D
-      use m_flowgeom, only: nd
+      use m_flowgeom, only: nd, kcu
       use precision, only: dp
       implicit none
 
@@ -325,6 +311,9 @@ contains
       do LL = 1, nd(n)%lnx ! loop over all links connected to the node
          L = nd(n)%ln(LL) ! positive if link points to node, negative if links points from node
          La = abs(L)
+         if (kcu(La) /= 1) then
+            cycle
+         end if
 
          if (L > 0) then ! link points to node: reduce by the storage on the remainder of the link
             link_surface_area = sar1D(2, La)
@@ -359,7 +348,8 @@ contains
    !! and divided by each link's flow volume au*dx. No correction is applied at time1 <= tstart_user.
    pure subroutine prepare_lateral_correction(ndx2D, ndxi, nd, qin, volume_change, vol1_f, vol0_f, &
                                               dts, time1, tstart_user, au, dx, eps3, lateral_correction)
-      use m_flowgeom, only: tnode
+      use m_flowgeom, only: tnode, kcu
+      use m_flow, only: qa
       use precision, only: dp
       implicit none
 
@@ -378,7 +368,7 @@ contains
       real(kind=dp), intent(in) :: eps3 !< [m2] Minimum flow area for a link to receive a correction.
       real(kind=dp), dimension(:), intent(out) :: lateral_correction !< [1/s] Lateral and storage correction per link.
 
-      integer :: L, LL, La, n, nx
+      integer :: L, LL, La, n, nx, n_1d_links
       real(kind=dp) :: lateral_flow !< [m3/s] lateral flow into the node
 
       lateral_correction = 0.0_dp
@@ -399,11 +389,24 @@ contains
             ! volume_change is the total volume of a cell. And is calculated in flow_f0isf1.
             ! vol1_f and vol0_f are flow volumes in a cell and these are up to date at the current time step.
             lateral_flow = lateral_flow - ((volume_change(n) - vol1_f(n) + vol0_f(n))) / dts
+            n_1d_links = 0
             do LL = 1, nx ! loop over all links of the upstream node
                L = nd(n)%ln(LL) ! positive if link points to node, negative if links points from node
                La = abs(L)
-               if (au(La) > eps3) then
-                  lateral_correction(La) = lateral_correction(La) + lateral_flow / (real(nx, kind=dp) * au(La) * dx(La))
+               if (kcu(La) == 1) then
+                  n_1d_links = n_1d_links + 1
+               else
+                  lateral_flow = lateral_flow + real(sign(1, L), kind=dp) * qa(La)
+               end if
+            end do
+            if (n_1d_links == 0) then
+               cycle
+            end if
+            do LL = 1, nx ! loop over all links of the upstream node
+               L = nd(n)%ln(LL) ! positive if link points to node, negative if links points from node
+               La = abs(L)
+               if (au(La) > eps3 .and. kcu(La) == 0) then
+                  lateral_correction(La) = lateral_correction(La) + lateral_flow / (real(n_1d_links, kind=dp) * au(La) * dx(La))
                end if
 
                h = max(0.0_dp, s1(n) - bob(k, La)) ! cross sectional area
