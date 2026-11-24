@@ -539,7 +539,9 @@ contains
          rows=1, columns=2, array_size_margin=2 &
          )
       call place_2d2d_link([5.0_dp, 5.0_dp], [15.0_dp, 5.0_dp], new_link=new_link, error_code=error_code)
-      call f90_assert_eq(error_code, 0)
+      if (.not. f90_assert_eq(error_code, 0, "Failed to place 2D2D link")) then
+         return
+      end if
       call flow_geominit(0)
       call setup_prof1d_rectangular_cross_section_without_profile(width=2.0_dp, height=1.5_dp)
       network%loaded = .false.
@@ -552,17 +554,21 @@ contains
 
       call getprof_1D(1, water_level - 0.0_dp, au(1), width, 1, 0, perim)
       call update_frozen_1d2d_velocity(ierr)
-      call f90_assert_eq(ierr, DFM_NOERR)
-      call f90_assert_near(au(1), 2.0_dp, 1e-12_dp)
-      call f90_assert_near(u1(1), 2.0_dp, 1e-12_dp)
+      if (.not. f90_assert_eq(ierr, DFM_NOERR, "Failed to update velocity for water depth = 1")) then
+         return
+      end if
+      call f90_expect_near(au(1), 2.0_dp, 1e-12_dp)
+      call f90_expect_near(u1(1), 2.0_dp, 1e-12_dp)
 
       call getprof_1D(1, water_level - 0.5_dp, au(1), width, 1, 0, perim)
       call update_frozen_1d2d_velocity(ierr)
-      call f90_assert_eq(ierr, DFM_NOERR)
-      call f90_assert_near(au(1), 1.0_dp, 1e-12_dp)
-      call f90_assert_near(q1(1), 4.0_dp, 1e-12_dp)
-      call f90_assert_near(qa(1), 4.0_dp, 1e-12_dp)
-      call f90_assert_near(u1(1), 4.0_dp, 1e-12_dp)
+      if (.not. f90_assert_eq(ierr, DFM_NOERR, "Failed to update velocity for water depth = `0.5")) then
+         return
+      end if
+      call f90_expect_near(au(1), 1.0_dp, 1e-12_dp)
+      call f90_expect_near(q1(1), 4.0_dp, 1e-12_dp)
+      call f90_expect_near(qa(1), 4.0_dp, 1e-12_dp)
+      call f90_expect_near(u1(1), 4.0_dp, 1e-12_dp)
    end subroutine test_frozen_1d_profile_velocity
 
    !$gtest
