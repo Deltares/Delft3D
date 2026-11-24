@@ -205,7 +205,7 @@ contains
          znod = volerror(k)
       else if (nodval == 35) then
 
-         znod = rho(k) ! sam0(k) !  kktop(kk) - kbot(kk) + 1
+         znod = rho(k) ! kktop(kk) - kbot(kk) + 1
 
       else if (nodval == 36) then
 
@@ -218,10 +218,8 @@ contains
 
       else if (nodval == 37) then
 
-         if (Soiltempthick > 0 .and. temperature_model /= TEMPERATURE_MODEL_NONE) then
+         if (soil_heat_buffer_thickness > 0 .and. temperature_model /= TEMPERATURE_MODEL_NONE) then
             znod = tbed(kk)
-         else
-            znod = same(k)
          end if
 
       else if (nodval == 38) then

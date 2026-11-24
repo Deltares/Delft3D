@@ -28,7 +28,7 @@ object LinuxConanPackages : BuildType({
     allowExternalStatus = true
 
     params {
-        param("reverse.dep.${LinuxBuildTools.id}.intel_oneapi_version", "2024")
+        param("reverse.dep.${LinuxBuildTools.id}.intel_oneapi_version", "2026")
         param("nexus_conan_username", DslContext.getParameter("nexus_conan_username"))
         password("nexus_conan_password", DslContext.getParameter("nexus_conan_password"))
         param("conan_build_option", "--build-missing")

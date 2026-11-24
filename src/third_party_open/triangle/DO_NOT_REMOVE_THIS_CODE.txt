@@ -1,0 +1,1 @@
+The code in this folder is used by the Triangle conan recipe. The original Triangle code was heavily modified, hence why we need to maintain it ourselves. Removing this code breaks the conan recipe.

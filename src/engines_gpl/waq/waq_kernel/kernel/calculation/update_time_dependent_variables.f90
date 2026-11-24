@@ -158,7 +158,7 @@ contains
         real(kind = real_wp), intent(out)     :: consts(num_constants)                !< Array of constant values
         real(kind = real_wp), intent(out)     :: param (num_spatial_parameters, num_cells + num_cells_bottom)   !< Array of parameter values
         real(kind = real_wp), intent(out)     :: funcs (num_time_functions)                 !< Array of function values
-        real(kind = real_wp), intent(out)     :: sfuncs(num_cells + num_cells_bottom, num_spatial_time_fuctions) !< Array of segment functions
+        real(kind = real_wp), intent(out)     :: sfuncs(num_cells + num_cells_bottom, num_spatial_time_functions) !< Array of segment functions
         integer(kind = int_wp), intent(in)    :: ipoint(num_indices)                !< Set of pointers to destination
         character(len = *), intent(in)        :: luntxt(*)                     !< text with the unit numbers
         character(len = 200), intent(in)      :: luntx2(*)                     !< text with the binary files
@@ -445,7 +445,7 @@ contains
         nosss = num_cells + num_cells_bottom
         if (nrharm(10) >= 0) then
             call dlwqta (file_unit_list(16), luntxt(16), file_unit_list(19), nosss, num_constants, &
-                    num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, consts, param, &
+                    num_spatial_parameters, num_time_functions, num_spatial_time_functions, consts, param, &
                     funcs, sfuncs, isflag, ifflag, itime, &
                     gridps, dlwqd, ierr)
         endif

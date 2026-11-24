@@ -128,7 +128,7 @@ contains
     end subroutine calculate_theta
 
     subroutine output_theta(num_output_variables_extra, ounam, ipoint, num_constants, num_spatial_parameters, &
-            num_time_functions, num_spatial_time_fuctions, num_substances_total, num_cells, num_local_vars, &
+            num_time_functions, num_spatial_time_functions, num_substances_total, num_cells, num_local_vars, &
             proloc, num_defaults, theta)
 
         integer(kind = int_wp), intent(in) :: num_output_variables_extra              ! number of output parameters
@@ -137,7 +137,7 @@ contains
         integer(kind = int_wp), intent(in) :: num_constants              ! number of constants
         integer(kind = int_wp), intent(in) :: num_spatial_parameters                ! number of parameters
         integer(kind = int_wp), intent(in) :: num_time_functions               ! number of functions
-        integer(kind = int_wp), intent(in) :: num_spatial_time_fuctions              ! number of segment functions
+        integer(kind = int_wp), intent(in) :: num_spatial_time_functions              ! number of segment functions
         integer(kind = int_wp), intent(in) :: num_substances_total               ! number of substances
         integer(kind = int_wp), intent(in) :: num_cells               ! number of default values
         integer(kind = int_wp), intent(in) :: num_local_vars               ! number of default values
@@ -176,7 +176,7 @@ contains
             iopa = iocons + num_constants
             iofunc = iopa + num_spatial_parameters
             iosfun = iofunc + num_time_functions
-            ioconc = iosfun + num_spatial_time_fuctions
+            ioconc = iosfun + num_spatial_time_functions
             ioloc = ioconc + num_substances_total
             iodef = ioloc + num_local_vars
 

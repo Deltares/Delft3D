@@ -210,7 +210,7 @@ contains
     end subroutine write_concentrations_in_grid_layout
 
     subroutine fill_output_buffer_base_grid(outval, iopoin, nrvar, num_constants, num_spatial_parameters, &
-            num_time_functions, num_spatial_time_fuctions, num_substances_total, conc, segfun, &
+            num_time_functions, num_spatial_time_functions, num_substances_total, conc, segfun, &
             func, param, cons, idt, itime, &
             volume, num_cells, num_substances_transported, num_monitoring_points, idump, &
             num_cells_u_dir, num_cells_v_dir, lgrid, igrid, bound, &
@@ -226,10 +226,10 @@ contains
         !     num_constants  INTEGER       1     INPUT   Number of constants used
         !     num_spatial_parameters    INTEGER       1     INPUT   Number of parameters
         !     num_time_functions   INTEGER       1     INPUT   Number of functions ( user )
-        !     num_spatial_time_fuctions  INTEGER       1     INPUT   Number of segment functions
+        !     num_spatial_time_functions  INTEGER       1     INPUT   Number of segment functions
         !     num_substances_total   INTEGER       1     INPUT   Total number of substances
         !     CONC    REAL   num_substances_total,num_cells  INPUT   Model concentrations
-        !     SEGFUN  REAL   num_cells,num_spatial_time_fuctions IN/OUT  Segment functions at ITIME
+        !     SEGFUN  REAL   num_cells,num_spatial_time_functions IN/OUT  Segment functions at ITIME
         !     FUNC    REAL          *     IN/OUT  Model functions at ITIME
         !     PARAM   REAL    num_spatial_parameters,num_cells  IN/OUT  Model parameters
         !     CONS    REAL          *     IN/OUT  Model constants
@@ -250,7 +250,7 @@ contains
         !     num_defaults   INTEGER       1     INPUT   Number of used defaults
         !     DEFAUL  REAL          *     INPUT   Default proces parameters
 
-        integer(kind = int_wp) :: nrvar, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, &
+        integer(kind = int_wp) :: nrvar, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_functions, &
                 num_substances_total, idt, itime, num_cells, num_substances_transported, &
                 num_monitoring_points, num_cells_u_dir, num_cells_v_dir, igrid, num_local_vars, &
                 num_defaults
@@ -278,7 +278,7 @@ contains
         iopa = iocons + num_constants
         iofunc = iopa + num_spatial_parameters
         iosfun = iofunc + num_time_functions
-        ioconc = iosfun + num_spatial_time_fuctions
+        ioconc = iosfun + num_spatial_time_functions
         ioloc = ioconc + num_substances_total
         iodef = ioloc + num_local_vars
         !
@@ -422,7 +422,7 @@ contains
 
 
     subroutine fill_output_buffer_sub_grid(outval, iopoin, nrvar, num_constants, num_spatial_parameters, &
-            num_time_functions, num_spatial_time_fuctions, num_substances_total, conc, segfun, &
+            num_time_functions, num_spatial_time_functions, num_substances_total, conc, segfun, &
             func, param, cons, idt, itime, &
             volume, num_cells, num_substances_transported, ndmpar, ipdmp, &
             bound, num_local_vars, proloc, num_defaults, defaul, &
@@ -443,10 +443,10 @@ contains
         !     num_constants  INTEGER       1     INPUT   Number of constants used
         !     num_spatial_parameters    INTEGER       1     INPUT   Number of parameters
         !     num_time_functions   INTEGER       1     INPUT   Number of functions ( user )
-        !     num_spatial_time_fuctions  INTEGER       1     INPUT   Number of segment functions
+        !     num_spatial_time_functions  INTEGER       1     INPUT   Number of segment functions
         !     num_substances_total   INTEGER       1     INPUT   Total number of substances
         !     CONC    REAL   num_substances_total,num_cells  INPUT   Model concentrations
-        !     SEGFUN  REAL   num_cells,num_spatial_time_fuctions INPUT   Segment functions at ITIME
+        !     SEGFUN  REAL   num_cells,num_spatial_time_functions INPUT   Segment functions at ITIME
         !     FUNC    REAL          *     INPUT   Model functions at ITIME
         !     PARAM   REAL    num_spatial_parameters,num_cells  INPUT   Model parameters
         !     CONS    REAL          *     INPUT   Model constants
@@ -464,12 +464,12 @@ contains
         !     DEFAUL  REAL          *     INPUT   Default proces parameters
         !     NCOUT   INTEGER       1     INPUT   number of conc in output
         !     NTDMPQ  INTEGER       1     INPUT   total number exchanges in dump area
-        integer(kind = int_wp) :: nrvar, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, &
+        integer(kind = int_wp) :: nrvar, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_functions, &
                 num_substances_total, idt, itime, num_cells, num_substances_transported, &
                 ndmpar, num_local_vars, num_defaults, ncout, ntdmpq
         integer(kind = int_wp) :: iopoin(*), ipdmp(*)
         real(kind = real_wp) :: outval(*), conc(num_substances_total, *), &
-                segfun(num_cells, num_spatial_time_fuctions), func(*), &
+                segfun(num_cells, num_spatial_time_functions), func(*), &
                 param (num_spatial_parameters, num_cells), cons(*), &
                 volume(*), bound(*), &
                 proloc(*), defaul(*)
@@ -496,7 +496,7 @@ contains
         iopa = iocons + num_constants
         iofunc = iopa + num_spatial_parameters
         iosfun = iofunc + num_time_functions
-        ioconc = iosfun + num_spatial_time_fuctions
+        ioconc = iosfun + num_spatial_time_functions
         ioloc = ioconc + num_substances_total
         iodef = ioloc + num_local_vars
         !
@@ -617,7 +617,7 @@ contains
                             cumsrf = 0.0
                             parm = .true.
                         else
-                            indx = index_in_array('SURF      ', sfname(:num_spatial_time_fuctions))
+                            indx = index_in_array('SURF      ', sfname(:num_spatial_time_functions))
                             if  (indx > 0) then
                                 cumsrf = 0.0
                                 parm = .false.
@@ -945,7 +945,7 @@ contains
     END SUBROUTINE fill_transect_output_buffer
 
     subroutine update_base_grid_local_array(IOPOIN, NRVAR, num_constants, num_spatial_parameters, num_time_functions, &
-            num_spatial_time_fuctions, num_substances_total, num_cells, num_local_vars, num_grids, &
+            num_spatial_time_functions, num_substances_total, num_cells, num_local_vars, num_grids, &
             num_vars, vararr, varidx, vartda, vardag, &
             arrknd, arrpoi, arrdm1, arrdm2, vgrset, &
             grdnos, grdseg, a)
@@ -961,7 +961,7 @@ contains
         !     num_constants  INTEGER       1     INPUT   Number of constants used
         !     num_spatial_parameters    INTEGER       1     INPUT   Number of parameters
         !     num_time_functions   INTEGER       1     INPUT   Number of functions ( user )
-        !     num_spatial_time_fuctions  INTEGER       1     INPUT   Number of segment functions
+        !     num_spatial_time_functions  INTEGER       1     INPUT   Number of segment functions
         !     num_substances_total   INTEGER       1     INPUT   Total number of substances
         !     num_cells   INTEGER       1     INPUT   Nr. of computational elements
         !     num_local_vars   INTEGER       1     INPUT   Number of variables in PROLOC
@@ -985,7 +985,7 @@ contains
         use timers
         use aggregation, only: resample_v2
 
-        integer(kind = int_wp) :: nrvar, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, &
+        integer(kind = int_wp) :: nrvar, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_functions, &
                 num_substances_total, num_cells, num_local_vars, num_grids, num_vars, &
                 nototo, nototi, noseg2, nopred, i, ix_hlp, &
                 iv_idx, iv_hlp, iv_da, ivar, isyso, isysi, &
@@ -1021,7 +1021,7 @@ contains
         iopa = iocons + num_constants
         iofunc = iopa + num_spatial_parameters
         iosfun = iofunc + num_time_functions
-        ioconc = iosfun + num_spatial_time_fuctions
+        ioconc = iosfun + num_spatial_time_functions
         ioloc = ioconc + num_substances_total
         iodef = ioloc + num_local_vars
         !

@@ -36,7 +36,7 @@ module m_slow_nefis_tests
 
 contains
 
-   !$f90tw TESTCODE(TEST, slow_nefis_tests, test_06, test_06,
+   !$gtest
    subroutine test_06() bind(C)
       character(len=30) :: filename1
       character(len=30) :: filename2
@@ -349,7 +349,7 @@ contains
                      UINDEX(stop, 5) = M
                      error = Getelt(fds, 'DATAGRP_TEST_3A',&
                      &'*', UINDEX, usrord, 4 * 4, buffer)
-                     !call f90_assert_eq(to_c(error), to_c(0), 'error')
+                     ! call f90_expect_eq(error, 0, 'error')
                      if (error /= 0) goto 9999
                      do n = 1, 4
                         if (int(buffer(n) / real(i) / real(j) / real(k) / real(l) /&
@@ -1046,9 +1046,8 @@ contains
       call compare_text_files(filename1, filename2, skiplines)
 
    end subroutine test_06
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, slow_nefis_tests, test_14, test_14,
+   !$gtest
    subroutine test_14() bind(C)
 
       integer NTIMES, BUFSIZ
@@ -1271,9 +1270,8 @@ contains
       call compare_text_files(filename1, filename2, skiplines)
 
    end subroutine test_14
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, slow_nefis_tests, test_16, test_16,
+   !$gtest
    subroutine test_16() bind(C)
       integer * 4 fds_a,&
       &fds_b,&
@@ -1372,6 +1370,5 @@ contains
       call compare_text_files(filename1, filename2, skiplines)
 
    end subroutine test_16
-   !$f90tw)
 
 end module m_slow_nefis_tests
