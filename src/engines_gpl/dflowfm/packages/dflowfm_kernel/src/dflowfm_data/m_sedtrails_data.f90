@@ -35,7 +35,7 @@ module m_sedtrails_data
    use coordinate_reference_system
    implicit none
 
-   character(len=255) :: sedtrails_analysis
+   character(len=255) :: sedtrails_analysis = 'all'
    !
    ! flow geometry from md_sedtrailsfile
    !
@@ -63,10 +63,15 @@ contains
 
       implicit none
 
-      sedtrails_analysis = 'all'
       numk0 = 0
       numk = 0
       kmax = 0
+      if (allocated(xk)) then
+         deallocate (xk, yk, zk)
+      end if
+      if (allocated(xk0)) then
+         deallocate (xk0, yk0, zk0)
+      end if
 
    end subroutine sedtrails_resetdata
 

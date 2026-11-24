@@ -105,7 +105,8 @@ contains
       use fm_external_forcings_data, only: nwbnd
       use m_sedtrails_network
       use m_sedtrails_netcdf, only: sedtrails_loadNetwork
-      use m_sedtrails_stats, only: default_sedtrails_stats, alloc_sedtrails_stats
+      use m_sedtrails_stats, only: default_sedtrails_stats, alloc_sedtrails_stats, &
+                                 sedtrails_profiles_enabled, alloc_sedtrails_profiles
       use fm_statistical_output
       use m_gui
       use m_debug
@@ -620,6 +621,9 @@ contains
             call mess(LEVEL_ERROR, 'unstruc_model::loadModel - Could not load sedtrails network.')
          end if
          call sedtrails_get_grid_on_network()
+         if (sedtrails_profiles_enabled()) then
+            call alloc_sedtrails_profiles()
+         end if
       end if
 
       ! store the grid-based information in the cache file

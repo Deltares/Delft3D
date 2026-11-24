@@ -58,6 +58,16 @@ module m_sedtrails_stats
    character(len=100) :: is_valnamesnd(is_numndvals)
    real(kind=dp), target :: is_dtint !< [s] total time interval since last statistics reset.
 
+   integer, parameter, private :: PROFILE_VALUES = 5
+   real(kind=dp), parameter, private :: WEIGHT_TOL = 1.0e-12_dp
+   real(kind=dp), allocatable, private :: profile_sum(:, :, :)
+   real(kind=dp), allocatable, private :: valid_time(:, :)
+   real(kind=dp), allocatable, private :: profile_weights(:, :)
+   real(kind=dp), allocatable, private :: donor_velocity(:, :)
+   integer, allocatable, private :: bottom_layer(:)
+   real(kind=dp), private :: sample_bounds(2)
+   private :: extend_boundary_vertical_velocity
+
 contains
 
    !> Sets ALL (scalar) variables in this module to their default values.
@@ -90,7 +100,14 @@ contains
 
       implicit none
 
-      is_sumvalsnd(1:is_numndvals, :, :) = 0.0_dp
+      if (allocated(is_sumvalsnd)) then
+         is_sumvalsnd = 0.0_dp
+      end if
+      if (allocated(profile_sum)) then
+         profile_sum = 0.0_dp
+         valid_time = 0.0_dp
+      end if
+      sample_bounds = 0.0_dp
       is_dtint = 0.0_dp
    end subroutine reset_sedtrails_stats
 
@@ -111,6 +128,228 @@ contains
       end if
 
    end subroutine alloc_sedtrails_stats
+
+   !> Select the layer-resolved water velocity output.
+   logical function sedtrails_profiles_enabled() result(enabled)
+      use m_flow, only: kmx
+      use m_flowparameters, only: jasedtrails
+
+      enabled = jasedtrails > 0 .and. kmx > 1 .and. &
+                (sedtrails_analysis == 'flowvelocity' .or. sedtrails_analysis == 'all')
+   end function sedtrails_profiles_enabled
+
+   !> Release data owned by the SedTRAILS statistics.
+   subroutine release_sedtrails_stats()
+      if (allocated(is_sumvalsnd)) then
+         deallocate (is_sumvalsnd)
+      end if
+      if (allocated(profile_sum)) then
+         deallocate (profile_sum, valid_time, profile_weights, donor_velocity, bottom_layer)
+      end if
+      call reset_sedtrails_stats()
+   end subroutine release_sedtrails_stats
+
+   !> Allocate profile integrals and validate the horizontal stencils once.
+   subroutine alloc_sedtrails_profiles()
+      use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
+      use m_flow, only: kmx, ndkx
+      use m_flowgeom, only: ndx
+      use messagehandling, only: mess, LEVEL_WARN
+
+      real(kind=dp) :: weights(size(st_wf, 1)), total_weight
+      integer :: point, invalid_count
+      character(len=160) :: message
+
+      allocate (profile_sum(PROFILE_VALUES, kmx, numk), valid_time(kmx, numk), &
+                profile_weights(size(st_wf, 1), numk), donor_velocity(3, ndkx), bottom_layer(ndx))
+      call reset_sedtrails_stats()
+      profile_weights = 0.0_dp
+      invalid_count = 0
+      do point = 1, numk
+         weights = st_wf(:, point)
+         if (all(ieee_is_finite(weights))) then
+            where (abs(weights) <= WEIGHT_TOL) weights = 0.0_dp
+            total_weight = sum(weights)
+            if (all(weights >= 0.0_dp) .and. abs(total_weight - 1.0_dp) <= WEIGHT_TOL .and. &
+                all(weights <= 0.0_dp .or. (st_ind(:, point) >= 1 .and. st_ind(:, point) <= ndx))) then
+               profile_weights(:, point) = weights / total_weight
+               cycle
+            end if
+         end if
+         invalid_count = invalid_count + 1
+      end do
+      if (invalid_count > 0) then
+         write (message, '(a,i0,a)') 'SedTRAILS 3D profiles will be missing at ', invalid_count, &
+            ' points with invalid stencils.'
+         call mess(LEVEL_WARN, trim(message))
+      end if
+   end subroutine alloc_sedtrails_profiles
+
+   !> Sample the current layer-center velocity and geometry at output points.
+   subroutine update_sedtrails_profiles(status)
+      use m_flow, only: ucx, ucy, ucz, kbot, ktop, zws, vol1, hs, ndkx
+      use m_flowgeom, only: ndxi
+      use m_flowparameters, only: epshu
+      use m_flowtimes, only: dts, time1
+      use m_get_layer_indices, only: getlayerindices
+      use m_reconstruct_ucz, only: reconstructucz
+      use m_partitioninfo, only: jampi, update_ghosts, ITYPE_SALL3D, reduce_int1_max
+      use m_missing, only: dmiss
+
+      integer, intent(out) :: status !< Nonzero if the velocity exchange failed.
+
+      integer :: cell, layers
+
+      status = 0
+      if (.not. allocated(profile_sum) .or. dts <= 0.0_dp) then
+         return
+      end if
+
+      call reconstructucz(0)
+      donor_velocity(1, :) = ucx
+      donor_velocity(2, :) = ucy
+      donor_velocity(3, :) = ucz
+      ! The owner has the full link stencil. All ranks take part in the
+      ! exchange, including those with no local SedTRAILS points.
+      if (jampi > 0) then
+         call update_ghosts(ITYPE_SALL3D, 3, ndkx, donor_velocity, status)
+         call reduce_int1_max(status)
+         if (status /= 0) then
+            return
+         end if
+      end if
+
+      bottom_layer = 0
+      do cell = 1, ndxi
+         if (hs(cell) > epshu) then
+            call getlayerindices(cell, bottom_layer(cell), layers)
+         end if
+      end do
+      call extend_boundary_vertical_velocity()
+      call accumulate_sedtrails_profiles(dts, st_ind, profile_weights, kbot, ktop, bottom_layer, &
+                                         donor_velocity, zws, vol1, dmiss, profile_sum, valid_time)
+      if (is_dtint <= 0.0_dp) then
+         sample_bounds(1) = time1 - dts
+      end if
+      sample_bounds(2) = time1
+   end subroutine update_sedtrails_profiles
+
+   !> Extend physical w across open boundary links for output sampling.
+   !! Vertical continuity is solved in the interior columns. Use the linked
+   !! interior w at the same native layer, or the nearest active layer if
+   !! the layer ranges differ. Keep the boundary u, v and layer geometry.
+   subroutine extend_boundary_vertical_velocity()
+      use m_flow, only: hs, kbot, ktop, vol1
+      use m_flowgeom, only: ln, lnxi, lnx
+      use m_flowparameters, only: epshu
+      use m_get_layer_indices, only: getlayerindices
+      use m_missing, only: dmiss
+
+      integer :: link, boundary, interior, layers, cell, source, offset
+
+      ! Do this after the velocity exchange so that a local open boundary
+      ! attached to a halo column uses its owner's reconstructed velocity.
+      do link = lnxi + 1, lnx
+         boundary = ln(1, link)
+         interior = ln(2, link)
+         if (hs(boundary) <= epshu .or. bottom_layer(interior) == 0) then
+            cycle
+         end if
+         if (ktop(interior) < kbot(interior)) then
+            cycle
+         end if
+
+         call getlayerindices(boundary, bottom_layer(boundary), layers)
+         offset = kbot(interior) - kbot(boundary) + bottom_layer(boundary) - bottom_layer(interior)
+         do cell = kbot(boundary), ktop(boundary)
+            source = max(kbot(interior), min(ktop(interior), cell + offset))
+            donor_velocity(3, cell) = dmiss
+            if (vol1(source) > 0.0_dp) then
+               donor_velocity(3, cell) = donor_velocity(3, source)
+            end if
+         end do
+      end do
+   end subroutine extend_boundary_vertical_velocity
+
+   !> Accumulate the vector and bounds using the same donors and duration.
+   subroutine accumulate_sedtrails_profiles(dt, indices, weights, kb, kt, first_layer, &
+                                           velocity, z_interface, volume, missing, sums, duration)
+      use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
+
+      real(kind=dp), intent(in) :: dt !< Solver timestep duration, s.
+      integer, intent(in) :: indices(:, :) !< Horizontal donor indices.
+      real(kind=dp), intent(in) :: weights(:, :) !< Validated horizontal weights.
+      integer, intent(in) :: kb(:) !< Compressed bottom cell indices.
+      integer, intent(in) :: kt(:) !< Compressed active top cell indices.
+      integer, intent(in) :: first_layer(:) !< Native index of bottom cell, zero if dry.
+      real(kind=dp), intent(in) :: velocity(:, :) !< Layer-center velocity vector.
+      real(kind=dp), intent(in) :: z_interface(:) !< Layer interface elevations, positive up.
+      real(kind=dp), intent(in) :: volume(:) !< Layer cell volumes.
+      real(kind=dp), intent(in) :: missing !< Missing-value sentinel.
+      real(kind=dp), intent(inout) :: sums(:, :, :) !< Integrated vector and two elevations.
+      real(kind=dp), intent(inout) :: duration(:, :) !< Valid sampling duration.
+
+      integer :: point, layer, donor, cell, kk
+      real(kind=dp) :: sample(PROFILE_VALUES), values(PROFILE_VALUES), weight
+
+      do point = 1, size(indices, 2)
+         if (.not. any(weights(:, point) > 0.0_dp)) then
+            cycle
+         end if
+         layer_loop: do layer = 1, size(duration, 1)
+            sample = 0.0_dp
+            do donor = 1, size(indices, 1)
+               weight = weights(donor, point)
+               if (weight <= 0.0_dp) then
+                  cycle
+               end if
+               cell = indices(donor, point)
+               if (first_layer(cell) == 0 .or. layer < first_layer(cell)) then
+                  cycle layer_loop
+               end if
+               kk = kb(cell) + layer - first_layer(cell)
+               if (kk > kt(cell) .or. kk < 2 .or. kk > size(z_interface)) then
+                  cycle layer_loop
+               end if
+               if (volume(kk) <= 0.0_dp) then
+                  cycle layer_loop
+               end if
+               values = [velocity(:, kk), z_interface(kk - 1:kk)]
+               if (.not. all(ieee_is_finite(values))) then
+                  cycle layer_loop
+               end if
+               if (any(values == missing) .or. values(5) <= values(4)) then
+                  cycle layer_loop
+               end if
+               sample = sample + weight * values
+            end do
+            sums(:, layer, point) = sums(:, layer, point) + dt * sample
+            duration(layer, point) = duration(layer, point) + dt
+         end do layer_loop
+      end do
+   end subroutine accumulate_sedtrails_profiles
+
+   !> Pack mean profiles for a NetCDF record using the file's dimension order.
+   subroutine get_sedtrails_profiles(values, duration, bounds)
+      use m_missing, only: dmiss
+
+      real(kind=dp), allocatable, intent(out) :: values(:, :, :) !< Vector and heights (field, point, layer).
+      real(kind=dp), allocatable, intent(out) :: duration(:, :) !< Valid duration (point, layer).
+      real(kind=dp), intent(out) :: bounds(2) !< Actual time window bounds.
+
+      integer :: point, layer
+
+      duration = transpose(valid_time)
+      allocate (values(PROFILE_VALUES, size(duration, 1), size(duration, 2)), source=dmiss)
+      do layer = 1, size(duration, 2)
+         do point = 1, size(duration, 1)
+            if (duration(point, layer) > 0.0_dp) then
+               values(:, point, layer) = profile_sum(:, layer, point) / duration(point, layer)
+            end if
+         end do
+      end do
+      bounds = sample_bounds
+   end subroutine get_sedtrails_profiles
 
    !> Update the (time-)integral statistics for all flow nodes, typically after each time step.
    subroutine update_sedtrails_stats()
