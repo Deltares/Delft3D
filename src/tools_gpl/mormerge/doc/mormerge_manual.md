@@ -6,12 +6,6 @@ This manual describes `mormerge.tcl` version `2.32`, with general operation, Lin
 2. [Setting up a DIMR run](#2-setting-up-a-dimr-run)
 3. [Setting up a d_hydro run](#3-setting-up-a-d_hydro-run)
 
-Windows instructions are available for the common runtime setup and each engine.
-
-- [Windows runtime setup](#19-windows-runtime-setup)
-- [Windows DIMR run](#29-windows-dimr-run)
-- [Windows d_hydro run](#38-windows-d_hydro-run)
-
 ## 1. General functioning
 
 ### 1.1. Conditions and morphological merging
@@ -593,14 +587,7 @@ Slurm assigns each executable step independently within the allocation. For a mu
 
 ### 3.2. One node without online coupling
 
-For FLOW-only execution, set `WaveOL = #N#` and remove `W` from the MDF's `Sub2` process selection. Keep the other process flags required by the model. For the basin example, update both `ove.mdf` and `det.mdf` and their condition-specific overrides as follows. The `C` flag retains constituent transport.
-
-```text
-WaveOL = #N#
-Sub2   = # C #
-```
-
-Supply the case's sediment and morphology files with `Multi = true`. Keeping the wave-process flag enabled selects wave effects in FLOW and requires wave data even when online WAVE is disabled.
+For FLOW-only execution, supply the case's sediment and morphology files with `Multi = true`.
 
 Save the following as `merge/model.mm`, using the site's installation path and partition.
 
