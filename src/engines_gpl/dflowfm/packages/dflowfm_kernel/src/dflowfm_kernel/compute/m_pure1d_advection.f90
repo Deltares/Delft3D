@@ -35,11 +35,6 @@
 !! advect_pure1d_sobek evaluates the advection term per link.
 module m_pure1d_advection
 
-   ! Comparison reference: M. Borsboom, "Junction advection", 2017-12-29,
-   ! junctionadvection.tex SVN 65523. Equation numbers below refer to that memo.
-   ! The junction scheme discussed there corresponds to jaPure1D >= 3;
-   ! the uc1D/u1Du path for options 1 and 2 is a separate FM formulation.
-
    implicit none
 
    private
@@ -236,14 +231,13 @@ contains
 
          call prepare_node_fluxes(n, q_net_in, surface_area, qu_in, qu_out, qu2_in, qu2_out)
 
-         ! Sections 3.4.1-3.4.2 propose a small floor on the incoming flux
+         ! Sections 3.5.1-3.5.2 propose a small floor on the incoming flux
          ! balance; here a fixed 1e-20 floor is applied to outgoing sums.
-         ! For eqs. (21)-(22), a velocity multiplier would be sqrt of the
-         ! energy-flux ratio. This implementation uses the ratio itself;
-         ! together with the Q/V weighting below, it is not the memo's
-         ! energy-conserving discretization.
+         ! Eqs. (44)-(47): one factor per junction scales the reconstructed
+         ! outgoing velocities. Momentum flux is linear in that factor and
+         ! energy flux quadratic, hence the square root for alpha_ene_1D.
          alpha_mom_1D(n) = qu_in / max(1e-20_dp, qu_out)
-         alpha_ene_1D(n) = qu2_in / max(1e-20_dp, qu2_out)
+         alpha_ene_1D(n) = sqrt(qu2_in / max(1e-20_dp, qu2_out))
       end do
 
    end subroutine prepare_1d_advection
@@ -322,12 +316,7 @@ contains
       qu_out = 0.0_dp
       qu2_in = 0.0_dp
       qu2_out = 0.0_dp
-      ! Eq. (9) removes an equal 1/K share of the signed discharge
-      ! imbalance from each branch. Here the share is sar1D/surface_area:
-      ! q_k = Q_k - s_k*(S_k/sum(S))*sum(s_l*Q_l).
-      ! This reduces to eq. (9) only for equal half-link surface areas.
-      ! Unlike continuity eqs. (4) and (17), this reconstruction excludes
-      ! lateral discharge; its momentum effect is handled separately.
+
       dzw_dt = q_net_in / surface_area
       do LL = 1, nd(n)%lnx ! loop over all links connected to the node
          L = nd(n)%ln(LL) ! positive if link points to node, negative if links points from node
@@ -347,10 +336,6 @@ contains
 
          if ((L * q) >= 0.0_dp) then ! inflowing: positive flow to this node, or negative flow from this node
             u = u1(La)
-            ! Eq. (18) uses the link velocity even during flow reversal;
-            ! section 3.4.1 allows negative Q*u contributions. Here an
-            ! opposing link velocity contributes neither momentum nor
-            ! energy, rather than a signed momentum flux.
             if ((q * u) > 0) then ! flow direction at link equal to flow direction at node
                qu_in = qu_in + abs(q * u)
                qu2_in = qu2_in + abs(q * u**2)
@@ -476,23 +461,18 @@ contains
          am = 0.0_dp
       end select
 
-      ! Eq. (16) mixes Q/V and averaged velocity/dx as transport rates.
-      ! Here both parts use Q/max(1e-5,volu1d), mixing reconstructed velocities
-      ! instead. Eqs. (20) and (22) print Q/V for those velocities; Q/A is used
-      ! here, consistent with velocity units and the memo's "flow speed" text.
-      ! The same formulation is applied at both link ends.
       if (q1d1 > 0.0_dp) then
          qv = q1d1 / max(1.0e-5_dp, volu1d)
          u_mom = alpha_mom1 * q1d1 / au1d1
          u_ene = alpha_ene1 * q1d1 / au1d1
-         advel = advel - am * (u_mom - u1) * qv - (1.0_dp - am) * (u_ene - u1) * qv
+         advel = advel - am * (u_mom - u1) * qv - (1.0_dp - am) * (u_ene**2 - u1**2) / (2.0_dp * dx)
       end if
 
       if (q1d2 < 0.0_dp) then
          qv = q1d2 / max(1.0e-5_dp, volu1d)
          u_mom = alpha_mom2 * q1d2 / au1d2
          u_ene = alpha_ene2 * q1d2 / au1d2
-         advel = advel + am * (u_mom - u1) * qv + (1.0_dp - am) * (u_ene - u1) * qv
+         advel = advel + am * (u_mom - u1) * qv + (1.0_dp - am) * (u_ene**2 - u1**2) / (2.0_dp * dx)
       end if
 
       advi = advi + max(0.0_dp, lateral_correction)
