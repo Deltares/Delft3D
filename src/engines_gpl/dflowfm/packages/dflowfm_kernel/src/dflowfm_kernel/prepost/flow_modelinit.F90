@@ -441,13 +441,6 @@ contains
       end if
       call timstop(handle_extra(18)) ! end waq processes init
 
-      call timstrt('MBA init            ', handle_extra(24)) ! MBA init
-      if (ti_mba > 0) then
-         call fill_constituents(1) ! mba_init assumes that the concentrations are in the constituents array ...
-         call mba_init()
-      end if
-      call timstop(handle_extra(24)) ! end MBA init
-
       call timstrt('Update MOR width    ', handle_extra(25)) ! update MOR width and mean bed level
       if (stm_included) then
          call fm_update_mor_width_area()
@@ -457,6 +450,14 @@ contains
          end if
       end if
       call timstop(handle_extra(25)) ! end update MOR width
+
+      ! The initial sediment balance needs the morphologically active cell areas.
+      call timstrt('MBA init            ', handle_extra(24)) ! MBA init
+      if (ti_mba > 0) then
+         call fill_constituents(1) ! mba_init assumes that the concentrations are in the constituents array ...
+         call mba_init()
+      end if
+      call timstop(handle_extra(24)) ! end MBA init
 
       call timstrt('Dredging init       ', handle_extra(26)) ! dredging init
       if (len_trim(md_dredgefile) > 0 .and. stm_included) then

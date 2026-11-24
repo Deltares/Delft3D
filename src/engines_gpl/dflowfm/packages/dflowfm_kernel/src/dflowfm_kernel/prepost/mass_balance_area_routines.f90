@@ -670,7 +670,7 @@ contains
 
    subroutine mba_sum_morphology(lsedtot, nomba, mbadef, mbamorfac, mbabedmass, mbabedshortmass, mbafluffmass, mbamassreduce)
       use m_partitioninfo, only: jampi, idomain, my_rank
-      use m_flowgeom, only: ndxi, ba
+      use m_flowgeom, only: ndxi, ba_mor
       use m_fm_erosed, only: lsed, stmpar, mfluff, morfac, iflufflyr
       use m_partitioninfo, only: reduce_double_sum
 
@@ -703,26 +703,26 @@ contains
             end if
          end if
          imba = mbadef(nm)
-         ! bed stratigraphy
+         ! Convert sediment mass per unit area using the same area as the bed update.
          if (stmpar%morlyr%settings%iunderlyr == 1) then
             do ised = 1, lsedtot
-               mbabedmass(ised, imba) = mbabedmass(ised, imba) + stmpar%morlyr%state%bodsed(ised, nm) * ba(nm)
+               mbabedmass(ised, imba) = mbabedmass(ised, imba) + stmpar%morlyr%state%bodsed(ised, nm) * ba_mor(nm)
             end do
          else
             do k = 1, stmpar%morlyr%settings%nlyr
                do ised = 1, lsedtot
-                  mbabedmass(ised, imba) = mbabedmass(ised, imba) + stmpar%morlyr%state%msed(ised, k, nm) * ba(nm)
+                  mbabedmass(ised, imba) = mbabedmass(ised, imba) + stmpar%morlyr%state%msed(ised, k, nm) * ba_mor(nm)
                end do
             end do
          end if
          ! temporary sediment shortage of bed stratigraphy
          do ised = 1, lsedtot
-            mbabedshortmass(ised, imba) = mbabedshortmass(ised, imba) + stmpar%morlyr%state%sedshort(ised, nm) * ba(nm)
+            mbabedshortmass(ised, imba) = mbabedshortmass(ised, imba) + stmpar%morlyr%state%sedshort(ised, nm) * ba_mor(nm)
          end do
          ! fluff layer
          if (allocated(mbafluffmass)) then
             do ised = 1, lsed
-               mbafluffmass(ised, imba) = mbafluffmass(ised, imba) + mfluff(ised, nm) * ba(nm)
+               mbafluffmass(ised, imba) = mbafluffmass(ised, imba) + mfluff(ised, nm) * ba_mor(nm)
             end do
          end if
       end do

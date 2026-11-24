@@ -15,7 +15,7 @@ module test_mass_balance
    private
    public :: test_mba_spinup, test_mba_fixed_cmp, test_mba_bedload_start
    public :: test_mba_fluff_spin, test_mba_moving_volume, test_mba_moving_3d, test_mba_labels
-   public :: test_mba_cmp_only, test_mba_bed_first
+   public :: test_mba_cmp_only, test_mba_bed_first, test_mba_mor_area
 
    real(dp), parameter :: tolerance = 1.0e-10_dp
    type(stmtype) :: saved_stmpar
@@ -29,7 +29,7 @@ module test_mass_balance
    real(fp), pointer :: saved_morfac, saved_bedload(:, :)
    integer, allocatable :: saved_ln(:, :), saved_lne2ln(:), saved_kbot(:), saved_ktop(:)
    integer, allocatable :: saved_bnd_counts(:), saved_bnd_links(:)
-   real(dp), allocatable :: saved_ba(:), saved_wu(:), saved_vol1(:), saved_constituents(:, :)
+   real(dp), allocatable :: saved_ba(:), saved_ba_mor(:), saved_wu(:), saved_vol1(:), saved_constituents(:, :)
    real(dp), allocatable :: saved_sinksetot(:, :), saved_sinkftot(:, :)
    character(len=:), allocatable :: saved_const_names(:), saved_bnd_names(:)
 
@@ -146,6 +146,26 @@ contains
    end subroutine test_mba_bedload_start
 
    !$gtest
+   !> Balance incoming bedload against bed storage on the morphologically active area.
+   subroutine test_mba_mor_area() bind(C)
+      use m_flowgeom, only: wu_mor
+
+      call setup_mba([1, 1], morphology_area=[200.0_dp, 100.0_dp, 200.0_dp, 100.0_dp])
+      call f90_expect_near(mbabedmassbegin(1, 1), 30000.0_dp, tolerance)
+      call f90_expect_near(mbaarea(1), 2.0_dp, tolerance)
+
+      time1 = tstart_user + local_morpar%tcmp * tfac
+      wu_mor(2) = 200.0_dp
+      local_bedload(2, 1) = 1.0_fp
+      local_bed%state%bodsed(1, 1) = local_bed%state%bodsed(1, 1) + 20.0_dp
+      call comp_bedload_fluxmba()
+      call mba_update(time1)
+      call expect_entry(const_flux(1)%bal_area(1), 'From/to storage', 'Bed', [0.0_dp, 4000.0_dp])
+      call f90_expect_near(const_flux(1)%bal_error, [0.0_dp, 0.0_dp], tolerance)
+      call cleanup_mba()
+   end subroutine test_mba_mor_area
+
+   !$gtest
    !> Include frozen fluff exchange and exclude cells owned by another domain.
    subroutine test_mba_fluff_spin() bind(C)
       call setup_mba([1, 2])
@@ -238,10 +258,10 @@ contains
    end subroutine test_mba_labels
 
    !> Build two internal cells, two boundaries and one suspended sediment fraction.
-   subroutine setup_mba(area_map, lump_mba, lump_bnd)
+   subroutine setup_mba(area_map, lump_mba, lump_bnd, morphology_area)
       use m_alloc, only: realloc
       use m_resetfullflowmodel, only: resetFullFlowModel
-      use m_flowgeom, only: ndx, ndxi, lnx, lnxi, ln, lne2ln, ba, wu_mor
+      use m_flowgeom, only: ndx, ndxi, lnx, lnxi, ln, lne2ln, ba, ba_mor, wu_mor
       use m_flowparameters, only: jambawritetxt, jambawritecsv, jambawritenetcdf, jambalumpmba, jambalumpbnd
       use m_transport, only: numconst, ised1, isedn, itemp, const_names
       use m_fm_erosed, only: lsed, lsedtot, morfac, iflufflyr, e_sbn
@@ -251,6 +271,7 @@ contains
 
       integer, intent(in) :: area_map(2)
       integer, optional, intent(in) :: lump_mba, lump_bnd
+      real(dp), dimension(4), optional, intent(in) :: morphology_area
 
       call resetFullFlowModel()
       saved_stmpar = stmpar
@@ -268,6 +289,7 @@ contains
       call move_alloc(openbndlin, saved_bnd_links)
       call move_alloc(openbndname, saved_bnd_names)
       call move_alloc(ba, saved_ba)
+      call move_alloc(ba_mor, saved_ba_mor)
       call move_alloc(wu_mor, saved_wu)
       call move_alloc(vol1, saved_vol1)
       call move_alloc(constituents, saved_constituents)
@@ -339,6 +361,10 @@ contains
       call realloc(lne2ln, 2, keepExisting=.false., fill=0)
       lne2ln = [2, 3]
       call realloc(ba, 4, keepExisting=.false., fill=1.0_dp)
+      allocate (ba_mor, source=ba)
+      if (present(morphology_area)) then
+         ba_mor(:) = morphology_area
+      end if
       call realloc(wu_mor, 3, keepExisting=.false., fill=1.0_dp)
       call realloc(vol1, 4, keepExisting=.false., fill=0.0_dp)
       vol1(1:2) = [2.0_dp, 3.0_dp]
@@ -369,7 +395,7 @@ contains
    !> Restore pointer associations before the ordinary model teardown runs.
    subroutine cleanup_mba()
       use m_fm_erosed, only: lsed, lsedtot, iflufflyr, morfac, e_sbn
-      use m_flowgeom, only: ln, lne2ln, ba, wu_mor
+      use m_flowgeom, only: ln, lne2ln, ba, ba_mor, wu_mor
       use m_transport, only: const_names
       use fm_external_forcings_data, only: nopenbndlin, openbndlin, openbndname
 
@@ -388,6 +414,7 @@ contains
       call move_alloc(saved_bnd_links, openbndlin)
       call move_alloc(saved_bnd_names, openbndname)
       call move_alloc(saved_ba, ba)
+      call move_alloc(saved_ba_mor, ba_mor)
       call move_alloc(saved_wu, wu_mor)
       call move_alloc(saved_vol1, vol1)
       call move_alloc(saved_constituents, constituents)
