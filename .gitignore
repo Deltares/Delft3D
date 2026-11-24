@@ -63,7 +63,3 @@ examples/dflowfm/**/precice-run/**
 
 # conan
 conan/**/test_package/**
-
-# dflowfm_io
-src/utils_lgpl/dflowfm_io/build/**
-src/utils_lgpl/dflowfm_io/out/**
