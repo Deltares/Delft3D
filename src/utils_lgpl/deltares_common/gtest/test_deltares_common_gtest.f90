@@ -9,6 +9,30 @@ module test_deltares_common_gtest
 contains
 
    !$gtest
+   !> Suffix matching ignores case and handles empty, short, and padded strings.
+   subroutine test_iends_with() bind(C)
+      use string_module, only: iends_with
+
+      character(len=32) :: filename
+      character(len=12) :: suffix
+
+      filename = 'model.MdU'
+      suffix = '.mdu'
+      call f90_expect_true(iends_with(filename, suffix))
+      call f90_expect_true(iends_with('model.MdU', '.mdu'))
+      call f90_expect_true(iends_with('.MDU', '.mdu'))
+      call f90_expect_false(iends_with('model.mdu.bak', '.mdu'))
+      call f90_expect_false(iends_with('mdu', '.mdu'))
+      call f90_expect_false(iends_with('', '.mdu'))
+      call f90_expect_true(iends_with('model', ''))
+      call f90_expect_true(iends_with('', ''))
+      call f90_expect_true(iends_with('model.mdu ', '.mdu'))
+      call f90_expect_true(iends_with('model.mdu', '.mdu '))
+      call f90_expect_false(iends_with('mdu ', '.mdu'))
+      call f90_expect_true(iends_with(' ', ' '))
+   end subroutine test_iends_with
+
+   !$gtest
    !> Two dp numbers 1 ULP apart should be equal (within 2*epsilon)
    subroutine test_dp_equal_within_tolerance() bind(C)
       real(kind=dp) :: a, b
