@@ -18,6 +18,18 @@
         } \
     } while (0)
 
+#define ENSURE_ARRAY_ELEMENTS_NOT_NULL(arg, size) \
+    do { \
+        for (uint64_t i = 0; i < (size); ++i) \
+        { \
+            if (!(arg)[i]) \
+            { \
+                last_error = std::string(__func__) + ": invalid argument '" #arg "[" + std::to_string(i) + "]' is null"; \
+                return DFLOWFM_IO_RESULT_ERROR; \
+            } \
+        } \
+    } while (0)
+
 namespace
 {
     thread_local std::string last_error;
@@ -413,6 +425,7 @@ dflowfm_io_result_t mdu_set_string_list(mdu_handle_t* handle, const char* key, c
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(key);
     ENSURE_ARGUMENT_NOT_NULL(string_list);
+    ENSURE_ARRAY_ELEMENTS_NOT_NULL(string_list, size);
 
     return exceptionToResult([&]()
     {
@@ -425,6 +438,7 @@ dflowfm_io_result_t mdu_set_path_list(mdu_handle_t* handle, const char* key, con
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(key);
     ENSURE_ARGUMENT_NOT_NULL(path_list);
+    ENSURE_ARRAY_ELEMENTS_NOT_NULL(path_list, size);
 
     return exceptionToResult([&]()
     {
