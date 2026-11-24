@@ -1182,7 +1182,7 @@ contains
 
    !> Convert the first token into a double precision floating point value
    !! Requires a string as input, returns a value as output.
-   !! The value is unassigned in case of a conversion error.
+   !! The value is unchanged in case of a conversion error.
    !! The routine returns an error code ierr that equals
    !!    no_error, empty_string, conversion_error
    pure subroutine convert_to_real_dp(string, value, ierr)
@@ -1195,6 +1195,7 @@ contains
    integer :: i !< loop index for scanning the string
    integer :: ifirst !< index of first non-space character (beginning of token)
    integer :: ilast !< index of last non-space character (end of token)
+   real(kind=dp) :: parsed_value
    
    ifirst = -1
    ilast = len_trim(string)
@@ -1233,9 +1234,11 @@ contains
    ! reached the end of the string without encountering an unsupported character
    ! try to convert
    !
-   read (string(ifirst:ilast), *, iostat=ierr) value
+   read (string(ifirst:ilast), *, iostat=ierr) parsed_value
    if (ierr /= 0) then
       ierr = conversion_error
+   else
+      value = parsed_value
    end if
 
    end subroutine convert_to_real_dp
