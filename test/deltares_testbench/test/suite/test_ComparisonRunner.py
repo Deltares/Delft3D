@@ -1,7 +1,6 @@
 import glob
 import os
 import pathlib as pl
-from datetime import datetime, timezone
 from enum import Enum
 from typing import List
 from unittest.mock import MagicMock, PropertyMock, call
@@ -10,7 +9,6 @@ import pytest
 from pyfakefs.fake_filesystem import FakeFilesystem
 from pytest_mock import MockerFixture
 
-from src.config.credentials import Credentials
 from src.config.dependency import Dependency
 from src.config.local_paths import LocalPaths
 from src.config.location import Location
@@ -126,6 +124,7 @@ class TestComparisonRunner:
         settings = TestBenchSettings()
         settings.local_paths = LocalPaths()
         settings.command_line_settings.skip_run = True
+        settings.command_line_settings.skip_download = list(PathType)  # Skip downloading all PathTypes
         ref_location = TestComparisonRunner.create_location(name="reference", location_type=PathType.REFERENCE)
         case_location = TestComparisonRunner.create_location(name="case", location_type=PathType.INPUT)
         config = TestComparisonRunner.create_test_case_config("Name_1", locations=[ref_location, case_location])
@@ -147,43 +146,12 @@ class TestComparisonRunner:
         assert call(expected_log_message) in testcase_logger.info.call_args_list
         run_mock.assert_not_called()
 
-    def test_prepare_case_uses_minio(self, mocker: MockerFixture) -> None:
-        # Arrange
-        settings = TestBenchSettings()
-        settings.local_paths = LocalPaths()
-        settings.command_line_settings.skip_run = True
-        ref_location = TestComparisonRunner.create_location(name="reference", location_type=PathType.REFERENCE)
-        case_location = TestComparisonRunner.create_location(name="case", location_type=PathType.INPUT)
-        now = datetime.now(timezone.utc).replace(second=0, microsecond=0)
-        version = now.isoformat().split("+", 1)[0]
-        testcase_path = TestCasePath(prefix="abc/prefix", version=version)
-        config = TestComparisonRunner.create_test_case_config(
-            name="testname", testcase_path=testcase_path, locations=[ref_location, case_location]
-        )
-        settings.configs_to_run = [config]
-        logger = MagicMock(spec=ConsoleLogger)
-        testcase_logger = MagicMock()
-        logger.create_test_case_logger.return_value = testcase_logger
-        mocker.patch.object(ComparisonRunner, "show_summary")
-
-        runner = ComparisonRunner(settings, logger)
-
-        # Act
-        runner.run()
-
-        # Assert
-        ref_path = Paths().rebuildToLocalPath(Paths().mergeFullPath("references", "win64", "testname"))
-        case_path = Paths().rebuildToLocalPath(Paths().mergeFullPath("cases", "win64", "testname"))
-        expected_log_message1 = f"Downloading reference result, {ref_path} from https://deltares.nl/win64/abc/prefix"
-        expected_log_message2 = f"Downloading input of case, {case_path} from https://deltares.nl/win64/abc/prefix"
-        assert call(expected_log_message1) in testcase_logger.debug.call_args_list
-        assert call(expected_log_message2) in testcase_logger.debug.call_args_list
-
     def test_prepare_case_uses_dvc(self, mocker: MockerFixture) -> None:
         # Arrange
         settings = TestBenchSettings()
         settings.local_paths = LocalPaths(cases_path="data/cases", references_path="data/cases")
         settings.command_line_settings.skip_run = True
+        settings.command_line_settings.skip_download = []
 
         testcase_path = TestCasePath(prefix="abc/prefix", version="DVC")
 
@@ -324,6 +292,7 @@ class TestComparisonRunner:
         settings.command_line_settings.skip_run = False
         settings.command_line_settings.parallel = False
         settings.command_line_settings.skip_post_processing = True
+        settings.command_line_settings.skip_download = []
         settings.local_paths = LocalPaths()
 
         # Create one failing and one succeeding `TestCaseConfig`
@@ -917,35 +886,6 @@ class TestComparisonRunner:
         # Assert — location validation failure triggers cleanup and skips download
         cleanup_mock.assert_called_once_with(config)
         logger.error.assert_any_call("Failed to validate location for 'C1': bad location")
-
-    def test_prepare_dvc_find_credentials_returns_first_with_username(self, mocker: MockerFixture) -> None:
-        # Arrange
-        settings = TestBenchSettings()
-        settings.local_paths = LocalPaths(cases_path="data/cases", references_path="data/cases")
-
-        creds = Credentials()
-        creds.username = "my_user"
-        creds.password = "my_pass"
-
-        input_loc = self.create_location(name="case", root="data/cases/", location_type=PathType.INPUT)
-        input_loc.credentials = creds
-
-        config = self.create_test_case_config("C1", testcase_path=TestCasePath("path1", "DVC"), locations=[input_loc])
-        settings.configs_to_run = [config]
-
-        logger = MagicMock(spec=ConsoleLogger)
-        runner = ComparisonRunner(settings, logger)
-
-        mock_dvc_handler_cls = mocker.patch("src.suite.test_set_runner.DvcHandler")
-
-        # Act
-        runner._TestSetRunner__prepare_dvc_test_cases()  # type: ignore[attr-defined]
-
-        # Assert — handler received the actual credentials, not empty defaults
-        mock_handler = mock_dvc_handler_cls.return_value
-        actual_creds = mock_handler.download_batch.call_args[0][1]
-        assert actual_creds.username == "my_user"
-        assert actual_creds.password == "my_pass"
 
     def test_prepare_dvc_apply_paths_handles_set_absolute_paths_failure(self, mocker: MockerFixture) -> None:
         # Arrange

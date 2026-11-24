@@ -581,7 +581,7 @@ contains
          ! Converter will put qh value in target_array(n_qhbnd)
       case ('windx', 'windy', 'windxy', 'stressxy', 'airpressure', 'airpressure_windx_windy', 'airdensity', &
             'airpressure_windx_windy_charnock', 'charnock', 'airpressure_stressx_stressy', 'humidity', 'dewpoint', 'airtemperature', &
-            'cloudiness', 'solarradiation', 'longwaveradiation', 'sensibleheatflux', 'latentheatflux')
+            'cloudiness', 'solarradiation', 'longwaveradiation', 'sensibleheatflux', 'latentheatflux', 'seasurfacetemperature')
          if (present(srcmaskfile)) then
             if (ec_filetype == provFile_arcinfo .or. ec_filetype == provFile_curvi) then
                if (.not. ecParseARCinfoMask(srcmaskfile, srcmask, fileReaderPtr)) then

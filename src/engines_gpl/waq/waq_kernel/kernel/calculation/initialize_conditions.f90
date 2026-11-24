@@ -170,7 +170,7 @@ contains
             !
             !     Set variable "structure"
             !
-            CALL initialize_variables (file_unit_list(19), num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, &
+            CALL initialize_variables (file_unit_list(19), num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_functions, &
                     num_substances_transported, num_substances_total, num_dispersion_arrays, num_velocity_arrays, num_defaults, &
                     num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes, &
                     NOPRED, num_vars, J(IVARR:), J(IVIDX:), J(IVTDA:), &
@@ -322,13 +322,13 @@ contains
 
             ! Particle tracking
             call delpar00 (file_unit_list(19), file_name_list(45), num_cells, num_exchanges, a(ivol:), a(iflow:), &
-                    num_spatial_time_fuctions, c(isfna:), a(isfun:))
+                    num_spatial_time_functions, c(isfna:), a(isfun:))
 
             ! New bottomlayer processing
             IF (num_exchanges_bottom_dir > 0) &
                     CALL expands_vol_area_for_bottom_cells (file_unit_list, num_cells, num_cells_bottom, num_layers, num_grids, &
                             num_exchanges, num_exchanges_bottom_dir, J(IGREF:), J(IGSEG:), num_constants, &
-                            num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, A(ICONS:), C(ICNAM:), &
+                            num_spatial_parameters, num_time_functions, num_spatial_time_functions, A(ICONS:), C(ICNAM:), &
                             A(IPARM:), C(IPNAM:), A(IFUNC:), C(IFNAM:), A(ISFUN:), &
                             C(ISFNA:), J(IXPNT:), A(IVOL:), A(IAREA:), A(IFLOW:), &
                             A(ILENG:))
@@ -395,10 +395,10 @@ contains
                             num_spatial_parameters, indx, a(iparm:), c(imnam + 113), &
                             calculate_mass, .true.)
                 else                                     ! routine inact is at end of this file !
-                    indx = index_in_array('SURF      ', buffer%create_strings_20_array(isfna, num_spatial_time_fuctions))
+                    indx = index_in_array('SURF      ', buffer%create_strings_20_array(isfna, num_spatial_time_functions))
                     if (indx > 0) then                        ! and if SURF is found
                         call inact (nosss, num_substances_transported, num_substances_total, a(iconc:), a(imass:), &
-                                num_spatial_time_fuctions, indx, a(isfun:), c(imnam + 113), &
+                                num_spatial_time_functions, indx, a(isfun:), c(imnam + 113), &
                                 calculate_mass, .false.)
                     else
                         write (file_unit_list(19), '(a,a)')               & !   not found
@@ -413,7 +413,7 @@ contains
             call zlayer (num_cells, nosss, num_substances_transported, num_substances_total, num_layers, &
                     a(ivol:), num_exchanges_u_dir + num_exchanges_v_dir, num_exchanges, a(iarea:), num_constants, &
                     c(icnam:), a(icons:), num_spatial_parameters, c(ipnam:), a(iparm:), &
-                    num_spatial_time_fuctions, c(isfna:), a(isfun:), a(iconc:), a(imass:), &
+                    num_spatial_time_functions, c(isfna:), a(isfun:), a(iconc:), a(imass:), &
                     j(iknmr:), iknmkv, j(ixpnt:))
 
 
@@ -537,7 +537,7 @@ contains
         !     CONAME  CHAR*20  num_constants     OUTPUT  Constant names
         !     PANAME  CHAR*20  num_spatial_parameters       OUTPUT  Parameter names
         !     FUNAME  CHAR*20  num_time_functions      OUTPUT  Function names
-        !     SFNAME  CHAR*20  num_spatial_time_fuctions     OUTPUT  Segment function names
+        !     SFNAME  CHAR*20  num_spatial_time_functions     OUTPUT  Segment function names
         !     DINAME  CHAR*20  num_dispersion_arrays     OUTPUT  Dispersion array names
         !     VENAME  CHAR*20  num_velocity_arrays     OUTPUT  Velocity array names
         !     DANAM   CHAR*20  NDMPAR     OUTPUT  Dump-area    ID
@@ -568,7 +568,7 @@ contains
         !     num_constants  INTEGER       1     INPUT   Number of constants used
         !     num_spatial_parameters    INTEGER       1     INPUT   Number of parameters
         !     num_time_functions   INTEGER       1     INPUT   Number of functions ( user )
-        !     num_spatial_time_fuctions  INTEGER       1     INPUT   Number of segment functions
+        !     num_spatial_time_functions  INTEGER       1     INPUT   Number of segment functions
         !     num_items_time_fn  INTEGER       1     INPUT   Number possible functions
         !     NDMPAR  INTEGER       1     INPUT   Number of dump area's
         !     NTDMPQ  INTEGER       1     INPUT   total number exchanges in dump area
@@ -686,8 +686,8 @@ contains
         IF (num_time_functions  > 0) THEN
             READ (IIN, END = 40, ERR = 40) (FUNAME(K), K = 1, num_time_functions)
         ENDIF
-        IF (num_spatial_time_fuctions > 0) THEN
-            READ (IIN, END = 40, ERR = 40) (SFNAME(K), K = 1, num_spatial_time_fuctions)
+        IF (num_spatial_time_functions > 0) THEN
+            READ (IIN, END = 40, ERR = 40) (SFNAME(K), K = 1, num_spatial_time_functions)
         ENDIF
         !
         !     Time function info
@@ -1225,7 +1225,7 @@ contains
     !! Expands volume, area etc. for bottom cells
     subroutine expands_vol_area_for_bottom_cells(file_unit_list, num_cells, num_cells_bottom, num_layers, num_grids, &
             num_exchanges, num_exchanges_bottom_dir, igref, igseg, num_constants, &
-            num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, const, coname, &
+            num_spatial_parameters, num_time_functions, num_spatial_time_functions, const, coname, &
             param, paname, funcs, funame, sfuncs, &
             sfname, ipoint, volume, area, flow, &
             aleng)
@@ -1243,15 +1243,15 @@ contains
         !     num_constants  INTEGER    1        INPUT   Number of constants used
         !     num_spatial_parameters    INTEGER    1        INPUT   Number of parameters
         !     num_time_functions   INTEGER    1        INPUT   Number of functions ( user )
-        !     num_spatial_time_fuctions  INTEGER    1        INPUT   Number of segment functions
+        !     num_spatial_time_functions  INTEGER    1        INPUT   Number of segment functions
         !     CONST   REAL     num_constants     INPUT   value of constants
         !     CONAME  CHAR*20  num_constants     INPUT   Constant names
         !     PARAM   REAL    num_spatial_parameters,num_cells  INPUT   value of parameters
         !     PANAME  CHAR*20  num_spatial_parameters       INPUT   Parameter names
         !     FUNCS   REAL     num_time_functions      INPUT   Function values
         !     FUNAME  CHAR*20  num_time_functions      INPUT   Function names
-        !     SFUNCS  REAL   num_cells,num_spatial_time_fuctions INPUT   Segment function values
-        !     SFNAME  CHAR*20  num_spatial_time_fuctions     INPUT   Segment function names
+        !     SFUNCS  REAL   num_cells,num_spatial_time_functions INPUT   Segment function values
+        !     SFNAME  CHAR*20  num_spatial_time_functions     INPUT   Segment function names
         !     IPOINT  INTEGER   4,NOQT    INPUT   All exchange pointers
         !     VOLUME  REAL   num_cells+num_cells_bottom  IN/OUT  Segment volumes
         !     AREA    REAL    num_exchanges+num_exchanges_bottom_dir    IN/OUT  Exchange surfaces
@@ -1264,13 +1264,13 @@ contains
         INTEGER(kind = int_wp) :: file_unit_list(*), IGREF(num_grids), IGSEG(num_cells, num_grids), &
                 IPOINT(4, num_exchanges + num_exchanges_bottom_dir)
         REAL(kind = real_wp) :: CONST (num_constants), PARAM (num_spatial_parameters, num_cells), &
-                FUNCS (num_time_functions), SFUNCS(num_cells, num_spatial_time_fuctions), &
+                FUNCS (num_time_functions), SFUNCS(num_cells, num_spatial_time_functions), &
                 VOLUME(num_cells + num_cells_bottom), AREA(num_exchanges + num_exchanges_bottom_dir), &
                 ALENG (2, num_exchanges + num_exchanges_bottom_dir), FLOW(num_exchanges + num_exchanges_bottom_dir)
         character(len = 20)         CONAME(num_constants), PANAME(num_spatial_parameters), &
-                FUNAME(num_time_functions), SFNAME(num_spatial_time_fuctions)
+                FUNAME(num_time_functions), SFNAME(num_spatial_time_functions)
         integer(kind = int_wp) :: num_cells, num_cells_bottom, num_layers, num_grids, num_exchanges, num_exchanges_bottom_dir, num_constants
-        integer(kind = int_wp) :: num_time_functions, num_spatial_time_fuctions, num_spatial_parameters
+        integer(kind = int_wp) :: num_time_functions, num_spatial_time_functions, num_spatial_parameters
 
         !     local
         LOGICAL              LGET
@@ -1290,7 +1290,7 @@ contains
         LGET = .true.
         Allocate (Horsurf(NOSSS))
         call exchange_values (CTAG, NOSSS, Horsurf, num_constants, num_spatial_parameters, &
-                num_time_functions, num_spatial_time_fuctions, CONST, CONAME, PARAM, &
+                num_time_functions, num_spatial_time_functions, CONST, CONAME, PARAM, &
                 PANAME, FUNCS, FUNAME, SFUNCS, SFNAME, &
                 LGET, IERR)
         IF (IERR /= 0) THEN
@@ -1335,7 +1335,7 @@ contains
 
         LGET = .false.
         call exchange_values (CTAG, NOSSS, Horsurf, num_constants, num_spatial_parameters, &
-                num_time_functions, num_spatial_time_fuctions, CONST, CONAME, PARAM, &
+                num_time_functions, num_spatial_time_functions, CONST, CONAME, PARAM, &
                 PANAME, FUNCS, FUNAME, SFUNCS, SFNAME, &
                 LGET, IERR)
 
@@ -1344,7 +1344,7 @@ contains
         LGET = .true.
         Allocate (Thickn(NOSSS))
         call exchange_values (CTAG, NOSSS, Thickn, num_constants, num_spatial_parameters, &
-                num_time_functions, num_spatial_time_fuctions, CONST, CONAME, PARAM, &
+                num_time_functions, num_spatial_time_functions, CONST, CONAME, PARAM, &
                 PANAME, FUNCS, FUNAME, SFUNCS, SFNAME, &
                 LGET, IERR)
         IF (IERR /= 0) THEN

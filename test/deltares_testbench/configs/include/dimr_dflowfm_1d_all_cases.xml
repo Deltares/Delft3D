@@ -536,6 +536,30 @@
       </file>
     </checks>
   </testCase>
+  <testCase name="e02_f104_c45_lateral_inflow_pure1d" ref="dimr_default">
+    <path version="DVC">e02_dflowfm/f104_1D_numerical-aspects/c45_lateral_inflow_pure1d</path>
+    <checks>
+      <file name="output/FM_model_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh1d_s1" toleranceAbsolute="0.001"/>
+          <parameter name="mesh1d_u1" toleranceAbsolute="0.001"/>
+          <parameter name="mesh1d_q1" toleranceAbsolute="0.001"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  <testCase name="e02_f104_c46_storage_lateral_inflow_pure1d" ref="dimr_default">
+    <path version="DVC">e02_dflowfm/f104_1D_numerical-aspects/c46_storage_lateral_inflow_pure1d</path>
+    <checks>
+      <file name="output/FM_model_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh1d_s1" toleranceAbsolute="0.001"/>
+          <parameter name="mesh1d_u1" toleranceAbsolute="0.001"/>
+          <parameter name="mesh1d_q1" toleranceAbsolute="0.001"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
   <testCase name="e02_f105_c01_YZ-profile" ref="dimr_default">
     <path version="DVC">e02_dflowfm/f105_cross-sections/c01_YZ-profile</path>
     <checks>
