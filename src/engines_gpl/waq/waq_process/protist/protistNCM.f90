@@ -186,6 +186,11 @@ contains
                 atten = process_space_real(ipnt(5))  !    attenuation of light by water + plankton Chl           (-)
                 exat = EXP(-atten)       !    -ve exponent of attenuation                            (-)
 
+                call check_value( 'NCM', iseg, Temp   , 'Temp   ' )
+                call check_value( 'NCM', iseg, PFD    , 'PFD    ' )
+                call check_value( 'NCM', iseg, atten  , 'atten  ' )
+                call check_value( 'NCM', iseg, exat   , 'exat   ' )
+
                 ! species loop
                 speciesLoop : do iSpec = 1, nrSpec
 
@@ -233,6 +238,37 @@ contains
                     SDA = process_space_real(ipnt(spInc + 31))  ! specific dynamic action                                (-)
                     UmRT = process_space_real(ipnt(spInc + 32))  ! maximum growth rate at reference T                     (d-1)
 
+                    call check_value( 'NCM', iseg, protChl   , 'protChl   ' )
+                    call check_value( 'NCM', iseg, protN     , 'protN     ' )
+                    call check_value( 'NCM', iseg, protP     , 'protP     ' )
+                    call check_value( 'NCM', iseg, AEm       , 'AEm       ' )
+                    call check_value( 'NCM', iseg, AEo       , 'AEo       ' )
+                    call check_value( 'NCM', iseg, alpha     , 'alpha     ' )
+                    call check_value( 'NCM', iseg, CcellProt , 'CcellProt ' )
+                    call check_value( 'NCM', iseg, ChlCm     , 'ChlCm     ' )
+                    call check_value( 'NCM', iseg, CR        , 'CR        ' )
+                    call check_value( 'NCM', iseg, degChl    , 'degChl    ' )
+                    call check_value( 'NCM', iseg, FrAut     , 'FrAut     ' )
+                    call check_value( 'NCM', iseg, FrDet     , 'FrDet     ' )
+                    call check_value( 'NCM', iseg, kAE       , 'kAE       ' )
+                    call check_value( 'NCM', iseg, MrtRT     , 'MrtRT     ' )
+                    call check_value( 'NCM', iseg, maxPSreq  , 'maxPSreq  ' )
+                    call check_value( 'NCM', iseg, NCm       , 'NCm       ' )
+                    call check_value( 'NCM', iseg, NCo       , 'NCo       ' )
+                    call check_value( 'NCM', iseg, NCopt     , 'NCopt     ' )
+                    call check_value( 'NCM', iseg, optCR     , 'optCR     ' )
+                    call check_value( 'NCM', iseg, PCm       , 'PCm       ' )
+                    call check_value( 'NCM', iseg, PCo       , 'PCo       ' )
+                    call check_value( 'NCM', iseg, PCopt     , 'PCopt     ' )
+                    call check_value( 'NCM', iseg, PSDOC     , 'PSDOC     ' )
+                    call check_value( 'NCM', iseg, Q10       , 'Q10       ' )
+                    call check_value( 'NCM', iseg, rProt     , 'rProt     ' )
+                    call check_value( 'NCM', iseg, redco     , 'redco     ' )
+                    call check_value( 'NCM', iseg, relPhag   , 'relPhag   ' )
+                    call check_value( 'NCM', iseg, relPS     , 'relPS     ' )
+                    call check_value( 'NCM', iseg, RT        , 'RT        ' )
+                    call check_value( 'NCM', iseg, SDA       , 'SDA       ' )
+                    call check_value( 'NCM', iseg, UmRT      , 'UmRT      ' )
 
                     ! Calculate the nutrient quota of the cell-------------------------------------------------------------------------------
                     ! Units: gNut gC-1
@@ -370,6 +406,43 @@ contains
                     process_space_real(ipnt(spInc + 33)) = mrtFrDet
                     process_space_real(ipnt(spInc + 34)) = preyFlag
                     process_space_real(ipnt(spInc + 35)) = lightInh
+
+
+                    call check_value( 'NCMEnd', iseg, NC       , 'NC     ' )
+                    call check_value( 'NCMEnd', iseg, PC       , 'PC     ' )
+                    call check_value( 'NCMEnd', iseg, ChlC     , 'ChlC   ' )
+                    call check_value( 'NCMEnd', iseg, UmT      , 'UmT    ' )
+                    call check_value( 'NCMEnd', iseg, BR       , 'BR     ' )
+                    call check_value( 'NCMEnd', iseg, NCu      , 'NCu    ' )
+                    call check_value( 'NCMEnd', iseg, PCu      , 'PCu    ' )
+                    call check_value( 'NCMEnd', iseg, NPCu     , 'NPCu   ' )
+                    call check_value( 'NCMEnd', iseg, mot      , 'mot    ' )
+                    call check_value( 'NCMEnd', iseg,  sumCP   , ' sumCP ' )
+                    call check_value( 'NCMEnd', iseg,  ingNC   , ' ingNC ' )
+                    call check_value( 'NCMEnd', iseg,  ingPC   , ' ingPC ' )
+                    call check_value( 'NCMEnd', iseg,  ppNC    , ' ppNC  ' )
+                    call check_value( 'NCMEnd', iseg,  ppPC    , ' ppPC  ' )
+                    call check_value( 'NCMEnd', iseg,  stoichP , 'stoichP' )
+                    call check_value( 'NCMEnd', iseg,  opAE    , ' opAE  ' )
+                    call check_value( 'NCMEnd', iseg,  maxIng  , ' maxIng' )
+                    call check_value( 'NCMEnd', iseg,  ingSat  , ' ingSat' )
+                    call check_value( 'NCMEnd', iseg,  ingC    , ' ingC  ' )
+                    call check_value( 'NCMEnd', iseg,  assC    , ' assC  ' )
+                    call check_value( 'NCMEnd', iseg,  ingN    , ' ingN  ' )
+                    call check_value( 'NCMEnd', iseg,  ingP    , ' ingP  ' )
+                    call check_value( 'NCMEnd', iseg,  assN    , ' assN  ' )
+                    call check_value( 'NCMEnd', iseg,  assP    , ' assP  ' )
+                    call check_value( 'NCMEnd', iseg,  PSqm    , ' PSqm  ' )
+                    call check_value( 'NCMEnd', iseg,  PS      , ' PS    ' )
+                    call check_value( 'NCMEnd', iseg,  Cfix    , ' Cfix  ' )
+                    call check_value( 'NCMEnd', iseg,  NPP     , ' NPP   ' )
+                    call check_value( 'NCMEnd', iseg,  totR    , ' totR  '  )
+                    call check_value( 'NCMEnd', iseg,  Cu      , ' Cu    '  )
+                    call check_value( 'NCMEnd', iseg,  mrt     , ' mrt   '  )
+                    call check_value( 'NCMEnd', iseg,  mrtFrAut, ' mrtFrAut')
+                    call check_value( 'NCMEnd', iseg,  mrtFrDet, ' mrtFrDet')
+                    call check_value( 'NCMEnd', iseg,  preyFlag, ' preyFlag')
+                    call check_value( 'NCMEnd', iseg,  lightInh, ' lightInh')
 
                     ! FLUXES -------------------------------------------------------------------
                     ! Protist gains------------------------------------------------------------

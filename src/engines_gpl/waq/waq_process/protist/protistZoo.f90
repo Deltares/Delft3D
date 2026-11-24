@@ -208,6 +208,29 @@ contains
                     SDA = process_space_real(ipnt(spInc + 22))   !      specific dynamic action                                (-)
                     UmRT = process_space_real(ipnt(spInc + 23))   !      maximum growth rate using NH4-N at reference T         (d-1)
 
+                    call check_value( 'ZOO', iseg, protN     , 'protN     ' )
+                    call check_value( 'ZOO', iseg, protP     , 'protP     ' )
+                    call check_value( 'ZOO', iseg, AEm       , 'AEm       ' )
+                    call check_value( 'ZOO', iseg, AEo       , 'AEo       ' )
+                    call check_value( 'ZOO', iseg, CcellZoo  , 'CcellZoo  ' )
+                    call check_value( 'ZOO', iseg, CR        , 'CR        ' )
+                    call check_value( 'ZOO', iseg, FrAut     , 'FrAut     ' )
+                    call check_value( 'ZOO', iseg, FrDet     , 'FrDet     ' )
+                    call check_value( 'ZOO', iseg, kAE       , 'kAE       ' )
+                    call check_value( 'ZOO', iseg, MrtRT     , 'MrtRT     ' )
+                    call check_value( 'ZOO', iseg, NCm       , 'NCm       ' )
+                    call check_value( 'ZOO', iseg, NCo       , 'NCo       ' )
+                    call check_value( 'ZOO', iseg, NCopt     , 'NCopt     ' )
+                    call check_value( 'ZOO', iseg, optCR     , 'optCR     ' )
+                    call check_value( 'ZOO', iseg, PCm       , 'PCm       ' )
+                    call check_value( 'ZOO', iseg, PCo       , 'PCo       ' )
+                    call check_value( 'ZOO', iseg, PCopt     , 'PCopt     ' )
+                    call check_value( 'ZOO', iseg, Q10       , 'Q10       ' )
+                    call check_value( 'ZOO', iseg, RT        , 'RT        ' )
+                    call check_value( 'ZOO', iseg, rZoo      , 'rZoo      ' )
+                    call check_value( 'ZOO', iseg, SDA       , 'SDA       ' )
+                    call check_value( 'ZOO', iseg, UmRT      , 'UmRT      ' )
+
 
                     ! Calculate the nutrient quota of the cell-------------------------------------------------------------------------------
                     ! Units: gNut gC-1
@@ -316,6 +339,37 @@ contains
                     process_space_real(ipnt(spInc + 27)) = mrtFrAut
                     process_space_real(ipnt(spInc + 28)) = mrtFrDet
                     process_space_real(ipnt(spInc + 29)) = preyFlag
+
+
+                    call check_value( 'ZOOEnd', iseg, NC         , 'NC        ' )
+                    call check_value( 'ZOOEnd', iseg, PC         , 'PC        ' )
+                    call check_value( 'ZOOEnd', iseg, UmT        , 'UmT       ' )
+                    call check_value( 'ZOOEnd', iseg, BR         , 'BR        ' )
+                    call check_value( 'ZOOEnd', iseg, NCu        , 'NCu       ' )
+                    call check_value( 'ZOOEnd', iseg, PCu        , 'PCu       ' )
+                    call check_value( 'ZOOEnd', iseg, NPCu       , 'NPCu      ' )
+                    call check_value( 'ZOOEnd', iseg, mot        , 'mot       ' )
+                    call check_value( 'ZOOEnd', iseg, sumCP      , 'sumCP     ' )
+                    call check_value( 'ZOOEnd', iseg,  ingNC     , ' ingNC    ' )
+                    call check_value( 'ZOOEnd', iseg,  ingPC     , ' ingPC    ' )
+                    call check_value( 'ZOOEnd', iseg,  ppNC      , ' ppNC     ' )
+                    call check_value( 'ZOOEnd', iseg,  ppPC      , ' ppPC     ' )
+                    call check_value( 'ZOOEnd', iseg,  stoichP   , ' stoichP  ' )
+                    call check_value( 'ZOOEnd', iseg,  opAE      , ' opAE     ' )
+                    call check_value( 'ZOOEnd', iseg,  maxIng    , ' maxIng   ' )
+                    call check_value( 'ZOOEnd', iseg,  ingSat    , ' ingSat   ' )
+                    call check_value( 'ZOOEnd', iseg,  ingC      , ' ingC     ' )
+                    call check_value( 'ZOOEnd', iseg,  assC      , ' assC     ' )
+                    call check_value( 'ZOOEnd', iseg,  ingN      , ' ingN     ' )
+                    call check_value( 'ZOOEnd', iseg,  ingP      , ' ingP     ' )
+                    call check_value( 'ZOOEnd', iseg,  assN      , ' assN     ' )
+                    call check_value( 'ZOOEnd', iseg,  assP      , ' assP     ' )
+                    call check_value( 'ZOOEnd', iseg,  totR      , ' totR     ' )
+                    call check_value( 'ZOOEnd', iseg,  Cu        , ' Cu       ' )
+                    call check_value( 'ZOOEnd', iseg,  mrt       , ' mrt      ' )
+                    call check_value( 'ZOOEnd', iseg,  mrtFrAut  , ' mrtFrAut ' )
+                    call check_value( 'ZOOEnd', iseg,  mrtFrDet  , ' mrtFrDet ' )
+                    call check_value( 'ZOOEnd', iseg,  preyFlag  , ' preyFlag ' )
 
                     ! FLUXES -------------------------------------------------------------------
                     ! Protist gains------------------------------------------------------------
