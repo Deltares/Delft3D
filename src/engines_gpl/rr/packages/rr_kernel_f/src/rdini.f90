@@ -331,7 +331,7 @@
       KSatCapsim(21) = 3.7
       ! convert to mm/day
       KSatCapsim = KSatCapsim * 10.
-      UnpavedPercolationLikeSobek213=.false.
+      UnpavedPercolationLikeSobek213=.true.
 ! Taiwan Nov2002
 !  Added options to write RunoffOut as a His file, and to separate RWA and DWA output
 !  defaults: Runoff.Out not a His file, no separation of RWA and DWA output
@@ -641,7 +641,6 @@
             IF (IDUM .EQ. 0) FixJira24759 = .false.
             IF (IDUM .NE. 0) FixJira24759 = .true.
          ELSEIF (STRING(1:POS1-1) .EQ. 'UNPAVEDPERCOLATIONLIKESOBEK213') THEN
-            UnpavedPercolationLikeSobek213=.false.
             READ(STRING(POS1+1:),*) Idum
             IF (IDUM .EQ. 0) UnpavedPercolationLikeSobek213=.false.
             IF (IDUM .NE. 0) UnpavedPercolationLikeSobek213=.true.
