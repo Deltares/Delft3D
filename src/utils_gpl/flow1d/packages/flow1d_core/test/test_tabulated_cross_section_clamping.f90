@@ -6,7 +6,7 @@ module test_tabulated_cross_section_clamping
 
 contains
 
-   !$f90tw TESTCODE(TEST, test_tabulated_cross_section_clamping, test_subsection_area_clamped_inside_table, test_subsection_area_clamped_inside_table,
+   !$gtest
    subroutine test_subsection_area_clamped_inside_table() bind(C)
       type(t_CSType), target :: crossDef
       type(t_CrossSection) :: cross
@@ -23,9 +23,8 @@ contains
 
       call dealloc(crossDef)
    end subroutine test_subsection_area_clamped_inside_table
-   !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_tabulated_cross_section_clamping, test_subsection_area_clamped_above_table, test_subsection_area_clamped_above_table,
+   !$gtest
    subroutine test_subsection_area_clamped_above_table() bind(C)
       type(t_CSType), target :: crossDef
       type(t_CrossSection) :: cross
@@ -42,7 +41,6 @@ contains
 
       call dealloc(crossDef)
    end subroutine test_subsection_area_clamped_above_table
-   !$f90tw)
 
    subroutine initialize_cross_section(crossDef, cross)
       type(t_CSType), target, intent(out) :: crossDef

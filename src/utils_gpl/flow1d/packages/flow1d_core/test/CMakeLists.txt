@@ -1,14 +1,7 @@
 add_fortran_gtest(test_general_structure
-    SOURCES test_general_structure.f90
-    LIBRARIES flow1d_core
-    VISUAL_STUDIO_PATH utils_gpl/flow1d_library/test
-)
-
-f90twtest(test_tabulated_cross_section_clamping
-    CFILES test_tabulated_cross_section_clamping.cpp
-    F90FILES test_tabulated_cross_section_clamping.f90
-    F2HFILES ${CMAKE_CURRENT_SOURCE_DIR}/test_tabulated_cross_section_clamping.f90
-    OUTDIR "${CMAKE_CURRENT_BINARY_DIR}"
+    SOURCES
+        test_general_structure.f90
+        test_tabulated_cross_section_clamping.f90
     LIBRARIES flow1d_core
     VISUAL_STUDIO_PATH utils_gpl/flow1d_library/test
 )
