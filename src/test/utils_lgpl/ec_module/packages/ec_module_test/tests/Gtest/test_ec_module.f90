@@ -460,4 +460,673 @@ contains
       call clear_ec_message()
    end subroutine test_netcdf_candidate_helper_leaves_unknown_quantity_unmapped
 
+   !$gtest
+   subroutine test_converter_target_mask_unimagdir() bind(C)
+      use m_ec_converter, only: ecConverterPerformConversions
+      use m_ec_message, only: clear_ec_message
+      use m_ec_parameters, only: convType_unimagdir, interpolate_timespace, EC_OPERAND_ADD, EC_OPERAND_REPLACE, ec_undef_hp
+      use m_ec_typedefs, only: tEcConnection, tEcConverter, tEcElementSet, tEcField, tEcItem
+      use time_class, only: c_time
+
+      type(tEcConnection) :: connection
+      type(tEcConverter), target :: converter
+      type(tEcItem), target :: source_item, target_u_item, target_v_item
+      type(tEcField), target :: src_t0, src_t1, tgt_u_field, tgt_v_field
+      type(tEcElementSet), target :: target_set
+      real(dp), dimension(2), target :: src_vals_t0, src_vals_t1, target_u, target_v
+      type(c_time) :: time
+      logical :: success
+
+      src_vals_t0 = [5.0_dp, 270.0_dp] ! wind from west -> eastward (+u, 0 v)
+      src_vals_t1 = [5.0_dp, 270.0_dp]
+      src_t0%timesteps = 0.0_dp
+      src_t1%timesteps = 1.0_dp
+      src_t0%arr1dPtr => src_vals_t0
+      src_t1%arr1dPtr => src_vals_t1
+      source_item%sourceT0FieldPtr => src_t0
+      source_item%sourceT1FieldPtr => src_t1
+
+      target_set%nCoordinates = 2
+      tgt_u_field%arr1dPtr => target_u
+      tgt_v_field%arr1dPtr => target_v
+      target_u_item%elementSetPtr => target_set
+      target_u_item%targetFieldPtr => tgt_u_field
+      target_v_item%elementSetPtr => target_set
+      target_v_item%targetFieldPtr => tgt_v_field
+
+      converter%ofType = convType_unimagdir
+      converter%interpolationType = interpolate_timespace
+      converter%operandType = EC_OPERAND_ADD
+
+      allocate (connection%sourceItemsPtr(1), connection%targetItemsPtr(2))
+      connection%nSourceItems = 1
+      connection%nTargetItems = 2
+      connection%sourceItemsPtr(1)%ptr => source_item
+      connection%targetItemsPtr(1)%ptr => target_u_item
+      connection%targetItemsPtr(2)%ptr => target_v_item
+      connection%converterPtr => converter
+      connection%targetMask = [1, 0]
+
+      call time%set(0.5_dp)
+      target_u = [10.0_dp, ec_undef_hp]
+      target_v = [20.0_dp, ec_undef_hp]
+      success = ecConverterPerformConversions(connection, time)
+      call f90_expect_true(success, 'unimagdir ADD must ignore undefined values at masked-out targets')
+      call f90_expect_near(target_u(1), 15.0_dp, 1.0e-12_dp, 'active target u must be updated')
+      call f90_expect_near(target_v(1), 20.0_dp, 1.0e-12_dp, 'active target v must be updated')
+      call f90_expect_near(target_u(2), ec_undef_hp, 1.0e-12_dp, 'masked-out target u must remain unchanged')
+      call f90_expect_near(target_v(2), ec_undef_hp, 1.0e-12_dp, 'masked-out target v must remain unchanged')
+
+      converter%operandType = EC_OPERAND_REPLACE
+      target_u = [10.0_dp, 99.0_dp]
+      target_v = [20.0_dp, -88.0_dp]
+      success = ecConverterPerformConversions(connection, time)
+      call f90_expect_true(success, 'unimagdir REPLACE must succeed with a target mask')
+      call f90_expect_near(target_u(1), 5.0_dp, 1.0e-12_dp, 'active target u must be replaced')
+      call f90_expect_near(target_v(1), 0.0_dp, 1.0e-12_dp, 'active target v must be replaced')
+      call f90_expect_near(target_u(2), 99.0_dp, 1.0e-12_dp, 'masked-out target u must stay preserved')
+      call f90_expect_near(target_v(2), -88.0_dp, 1.0e-12_dp, 'masked-out target v must stay preserved')
+
+      deallocate (connection%sourceItemsPtr, connection%targetItemsPtr, connection%targetMask)
+      call clear_ec_message()
+   end subroutine test_converter_target_mask_unimagdir
+
+   !$gtest
+   subroutine test_converter_target_mask_arcinfo() bind(C)
+      use m_ec_converter, only: ecConverterPerformConversions
+      use m_ec_message, only: clear_ec_message
+      use m_ec_parameters, only: convType_arcinfo, elmSetType_cartesian_equidistant, interpolate_timespace, EC_OPERAND_REPLACE
+      use m_ec_typedefs, only: tEcConnection, tEcConverter, tEcElementSet, tEcField, tEcItem
+      use time_class, only: c_time
+
+      type(tEcConnection) :: connection
+      type(tEcConverter), target :: converter
+      type(tEcItem), target :: source_item, target_item
+      type(tEcField), target :: src_t0, src_t1, target_field
+      type(tEcElementSet), target :: source_set, target_set
+      real(dp), dimension(4), target :: src_vals_t0, src_vals_t1
+      real(dp), dimension(2), target :: target_x, target_y, target_vals
+      type(c_time) :: time
+      logical :: success
+
+      source_set%ofType = elmSetType_cartesian_equidistant
+      source_set%x0 = 0.0_dp
+      source_set%y0 = 0.0_dp
+      source_set%dx = 10.0_dp
+      source_set%dy = 10.0_dp
+      source_set%n_cols = 2
+      source_set%n_rows = 2
+      src_vals_t0 = [4.0_dp, 4.0_dp, 4.0_dp, 4.0_dp]
+      src_vals_t1 = [8.0_dp, 8.0_dp, 8.0_dp, 8.0_dp]
+      src_t0%timesteps = 0.0_dp
+      src_t1%timesteps = 1.0_dp
+      src_t0%arr1dPtr => src_vals_t0
+      src_t1%arr1dPtr => src_vals_t1
+      source_item%elementSetPtr => source_set
+      source_item%sourceT0FieldPtr => src_t0
+      source_item%sourceT1FieldPtr => src_t1
+
+      target_x = [5.0_dp, 5.0_dp]
+      target_y = [5.0_dp, 5.0_dp]
+      target_vals = [10.0_dp, 99.0_dp]
+      target_set%nCoordinates = 2
+      target_set%x => target_x
+      target_set%y => target_y
+      target_field%arr1dPtr => target_vals
+      target_item%elementSetPtr => target_set
+      target_item%targetFieldPtr => target_field
+
+      converter%ofType = convType_arcinfo
+      converter%interpolationType = interpolate_timespace
+      converter%operandType = EC_OPERAND_REPLACE
+
+      allocate (connection%sourceItemsPtr(1), connection%targetItemsPtr(1))
+      connection%nSourceItems = 1
+      connection%nTargetItems = 1
+      connection%sourceItemsPtr(1)%ptr => source_item
+      connection%targetItemsPtr(1)%ptr => target_item
+      connection%converterPtr => converter
+      connection%targetMask = [1, 0]
+
+      call time%set(0.5_dp)
+      success = ecConverterPerformConversions(connection, time)
+      call f90_expect_true(success, 'arcinfo conversion must succeed with a target mask')
+      call f90_expect_near(target_vals(1), 6.0_dp, 1.0e-12_dp, 'active arcinfo target must be updated')
+      call f90_expect_near(target_vals(2), 99.0_dp, 1.0e-12_dp, 'masked-out arcinfo target must remain unchanged')
+
+      deallocate (connection%sourceItemsPtr, connection%targetItemsPtr, connection%targetMask)
+      call clear_ec_message()
+   end subroutine test_converter_target_mask_arcinfo
+
+   !$gtest
+   subroutine test_converter_target_mask_spiderweb() bind(C)
+      use m_ec_converter, only: ecConverterPerformConversions
+      use m_ec_message, only: clear_ec_message
+      use m_ec_parameters, only: convType_spiderweb, EC_OPERAND_REPLACE
+      use m_ec_typedefs, only: tEcConnection, tEcConverter, tEcElementSet, tEcField, tEcItem, tEcQuantity
+      use time_class, only: c_time
+
+      type(tEcConnection) :: connection
+      type(tEcConverter), target :: converter
+      type(tEcItem), target :: source_item, target_item
+      type(tEcQuantity), target :: source_qty, target_qty
+      type(tEcField), target :: src_t0, src_t1, target_field
+      type(tEcElementSet), target :: source_set, target_set
+      real(dp), dimension(15), target :: p_drop_t0, p_drop_t1
+      real(dp), dimension(2), target :: target_x, target_y, target_vals
+      type(c_time) :: time
+      logical :: success
+
+      source_qty%name = 'p_drop'
+      target_qty%name = 'airpressure'
+      source_set%n_rows = 3
+      source_set%n_cols = 5
+      source_set%radius = 500000.0_dp
+      source_set%spw_merge_frac = 0.5_dp
+      source_set%utmzone = 'undefined'
+      source_set%gridunit = 'degree'
+
+      p_drop_t0 = 100.0_dp
+      p_drop_t1 = 100.0_dp
+      src_t0%timesteps = 0.0_dp
+      src_t1%timesteps = 1.0_dp
+      src_t0%x_spw_eye = 10.0_dp
+      src_t0%y_spw_eye = 10.0_dp
+      src_t1%x_spw_eye = 10.0_dp
+      src_t1%y_spw_eye = 10.0_dp
+      src_t0%arr1dPtr => p_drop_t0
+      src_t1%arr1dPtr => p_drop_t1
+      source_item%quantityPtr => source_qty
+      source_item%elementSetPtr => source_set
+      source_item%sourceT0FieldPtr => src_t0
+      source_item%sourceT1FieldPtr => src_t1
+
+      target_x = [10.5_dp, 10.5_dp]
+      target_y = [10.5_dp, 10.5_dp]
+      target_vals = [101325.0_dp, 101325.0_dp]
+      target_set%nCoordinates = 2
+      target_set%x => target_x
+      target_set%y => target_y
+      target_field%arr1dPtr => target_vals
+      target_item%quantityPtr => target_qty
+      target_item%elementSetPtr => target_set
+      target_item%targetFieldPtr => target_field
+
+      converter%ofType = convType_spiderweb
+      converter%operandType = EC_OPERAND_REPLACE
+
+      allocate (connection%sourceItemsPtr(1), connection%targetItemsPtr(1))
+      connection%nSourceItems = 1
+      connection%nTargetItems = 1
+      connection%sourceItemsPtr(1)%ptr => source_item
+      connection%targetItemsPtr(1)%ptr => target_item
+      connection%converterPtr => converter
+      connection%targetMask = [1, 0]
+
+      call time%set(0.5_dp)
+      success = ecConverterPerformConversions(connection, time)
+      call f90_expect_true(success, 'spiderweb conversion must succeed with a target mask')
+      call f90_expect_near(target_vals(1), 101225.0_dp, 1.0e-12_dp, 'active spiderweb target must be updated')
+      call f90_expect_near(target_vals(2), 101325.0_dp, 1.0e-12_dp, 'masked-out spiderweb target must remain unchanged')
+
+      deallocate (connection%sourceItemsPtr, connection%targetItemsPtr, connection%targetMask)
+      call clear_ec_message()
+   end subroutine test_converter_target_mask_spiderweb
+
+   !$gtest
+   subroutine test_converter_target_mask_fourier() bind(C)
+      use m_ec_converter, only: ecConverterPerformConversions
+      use m_ec_message, only: clear_ec_message
+      use m_ec_parameters, only: convType_fourier, interpolate_passthrough, EC_OPERAND_ADD, EC_OPERAND_REPLACE, &
+                                 EC_OPERAND_REPLACE_ELEMENT, ec_undef_hp
+      use m_ec_typedefs, only: tEcConnection, tEcConverter, tEcElementSet, tEcField, tEcItem, tEcQuantity, tEcTimeFrame
+      use time_class, only: c_time
+
+      type(tEcConnection) :: connection
+      type(tEcConverter), target :: converter
+      type(tEcItem), target :: period_item, mag_item, phase_item, target_item
+      type(tEcQuantity), target :: period_qty, mag_qty, phase_qty
+      type(tEcField), target :: period_field, mag_field, phase_field, target_field
+      type(tEcElementSet), target :: source_set, target_set
+      type(tEcTimeFrame), target :: tframe
+      real(dp), dimension(1), target :: period_val, mag_val, phase_val, target_vals
+      type(c_time) :: time
+      logical :: success
+
+      period_qty%name = 'period'
+      mag_qty%name = 'magnitude'
+      phase_qty%name = 'phase'
+      period_val = [0.0_dp]
+      mag_val = [3.5_dp]
+      phase_val = [0.0_dp]
+      source_set%nCoordinates = 1
+      tframe%ec_refdate = 0.0_dp
+      period_field%arr1dPtr => period_val
+      mag_field%arr1dPtr => mag_val
+      phase_field%arr1dPtr => phase_val
+      period_item%quantityPtr => period_qty
+      period_item%elementSetPtr => source_set
+      period_item%tframe => tframe
+      period_item%sourceT0FieldPtr => period_field
+      mag_item%quantityPtr => mag_qty
+      mag_item%sourceT0FieldPtr => mag_field
+      phase_item%quantityPtr => phase_qty
+      phase_item%sourceT0FieldPtr => phase_field
+
+      target_set%nCoordinates = 1
+      target_field%arr1dPtr => target_vals
+      target_item%elementSetPtr => target_set
+      target_item%targetFieldPtr => target_field
+
+      converter%ofType = convType_fourier
+      converter%interpolationType = interpolate_passthrough
+
+      allocate (connection%sourceItemsPtr(3), connection%targetItemsPtr(1))
+      connection%nSourceItems = 3
+      connection%nTargetItems = 1
+      connection%sourceItemsPtr(1)%ptr => period_item
+      connection%sourceItemsPtr(2)%ptr => mag_item
+      connection%sourceItemsPtr(3)%ptr => phase_item
+      connection%targetItemsPtr(1)%ptr => target_item
+      connection%converterPtr => converter
+      connection%targetMask = [0]
+
+      call time%set(0.0_dp)
+      converter%operandType = EC_OPERAND_REPLACE
+      target_vals = [99.0_dp]
+      success = ecConverterPerformConversions(connection, time)
+      call f90_expect_true(success, 'fourier REPLACE must succeed when masked out')
+      call f90_expect_near(target_vals(1), 99.0_dp, 1.0e-12_dp, 'masked-out fourier target must remain unchanged')
+
+      converter%operandType = EC_OPERAND_ADD
+      target_vals = [ec_undef_hp]
+      success = ecConverterPerformConversions(connection, time)
+      call f90_expect_true(success, 'fourier ADD must skip undefined check when masked out')
+      call f90_expect_near(target_vals(1), ec_undef_hp, 1.0e-12_dp, 'masked-out fourier target must stay undefined')
+
+      converter%operandType = EC_OPERAND_REPLACE_ELEMENT
+      converter%targetIndex = 1
+      success = ecConverterPerformConversions(connection, time)
+      call f90_expect_false(success, 'fourier REPLACE_ELEMENT must reject an allocated target mask')
+
+      deallocate (connection%sourceItemsPtr, connection%targetItemsPtr, connection%targetMask)
+      call clear_ec_message()
+   end subroutine test_converter_target_mask_fourier
+
+   !$gtest
+   subroutine test_converter_target_mask_netcdf_samples() bind(C)
+      use m_ec_converter, only: ecConverterPerformConversions, ecConverterUpdateWeightFactors
+      use m_ec_message, only: clear_ec_message
+      use m_ec_parameters, only: convType_netcdf, elmSetType_cartesian, elmSetType_samples, &
+                                 interpolate_spacetimeSaveWeightFactors, interpolate_nearest_neighbour, &
+                                 EC_OPERAND_REPLACE, EC_COORDS_CARTESIAN, ec_undef_int, ec_undef_hp
+      use m_ec_typedefs, only: tEcConnection, tEcConverter, tEcElementSet, tEcField, tEcInstance, tEcItem, tEcQuantity
+      use time_class, only: c_time
+
+      type(tEcInstance), target :: instance
+      type(tEcInstance), pointer :: instance_ptr
+      type(tEcConnection) :: connection
+      type(tEcConverter), target :: converter
+      type(tEcItem), target :: source_item, target_item
+      type(tEcQuantity), target :: source_qty
+      type(tEcField), target :: src_t0, src_t1, target_field
+      type(tEcElementSet), target :: source_set, target_set
+      real(dp), dimension(3), target :: src_x, src_y
+      real(dp), dimension(2), target :: tgt_x, tgt_y, target_vals
+      type(c_time) :: time
+      logical :: success
+
+      instance%coordsystem = EC_COORDS_CARTESIAN
+      instance_ptr => instance
+
+      src_x = [0.0_dp, 10.0_dp, 0.0_dp]
+      src_y = [0.0_dp, 0.0_dp, 10.0_dp]
+      source_set%ofType = elmSetType_samples
+      source_set%nCoordinates = 3
+      source_set%n_cols = 3
+      source_set%n_rows = 1
+      source_set%n_layers = 0
+      source_set%x => src_x
+      source_set%y => src_y
+      source_qty%name = 'air_pressure'
+      source_qty%fillvalue = -999.0_dp
+      src_t0%timesteps = 0.0_dp
+      src_t1%timesteps = 1.0_dp
+      src_t0%arr1d = [10.0_dp, 10.0_dp, 10.0_dp]
+      src_t1%arr1d = [10.0_dp, 10.0_dp, 10.0_dp]
+      source_item%quantityPtr => source_qty
+      source_item%elementSetPtr => source_set
+      source_item%sourceT0FieldPtr => src_t0
+      source_item%sourceT1FieldPtr => src_t1
+
+      tgt_x = [2.0_dp, 3.0_dp]
+      tgt_y = [2.0_dp, 3.0_dp]
+      target_set%ofType = elmSetType_cartesian
+      target_set%nCoordinates = 2
+      target_set%x => tgt_x
+      target_set%y => tgt_y
+      target_field%arr1dPtr => target_vals
+      target_field%missingValue = ec_undef_hp
+      target_item%elementSetPtr => target_set
+      target_item%targetFieldPtr => target_field
+
+      converter%ofType = convType_netcdf
+      converter%operandType = EC_OPERAND_REPLACE
+
+      allocate (connection%sourceItemsPtr(1), connection%targetItemsPtr(1))
+      connection%nSourceItems = 1
+      connection%nTargetItems = 1
+      connection%sourceItemsPtr(1)%ptr => source_item
+      connection%targetItemsPtr(1)%ptr => target_item
+      connection%converterPtr => converter
+      connection%targetMask = [1, 0]
+
+      call time%set(0.5_dp)
+
+      ! Triangulation path
+      converter%interpolationType = interpolate_spacetimeSaveWeightFactors
+      success = ecConverterUpdateWeightFactors(instance_ptr, connection)
+      if (.not. f90_assert_true(success, 'sample triangulation weights must build with a target mask')) then
+         deallocate (connection%sourceItemsPtr, connection%targetItemsPtr, connection%targetMask)
+         return
+      end if
+      call f90_expect_true(all(converter%indexWeight%indices(:, 2) == ec_undef_int), &
+                           'masked-out triangulation target must have undefined indices')
+      target_vals = [1.0_dp, 99.0_dp]
+      success = ecConverterPerformConversions(connection, time)
+      call f90_expect_true(success, 'sample triangulation conversion must succeed with a target mask')
+      call f90_expect_near(target_vals(1), 10.0_dp, 1.0e-12_dp, 'active sample triangulation target must be updated')
+      call f90_expect_near(target_vals(2), 99.0_dp, 1.0e-12_dp, 'masked-out sample triangulation target must remain unchanged')
+
+      deallocate (converter%indexWeight%indices, converter%indexWeight%weightFactors, converter%indexWeight)
+      converter%indexWeight => null()
+
+      ! Nearest-neighbour path
+      converter%interpolationType = interpolate_nearest_neighbour
+      success = ecConverterUpdateWeightFactors(instance_ptr, connection)
+      if (.not. f90_assert_true(success, 'sample nearest-neighbour weights must build with a target mask')) then
+         deallocate (connection%sourceItemsPtr, connection%targetItemsPtr, connection%targetMask)
+         return
+      end if
+      target_vals = [1.0_dp, 99.0_dp]
+      success = ecConverterPerformConversions(connection, time)
+      call f90_expect_true(success, 'sample nearest-neighbour conversion must succeed with a target mask')
+      call f90_expect_near(target_vals(1), 10.0_dp, 1.0e-12_dp, 'active sample nearest-neighbour target must be updated')
+      call f90_expect_near(target_vals(2), 99.0_dp, 1.0e-12_dp, 'masked-out sample nearest-neighbour target must remain unchanged')
+
+      deallocate (converter%indexWeight%indices, converter%indexWeight%weightFactors, converter%indexWeight)
+      deallocate (connection%sourceItemsPtr, connection%targetItemsPtr, connection%targetMask)
+      call clear_ec_message()
+   end subroutine test_converter_target_mask_netcdf_samples
+
+   !$gtest
+   subroutine test_converter_target_mask_netcdf_time_interpolation() bind(C)
+      use m_ec_converter, only: ecConverterPerformConversions
+      use m_ec_message, only: clear_ec_message
+      use m_ec_parameters, only: convType_netcdf, elmSetType_cartesian, interpolate_time, interpolate_time_extrapolation_ok, &
+                                 EC_OPERAND_ADD, ec_undef_hp
+      use m_ec_typedefs, only: tEcConnection, tEcConverter, tEcElementSet, tEcField, tEcItem, tEcQuantity
+      use time_class, only: c_time
+
+      type(tEcConnection) :: connection
+      type(tEcConverter), target :: converter
+      type(tEcItem), target :: source_item, target_item
+      type(tEcQuantity), target :: source_qty
+      type(tEcField), target :: src_t0, src_t1, target_field
+      type(tEcElementSet), target :: source_set, target_set
+      real(dp), dimension(2), target :: src_vals_t0, src_vals_t1, target_vals
+      type(c_time) :: time
+      logical :: success
+
+      source_qty%name = 'air_pressure'
+      source_set%ofType = elmSetType_cartesian
+      source_set%nCoordinates = 2
+      src_vals_t0 = [4.0_dp, 40.0_dp]
+      src_vals_t1 = [8.0_dp, 80.0_dp]
+      src_t0%arr1dPtr => src_vals_t0
+      src_t1%arr1dPtr => src_vals_t1
+      source_item%quantityPtr => source_qty
+      source_item%elementSetPtr => source_set
+      source_item%sourceT0FieldPtr => src_t0
+      source_item%sourceT1FieldPtr => src_t1
+
+      target_set%ofType = elmSetType_cartesian
+      target_set%nCoordinates = 2
+      target_field%arr1dPtr => target_vals
+      target_item%elementSetPtr => target_set
+      target_item%targetFieldPtr => target_field
+
+      converter%ofType = convType_netcdf
+      converter%operandType = EC_OPERAND_ADD
+
+      allocate (connection%sourceItemsPtr(1), connection%targetItemsPtr(1))
+      connection%nSourceItems = 1
+      connection%nTargetItems = 1
+      connection%sourceItemsPtr(1)%ptr => source_item
+      connection%targetItemsPtr(1)%ptr => target_item
+      connection%converterPtr => converter
+      connection%targetMask = [1, 0]
+
+      call time%set(0.5_dp)
+
+      ! Two-field time interpolation
+      converter%interpolationType = interpolate_time
+      src_t0%timesteps = 0.0_dp
+      src_t1%timesteps = 1.0_dp
+      target_vals = [10.0_dp, ec_undef_hp]
+      success = ecConverterPerformConversions(connection, time)
+      call f90_expect_true(success, 'netcdf interpolate_time must respect targetMask and ignore masked undefined values')
+      call f90_expect_near(target_vals(1), 16.0_dp, 1.0e-12_dp, 'active netcdf time target must be updated')
+      call f90_expect_near(target_vals(2), ec_undef_hp, 1.0e-12_dp, 'masked-out netcdf time target must remain unchanged')
+
+      ! Single-field (t0 > t1) branch
+      converter%interpolationType = interpolate_time_extrapolation_ok
+      src_t0%timesteps = 1.0_dp
+      src_t1%timesteps = 0.0_dp
+      target_vals = [10.0_dp, ec_undef_hp]
+      success = ecConverterPerformConversions(connection, time)
+      call f90_expect_true(success, 'netcdf single-field time branch must respect targetMask')
+      call f90_expect_near(target_vals(1), 14.0_dp, 1.0e-12_dp, 'active single-field netcdf target must be updated')
+      call f90_expect_near(target_vals(2), ec_undef_hp, 1.0e-12_dp, 'masked-out single-field netcdf target must remain unchanged')
+
+      deallocate (connection%sourceItemsPtr, connection%targetItemsPtr, connection%targetMask)
+      call clear_ec_message()
+   end subroutine test_converter_target_mask_netcdf_time_interpolation
+
+   !$gtest
+   subroutine test_converter_target_mask_netcdf_station_harmonics() bind(C)
+      use m_ec_converter, only: ecConverterPerformConversions, ecConverterUpdateWeightFactors
+      use m_ec_message, only: clear_ec_message
+      use m_ec_parameters, only: convType_netcdf, elmSetType_cartesian, elmSetType_samples, &
+                                 interpolate_spacetimeSaveWeightFactors, interpolate_nearest_neighbour, &
+                                 EC_OPERAND_ADD, EC_COORDS_CARTESIAN, ec_undef_hp
+      use m_ec_typedefs, only: tEcConnection, tEcConverter, tEcElementSet, tEcField, tEcHarmonicsFrame, &
+                               tEcInstance, tEcItem, tEcQuantity, tEcTimeFrame
+      use time_class, only: c_time
+
+      type(tEcInstance), target :: instance
+      type(tEcInstance), pointer :: instance_ptr
+      type(tEcConnection) :: connection
+      type(tEcConverter), target :: converter
+      type(tEcItem), target :: source_item, target_item
+      type(tEcQuantity), target :: source_qty
+      type(tEcField), target :: src_t0, src_t1, target_field
+      type(tEcElementSet), target :: source_set, target_set
+      type(tEcHarmonicsFrame), target :: hframe
+      type(tEcTimeFrame), target :: tframe
+      real(dp), dimension(3), target :: src_x, src_y
+      real(dp), dimension(2), target :: tgt_x, tgt_y, target_vals
+      type(c_time) :: time
+      logical :: success
+
+      instance%coordsystem = EC_COORDS_CARTESIAN
+      instance_ptr => instance
+
+      src_x = [0.0_dp, 10.0_dp, 0.0_dp]
+      src_y = [0.0_dp, 0.0_dp, 10.0_dp]
+      source_set%ofType = elmSetType_samples
+      source_set%nCoordinates = 3
+      source_set%n_cols = 3
+      source_set%n_rows = 1
+      source_set%n_layers = 0
+      source_set%x => src_x
+      source_set%y => src_y
+      source_qty%name = 'air_pressure'
+      source_qty%fillvalue = -999.0_dp
+      src_t1%arr1d = [2.0_dp, 2.0_dp, 2.0_dp]
+      allocate (hframe%phases(3, 1))
+      hframe%phases = 0.0_dp
+      hframe%ec_period = 86400
+      tframe%ec_refdate = 59000.0_dp
+      source_item%id = 1
+      source_item%quantityPtr => source_qty
+      source_item%elementSetPtr => source_set
+      source_item%sourceT0FieldPtr => src_t0
+      source_item%sourceT1FieldPtr => src_t1
+      source_item%hframe => hframe
+      source_item%tframe => tframe
+
+      tgt_x = [2.0_dp, 3.0_dp]
+      tgt_y = [2.0_dp, 3.0_dp]
+      target_set%ofType = elmSetType_cartesian
+      target_set%nCoordinates = 2
+      target_set%x => tgt_x
+      target_set%y => tgt_y
+      target_field%arr1dPtr => target_vals
+      target_field%missingValue = ec_undef_hp
+      target_item%id = 2
+      target_item%elementSetPtr => target_set
+      target_item%targetFieldPtr => target_field
+
+      converter%ofType = convType_netcdf
+      converter%operandType = EC_OPERAND_ADD
+
+      allocate (connection%sourceItemsPtr(1), connection%targetItemsPtr(1))
+      connection%nSourceItems = 1
+      connection%nTargetItems = 1
+      connection%sourceItemsPtr(1)%ptr => source_item
+      connection%targetItemsPtr(1)%ptr => target_item
+      connection%converterPtr => converter
+      connection%targetMask = [1, 0]
+
+      call time%set(59000.0_dp)
+
+      ! Triangulation path
+      converter%id = 10
+      converter%interpolationType = interpolate_spacetimeSaveWeightFactors
+      success = ecConverterUpdateWeightFactors(instance_ptr, connection)
+      if (.not. f90_assert_true(success, 'harmonic station triangulation weights must build')) then
+         deallocate (connection%sourceItemsPtr, connection%targetItemsPtr, connection%targetMask, hframe%phases)
+         return
+      end if
+      target_vals = [10.0_dp, ec_undef_hp]
+      success = ecConverterPerformConversions(connection, time)
+      call f90_expect_true(success, 'harmonic station triangulation must respect targetMask')
+      call f90_expect_near(target_vals(1), 12.0_dp, 1.0e-12_dp, 'active harmonic station target must update')
+      call f90_expect_near(target_vals(2), ec_undef_hp, 1.0e-12_dp, 'masked-out harmonic station target must stay unchanged')
+
+      deallocate (converter%indexWeight%indices, converter%indexWeight%weightFactors, converter%indexWeight)
+      converter%indexWeight => null()
+
+      ! Nearest-neighbour path
+      converter%id = 11
+      converter%interpolationType = interpolate_nearest_neighbour
+      success = ecConverterUpdateWeightFactors(instance_ptr, connection)
+      if (.not. f90_assert_true(success, 'harmonic station nearest-neighbour weights must build')) then
+         deallocate (connection%sourceItemsPtr, connection%targetItemsPtr, connection%targetMask, hframe%phases)
+         return
+      end if
+      target_vals = [10.0_dp, ec_undef_hp]
+      success = ecConverterPerformConversions(connection, time)
+      call f90_expect_true(success, 'harmonic station nearest-neighbour must respect targetMask')
+      call f90_expect_near(target_vals(1), 12.0_dp, 1.0e-12_dp, 'active harmonic station target must update')
+      call f90_expect_near(target_vals(2), ec_undef_hp, 1.0e-12_dp, 'masked-out harmonic station target must stay unchanged')
+
+      deallocate (converter%indexWeight%indices, converter%indexWeight%weightFactors, converter%indexWeight)
+      deallocate (connection%sourceItemsPtr, connection%targetItemsPtr, connection%targetMask, hframe%phases)
+      call clear_ec_message()
+   end subroutine test_converter_target_mask_netcdf_station_harmonics
+
+   !$gtest
+   subroutine test_converter_target_mask_unsupported_errors() bind(C)
+      use m_ec_converter, only: ecConverterPerformConversions
+      use m_ec_message, only: clear_ec_message
+      use m_ec_parameters, only: convType_uniform, convType_uniform_to_magnitude, &
+                                 interpolate_timespace, interpolate_time, &
+                                 EC_OPERAND_REPLACE_ELEMENT, EC_OPERAND_ADD_ELEMENT, EC_OPERAND_REPLACE, ec_undef_hp
+      use m_ec_typedefs, only: tEcConnection, tEcConverter, tEcElementSet, tEcField, tEcItem, tEcQuantity
+      use time_class, only: c_time
+
+      type(tEcConnection) :: connection
+      type(tEcConverter), target :: converter
+      type(tEcItem), target :: source_item, target_item
+      type(tEcQuantity), target :: source_qty
+      type(tEcField), target :: src_t0, src_t1, target_field
+      type(tEcElementSet), target :: source_set, target_set
+      real(dp), dimension(1), target :: uniform_src_t0, uniform_src_t1
+      real(dp), dimension(2), target :: wind_src_t0, wind_src_t1, target_vals
+      type(c_time) :: time
+      logical :: success
+
+      uniform_src_t0 = [5.0_dp]
+      uniform_src_t1 = [5.0_dp]
+      wind_src_t0 = [3.0_dp, 4.0_dp]
+      wind_src_t1 = [3.0_dp, 4.0_dp]
+      src_t0%timesteps = 0.0_dp
+      src_t1%timesteps = 1.0_dp
+      src_t0%arr1dPtr => uniform_src_t0
+      src_t1%arr1dPtr => uniform_src_t1
+      source_qty%name = 'air_pressure'
+      source_qty%vectorMax = 1
+      source_set%nCoordinates = 1
+      source_item%quantityPtr => source_qty
+      source_item%elementSetPtr => source_set
+      source_item%sourceT0FieldPtr => src_t0
+      source_item%sourceT1FieldPtr => src_t1
+
+      target_set%nCoordinates = 2
+      target_vals = [10.0_dp, 20.0_dp]
+      target_field%arr1dPtr => target_vals
+      target_field%missingValue = ec_undef_hp
+      target_item%elementSetPtr => target_set
+      target_item%targetFieldPtr => target_field
+
+      allocate (connection%sourceItemsPtr(1), connection%targetItemsPtr(1))
+      connection%nSourceItems = 1
+      connection%nTargetItems = 1
+      connection%sourceItemsPtr(1)%ptr => source_item
+      connection%targetItemsPtr(1)%ptr => target_item
+      connection%converterPtr => converter
+      connection%targetMask = [1, 0]
+
+      call time%set(0.5_dp)
+
+      converter%ofType = convType_uniform
+      converter%targetIndex = 1
+      converter%interpolationType = interpolate_timespace
+      converter%operandType = EC_OPERAND_REPLACE_ELEMENT
+      success = ecConverterPerformConversions(connection, time)
+      call f90_expect_false(success, 'uniform REPLACE_ELEMENT must reject an allocated target mask')
+
+      converter%operandType = EC_OPERAND_ADD_ELEMENT
+      success = ecConverterPerformConversions(connection, time)
+      call f90_expect_false(success, 'uniform ADD_ELEMENT must reject an allocated target mask')
+
+      converter%interpolationType = interpolate_time
+      converter%operandType = EC_OPERAND_REPLACE_ELEMENT
+      success = ecConverterPerformConversions(connection, time)
+      call f90_expect_false(success, 'uniform interpolate_time REPLACE_ELEMENT must reject an allocated target mask')
+
+      src_t0%arr1dPtr => wind_src_t0
+      src_t1%arr1dPtr => wind_src_t1
+      converter%ofType = convType_uniform_to_magnitude
+      converter%interpolationType = interpolate_time
+      converter%operandType = EC_OPERAND_REPLACE
+      success = ecConverterPerformConversions(connection, time)
+      call f90_expect_false(success, 'uniform_to_magnitude must reject an allocated target mask')
+
+      deallocate (connection%sourceItemsPtr, connection%targetItemsPtr, connection%targetMask)
+      call clear_ec_message()
+   end subroutine test_converter_target_mask_unsupported_errors
+
 end module test_ec_module

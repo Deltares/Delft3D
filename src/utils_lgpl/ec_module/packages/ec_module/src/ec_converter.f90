@@ -442,6 +442,14 @@ contains
                                jsferic, 1, jasfer3d, 0, 0, 0, dummy_polygon, dummy_polygon, dummy_polygon, transformcoef)
                weight%indices = indxx
                weight%weightFactors = wfxx
+               if (allocated(connection%targetMask)) then
+                  do j = 1, n_points
+                     if (connection%targetMask(j) == 0) then
+                        weight%indices(:, j) = ec_undef_int
+                        weight%weightFactors(:, j) = ec_undef_hp
+                     end if
+                  end do
+               end if
             else if (connection%converterPtr%interpolationType == interpolate_nearest_neighbour) then
                allocate (weight%indices(1, n_points))
                allocate (weight%weightFactors(1, n_points))
@@ -1384,6 +1392,11 @@ contains
 
          case (EC_OPERAND_REPLACE_ELEMENT) ! TODO: AvD/EB: why does EC_OPERAND_REPLACE require a targetIndex, whereas EC_OPERAND_ADD does not?
 
+            if (allocated(connection%targetMask)) then
+               call set_ec_message("ERROR: ec_converter::ecConverterUniform: Target mask is not supported for element operands.")
+               return
+            end if
+
             if (connection%converterPtr%targetIndex == ec_undef_int) then
                call set_ec_message("ERROR: ec_converter::ecConverterUniform: Converter's target Field array index not set.")
                return
@@ -1394,12 +1407,16 @@ contains
             from = (j - 1) * (maxlay * n_data) + 1
             thru = (j) * (maxlay * n_data)
 
-            ! NOTE: No targetMask is checked here
             call apply_operand(connection%converterPtr%operandType, target_field%arr1dPtr(from:thru), valuesT)
             target_field%timesteps = timesteps
 
          case (EC_OPERAND_ADD_ELEMENT)
 
+            if (allocated(connection%targetMask)) then
+               call set_ec_message("ERROR: ec_converter::ecConverterUniform: Target mask is not supported for element operands.")
+               return
+            end if
+
             if (connection%converterPtr%targetIndex == ec_undef_int) then
                call set_ec_message("ERROR: ec_converter::ecConverterUniform: Converter's target Field array index not set.")
                return
@@ -1410,7 +1427,6 @@ contains
             from = (j - 1) * (maxlay * n_data) + 1
             thru = (j) * (maxlay * n_data)
 
-            ! NOTE: No targetMask is checked here
             call apply_operand(connection%converterPtr%operandType, target_field%arr1dPtr(from:thru), valuesT)
             target_field%timesteps = timesteps
 
@@ -1429,6 +1445,11 @@ contains
 
          case (EC_OPERAND_REPLACE_ELEMENT)
 
+            if (allocated(connection%targetMask)) then
+               call set_ec_message("ERROR: ec_converter::ecConverterUniform: Target mask is not supported for element operands.")
+               return
+            end if
+
             if (connection%converterPtr%targetIndex == ec_undef_int) then
                call set_ec_message("ERROR: ec_converter::ecConverterUniform: Converter's target Field array index not set.")
                return
@@ -1436,7 +1457,6 @@ contains
             target_field => connection%targetItemsPtr(1)%ptr%targetFieldPtr
             from = (connection%converterPtr%targetIndex - 1) * (maxlay * n_data) + 1
             thru = connection%converterPtr%targetIndex * (maxlay * n_data)
-            ! NOTE: No target mask is checked here
             target_field%arr1dPtr(from:thru) = valuesT
 
             ! NOTE: AvD: call site now should account for n_data in the offset already, and I changed the above line to that as well.
@@ -1494,6 +1514,11 @@ contains
 
       success = .false.
       target_field => null()
+
+      if (allocated(connection%targetMask)) then
+         call set_ec_message("ERROR: ec_converter::ecConverterUniformToMagnitude: Target mask is not supported.")
+         return
+      end if
 
       ! ===== interpolation =====
 
@@ -1635,15 +1660,29 @@ contains
 
          case (EC_OPERAND_REPLACE, EC_OPERAND_REPLACE_IF_MISSING, EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM)
 
-            call check_undefined_values_for_operand(connection%converterPtr%operandType, u(1:targetnCoordinates), status_u)
-            call check_undefined_values_for_operand(connection%converterPtr%operandType, v(1:targetnCoordinates), status_v)
+            if (allocated(connection%targetMask)) then
+               call check_undefined_values_for_operand(connection%converterPtr%operandType, u(1:targetnCoordinates), status_u, connection%targetMask(1:targetnCoordinates))
+               call check_undefined_values_for_operand(connection%converterPtr%operandType, v(1:targetnCoordinates), status_v, connection%targetMask(1:targetnCoordinates))
+            else
+               call check_undefined_values_for_operand(connection%converterPtr%operandType, u(1:targetnCoordinates), status_u)
+               call check_undefined_values_for_operand(connection%converterPtr%operandType, v(1:targetnCoordinates), status_v)
+            end if
 
             if (.not. status_u .or. .not. status_v) then
                return
             end if
 
-            call apply_operand(connection%converterPtr%operandType, u(1:targetnCoordinates), targetU)
-            call apply_operand(connection%converterPtr%operandType, v(1:targetnCoordinates), targetV)
+            if (allocated(connection%targetMask)) then
+               do i = 1, targetnCoordinates
+                  if (connection%targetMask(i) /= 0) then
+                     call apply_operand(connection%converterPtr%operandType, u(i), targetU)
+                     call apply_operand(connection%converterPtr%operandType, v(i), targetV)
+                  end if
+               end do
+            else
+               call apply_operand(connection%converterPtr%operandType, u(1:targetnCoordinates), targetU)
+               call apply_operand(connection%converterPtr%operandType, v(1:targetnCoordinates), targetV)
+            end if
 
             connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
             connection%targetItemsPtr(2)%ptr%targetFieldPtr%timesteps = timesteps
@@ -2318,7 +2357,11 @@ contains
          sourceT1Field => connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr
 
          do n = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-            ! TODO : Calculate target value depending on ElementSet mask.
+            if (allocated(connection%targetMask)) then
+               if (connection%targetMask(n) == 0) then
+                  cycle
+               end if
+            end if
             ! === interpolate in space ===
             x1 = (connection%targetItemsPtr(1)%ptr%elementSetPtr%x(n) - x01) / dx1
             if (x1 < -0.5_dp .or. x1 > mx - 0.5_dp) cycle
@@ -2632,6 +2675,13 @@ contains
 
          case (EC_OPERAND_REPLACE, EC_OPERAND_REPLACE_IF_MISSING, EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM)
 
+            if (allocated(connection%targetMask)) then
+               if (connection%targetMask(1) == 0) then
+                  success = .true.
+                  return
+               end if
+            end if
+
             call check_undefined_values_for_operand(connection%converterPtr%operandType, [connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1)], status)
 
             if (.not. status) then
@@ -2641,6 +2691,11 @@ contains
             call apply_operand(connection%converterPtr%operandType, connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1), deflection)
 
          case (EC_OPERAND_REPLACE_ELEMENT)
+
+            if (allocated(connection%targetMask)) then
+               call set_ec_message("ERROR: ec_converter::ecConverterFourier: Target mask is not supported for element operands.")
+               return
+            end if
 
             ! Only used by poly_tim.
             if (connection%converterPtr%targetIndex == ec_undef_int) then
@@ -2870,6 +2925,11 @@ contains
       yeye = cyclic_interpolation(yeye0, yeye1, a0, a1) ! cyclic inteprolation (spheric coord)
 
       do n = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
+         if (allocated(connection%targetMask)) then
+            if (connection%targetMask(n) == 0) then
+               cycle
+            end if
+         end if
          xctemp = real(connection%targetItemsPtr(1)%ptr%elementSetPtr%x(n), dp)
          yctemp = real(connection%targetItemsPtr(1)%ptr%elementSetPtr%y(n), dp)
 
@@ -3158,6 +3218,9 @@ contains
          if (samples) then
             n_points = size(weights%indices, 1)
             points(1:n_points) = weights%indices(:, j)
+            if (all(points(1:n_points) <= 0 .or. points(1:n_points) > sourceset%n_cols)) then
+               cycle
+            end if
          else
             row = weights%indices(1, j)
             col = weights%indices(2, j)
@@ -3703,6 +3766,12 @@ contains
 
                if (n_layers == 0) then
                   do j = 1, n_points
+                     if (allocated(connection%targetMask)) then
+                        if (connection%targetMask(j) == 0) then
+                           cycle
+                        end if
+                     end if
+
                      sourceValue = 0.0_dp
 
                      do i_weight_index = 1, size(indexWeight%indices, 1)
@@ -4170,14 +4239,24 @@ contains
 
                   n_targets = connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates
 
-                  call check_undefined_values_for_operand(connection%converterPtr%operandType, target_field%arr1dPtr(1:n_targets), status)
+                  if (allocated(connection%targetMask)) then
+                     call check_undefined_values_for_operand(connection%converterPtr%operandType, target_field%arr1dPtr(1:n_targets), status, connection%targetMask(1:n_targets))
+                  else
+                     call check_undefined_values_for_operand(connection%converterPtr%operandType, target_field%arr1dPtr(1:n_targets), status)
+                  end if
 
                   if (.not. status) then
                      return
                   end if
 
-                  call apply_operand(connection%converterPtr%operandType, target_field%arr1dPtr(1:n_targets), &
-                                     connection%sourceItemsPtr(i)%ptr%sourceT0FieldPtr%arr1dPtr(1:n_targets))
+                  if (allocated(connection%targetMask)) then
+                     call apply_operand_masked(connection%converterPtr%operandType, target_field%arr1dPtr(1:n_targets), &
+                                               connection%sourceItemsPtr(i)%ptr%sourceT0FieldPtr%arr1dPtr(1:n_targets), &
+                                               connection%targetMask(1:n_targets))
+                  else
+                     call apply_operand(connection%converterPtr%operandType, target_field%arr1dPtr(1:n_targets), &
+                                        connection%sourceItemsPtr(i)%ptr%sourceT0FieldPtr%arr1dPtr(1:n_targets))
+                  end if
 
                   target_field%timesteps = timesteps
 
@@ -4214,7 +4293,11 @@ contains
 
                   n_targets = connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates
 
-                  call check_undefined_values_for_operand(connection%converterPtr%operandType, target_field%arr1dPtr(1:n_targets), status)
+                  if (allocated(connection%targetMask)) then
+                     call check_undefined_values_for_operand(connection%converterPtr%operandType, target_field%arr1dPtr(1:n_targets), status, connection%targetMask(1:n_targets))
+                  else
+                     call check_undefined_values_for_operand(connection%converterPtr%operandType, target_field%arr1dPtr(1:n_targets), status)
+                  end if
 
                   if (.not. status) then
                      return
@@ -4222,7 +4305,12 @@ contains
 
                   source_values = connection%sourceItemsPtr(i)%ptr%sourceT0FieldPtr%arr1dPtr(1:n_targets) * a0 &
                                   + connection%sourceItemsPtr(i)%ptr%sourceT1FieldPtr%arr1dPtr(1:n_targets) * a1
-                  call apply_operand(connection%converterPtr%operandType, target_field%arr1dPtr(1:n_targets), source_values)
+                  if (allocated(connection%targetMask)) then
+                     call apply_operand_masked(connection%converterPtr%operandType, target_field%arr1dPtr(1:n_targets), &
+                                               source_values, connection%targetMask(1:n_targets))
+                  else
+                     call apply_operand(connection%converterPtr%operandType, target_field%arr1dPtr(1:n_targets), source_values)
+                  end if
 
                   target_field%timesteps = timesteps
 
