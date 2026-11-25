@@ -214,27 +214,27 @@
     <exchange data="C08" mesh="fm_flow_cells_3d" from="fm" to="preC-SUMO" initialize="true" />
     <exchange data="C09" mesh="fm_flow_cells_3d" from="fm" to="preC-SUMO" initialize="true" />
     <exchange data="C10" mesh="fm_flow_cells_3d" from="fm" to="preC-SUMO" initialize="true" />
-    <exchange data="sinks_x" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
-    <exchange data="sinks_y" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
-    <exchange data="sinks_z_min" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
-    <exchange data="sinks_z_max" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
-    <exchange data="sources_x" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
-    <exchange data="sources_y" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
-    <exchange data="sources_z_min" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
-    <exchange data="sources_z_max" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
-    <exchange data="sources_sinks_discharge" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
-    <exchange data="sources_momentum_magnitude_weighted" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
-    <exchange data="sources_momentum_direction" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
-    <exchange data="C01" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
-    <exchange data="C02" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
-    <exchange data="C03" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
-    <exchange data="C04" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
-    <exchange data="C05" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
-    <exchange data="C06" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
-    <exchange data="C07" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
-    <exchange data="C08" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
-    <exchange data="C09" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
-    <exchange data="C10" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" initialize="true" />
+    <exchange data="sinks_x" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" />
+    <exchange data="sinks_y" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" />
+    <exchange data="sinks_z_min" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" />
+    <exchange data="sinks_z_max" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" />
+    <exchange data="sources_x" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" />
+    <exchange data="sources_y" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" />
+    <exchange data="sources_z_min" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" />
+    <exchange data="sources_z_max" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" />
+    <exchange data="sources_sinks_discharge" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" />
+    <exchange data="sources_momentum_magnitude_weighted" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" />
+    <exchange data="sources_momentum_direction" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" />
+    <exchange data="C01" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" />
+    <exchange data="C02" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" />
+    <exchange data="C03" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" />
+    <exchange data="C04" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" />
+    <exchange data="C05" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" />
+    <exchange data="C06" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" />
+    <exchange data="C07" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" />
+    <exchange data="C08" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" />
+    <exchange data="C09" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" />
+    <exchange data="C10" mesh="sources_sinks_nodes" from="preC-SUMO" to="fm" />
 
   </coupling-scheme:parallel-explicit>
 </precice-configuration>

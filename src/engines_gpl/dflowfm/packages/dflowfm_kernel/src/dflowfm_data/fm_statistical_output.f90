@@ -1556,23 +1556,23 @@ contains
                     'N m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                     nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_WSTAR, &
-                    'Wrihis_bulk_exchange_coefficients', 'w_star', 'Free convective velocity scale', '', &
+                    'wriHis_BulkExchangeCoefficients', 'w_star', 'Free convective velocity scale', '', &
               'm s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
               nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_OBUKHOV_LENGTH, &
-                    'Wrihis_bulk_exchange_coefficients', 'obukhov_length', 'Obukhov length', 'atmosphere_obukhov_length', &
+                    'wriHis_BulkExchangeCoefficients', 'obukhov_length', 'Obukhov length', 'atmosphere_obukhov_length', &
               'm', UNC_LOC_STATION, nc_attributes=atts(1:1), &
               nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_TRANSFER_COEFF_MOMENTUM, &
-                    'Wrihis_bulk_exchange_coefficients', 'Cd', 'Bulk transfer coefficient of momentum flux', '', &
+                    'wriHis_BulkExchangeCoefficients', 'Cd', 'Bulk transfer coefficient of momentum flux', '', &
               '-', UNC_LOC_STATION, nc_attributes=atts(1:1), &
               nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_TRANSFER_COEFF_SENSIBLE_HEAT, &
-                    'Wrihis_bulk_exchange_coefficients', 'Ch', 'Bulk transfer coefficient of sensible heat flux', '', &
+                    'wriHis_BulkExchangeCoefficients', 'Ch', 'Bulk transfer coefficient of sensible heat flux', '', &
               '-', UNC_LOC_STATION, nc_attributes=atts(1:1), &
               nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_TRANSFER_COEFF_LATENT_HEAT, &
-                    'Wrihis_bulk_exchange_coefficients', 'Ce', 'Bulk transfer coefficient of latent heat flux', '', &
+                    'wriHis_BulkExchangeCoefficients', 'Ce', 'Bulk transfer coefficient of latent heat flux', '', &
               '-', UNC_LOC_STATION, nc_attributes=atts(1:1), &
               nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_RAIN, &
@@ -1925,7 +1925,40 @@ contains
                              '', '1', UNC_LOC_S)
       call add_output_config(config_set_map, IDX_MAP_AU, &
                              'Wrimap_flowarea_au', 'au', 'normal flow area between two neighbouring grid cells', &
-                             '', 'm2', UNC_LOC_U, description='Write flow areas au to map file')
+                             '', 'm2', UNC_LOC_U, description='Write total flow area, 1D hydraulic radius and flow width to map file')
+      call add_output_config(config_set_map, IDX_MAP_AU_MAIN, &
+                             'Wrimap_flowarea_au_1d_sections', 'au_main', 'Main channel flow area at flow link', &
+                             '', 'm2', UNC_LOC_U, description='Write main channel and floodplain flow area, hydraulic radius and flow width to map file')
+      call add_output_config(config_set_map, IDX_MAP_AU_FLOODPLAIN1, &
+                             'Wrimap_flowarea_au_1d_sections', 'au_floodplain1', 'First floodplain flow area at flow link', &
+                             '', 'm2', UNC_LOC_U)
+      call add_output_config(config_set_map, IDX_MAP_AU_FLOODPLAIN2, &
+                             'Wrimap_flowarea_au_1d_sections', 'au_floodplain2', 'Second floodplain flow area at flow link', &
+                             '', 'm2', UNC_LOC_U)
+      call add_output_config(config_set_map, IDX_MAP_HYDRAULIC_RADIUS, &
+                             'Wrimap_flowarea_au', 'hydraulic_radius', 'Total hydraulic radius at 1D flow link', &
+                             '', 'm', UNC_LOC_U)
+      call add_output_config(config_set_map, IDX_MAP_HYDRAULIC_RADIUS_MAIN, &
+                             'Wrimap_flowarea_au_1d_sections', 'hydraulic_radius_main', 'Main channel hydraulic radius at 1D flow link', &
+                             '', 'm', UNC_LOC_U)
+      call add_output_config(config_set_map, IDX_MAP_HYDRAULIC_RADIUS_FLOODPLAIN1, &
+                             'Wrimap_flowarea_au_1d_sections', 'hydraulic_radius_floodplain1', &
+                             'First floodplain hydraulic radius at 1D flow link', '', 'm', UNC_LOC_U)
+      call add_output_config(config_set_map, IDX_MAP_HYDRAULIC_RADIUS_FLOODPLAIN2, &
+                             'Wrimap_flowarea_au_1d_sections', 'hydraulic_radius_floodplain2', &
+                             'Second floodplain hydraulic radius at 1D flow link', '', 'm', UNC_LOC_U)
+      call add_output_config(config_set_map, IDX_MAP_FLOW_WIDTH, &
+                             'Wrimap_flowarea_au', 'flow_width', 'Total water-surface flow width at 1D flow link', &
+                             '', 'm', UNC_LOC_U)
+      call add_output_config(config_set_map, IDX_MAP_FLOW_WIDTH_MAIN, &
+                             'Wrimap_flowarea_au_1d_sections', 'flow_width_main', 'Main channel water-surface flow width at 1D flow link', &
+                             '', 'm', UNC_LOC_U)
+      call add_output_config(config_set_map, IDX_MAP_FLOW_WIDTH_FLOODPLAIN1, &
+                             'Wrimap_flowarea_au_1d_sections', 'flow_width_floodplain1', &
+                             'First floodplain water-surface flow width at 1D flow link', '', 'm', UNC_LOC_U)
+      call add_output_config(config_set_map, IDX_MAP_FLOW_WIDTH_FLOODPLAIN2, &
+                             'Wrimap_flowarea_au_1d_sections', 'flow_width_floodplain2', &
+                             'Second floodplain water-surface flow width at 1D flow link', '', 'm', UNC_LOC_U)
 
       call ncu_set_att(atts(1), 'comment', 'Positive direction is from first to second neighbouring face (flow element).')
       call add_output_config(config_set_map, IDX_MAP_U1, &
@@ -1981,8 +2014,17 @@ contains
 
       call ncu_set_att(atts(1), 'comment', 'Positive direction is from first to second neighbouring face (flow element).')
       call add_output_config(config_set_map, IDX_MAP_Q1_MAIN, &
-                             'Wrimap_flow_flux_q1_main', 'q1_main', 'Main channel discharge through flow link at current time', &
-                             '', 'm3 s-1', UNC_LOC_U, nc_attributes=atts(1:1), description='Write flow flux in main channel to map file')
+                             'Wrimap_flowflux_q1_1d_sections', 'q1_main', &
+                             'Main channel discharge through flow link at current time', &
+                             '', 'm3 s-1', UNC_LOC_U, nc_attributes=atts(1:1), description='Write flow flux in main channel and both floodplains to map file')
+      call add_output_config(config_set_map, IDX_MAP_Q1_FLOODPLAIN1, &
+                             'Wrimap_flowflux_q1_1d_sections', 'q1_floodplain1', &
+                             'First floodplain discharge through flow link at current time', &
+                             '', 'm3 s-1', UNC_LOC_U, nc_attributes=atts(1:1))
+      call add_output_config(config_set_map, IDX_MAP_Q1_FLOODPLAIN2, &
+                             'Wrimap_flowflux_q1_1d_sections', 'q1_floodplain2', &
+                             'Second floodplain discharge through flow link at current time', &
+                             '', 'm3 s-1', UNC_LOC_U, nc_attributes=atts(1:1))
 
       call add_output_config(config_set_map, IDX_MAP_FIXED_WEIR_ENERGY_LOSS, &
                              'Wrimap_fixed_weir_energy_loss', 'fixed weir energy loss', 'Fixed weir energy loss', &
@@ -2023,6 +2065,16 @@ contains
       call add_output_config(config_set_map, IDX_MAP_CZU, &
                              'Wrimap_chezy_on_flow_links', 'czu', 'Chezy roughness on flow links', &
                              '', 'm0.5s-1', UNC_LOC_U, description='Write the input roughness on flow links to map file')
+      call add_output_config(config_set_map, IDX_MAP_CZU_MAIN, &
+                             'Wrimap_chezy_on_flow_links_1d_sections', 'czu_main', 'Main channel Chezy roughness on flow links', &
+                             '', 'm0.5s-1', UNC_LOC_U, &
+                             description='Write 1D main channel and floodplains Chezy coefficients, not additive parts of link Chezy, to map file')
+      call add_output_config(config_set_map, IDX_MAP_CZU_FLOODPLAIN1, &
+                             'Wrimap_chezy_on_flow_links_1d_sections', 'czu_floodplain1', 'First floodplain Chezy roughness on flow links', &
+                             '', 'm0.5s-1', UNC_LOC_U)
+      call add_output_config(config_set_map, IDX_MAP_CZU_FLOODPLAIN2, &
+                             'Wrimap_chezy_on_flow_links_1d_sections', 'czu_floodplain2', 'Second floodplain Chezy roughness on flow links', &
+                             '', 'm0.5s-1', UNC_LOC_U)
       call add_output_config(config_set_map, IDX_MAP_CFU, &
                              'Wrimap_input_roughness', 'cfu', 'Input roughness on flow links', &
                              '', '-', UNC_LOC_U)
@@ -2378,7 +2430,7 @@ contains
       use processes_input, only: num_wq_user_outputs => noout_user
       use m_dad, only: dad_included, dadpar
       use m_laterals, only: numlatsg, qplat, qplatAve, qLatRealAve, qLatReal
-      use m_flowparameters, only: air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
+      use m_flowparameters, only: air_sea_interaction_model, AIR_SEA_INTERACTION_MODEL_MOST
       use m_sferic, only: jsferic
       use m_wind, only: air_pressure_available, jawind, jarain, ja_airdensity, ja_computed_airdensity, cloudiness, relative_humidity
       use m_dambreak_breach, only: n_db_signals
@@ -2845,7 +2897,7 @@ contains
             end if
          end if
          
-         if (his_write_settings%bulk_exchange_coeff > 0 .and. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+         if (his_write_settings%bulk_exchange_coeff > 0 .and. air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST) then
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WSTAR), valobs(:, IPNT_wstar))
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_OBUKHOV_LENGTH), valobs(:, IPNT_obukhov_length))
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TRANSFER_COEFF_MOMENTUM), valobs(:, IPNT_TRANSFER_COEFF_MOMENTUM))
@@ -2868,7 +2920,7 @@ contains
 
          ! Write heat flux model statistical output
          if (his_write_settings%heatflux > 0) then
-            if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+            if (air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST) then
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QSUN), valobs(:, IPNT_QSUN))
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QEVA), valobs(:, IPNT_QEVA))
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QCON), valobs(:, IPNT_QCON))

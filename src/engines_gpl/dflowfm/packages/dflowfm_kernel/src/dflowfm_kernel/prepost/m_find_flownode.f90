@@ -38,7 +38,7 @@ module m_find_flownode
 contains
 
 !> Find for each input point the nearest flow node, given a set of points [xx, yy].
-   subroutine find_nearest_flownodes(n, xx, yy, names, node_nrs_nearest, jakdtree, jaoutside, iLocTp)
+   subroutine find_nearest_flownodes(n, xx, yy, names, node_nrs_nearest, jakdtree, jaoutside, iLocTp, prefer_own_domain)
       use precision, only: dp
       use messagehandling, only: msgbuf, msg_flush, idlen
       use m_partitioninfo, only: jampi, reduce_int_max, reduce_kobs
@@ -60,6 +60,7 @@ contains
       integer, intent(inout) :: jakdtree !< use kdtree (1) or not (other)
       integer, intent(in) :: jaoutside !< allow outside cells (for 1D) (1) or not (0)
       integer, intent(in) :: iLocTp !< Node type, one of INDTP_1D/2D/ALL.
+      logical, intent(in),optional :: prefer_own_domain !< prefer own domain if multiple candidate nodes are found
       integer :: ierror !< error (1) or not (0)
       integer :: i, k, k1b
       integer, dimension(1) :: idum
@@ -96,7 +97,7 @@ contains
       if (jakdtree == 0) then
 
          do i = 1, n
-            call inflowcell(xx(i), yy(i), k, jaoutside, iLocTp)
+            call inflowcell(xx(i), yy(i), k, jaoutside, iLocTp, prefer_own_domain)
             if (jaoutside == 1 .and. (iLocTp == INDTP_1D .or. iLocTp == INDTP_ALL)) then
                call find_nearest_1D_or_boundary_flownode_bruteforce(xx(i), yy(i), k1b)
                if (k /= 0 .and. k1b /= 0) then

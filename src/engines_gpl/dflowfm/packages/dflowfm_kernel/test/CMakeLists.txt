@@ -12,58 +12,79 @@ function(copy_test_resources NAME SOURCE_FOLDER TARGET_FOLDER)
 endfunction()
 
 set(test_target test_dflowfm_kernel_gtest)
-f90twtest(${test_target}
-    CFILES test_dflowfm_kernel.cpp
-    F90FILES
+if(TARGET GDAL::GDAL)
+    set(geotiff_test_source src/test_bilinear_geotiff.f90)
+endif()
+
+function(conan_test_directory output variable_prefix)
+    set(directory "${${variable_prefix}_RELEASE}")
+    foreach(configuration IN ITEMS Debug RelWithDebInfo MinSizeRel)
+        string(TOUPPER "${configuration}" configuration_upper)
+        if(${variable_prefix}_${configuration_upper})
+            if(NOT directory)
+                set(directory "${${variable_prefix}_${configuration_upper}}")
+            endif()
+            set(directory "$<IF:$<CONFIG:${configuration}>,${${variable_prefix}_${configuration_upper}},${directory}>")
+        endif()
+    endforeach()
+    if(NOT directory)
+        message(FATAL_ERROR "Missing Conan directory for ${variable_prefix}; rerun the Conan install.")
+    endif()
+    set(${output} "${directory}" PARENT_SCOPE)
+endfunction()
+
+conan_test_directory(netcdf_bin netcdf_BIN_DIRS)
+set(ncgen_test_launcher "${CMAKE_COMMAND}" -E env --modify "PATH=path_list_prepend:${netcdf_bin}")
+if(WIN32)
+    set(runtime_variable PATH)
+    set(runtime_directory BIN)
+else()
+    set(runtime_variable LD_LIBRARY_PATH)
+    set(runtime_directory LIB)
+    conan_test_directory(netcdf_lib netcdf_LIB_DIRS)
+    list(APPEND ncgen_test_launcher --modify "${runtime_variable}=path_list_prepend:${netcdf_lib}")
+endif()
+foreach(package IN ITEMS hdf5 zlib)
+    conan_test_directory(dependency_dir "${package}_${runtime_directory}_DIRS")
+    list(APPEND ncgen_test_launcher --modify "${runtime_variable}=path_list_prepend:${dependency_dir}")
+endforeach()
+list(APPEND ncgen_test_launcher --)
+
+add_fortran_gtest(${test_target}
+    TEST_TEARDOWN reset_dflowfm_after_test
+    TEST_LAUNCHER ${ncgen_test_launcher}
+    SOURCES
         src/dflowfm_test_cleanup.f90
         src/test_dflowfm_kernel_example.f90
+        src/test_interpolate_on_polyline.f90
+        src/test_fdster.f90
         src/test_tridag.f90
+        src/test_getverticallyaveraged.f90
         src/test_3d_layer_administration.f90
         src/test_pol_to_cellmask.f90
         src/test_longculverts.f90
         src/test_compute_horton_infiltration.f90
         src/test_bubblescreen.f90
+        src/test_ncdump_to_netcdf.f90
         src/test_sources_sinks.f90
         src/test_timespace_parameters.f90
         src/test_ec_module_block.f90
         src/test_ec_module_data_value.f90
         src/test_unstruc_inifields.f90
         src/test_unstruc_model.f90
+        src/test_restart_coordinates.f90
         src/test_mdu_file_read_write.f90
         src/test_getprof_1d.f90
         src/test_dflowfm_dambreak.f90
         src/test_init_spatial_field.f90
+        src/test_bilinear_arcinfo.f90
+        ${geotiff_test_source}
         src/test_init_spatial_field_integration.f90
         src/test_offline_wave_external_forcing.f90
         src/test_atmospheric_stability.f90
         src/test_precice_adapter.f90
         src/test_fm_external_forcings_utils.f90
-    F2HFILES
-        # test_dflowfm_kernel_example.f90 must remain the first entry.
-        # It sets the name of the header file test_dflowfm_kernel_example.f90.h, which is included in test_dflowfm_kernel.cpp.
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_dflowfm_kernel_example.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_tridag.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_3d_layer_administration.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_pol_to_cellmask.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_longculverts.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_compute_horton_infiltration.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_bubblescreen.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_sources_sinks.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_timespace_parameters.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_ec_module_block.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_ec_module_data_value.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_unstruc_inifields.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_unstruc_model.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_mdu_file_read_write.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_getprof_1d.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_dflowfm_dambreak.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_init_spatial_field.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_init_spatial_field_integration.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_offline_wave_external_forcing.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_atmospheric_stability.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_precice_adapter.f90
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_fm_external_forcings_utils.f90
-    OUTDIR "${CMAKE_CURRENT_BINARY_DIR}"
+        src/test_cross_section_geometry.f90
     LIBRARIES dflowfm_kernel test_helpers netCDF::netcdff
     VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
 )

@@ -29,7 +29,7 @@ module m_setvat
 contains
 
 
-    subroutine setvat (lurep, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, &
+    subroutine setvat (lurep, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_functions, &
             num_substances_transported, num_substances_total, num_dispersion_arrays, num_velocity_arrays, num_defaults, &
             num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes, &
             nopred, num_vars, vararr, varidx, vartda, &
@@ -40,7 +40,7 @@ contains
         use m_logger_helper, only : stop_with_error, write_log_message
         use timers       !   performance timers
 
-        integer(kind = int_wp) :: lurep, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, &
+        integer(kind = int_wp) :: lurep, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_functions, &
                 num_substances_transported, num_substances_total, num_dispersion_arrays, num_velocity_arrays, num_defaults, &
                 num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes, &
                 nopred, num_vars, num_grids
@@ -168,7 +168,7 @@ contains
         IVPAR = IVCNS + num_constants
         IVFUN = IVPAR + num_spatial_parameters
         IVSFU = IVFUN + num_time_functions
-        IVCNC = IVSFU + num_spatial_time_fuctions
+        IVCNC = IVSFU + num_spatial_time_functions
         IVMAS = IVCNC + num_substances_total
         IVDER = IVMAS + num_substances_total
         IVDSP = IVDER + num_substances_total
@@ -280,7 +280,7 @@ contains
         !
         !     Seg Func
         !
-        DO ISFUN = 1, num_spatial_time_fuctions
+        DO ISFUN = 1, num_spatial_time_functions
             IVAR = IVAR + 1
             VARNAM(IVAR) = SFNAME(ISFUN)
             VARARR(IVAR) = IISFUN

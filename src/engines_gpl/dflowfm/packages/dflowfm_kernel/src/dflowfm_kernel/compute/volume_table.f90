@@ -80,11 +80,11 @@ module m_VolumeTables
    contains
       procedure, pass :: alloc => allocVoltable !< Allocates the allocatable arrays in this structure
       procedure, pass :: dealloc => deallocVoltable !< Deallocates the allocatable arrays in this structure
-      procedure, pass :: getVolume => getVolumeVoltable !< Returns the volume for a given water level
-      procedure, pass :: getSurface => getSurfaceVoltable !< Returns the surface area for a given water level
-      procedure, pass :: getVolumeDecreasing => getVolumeDecreasingVoltable !< Returns the volume which is the result of a decreasing width for a given water level
-      procedure, pass :: getSurfaceDecreasing => getSurfaceDecreasingVoltable !< Returns the decreasing surface area for a given water level
-      procedure, pass :: computeSurface => computeSurfaceVoltable !< Computes the surface areas for the different levels
+      procedure, pass :: get_volume => getVolumeVoltable !< Returns the volume for a given water level
+      procedure, pass :: get_surface => getSurfaceVoltable !< Returns the surface area for a given water level
+      procedure, pass :: get_volume_decreasing => getVolumeDecreasingVoltable !< Returns the volume which is the result of a decreasing width for a given water level
+      procedure, pass :: get_surface_decreasing => getSurfaceDecreasingVoltable !< Returns the decreasing surface area for a given water level !< Returns the decreasing surface area for a given water level
+      procedure, pass :: compute_surface => computeSurfaceVoltable !< Computes the surface areas for the different levels
    end type
 
    type(t_voltable), target, public, allocatable, dimension(:) :: vltb !< [-] 1D Volume tables {"shape": ["ndx1d"]}
@@ -403,13 +403,13 @@ contains
       end do
 
       do n = 1, ndx1d
-         call vltb(n)%computeSurface()
+         call vltb(n)%compute_surface()
       end do
 
       if (generateVLTBOnLinks) then
          do L = 1, lnx1d
-            call vltbOnLinks(1, L)%computeSurface()
-            call vltbOnLinks(2, L)%computeSurface()
+            call vltbOnLinks(1, L)%compute_surface()
+            call vltbOnLinks(2, L)%compute_surface()
          end do
       end if
 
