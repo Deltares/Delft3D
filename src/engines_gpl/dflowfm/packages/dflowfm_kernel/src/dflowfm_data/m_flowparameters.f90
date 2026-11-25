@@ -35,6 +35,7 @@ module m_flowparameters
    use messagehandling, only: idlen
    use m_array_or_scalar, only: t_array_or_scalar
    use string_module, only: str_tolower
+   use m_pillar, only: pillar_type, PILLAR_NONE
 
    implicit none(type, external)
 
@@ -188,12 +189,6 @@ module m_flowparameters
    integer :: jacreep !< Include anti-creep calculation, (0=no, 1=yes)
 
    integer :: jasecflow !< 0: no, 1: yes
-
-   integer :: pillar_method !< Switch for methods for computing bridge pillars
-   integer, parameter :: PILLAR_NONE = 0 !< pillar_method not active
-   integer, parameter :: PILLAR_DELFT3D_FLOWNODE = 1 !< pillar_method based on reduced surface area (top view)
-   integer, parameter :: PILLAR_VEGETATION_BAPTIST = 2 !< pillar_method using vegetation approach of
-   integer, parameter :: PILLAR_DELFT3D_FLOWLINK = 3 !< pillar_method based on reduced cross-sectional area (side view)
 
    integer :: jaequili !< secondary flow intensity gets calculated as equilibrium (0=no, 1=yes)
 
@@ -758,7 +753,7 @@ contains
 
       jasecflow = 0 ! include secondary flow (0=no, 1=yes)
 
-      pillar_method = PILLAR_NONE ! Switch for methods for computing bridge pillars
+      pillar_type = PILLAR_NONE ! Switch for methods for computing bridge pillars
 
       jaequili = 0 ! equilibrium secondary flow (0=no, 1=yes)
 

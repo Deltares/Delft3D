@@ -1376,7 +1376,22 @@ contains
          deallocate (air_pressure)
       end if
       if (allocated(kbndz)) then
-         deallocate (xbndz, ybndz, xy2bndz, zbndz, kbndz, zbndz0)
+         deallocate (kbndz)
+      end if
+      if (allocated(xbndz)) then
+         deallocate (xbndz)
+      end if
+      if (allocated(ybndz)) then
+         deallocate (ybndz)
+      end if
+      if (allocated(xy2bndz)) then
+         deallocate (xy2bndz)
+      end if
+      if (allocated(zbndz)) then
+         deallocate (zbndz)
+      end if
+      if (allocated(zbndz0)) then
+         deallocate (zbndz0)
       end if
       if (allocated(zkbndz)) then
          deallocate (zkbndz)

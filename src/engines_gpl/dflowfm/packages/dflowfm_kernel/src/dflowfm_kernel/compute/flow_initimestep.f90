@@ -75,6 +75,7 @@ contains
       use m_fm_icecover, only: update_icecover
       use m_physcoef, only: dynamic_vegetation_roughness_enabled
       use m_update_dynveg, only: update_dynveg
+      use m_pillar, only: pillar_type, PILLAR_DELFT3D_FLOWNODE, PILLAR_DELFT3D_FLOWLINK, PILLAR_DELFT3D_FLOWNODE_TO_FLOWLINK
 
       implicit none
 
@@ -201,9 +202,10 @@ contains
       call initialize_structures_actual_params(network%sts)
       call timstop(handle_extra(45)) ! Start structactual
 
-      if (pillar_method == PILLAR_DELFT3D_FLOWNODE .or. pillar_method == PILLAR_DELFT3D_FLOWLINK) then
+      select case (pillar_type)
+      case (PILLAR_DELFT3D_FLOWNODE, PILLAR_DELFT3D_FLOWLINK, PILLAR_DELFT3D_FLOWNODE_TO_FLOWLINK)
          call pillar_update()
-      end if
+      end select
 
       ! TIDAL TURBINES: Insert equivalent calls to updturbine and applyturbines here
 

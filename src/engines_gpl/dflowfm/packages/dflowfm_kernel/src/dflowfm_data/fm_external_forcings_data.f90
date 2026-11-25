@@ -266,14 +266,14 @@ module fm_external_forcings_data
    integer, allocatable :: kdryarea(:) !< dry area net links index array
    integer :: nDryLinks !< number of net linls of dry are
 
-   type pillar_type
+   type t_pillar
       integer :: np !< number of pillars
       real(kind=dp), dimension(:), allocatable :: xcor !< x-coordinates of pillars
       real(kind=dp), dimension(:), allocatable :: ycor !< y-coordinates of pillars
       real(kind=dp), dimension(:), allocatable :: dia !< radius od pillars
       real(kind=dp), dimension(:), allocatable :: cd !< Cd coefficient of pillars
-   end type pillar_type
-   type(pillar_Type), dimension(:), allocatable :: pillar
+   end type t_pillar
+   type(t_pillar), dimension(:), allocatable :: pillar
    real(kind=dp), dimension(:), allocatable :: Cpil
 
    integer :: ncgen !< nr of controllable generalstr points

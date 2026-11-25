@@ -126,7 +126,7 @@ contains
                                   air_viscous_momentum_coeff, air_viscous_heat_coeff, air_viscous_moisture_coeff, &
                                   air_sea_interaction_model, AIR_SEA_INTERACTION_MODEL_MOST, &
                                   temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_COMPOSITE, &
-                                  pillar_method, PILLAR_NONE
+                                  pillar_type, PILLAR_NONE
 
       implicit none
 
@@ -421,7 +421,7 @@ contains
          call setstruclink()
       end if
 
-      if (pillar_method > PILLAR_NONE) then
+      if (pillar_type > PILLAR_NONE) then
          call setpillars()
       end if
 

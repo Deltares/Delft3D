@@ -43,7 +43,7 @@ contains
       use fm_external_forcings_data, only: Cpil
       use m_flowgeom, only: lnx, ln, dx
       use m_flow, only: u1, v, advi, kmx
-      use m_flowparameters, only: pillar_method, PILLAR_DELFT3D_FLOWNODE, PILLAR_DELFT3D_FLOWLINK
+      use m_pillar, only: pillar_type, PILLAR_DELFT3D_FLOWNODE, PILLAR_DELFT3D_FLOWLINK, PILLAR_DELFT3D_FLOWNODE_TO_FLOWLINK
       use m_get_Lbot_Ltop, only: getLbotLtop
 
       integer :: L !< Link counter
@@ -55,7 +55,8 @@ contains
       real(kind=dp) :: CpilL !> Pillar drag factor as 0.5 * Cd * D * velocity_squared_correction_per_width
 
       if (kmx == 0) then
-         if (pillar_method == PILLAR_DELFT3D_FLOWNODE) then
+         select case (pillar_type)
+         case (PILLAR_DELFT3D_FLOWNODE)
             do L = 1, lnx
                k1 = ln(1, L)
                k2 = ln(2, L)
@@ -65,7 +66,7 @@ contains
                end if
                advi(L) = advi(L) + compute_pillar_advection_term(u1(L), v(L), dx(L), CpilL)
             end do
-         else if (pillar_method == PILLAR_DELFT3D_FLOWLINK) then
+         case (PILLAR_DELFT3D_FLOWLINK)
             do L = 1, lnx
                if (Cpil(L) == 0.0_dp) then
                   cycle
@@ -73,9 +74,18 @@ contains
                CpilL = Cpil(L)
                advi(L) = advi(L) + compute_pillar_advection_term(u1(L), v(L), dx(L), CpilL)
             end do
-         end if
+         case (PILLAR_DELFT3D_FLOWNODE_TO_FLOWLINK)
+            do L = 1, lnx
+               if (Cpil(L) == 0.0_dp) then
+                  cycle
+               end if
+               CpilL = Cpil(L)
+               advi(L) = advi(L) + compute_pillar_advection_term(u1(L), v(L), dx(L), CpilL)
+            end do
+         end select
       else
-         if (pillar_method == PILLAR_DELFT3D_FLOWNODE) then
+         select case (pillar_type)
+         case (PILLAR_DELFT3D_FLOWNODE)
             do L = 1, lnx
                k1 = ln(1, L)
                k2 = ln(2, L)
@@ -88,7 +98,7 @@ contains
                   advi(LL) = advi(LL) + compute_pillar_advection_term(u1(LL), v(LL), dx(L), CpilL)
                end do
             end do
-         else if (pillar_method == PILLAR_DELFT3D_FLOWLINK) then
+         case (PILLAR_DELFT3D_FLOWLINK)
             do L = 1, lnx
                call getLbotLtop(L, Lb, Lt)
                if (Cpil(L) == 0.0_dp) then
@@ -99,7 +109,18 @@ contains
                   advi(LL) = advi(LL) + compute_pillar_advection_term(u1(LL), v(LL), dx(L), CpilL)
                end do
             end do
-         end if
+         case (PILLAR_DELFT3D_FLOWNODE_TO_FLOWLINK)
+            do L = 1, lnx
+               call getLbotLtop(L, Lb, Lt)
+               if (Cpil(L) == 0.0_dp) then
+                  cycle
+               end if
+               CpilL = Cpil(L)
+               do LL = Lb, Lt
+                  advi(LL) = advi(LL) + compute_pillar_advection_term(u1(LL), v(LL), dx(L), CpilL)
+               end do
+            end do
+         end select
       end if
 
    end subroutine pillar_update

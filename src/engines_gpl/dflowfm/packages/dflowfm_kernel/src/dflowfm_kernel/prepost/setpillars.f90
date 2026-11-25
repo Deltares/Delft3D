@@ -46,7 +46,7 @@ contains
       use fm_external_forcings_data, only: pillar, Cpil
       use m_vegetation, only: rnveg, diaveg, stemheight
       use gridoperations
-      use m_flowparameters, only: pillar_method, PILLAR_DELFT3D_FLOWNODE, PILLAR_DELFT3D_FLOWLINK, PILLAR_VEGETATION_BAPTIST
+      use m_pillar, only: pillar_type, PILLAR_DELFT3D_FLOWNODE, PILLAR_DELFT3D_FLOWLINK, PILLAR_VEGETATION_BAPTIST, PILLAR_DELFT3D_FLOWNODE_TO_FLOWLINK
       use m_crspath
       use m_crspath_on_flowgeom
       use unstruc_model, only: md_pillar_use_far_field_velocity
@@ -65,11 +65,12 @@ contains
       if (allocated(Cpil)) then
          deallocate (Cpil)
       end if
-      if (pillar_method == PILLAR_DELFT3D_FLOWNODE) then
+      select case (pillar_type)
+      case (PILLAR_DELFT3D_FLOWNODE)
          allocate (Cpil(ndx))
-      else if (pillar_method == PILLAR_DELFT3D_FLOWLINK) then
+      case (PILLAR_DELFT3D_FLOWLINK, PILLAR_DELFT3D_FLOWNODE_TO_FLOWLINK)
          allocate (Cpil(lnx))
-      end if
+      end select
 
       if (allocated(idum)) then
          deallocate (idum)
@@ -79,7 +80,8 @@ contains
 
       pi = 4.0_dp * atan(1.0_dp)
 
-      if (pillar_method == PILLAR_VEGETATION_BAPTIST) then
+      select case (pillar_type)
+      case (PILLAR_VEGETATION_BAPTIST)
          if (allocated(cdeq)) then
             deallocate (cdeq, npil)
          end if
@@ -110,7 +112,7 @@ contains
          deallocate (cdeq)
          deallocate (npil)
 
-      elseif (pillar_method == PILLAR_DELFT3D_FLOWNODE) then ! Delft3D implimentation, but modified version on flow cells
+      case (PILLAR_DELFT3D_FLOWNODE) ! Delft3D implimentation, but modified version on flow cells
          if (allocated(Aeff)) then
             deallocate (Aeff, cdeq)
          end if
@@ -146,9 +148,15 @@ contains
          deallocate (Aeff)
          deallocate (cdeq)
 
-      else if (pillar_method == PILLAR_DELFT3D_FLOWLINK) then ! Based on D3D approach on flow links
+      case (PILLAR_DELFT3D_FLOWLINK) ! Based on D3D approach on flow links
          if (allocated(Aeff)) then
-            deallocate (Aeff, cdeq, linktype)
+            deallocate (Aeff)
+         end if
+         if (allocated(cdeq)) then
+            deallocate (cdeq)
+         end if
+         if (allocated(linktype)) then
+            deallocate (linktype)
          end if
          allocate (Aeff(lnx), cdeq(lnx), linktype(lnx))
          linktype = 0
@@ -202,7 +210,50 @@ contains
          deallocate (Aeff)
          deallocate (cdeq)
          deallocate (linktype)
-      end if
+      case(PILLAR_DELFT3D_FLOWNODE_TO_FLOWLINK)
+         if (allocated(Aeff)) then
+            deallocate (Aeff)
+         end if
+         if (allocated(cdeq)) then
+            deallocate (cdeq)
+         end if
+         allocate (Aeff(lnx), cdeq(lnx))
+         Aeff = wu
+         do m = 1, size(pillar)
+            do i = 1, pillar(m)%np
+               if (pillar(m)%dia(i) == -999.0_dp .or. pillar(m)%cd(i) == -999.0_dp) then
+                  cycle
+               end if
+               call incells(pillar(m)%xcor(i), pillar(m)%ycor(i), j)
+               if (j == 0) then
+                  cycle
+               end if
+               do L = 1, nd(j)%lnx
+                  Lf = nd(j)%ln(L)
+                  La = abs(Lf)
+                  cdeq(La) = cdeq(La) + pillar(m)%cd(i) * pillar(m)%dia(i)
+                  Aeff(La) = Aeff(La) - pillar(m)%dia(i)**2 * pi * 0.25_dp
+               end do
+            end do
+         end do
+         Cpil = 0.0_dp
+         do L = 1, lnx
+            if (cdeq(L) == 0) then
+               cycle
+            end if
+            if (Aeff(L) <= 0.0_dp) then
+               Cpil(L) = 1.0e30_dp
+               cycle
+            end if
+            if (md_pillar_use_far_field_velocity == 1) then
+               velocity_squared_correction_per_width = 1.0_dp / wu(L)
+            else
+               velocity_squared_correction_per_width = wu(L) / Aeff(L)**2
+            end if
+            Cpil(L) = cdeq(L) * 0.5_dp * velocity_squared_correction_per_width
+         end do
+
+      end select
 
    end subroutine setpillars
 

@@ -533,7 +533,8 @@ contains
       use m_flow_validatestate_data
       use m_array_or_scalar, only: realloc
       use precision_basics, only: equal
-
+      use m_pillar, only: pillar_type, PILLAR_NONE, PILLAR_DELFT3D_FLOWNODE, PILLAR_VEGETATION_BAPTIST, PILLAR_DELFT3D_FLOWLINK, PILLAR_DELFT3D_FLOWNODE_TO_FLOWLINK
+      
       character(*), intent(in) :: filename !< Name of file to be read (the MDU file must be in current working directory).
       integer, intent(out) :: istat !< Return status (0=success)
 
@@ -661,9 +662,27 @@ contains
       end if
 
       call prop_get(md_ptr, 'geometry', 'FixedWeirFile', md_fixedweirfile, success)
-      call prop_get(md_ptr, 'geometry', 'PillarFile', md_pillarfile, success)
+      call prop_get(md_ptr, 'geometry', 'pillarFile', md_pillarfile, success)
+      md_pillar_type = 'flowlink'
+      call prop_get(md_ptr, 'geometry', 'pillarType', md_pillar_type, success)
+      if (success) then
+         call str_lower(md_pillar_type)
+         select case (md_pillar_type)
+         case ('flowlink')
+            pillar_type = PILLAR_DELFT3D_FLOWLINK
+         case ('flownodetoflowlink')
+            pillar_type = PILLAR_DELFT3D_FLOWNODE_TO_FLOWLINK
+         case default
+            write (msgbuf, '(a,a)') 'Did not recognise pillarType value: ', trim(md_pillar_type)
+            call mess(LEVEL_ERROR, trim(msgbuf))
+            write (msgbuf, '(a)') 'Supported values are: flowlink and flownodetoflowlink'
+            call mess(LEVEL_ERROR, trim(msgbuf))
+         end select
+      end if
       if (len_trim(md_pillarfile) > 0) then
-         pillar_method = PILLAR_DELFT3D_FLOWLINK
+         if (pillar_type /= PILLAR_DELFT3D_FLOWLINK .and. pillar_type /= PILLAR_DELFT3D_FLOWNODE_TO_FLOWLINK) then
+            call mess(LEVEL_ERROR, 'pillarFile and pillarType are inconsistent. PillarFile can only used in combination with pillarType `flowlink` or `flownodetoflowlink`.')
+         end if
       end if
       call prop_get(md_ptr, 'geometry', 'GulliesFile', md_gulliesfile, success)
       call prop_get(md_ptr, 'geometry', 'RoofsFile', md_roofsfile, success)
@@ -1523,7 +1542,7 @@ contains
       ierror = DFM_NOERR
 
       call prop_get(md_ptr, 'veg', 'Vegetationmodelnr', javeg) ! Vegetation model nr, (0=no, 1=Baptist DFM)
-      if (pillar_method == PILLAR_VEGETATION_BAPTIST) then
+      if (pillar_type == PILLAR_VEGETATION_BAPTIST) then
          javeg = 1
       end if
       if (kmx == 0 .and. javeg > 0) then
