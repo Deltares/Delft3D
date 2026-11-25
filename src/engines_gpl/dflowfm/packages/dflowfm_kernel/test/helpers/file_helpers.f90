@@ -23,7 +23,7 @@ contains
       close (file_lun)
    end subroutine create_file
 
-   !> Write a CDL fixture and convert it to NetCDF using ncgen from PATH.
+   !> Write a CDL fixture and convert it to NetCDF using Conan's ncgen.
    subroutine create_netcdf_from_cdl(nc_file, lines, cmdstat, exitstat, cmdmsg)
       ! Arguments
       character(len=*), intent(in) :: nc_file !< Path to the NetCDF file to generate.
@@ -32,15 +32,20 @@ contains
       integer, intent(out) :: exitstat !< ncgen exit status, or -1 if the command could not execute.
       character(len=*), intent(out) :: cmdmsg !< Diagnostic message if command execution fails.
 
-      ! Local variables
+      include 'ncgen_command.inc'
       character(len=512) :: cdl_file !< Path to the CDL file to write.
+      character(len=:), allocatable :: command
 
       cdl_file = trim(nc_file)//".cdl"
 
       call create_file(cdl_file, lines)
       cmdmsg = ""
-      call execute_command_line('ncgen -o "'//trim(nc_file)//'" "'//trim(cdl_file)//'"', &
-                                wait=.true., cmdstat=cmdstat, cmdmsg=cmdmsg, exitstat=exitstat)
+      command = ncgen_command//'"'//trim(nc_file)//'" "'//trim(cdl_file)//'"'
+!DEC$ IF DEFINED(_WIN32)
+      ! cmd /s strips the outer quotes and preserves the quoted executable path.
+      command = 'cmd /d /s /c "'//command//'"'
+!DEC$ ENDIF
+      call execute_command_line(command, wait=.true., cmdstat=cmdstat, cmdmsg=cmdmsg, exitstat=exitstat)
       if (cmdstat /= 0) then
          exitstat = -1
       end if

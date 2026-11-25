@@ -205,60 +205,51 @@ contains
       end if
    end subroutine write_initial_grid_coordinates
 
-   subroutine create_layered_salinity_netcdf(file_name, with_time, snapshot_count, axis_order)
-      use netcdf
+   logical function create_layered_salinity_netcdf(file_name, snapshot_count, field_dimensions, field_values) result(success)
+      use m_file_helpers, only: create_netcdf_from_cdl
 
       character(len=*), intent(in) :: file_name
-      logical, intent(in) :: with_time
       integer, intent(in) :: snapshot_count
-      integer, dimension(:), intent(in), optional :: axis_order !< File order of X, Y, depth, time, member (slots 1 to 5).
-      integer :: ncid, x_varid, y_varid, time_varid, depth_varid, field_varid
-      integer :: i, j, k, t, member, member_count
-      integer, dimension(5) :: dimids, indices
-      integer, dimension(:), allocatable :: order
-      real(dp) :: value
+      character(len=*), intent(in) :: field_dimensions, field_values
+      character(len=256), dimension(:), allocatable :: cdl
+      character(len=512) :: cmdmsg
+      character(len=16) :: time_dimension
+      integer :: cmdstat, exitstat
 
-      call define_initial_grid(file_name, with_time, snapshot_count, ncid, &
-                               dimids(1), dimids(2), dimids(4), x_varid, y_varid, time_varid)
-      call check_netcdf(nf90_def_dim(ncid, 'depth', 2, dimids(3)))
-      call check_netcdf(nf90_def_var(ncid, 'depth', NF90_DOUBLE, [dimids(3)], depth_varid))
-      call check_netcdf(nf90_put_att(ncid, depth_varid, 'standard_name', 'depth'))
-      call check_netcdf(nf90_put_att(ncid, depth_varid, 'axis', 'Z'))
-      call check_netcdf(nf90_put_att(ncid, depth_varid, 'positive', 'down'))
-      call check_netcdf(nf90_put_att(ncid, depth_varid, 'units', 'm'))
-      if (present(axis_order)) then
-         order = axis_order
-      else if (with_time) then
-         order = [1, 2, 3, 4]
-      else
-         order = [1, 2, 3]
+      cdl = [character(len=256) :: 'netcdf layered_salinity {', 'dimensions:', 'x = 2;', 'y = 2;', 'depth = 2;']
+      if (snapshot_count > 0) then
+         write (time_dimension, '(a,i0,a)') 'time = ', snapshot_count, ';'
+         cdl = [character(len=256) :: cdl, time_dimension]
       end if
-      member_count = 1
-      if (any(order == 5)) then
-         member_count = 2
-         call check_netcdf(nf90_def_dim(ncid, 'member', member_count, dimids(5)))
+      if (index(field_dimensions, 'member') > 0) then
+         cdl = [character(len=256) :: cdl, 'member = 2;']
       end if
-      call check_netcdf(nf90_def_var(ncid, 'Field', NF90_DOUBLE, dimids(order), field_varid))
-      call check_netcdf(nf90_put_att(ncid, field_varid, 'units', 'm'))
-      call check_netcdf(nf90_put_att(ncid, field_varid, 'coordinates', 'x y'))
-      call check_netcdf(nf90_enddef(ncid))
-      call write_initial_grid_coordinates(ncid, x_varid, y_varid, time_varid, snapshot_count)
-      call check_netcdf(nf90_put_var(ncid, depth_varid, [3.0_dp, 1.0_dp]))
-      do member = 1, member_count
-         do t = 1, merge(snapshot_count, 1, with_time)
-            do k = 1, 2
-               do j = 1, 2
-                  do i = 1, 2
-                     indices = [i, j, k, t, member]
-                     value = 1.0_dp + 2 * (i - 1) + 4 * (j - 1) + 20 * (2 - k) + 10 * (t - 1) + 100 * (member - 1)
-                     call check_netcdf(nf90_put_var(ncid, field_varid, value, start=indices(order)))
-                  end do
-               end do
-            end do
-         end do
-      end do
-      call check_netcdf(nf90_close(ncid))
-   end subroutine create_layered_salinity_netcdf
+      cdl = [character(len=256) :: cdl, 'variables:', &
+             'double x(x);', 'x:standard_name = "projection_x_coordinate";', 'x:units = "m";', &
+             'double y(y);', 'y:standard_name = "projection_y_coordinate";', 'y:units = "m";', &
+             'double depth(depth);', 'depth:standard_name = "depth";', 'depth:axis = "Z";', &
+             'depth:positive = "down";', 'depth:units = "m";']
+      if (snapshot_count > 0) then
+         cdl = [character(len=256) :: cdl, 'double time(time);', 'time:standard_name = "time";', &
+                'time:units = "seconds since 2000-01-01 00:00:00";']
+      end if
+      cdl = [character(len=256) :: cdl, 'double Field('//field_dimensions//');', &
+             'Field:units = "m";', 'Field:coordinates = "x y";', &
+             'data:', 'x = -1, 1;', 'y = -1, 1;', 'depth = 3, 1;']
+      select case (snapshot_count)
+      case (1)
+         cdl = [character(len=256) :: cdl, 'time = 0;']
+      case (2)
+         cdl = [character(len=256) :: cdl, 'time = 0, 100;']
+      end select
+      cdl = [character(len=256) :: cdl, 'Field = '//field_values//';', '}']
+
+      call create_netcdf_from_cdl(file_name, cdl, cmdstat, exitstat, cmdmsg)
+      success = f90_assert_eq(cmdstat, 0, 'Could not execute ncgen for '//file_name//': '//trim(cmdmsg))
+      if (success) then
+         success = f90_assert_eq(exitstat, 0, 'ncgen conversion failed for '//file_name)
+      end if
+   end function create_layered_salinity_netcdf
 
    subroutine create_netcdf_timeseries_with_coordinates(file_name)
       use netcdf
@@ -2472,33 +2463,40 @@ contains
       call teardown_minimal_grid()
    end subroutine test_initial_salinity_netcdf_interpolates_at_start
 
+   ! CDL lists dimensions slowest to fastest, the reverse of the NetCDF Fortran API order.
    !$gtest
    subroutine test_initial_3d_salinity_two_timestamps() bind(C)
-      call run_initial_3d_salinity_case('two_timestamps', .true., 2, 9.0_dp)
+      call run_initial_3d_salinity_case('two_timestamps', 2, 'time, depth, y, x', &
+                                        '21, 23, 25, 27, 1, 3, 5, 7, 31, 33, 35, 37, 11, 13, 15, 17', 9.0_dp)
    end subroutine test_initial_3d_salinity_two_timestamps
 
    !$gtest
    subroutine test_initial_3d_salinity_one_timestamp() bind(C)
-      call run_initial_3d_salinity_case('one_timestamp', .true., 1, 4.0_dp)
+      call run_initial_3d_salinity_case('one_timestamp', 1, 'time, depth, y, x', '21, 23, 25, 27, 1, 3, 5, 7', 4.0_dp)
    end subroutine test_initial_3d_salinity_one_timestamp
 
    !$gtest
    subroutine test_initial_3d_salinity_timeless() bind(C)
-      call run_initial_3d_salinity_case('timeless', .false., 1, 4.0_dp)
+      call run_initial_3d_salinity_case('timeless', 0, 'depth, y, x', '21, 23, 25, 27, 1, 3, 5, 7', 4.0_dp)
    end subroutine test_initial_3d_salinity_timeless
 
    !$gtest
    subroutine test_initial_3d_salinity_permuted_axes() bind(C)
-      call run_initial_3d_salinity_case('permuted_time', .true., 2, 9.5_dp, axis_order=[4, 2, 3, 1])
-      call run_initial_3d_salinity_case('permuted_timeless', .false., 1, 4.5_dp, axis_order=[3, 2, 1])
+      call run_initial_3d_salinity_case('permuted_time', 2, 'x, depth, y, time', &
+                                        '21, 31, 25, 35, 1, 11, 5, 15, 23, 33, 27, 37, 3, 13, 7, 17', 9.5_dp, sample_x=0.5_dp)
+      call run_initial_3d_salinity_case('permuted_timeless', 0, 'x, y, depth', &
+                                        '21, 1, 25, 5, 23, 3, 27, 7', 4.5_dp, sample_x=0.5_dp)
    end subroutine test_initial_3d_salinity_permuted_axes
 
    !$gtest
    subroutine test_initial_3d_salinity_uses_first_extra_slice() bind(C)
-      call run_initial_3d_salinity_case('extra_axis', .true., 2, 9.5_dp, axis_order=[4, 2, 5, 3, 1])
+      call run_initial_3d_salinity_case('extra_axis', 2, 'x, depth, member, y, time', &
+                                        '21, 31, 25, 35, 121, 131, 125, 135, 1, 11, 5, 15, 101, 111, 105, 115, '// &
+                                        '23, 33, 27, 37, 123, 133, 127, 137, 3, 13, 7, 17, 103, 113, 107, 117', &
+                                        9.5_dp, sample_x=0.5_dp)
    end subroutine test_initial_3d_salinity_uses_first_extra_slice
 
-   subroutine run_initial_3d_salinity_case(case_name, with_time, snapshot_count, expected_surface, axis_order)
+   subroutine run_initial_3d_salinity_case(case_name, snapshot_count, field_dimensions, field_values, expected_surface, sample_x)
       use m_flow, only: sa1, kmx, ndkx, kbot, ktop, zws, zcs, layertype, LAYTP_SIGMA
       use m_flowparameters, only: jasal
       use m_flowtimes, only: irefdate, tzone, tstart_user
@@ -2507,10 +2505,10 @@ contains
       use messagehandling, only: mess, LEVEL_WARN
 
       character(len=*), intent(in) :: case_name
-      logical, intent(in) :: with_time
       integer, intent(in) :: snapshot_count
+      character(len=*), intent(in) :: field_dimensions, field_values
       real(dp), intent(in) :: expected_surface
-      integer, dimension(:), intent(in), optional :: axis_order
+      real(dp), intent(in), optional :: sample_x
 
       character(len=64) :: nc_file, ext_file
       type(tree_data), pointer :: bnd_ptr, block_ptr
@@ -2519,14 +2517,20 @@ contains
       integer :: saved_jasal
       character(len=1024) :: ec_message
 
+      nc_file = 'test_initial_3d_salinity_'//case_name//'.nc'
+      ext_file = 'test_initial_3d_salinity_'//case_name//'.ext'
+      if (.not. create_layered_salinity_netcdf(trim(nc_file), snapshot_count, field_dimensions, field_values)) then
+         return
+      end if
+
       saved_kmx = kmx
       saved_ndkx = ndkx
       saved_layertype = layertype
       saved_jasal = jasal
       call setup_minimal_grid()
-      if (present(axis_order)) then
+      if (present(sample_x)) then
          ! An off-centre point distinguishes X and Y in the interpolated result.
-         xz(1) = 0.5_dp
+         xz(1) = sample_x
       end if
       kmx = 2
       ndkx = 3
@@ -2545,10 +2549,7 @@ contains
       jsferic = 0
       threshold_abort = LEVEL_FATAL
 
-      write (nc_file, '(a,a,a)') 'test_initial_3d_salinity_', trim(case_name), '.nc'
-      write (ext_file, '(a,a,a)') 'test_initial_3d_salinity_', trim(case_name), '.ext'
       call initialize_ec_module()
-      call create_layered_salinity_netcdf(trim(nc_file), with_time, snapshot_count, axis_order)
       call create_file(trim(ext_file), [ &
                        '[Spatial]', &
                        '    quantity            = initialSalinity', &
