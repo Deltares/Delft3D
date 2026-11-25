@@ -35,6 +35,10 @@ program test_subsupl_balance
       call check_dredging()
       stop
    end if
+   if (argument == 'dumping') then
+      call check_dumping()
+      stop
+   end if
    read (argument, *) dimensions
    call get_command_argument(2, morphology)
    call get_command_argument(3, argument)
@@ -159,6 +163,127 @@ contains
       call flowfinalize()
    end subroutine check_dredging
 
+   !> Check mass and restart state when nourishment completely dries a cell.
+   subroutine check_dumping()
+      use m_dad, only: dadpar
+      use m_file_helpers, only: create_file
+      use m_fm_erosed, only: morfac, stmpar
+      use m_flow, only: s0
+      use m_flowgeom, only: xz, ba_mor
+      use m_set_kbot_ktop, only: set_kbot_ktop
+      use m_transport, only: constituents, isalt, ised1, itra1, dry_cell_mass
+      use m_volsur, only: volsur
+      use unstruc_netcdf, only: unc_read_map_or_rst, unc_write_rst
+
+      real(kind=dp), dimension(:), allocatable :: mass_before, mass_after, stored_amount
+      real(kind=dp) :: delivered_mass, initial_suspended_mass, fixed_bed_exchange
+      real(kind=dp) :: initial_shortage, remaining_shortage
+      integer :: cell, area, n, bottom, top
+      logical :: hold_sediment
+
+      call get_command_argument(2, argument)
+      read (argument, *) dimensions
+      call get_command_argument(3, argument)
+      hold_sediment = argument == 'hold'
+      call require(hold_sediment .or. argument == 'deposit' .or. argument == 'repay', 'Unknown drying treatment')
+      morphology = 'suspended'
+      update_s1 = 0
+      direction = 0
+      jampi = 0
+      numranks = 1
+      my_rank = 0
+      jagui = 0
+      call init_core()
+      call create_input(dredging=.true., dumping=.true.)
+      call append_file('box.mdu', ['DredgeFile = fill.dad'])
+      call create_file('fill.dad', [character(len=80) :: '[DredgeFileInformation]', 'FileVersion = 01.02', &
+                       'PolygonFile = fill.pol', '[Nourishment]', 'Name = fill', 'Volume = 0.25', &
+                       'MaxVolRate = 31536000', 'Sediment = coarse', 'SedPercentage = 100', 'Dump = fill'])
+      call create_file('fill.pol', [character(len=80) :: 'fill', '5 2', '0 0', '1 0', '1 1', '0 1', '0 0'])
+      call append_file('box_mba.ini', [character(len=80) :: &
+                       '[MassBalanceArea]', 'name = fill', 'locationFile = fill.pol'])
+      call api_loadmodel('box.mdu')
+      status = flowinit()
+      call require(status == DFM_NOERR, 'Dumping model initialization failed')
+
+      cell = minloc(xz(1:ndxi), dim=1)
+      area = mbadefdomain(cell)
+      call getkbotktop(cell, bottom, top)
+      initial_suspended_mass = sum(constituents(ised1, bottom:top) * vol1(bottom:top))
+      call require(initial_suspended_mass > 0.125_dp, 'The dump cell needs suspended sediment')
+      stmpar%sedpar%cmpupdfrac(1) = .not. hold_sediment
+      initial_shortage = 0.125_dp
+      if (argument == 'repay') then
+         initial_shortage = initial_shortage + initial_suspended_mass * morfac
+      end if
+      if (.not. hold_sediment) then
+         stmpar%morlyr%state%sedshort(1, cell) = -initial_shortage / ba_mor(cell)
+         mbabedshortmassend(1, area) = -initial_shortage
+         mbabedshortmassbegin(1, area) = -initial_shortage
+         mbabedshortmassbegintot(1, area) = -initial_shortage
+      end if
+      mass_before = total_mass()
+
+      call flowstep(stop_requested, status)
+      call require(status == DFM_NOERR .and. stop_requested == 0, 'Dumping timestep failed')
+      call getkbotktop(cell, bottom, top)
+      call require(sum(vol1(bottom:top)) <= tolerance, 'The dump cell did not dry')
+      call require(abs(mbamassend(ised1, area)) < tolerance, 'A dry cell reported sediment in suspension')
+      call require(allocated(dry_cell_mass), 'The dry cell did not retain transported constituents')
+      call require(dry_cell_mass(isalt, cell) > 0.0_dp .and. dry_cell_mass(itra1, cell) > 0.0_dp, &
+                   'The dry cell must retain salt and dye')
+      if (hold_sediment) then
+         fixed_bed_exchange = mbafluxfixbedtot(DIR_FROM, 1, area) - mbafluxfixbedtot(DIR_TO, 1, area)
+         call require(abs(dry_cell_mass(ised1, cell) - (initial_suspended_mass + fixed_bed_exchange / morfac)) < tolerance, &
+                      'A fraction excluded from bed updates must remain in the dry cell')
+      else
+         call require(abs(dry_cell_mass(ised1, cell)) < tolerance, 'Suspended sediment was not deposited')
+         remaining_shortage = max(0.0_dp, initial_shortage - initial_suspended_mass * morfac)
+         call require(abs(mbabedshortmassend(1, area) + remaining_shortage) < tolerance, 'Incorrect bed shortage repayment')
+         call require(abs(mbabedmassend(1, area) - mbabedmassbegintot(1, area) - &
+                          max(0.0_dp, initial_suspended_mass * morfac - initial_shortage)) < tolerance, &
+                      'Incorrect sediment deposited')
+      end if
+      call check_balances()
+      mass_after = total_mass()
+      delivered_mass = 1600.0_dp * sum(dadpar%totvoldump)
+      call require(abs(delivered_mass - 400.0_dp) < tolerance, 'The nourishment must deliver 0.25 m^3')
+      call require(abs(mass_after(nombs) - mass_before(nombs) - delivered_mass) < tolerance, &
+                   'The model did not retain the delivered sediment')
+      mass_before(ised1) = mass_before(ised1) + sum(mbafluxfixbedtot(DIR_FROM, 1, :) - mbafluxfixbedtot(DIR_TO, 1, :))
+      call require(maxval(abs(mass_after(1:nombs - 1) - mass_before(1:nombs - 1))) < tolerance, &
+                   'Drying changed mass other than the delivered sediment')
+
+      stored_amount = dry_cell_mass(:, cell)
+      remaining_shortage = stmpar%morlyr%state%sedshort(1, cell)
+      call unc_write_rst('dry_restart.nc')
+      dry_cell_mass = 0.0_dp
+      stmpar%morlyr%state%sedshort(1, cell) = 0.0_dp
+      call unc_read_map_or_rst('dry_restart.nc', status)
+      call require(status == DFM_NOERR, 'Could not read the dry-cell restart')
+      call require(maxval(abs(dry_cell_mass(:, cell) - stored_amount)) < tolerance, 'Restart lost dry-cell mass')
+      call require(abs(stmpar%morlyr%state%sedshort(1, cell) - remaining_shortage) < tolerance, 'Restart lost bed shortage')
+
+      ! Add clear water to the closed box to exercise the rewetting handoff.
+      s0 = 0.3_dp
+      s1 = s0
+      call volsur()
+      if (dimensions == 3) then
+         call set_kbot_ktop(jazws0=0)
+      end if
+      call flowstep(stop_requested, status)
+      call require(status == DFM_NOERR .and. stop_requested == 0, 'Rewetting timestep failed')
+      call require(all(dry_cell_mass == 0.0_dp), 'The rewetted cell still holds stranded mass')
+      call getkbotktop(cell, bottom, top)
+      do n = 1, size(stored_amount)
+         if (stored_amount(n) > 0.0_dp) then
+            call require(sum(constituents(n, bottom:top) * vol1(bottom:top)) >= stored_amount(n) - tolerance, &
+                         'The rewetted cell did not receive its stored mass')
+         end if
+      end do
+      call flowfinalize()
+   end subroutine check_dumping
+
    !> Boundary sigma volumes must follow subsidence and uplift with either water-level setting.
    subroutine check_sigma_boundary()
       use m_flowgeom, only: ndx
@@ -245,13 +370,18 @@ contains
 
    !> Include suspension, bed stratigraphy and pending shortages in each constituent inventory.
    function total_mass() result(mass)
+      use m_fm_erosed, only: lsed
+
       real(dp) :: mass(nombs)
       integer :: i, fraction
 
-      mass = sum(mbamassend, dim=2)
+      mass = sum(mbamassend + mbadrymassend, dim=2)
       do i = 1, nombs
          fraction = imbs2sed(i)
          if (fraction > 0) then
+            if (fraction <= lsed) then
+               mass(i) = mass(i) * mbamorfacend
+            end if
             mass(i) = mass(i) + sum(mbabedmassend(fraction, :)) + sum(mbabedshortmassend(fraction, :))
             if (iflufflyr > 0) then
                mass(i) = mass(i) + sum(mbafluffmassend(fraction, :))
@@ -289,13 +419,15 @@ contains
    end subroutine check_inventory
 
    !> Build a closed three-cell domain with a tracer, salinity and optional sediment fractions.
-   subroutine create_input(dredging)
+   subroutine create_input(dredging, dumping)
       use m_file_helpers, only: create_file
 
       logical, optional, intent(in) :: dredging
+      logical, optional, intent(in) :: dumping
 
       character(len=32) :: layers, end_elevation, sediment_type, transport_formula, bed_update
       character(len=32) :: forcing_file
+      character(len=32) :: initial_bed, morphological_factor, fresh_settling, saline_settling
 
       call create_network()
       write (layers, '("Kmx = ",i0)') 2 * (dimensions - 2)
@@ -304,6 +436,18 @@ contains
       transport_formula = 'TraFrm = 1'
       bed_update = 'BedUpd = true'
       forcing_file = 'ExtForceFileNew = ground.ext'
+      initial_bed = 'IniSedThick = 0.02'
+      morphological_factor = 'MorFac = 1'
+      fresh_settling = 'WS0 = 0.0086'
+      saline_settling = 'WSM = 0.0086'
+      if (present(dumping)) then
+         if (dumping) then
+            initial_bed = 'IniSedThick = 0'
+            morphological_factor = 'MorFac = 2'
+            fresh_settling = 'WS0 = 0'
+            saline_settling = 'WSM = 0'
+         end if
+      end if
       if (present(dredging)) then
          if (dredging) then
             forcing_file = ''
@@ -349,13 +493,13 @@ contains
       call create_file('box.sed', [character(len=96) :: &
                        '[SedimentFileInformation]', 'FileVersion = 02.00', '[SedimentOverall]', 'Cref = 1e10', &
                        '[Sediment]', 'Name = fine', sediment_type, transport_formula, 'RhoSol = 2600', 'SedDia = 0.0001', &
-                       'CDryB = 1600', 'IniSedThick = 0.02', 'ACAL = 1.21', 'FacDSS = 1', 'SettleFrm = function_of_conditions', &
-                       'SalMax = 0', 'WS0 = 0.0086', 'WSM = 0.0086', 'TCoefWS = 1', 'CFlocCr = 0.1', 'CPowWS = 0', &
+                       'CDryB = 1600', initial_bed, 'ACAL = 1.21', 'FacDSS = 1', 'SettleFrm = function_of_conditions', &
+                       'SalMax = 0', fresh_settling, saline_settling, 'TCoefWS = 1', 'CFlocCr = 0.1', 'CPowWS = 0', &
                        '[Sediment]', 'Name = coarse', 'SedTyp = bedload', 'TraFrm = 1', 'RhoSol = 2650', &
                        'SedDia = 0.011', 'CDryB = 1600', 'IniSedThick = 0.01', 'ACAL = 1.21'])
       call create_file('box.mor', [character(len=96) :: &
                        '[MorphologyFileInformation]', 'FileVersion = 02.00', '[Morphology]', &
-                       'MorFac = 1', 'MorStt = 0', bed_update, 'CmpUpd = true', 'Bed = 0', &
+                       morphological_factor, 'MorStt = 0', bed_update, 'CmpUpd = true', 'Bed = 0', &
                        'SedThr = 0.005', 'Thresh = 0.001', 'DensIn = false', &
                        '[Underlayer]', 'IUnderLyr = 2', 'ExchLyr = false', 'TTLForm = 2', &
                        'TTLAlpha = 0.1', 'TTLMin = 0.01', 'MxNULyr = 2', 'ThUnLyr = 0.005'])

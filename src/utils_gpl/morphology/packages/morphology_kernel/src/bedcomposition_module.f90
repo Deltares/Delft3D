@@ -65,6 +65,7 @@ public  setbedfracprop
 public  allocmorlyr
 public  clrmorlyr
 public  bedcomp_use_bodsed
+public  repay_sediment_shortage
 public  initpreload
 public  lyrdiffusion
 public  set_default_fractions

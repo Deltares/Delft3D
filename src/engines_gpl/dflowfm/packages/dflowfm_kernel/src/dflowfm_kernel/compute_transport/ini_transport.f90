@@ -61,6 +61,9 @@ contains
       integer :: i, itrace, ised, isf, ifrac, isys
       logical :: allocate_transport
 
+      if (allocated(dry_cell_mass)) then
+         deallocate (dry_cell_mass)
+      end if
       numconst = 0
       isalt = 0
       itemp = 0

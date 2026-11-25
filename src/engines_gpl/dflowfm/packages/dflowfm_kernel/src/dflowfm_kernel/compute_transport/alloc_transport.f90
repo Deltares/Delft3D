@@ -71,6 +71,9 @@ contains
       call realloc(wsf, NUMCONST, keepExisting=.true., fill=0.0_dp)
 
       call realloc(constituents, [NUMCONST, Ndkx], keepExisting=KeepExisting, fill=0.0_dp)
+      if (allocated(dry_cell_mass)) then
+         call realloc(dry_cell_mass, [numconst, ndx], keepExisting=KeepExisting, fill=0.0_dp)
+      end if
 
       call realloc(const_sour, [NUMCONST, Ndkx], keepExisting=KeepExisting, fill=0.0_dp)
       call realloc(const_sink, [NUMCONST, Ndkx], keepExisting=KeepExisting, fill=0.0_dp)

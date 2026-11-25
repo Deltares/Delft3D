@@ -188,6 +188,7 @@ contains
          call update_bed_volumes()
          call subsupl_update_constituents()
       end if
+      call restore_dry_cell_mass()
 
       if (jamba > 0 .and. (update_morphology_geometry .or. jasubsupl > 0)) then
          call comp_bedflowmba(before_update=.false.)
@@ -197,13 +198,14 @@ contains
 
    !> Update geometry and remap transported mass for the bed change due to dredging and dumping.
    subroutine update_dredged_bed()
-      use m_fm_bott3d, only: fm_update_dredged_bed
-      use m_flow, only: vol1, kmx, ktop
+      use m_fm_bott3d, only: fm_update_dredged_bed, fm_deposit_dried_sediment
+      use m_flow, only: vol1, kmx, ktop, s0, s1
+      use m_flowgeom, only: ndx, ndxi, bl
       use m_set_bobs, only: setbobs_after_morphology
-      use m_transport, only: numconst
+      use m_transport, only: numconst, dry_cell_mass
 
-      character(len=*), parameter :: drying_message = 'Dredging or dumping dried a cell containing transported mass.'
       real(kind=dp), dimension(:), allocatable :: previous_volume
+      real(kind=dp), dimension(:, :), allocatable :: stranded_mass
       integer, dimension(:), allocatable :: previous_ktop
       logical :: geometry_changed
 
@@ -214,14 +216,63 @@ contains
          end if
       end if
       call fm_update_dredged_bed(geometry_changed)
-      if (geometry_changed) then
+      do while (geometry_changed)
          call setbobs_after_morphology()
+         s0 = max(s0, bl)
+         s1 = max(s1, bl)
          call update_bed_volumes()
+         geometry_changed = .false.
          if (numconst > 0) then
-            call remap_constituents_after_bed_change(previous_volume, drying_message, previous_ktop)
+            call remap_constituents_after_bed_change(previous_volume, previous_ktop=previous_ktop, &
+                                                      stranded_mass=stranded_mass)
+            if (allocated(stranded_mass)) then
+               previous_volume = vol1
+               if (kmx > 0) then
+                  previous_ktop = ktop
+               end if
+               call fm_deposit_dried_sediment(stranded_mass, geometry_changed)
+               if (any(stranded_mass /= 0.0_dp)) then
+                  if (.not. allocated(dry_cell_mass)) then
+                     allocate (dry_cell_mass(numconst, ndx), source=0.0_dp)
+                  end if
+                  dry_cell_mass(:, 1:ndxi) = dry_cell_mass(:, 1:ndxi) + stranded_mass
+               end if
+            end if
          end if
-      end if
+      end do
    end subroutine update_dredged_bed
+
+   !> Return stranded constituents to the same cell once it is wet again.
+   subroutine restore_dry_cell_mass()
+      use m_flow, only: s1, vol1
+      use m_flowgeom, only: bl, ndxi
+      use m_flowparameters, only: epshs
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_transport, only: constituents, dry_cell_mass
+
+      integer :: cell, kb, kt, layer
+      real(kind=dp) :: wet_volume
+
+      if (.not. allocated(dry_cell_mass)) then
+         return
+      end if
+      do cell = 1, ndxi
+         if (s1(cell) - bl(cell) <= epshs .or. all(dry_cell_mass(:, cell) == 0.0_dp)) then
+            cycle
+         end if
+         call getkbotktop(cell, kb, kt)
+         wet_volume = sum(vol1(kb:kt), mask=vol1(kb:kt) > 0.0_dp)
+         if (wet_volume <= 0.0_dp) then
+            cycle
+         end if
+         do layer = kb, kt
+            if (vol1(layer) > 0.0_dp) then
+               constituents(:, layer) = constituents(:, layer) + dry_cell_mass(:, cell) / wet_volume
+            end if
+         end do
+         dry_cell_mass(:, cell) = 0.0_dp
+      end do
+   end subroutine restore_dry_cell_mass
 
    !> Rebuild cell volumes after bed movement, including all vertical layers.
    subroutine update_bed_volumes()

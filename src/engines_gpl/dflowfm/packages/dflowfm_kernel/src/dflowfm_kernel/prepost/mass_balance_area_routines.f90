@@ -55,6 +55,7 @@ module mass_balance_areas_routines
 
    character(len=7), parameter :: labelstn = 'Storage'
    character(len=10), parameter :: labelsus = 'Suspension'
+   character(len=*), parameter :: labeldry = 'Dry-cell storage'
    character(len=3), parameter :: labelbed = 'Bed'
    character(len=12), parameter :: labelbsh = 'Bed shortage'
    character(len=11), parameter :: labelflf = 'Fluff layer'
@@ -79,6 +80,7 @@ module mass_balance_areas_routines
    integer, parameter :: CONC_UNIT = 2
    logical :: mba_has_moving_bed = .false. !< Geometry accounting is independent of sediment transport.
    logical :: mba_has_dredging = .false.
+   logical :: mba_has_dry_storage = .false.
 
 contains
 
@@ -87,7 +89,7 @@ contains
       use m_alloc
       use m_mass_balance_area_data
       use m_fm_wq_processes
-      use m_transport, only: numconst, const_names, ised1, isedn
+      use m_transport, only: numconst, const_names, ised1, isedn, dry_cell_mass
       use m_partitioninfo
       use m_flowtimes, only: tstart_user
       use m_flowparameters, only: jambawritecsv, jambawritetxt, jambawritenetcdf
@@ -112,6 +114,7 @@ contains
       ibflag = 1
       mba_has_moving_bed = stm_included .or. jasubsupl > 0
       mba_has_dredging = stm_included .and. len_trim(md_dredgefile) > 0
+      mba_has_dry_storage = mba_has_dredging .or. allocated(dry_cell_mass)
 
       timembastart = tstart_user ! when DFM doesn't start at t=0.0_dp??
       timembastarttot = timembastart
@@ -181,6 +184,9 @@ contains
       call realloc(mbamassbegin, [nombs, nomba], keepExisting=.false., fill=0.0_dp)
       call realloc(mbamassbegintot, [nombs, nomba], keepExisting=.false., fill=0.0_dp)
       call realloc(mbamassend, [nombs, nomba], keepExisting=.false., fill=0.0_dp)
+      call realloc(mbadrymassbegin, [nombs, nomba], keepExisting=.false., fill=0.0_dp)
+      call realloc(mbadrymassbegintot, [nombs, nomba], keepExisting=.false., fill=0.0_dp)
+      call realloc(mbadrymassend, [nombs, nomba], keepExisting=.false., fill=0.0_dp)
 
       if (stm_included) then
          call realloc(mbafluxfixbed, [2, lsedtot, nomba], keepExisting=.false., fill=0.0_dp)
@@ -334,7 +340,7 @@ contains
       call realloc(flxdmptot, [2, num_fluxes, nomba], keepExisting=.false., fill=0.0_dp) !< Fluxes at dump segments
 
       call mba_sum_area(nomba, mbadefdomain, mbaarea)
-      call mba_sum(nombs, nomba, mbadefdomain, mbavolumeend, mbamassend)
+      call mba_sum(nombs, nomba, mbadefdomain, mbavolumeend, mbamassend, mbadrymassend)
       if (jampi == 1) then
          call reduce_double_sum(nomba, mbaarea, mbavolumereduce)
          do imba = 1, nomba
@@ -350,6 +356,10 @@ contains
                mbamassend(imbs, imba) = mbamassreduce(imbs, imba)
             end do
          end do
+         if (mba_has_dry_storage) then
+            call reduce_double_sum(nombs * nomba, mbadrymassend, mbamassreduce)
+            mbadrymassend = mbamassreduce
+         end if
       end if
 
       if (stm_included) then
@@ -365,9 +375,11 @@ contains
 
       mbavolumebegin(:) = mbavolumeend(:)
       mbamassbegin(:, :) = mbamassend(:, :)
+      mbadrymassbegin = mbadrymassend
 
       mbavolumebegintot(:) = mbavolumebegin(:)
       mbamassbegintot(:, :) = mbamassbegin(:, :)
+      mbadrymassbegintot = mbadrymassbegin
 
       if (stm_included) then
          mbamorfacbegintot = mbamorfacbegin
@@ -458,7 +470,7 @@ contains
       timembaend = time
 
 !  New total volumes and masses
-      call mba_sum(nombs, nomba, mbadefdomain, mbavolumeend, mbamassend)
+      call mba_sum(nombs, nomba, mbadefdomain, mbavolumeend, mbamassend, mbadrymassend)
 
 !  If in parallel mode, reduce arrays
       write_balance = .true.
@@ -484,6 +496,10 @@ contains
 
          call reduce_double_sum(nombs * nomba, mbamassend, mbamassreduce)
          mbamassend(:, :) = mbamassreduce(:, :)
+         if (mba_has_dry_storage) then
+            call reduce_double_sum(nombs * nomba, mbadrymassend, mbamassreduce)
+            mbadrymassend = mbamassreduce
+         end if
          call reduce_double_sum(2 * numconst * nombabnd * nombabnd, mbafluxhor, mbafluxhorreduce)
          mbafluxhor(:, :, :, :) = mbafluxhorreduce(:, :, :, :)
          call reduce_double_sum(2 * 2 * numconst * source_sinks%num_total, mbafluxsorsin, mbafluxsorsinreduce)
@@ -555,6 +571,7 @@ contains
       timembastart = timembaend
       mbavolumebegin(:) = mbavolumeend(:)
       mbamassbegin(:, :) = mbamassend(:, :)
+      mbadrymassbegin = mbadrymassend
       if (stm_included) then
          mbabedmassbegin(:, :) = mbabedmassend(:, :)
          mbabedshortmassbegin(:, :) = mbabedshortmassend(:, :)
@@ -647,7 +664,7 @@ contains
 
    end subroutine mba_final
 
-   subroutine mba_sum(nombs, nomba, mbadef, mbavolume, mbamass)
+   subroutine mba_sum(nombs, nomba, mbadef, mbavolume, mbamass, mbadrymass)
 
       use m_fm_wq_processes, only: numwqbots, wqbot
       use m_partitioninfo
@@ -660,11 +677,13 @@ contains
       integer :: mbadef(ndxi)
       real(kind=dp) :: mbavolume(nomba) ! volumes
       real(kind=dp) :: mbamass(nombs, nomba) ! masses
+      real(kind=dp), dimension(nombs, nomba), intent(out) :: mbadrymass !< Stranded constituent amounts.
 
       integer :: k, kk, kb, kt, iconst, iwqbot, imba
 
       mbavolume = 0.0_dp
       mbamass = 0.0_dp
+      mbadrymass = 0.0_dp
 
       do kk = 1, ndxi
          if (jampi == 1) then
@@ -674,6 +693,9 @@ contains
             end if
          end if
          imba = mbadef(kk)
+         if (allocated(dry_cell_mass)) then
+            mbadrymass(1:numconst, imba) = mbadrymass(1:numconst, imba) + dry_cell_mass(:, kk)
+         end if
          call getkbotktop(kk, kb, kt)
          do k = kb, kt
             mbavolume(imba) = mbavolume(imba) + vol1(k)
@@ -958,7 +980,7 @@ contains
 
    end subroutine comp_bedload_fluxmba
 
-   !> Account for actual transport source/sink exchange when bed inventory is held fixed.
+   !> Account for transport exchange with fractions excluded from bed updates.
    subroutine comp_fixedbed_fluxmba()
       use m_mass_balance_area_data, only: jamba, mbadefdomain, mbafluxfixbed, DIR_FROM, DIR_TO
       use m_flowtimes, only: dts, time1, tstart_user, tfac
@@ -976,7 +998,9 @@ contains
       end if
       composition_started = time1 >= tstart_user + stmpar%morpar%tcmp * tfac
       if (composition_started .and. stmpar%morpar%cmpupd) then
-         return
+         if (all(stmpar%sedpar%cmpupdfrac(1:stmpar%lsedsus))) then
+            return
+         end if
       end if
       do nm = 1, ndxi
          imba = mbadefdomain(nm)
@@ -984,6 +1008,9 @@ contains
             cycle
          end if
          do ised = 1, stmpar%lsedsus
+            if (composition_started .and. stmpar%morpar%cmpupd .and. stmpar%sedpar%cmpupdfrac(ised)) then
+               cycle
+            end if
             k = sedtra%kmxsed(nm, ised)
             if (k <= 0) then
                cycle
@@ -1719,6 +1746,9 @@ contains
       end if
 
       if (imbs <= numconst) then
+         if (mba_has_dry_storage) then
+            call add_name(balance, labelstt, labeldry)
+         end if
          ! exchanges with other balance areas
          if (jambalumpmba == 0) then
             do jmba = 1, nomba
@@ -1864,7 +1894,8 @@ contains
       real(kind=dp), pointer :: fluxes(:, :) !< pointer to an array containing all fluxes
       logical :: has_entry !< flag to indicate that values should be lumped to the previous entry
 
-      real(kind=dp), pointer :: p_mbamassbegin(:, :)
+      real(kind=dp) :: dry_begin, dry_end
+      real(kind=dp), pointer :: p_mbamassbegin(:, :), p_mbadrymassbegin(:, :)
       real(kind=dp), pointer :: p_mbafluxhor(:, :, :, :)
       real(kind=dp), pointer :: p_mbafluxsorsin(:, :, :, :)
       real(kind=dp), pointer :: p_mbafluxheat(:, :)
@@ -1878,6 +1909,7 @@ contains
 
       if (overall_balance) then
          p_mbamassbegin => mbamassbegintot
+         p_mbadrymassbegin => mbadrymassbegintot
          p_mbafluxhor => mbafluxhortot
          p_mbafluxsorsin => mbafluxsorsintot
          p_mbafluxheat => mbafluxheattot
@@ -1894,6 +1926,7 @@ contains
          end if
       else
          p_mbamassbegin => mbamassbegin
+         p_mbadrymassbegin => mbadrymassbegin
          p_mbafluxhor => mbafluxhor
          p_mbafluxsorsin => mbafluxsorsin
          p_mbafluxheat => mbafluxheat
@@ -1927,6 +1960,15 @@ contains
       end if
 
       if (imbs <= numconst) then
+         if (mba_has_dry_storage) then
+            dry_begin = p_mbadrymassbegin(imbs, imba)
+            dry_end = mbadrymassend(imbs, imba)
+            if (ised > 0) then
+               dry_begin = dry_begin * p_mbamorfacbegin
+               dry_end = dry_end * mbamorfacend
+            end if
+            call add_value_change(fluxes, imbf, dry_begin, dry_end)
+         end if
          ! exchanges with other balance areas
          has_entry = .false.
          do jmba = 1, nomba
@@ -2062,6 +2104,9 @@ contains
       end if
 
       if (imbs <= numconst) then
+         if (mba_has_dry_storage) then
+            call add_name(balance, labelstt, labeldry)
+         end if
          ! exchanges with open boundaries
          if (jambalumpbnd == 0) then
             do jmba = nomba + 1, nombabnd
@@ -2173,7 +2218,8 @@ contains
       real(kind=dp), pointer :: fluxes(:, :) !< pointer to an array containing all fluxes
       logical :: has_entry !< flag to indicate that values should be lumped to the previous entry
 
-      real(kind=dp), pointer :: p_mbamassbegin(:, :)
+      real(kind=dp) :: dry_begin, dry_end
+      real(kind=dp), pointer :: p_mbamassbegin(:, :), p_mbadrymassbegin(:, :)
       real(kind=dp), pointer :: p_mbafluxhor(:, :, :, :)
       real(kind=dp), pointer :: p_mbafluxsorsin(:, :, :, :)
       real(kind=dp), pointer :: p_mbafluxheat(:, :)
@@ -2187,6 +2233,7 @@ contains
 
       if (overall_balance) then
          p_mbamassbegin => mbamassbegintot
+         p_mbadrymassbegin => mbadrymassbegintot
          p_mbafluxhor => mbafluxhortot
          p_mbafluxsorsin => mbafluxsorsintot
          p_mbafluxheat => mbafluxheattot
@@ -2203,6 +2250,7 @@ contains
          end if
       else
          p_mbamassbegin => mbamassbegin
+         p_mbadrymassbegin => mbadrymassbegin
          p_mbafluxhor => mbafluxhor
          p_mbafluxsorsin => mbafluxsorsin
          p_mbafluxheat => mbafluxheat
@@ -2236,6 +2284,15 @@ contains
       end if
 
       if (imbs <= numconst) then
+         if (mba_has_dry_storage) then
+            dry_begin = sum(p_mbadrymassbegin(imbs, :))
+            dry_end = sum(mbadrymassend(imbs, :))
+            if (ised > 0) then
+               dry_begin = dry_begin * p_mbamorfacbegin
+               dry_end = dry_end * mbamorfacend
+            end if
+            call add_value_change(fluxes, imbf, dry_begin, dry_end)
+         end if
          ! exchanges with open boundaries
          has_entry = .false.
          do jmba = nomba + 1, nombabnd

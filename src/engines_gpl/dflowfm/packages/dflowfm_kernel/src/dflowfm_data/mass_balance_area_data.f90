@@ -129,6 +129,9 @@ module m_mass_balance_area_data
    real(kind=dp), allocatable, target :: mbamassbegin(:, :) !< begin volume in mass balance area
    real(kind=dp), allocatable, target :: mbamassbegintot(:, :) !< total begin volume in mass balance area
    real(kind=dp), allocatable :: mbamassend(:, :) !< end volume in mass balance area
+   real(kind=dp), allocatable, target :: mbadrymassbegin(:, :) !< Stranded constituent amount at the start of the interval.
+   real(kind=dp), allocatable, target :: mbadrymassbegintot(:, :) !< Stranded constituent amount at model start.
+   real(kind=dp), allocatable :: mbadrymassend(:, :) !< Stranded constituent amount at the end of the interval.
 
    real(kind=dp), target :: mbamorfacbegin !< begin morphological factor
    real(kind=dp), target :: mbamorfacbegintot !< total begin morphological factor

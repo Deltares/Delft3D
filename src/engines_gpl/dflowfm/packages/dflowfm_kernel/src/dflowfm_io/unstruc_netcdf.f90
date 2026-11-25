@@ -1387,6 +1387,7 @@ contains
 !! The netnode and -links have been written already.
    subroutine unc_write_rst_filepointer(irstfile, tim)
       use precision, only: dp
+      use messagehandling, only: LEVEL_FATAL
       use m_subsidence, only: sdu_1d_offset
       use m_flow, only: jarstbnd, ndxbnd_own, kmx, threttim, jasal, nbnds, temperature_model, TEMPERATURE_MODEL_NONE, &
                         bndsf, numtracers, nbndtr, dmiss, corioadamsbashfordfac, iturbulencemodel, ncdamsg, ifixedweirscheme, his_write_settings, map_write_settings, &
@@ -1415,7 +1416,8 @@ contains
       use m_get_Lbot_Ltop_max, only: getlbotltopmax
       use m_reconstruct_ucz, only: reconstructucz
       use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ISEDN, ITRA1, ITRAN, ITRAN0, constituents, itrac2const, const_names, &
-                             const_units, ifrac2const
+                             const_units, ifrac2const, dry_cell_mass
+      use m_dad, only: dad_included
       use m_fm_wq_processes, only: numwqbots, wqbotnames, wqbotunits, wqbot
       use m_xbeach_data, only: E, thetamean, sigmwav
       use unstruc_channel_flow, only: network
@@ -1483,6 +1485,7 @@ contains
          id_fvcoro
 
       integer :: id_ground_offset
+      integer, dimension(:), allocatable :: id_dry_cell_mass
       integer, allocatable, save :: id_tr1(:), id_rwqb(:), id_bndtradim(:), id_ttrabnd(:), id_ztrabnd(:)
       integer, allocatable, save :: id_sf1(:), id_bndsedfracdim(:), id_tsedfracbnd(:), id_zsedfracbnd(:)
       integer, allocatable, save :: id_sf1_bnd(:)
@@ -1997,6 +2000,20 @@ contains
          ierr = nf90_put_att(irstfile, id_snow_temperature, 'standard_name', 'snow_temperature')
          ierr = nf90_put_att(irstfile, id_snow_temperature, 'long_name', 'Temperature of the snow layer')
          ierr = nf90_put_att(irstfile, id_snow_temperature, 'units', 'K')
+      end if
+
+      if (numconst > 0 .and. (dad_included .or. allocated(dry_cell_mass))) then
+         allocate (id_dry_cell_mass(numconst))
+         do i = 1, numconst
+            tmpstr = 'dredge_dry_mass_'//trim(const_names(i))
+            call ncu_sanitize_name(tmpstr)
+            ierr = nf90_def_var(irstfile, trim(tmpstr), nf90_double, [id_flowelemdim, id_timedim], id_dry_cell_mass(i))
+            call check_error(ierr, trim(tmpstr), LEVEL_FATAL)
+            ierr = nf90_put_att(irstfile, id_dry_cell_mass(i), 'long_name', 'Dry-cell amount of '//trim(const_names(i)))
+            call check_error(ierr, trim(tmpstr), LEVEL_FATAL)
+            ierr = nf90_put_att(irstfile, id_dry_cell_mass(i), 'units', trim(const_units(i))//' m3')
+            call check_error(ierr, trim(tmpstr), LEVEL_FATAL)
+         end do
       end if
 
       ! Tracer fields
@@ -3093,6 +3110,18 @@ contains
          if (allocated(dum)) then
             deallocate (dum)
          end if
+      end if
+
+      if (allocated(id_dry_cell_mass)) then
+         allocate (dum(ndxi), source=0.0_dp)
+         do i = 1, numconst
+            if (allocated(dry_cell_mass)) then
+               dum = dry_cell_mass(i, 1:ndxi)
+            end if
+            ierr = nf90_put_var(irstfile, id_dry_cell_mass(i), dum, [1, itim], [ndxi, 1])
+            call check_error(ierr, 'dry-cell constituent mass', LEVEL_FATAL)
+         end do
+         deallocate (dum)
       end if
 
       ! water quality bottom variables
@@ -12037,13 +12066,15 @@ contains
 !subroutine unc_read_map(filename, numk_keep, numl_keep, numk_read, numl_read, ierr)
    subroutine unc_read_map_or_rst(filename, ierr)
       use m_subsidence, only: sdu_1d_offset
+      use messagehandling, only: LEVEL_FATAL
       use network_data, only: LINK_1D_BOUNDARY
       use precision, only: dp
       use time_module, only: datetimestring_to_seconds, seconds_to_datetimestring
       use m_flow
       use m_flowtimes
       use m_fm_icecover, only: ice_area_fraction, ice_thickness, ice_pressure, ice_temperature, snow_thickness, snow_temperature, ja_icecover, ICECOVER_NONE, ICECOVER_SEMTNER
-      use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ITRA1, ITRAN, constituents, itrac2const, const_names, ifrac2const
+      use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ITRA1, ITRAN, constituents, itrac2const, const_names, ifrac2const, &
+                             dry_cell_mass
       use m_fm_wq_processes
       use fm_external_forcings_data, only: numtracers, trnames, ibnd_own, ndxbnd_own
       use m_sediment
@@ -12068,6 +12099,7 @@ contains
       character(len=*), intent(in) :: filename !< Name of NetCDF file.
       integer, intent(out) :: ierr !< Return status (NetCDF operations)
 
+      integer :: id_dry_mass, id_sed_shortage
       character(len=:), allocatable :: refdat_map !< Date time string read from map file.
       real(kind=hp) :: trefdat_map, trefdat_rst
       character(len=:), allocatable :: convformat
@@ -12843,6 +12875,25 @@ contains
          end do !iconst
       end if !ITRA1
 
+      if (allocated(dry_cell_mass)) then
+         deallocate (dry_cell_mass)
+      end if
+      do iconst = 1, numconst
+         tmpstr = 'dredge_dry_mass_'//trim(const_names(iconst))
+         call ncu_sanitize_name(tmpstr)
+         ierr = nf90_inq_varid(imapfile, trim(tmpstr), id_dry_mass)
+         if (ierr == nf90_enotvar) then
+            cycle
+         end if
+         call check_error(ierr, trim(tmpstr), LEVEL_FATAL)
+         if (.not. allocated(dry_cell_mass)) then
+            allocate (dry_cell_mass(numconst, ndx), source=0.0_dp)
+         end if
+         ierr = get_var_and_shift(imapfile, trim(tmpstr), dry_cell_mass(iconst, :), tmpvar1, UNC_LOC_S, kmx, kstart, &
+                                  um%ndxi_own, it_read, um%jamergedmap, um%inode_own, um%inode_merge)
+         call check_error(ierr, trim(tmpstr), LEVEL_FATAL)
+      end do
+
       ! Read the water quality bottom variables
       is_wq_bot_3d = his_write_settings%wqbot3d /= 0 .or. map_write_settings%wqbot3d /= 0
       if (numwqbots > 0) then
@@ -13180,6 +13231,15 @@ contains
             end select
          end if
 
+         if (sedtot_read == stmpar%lsedtot .and. um%jamergedmap == 0) then
+            ierr = nf90_inq_varid(imapfile, 'sedshort', id_sed_shortage)
+            if (ierr /= nf90_enotvar) then
+               call check_error(ierr, 'bed sediment shortage', LEVEL_FATAL)
+               ierr = nf90_get_var(imapfile, id_sed_shortage, stmpar%morlyr%state%sedshort(:, 1:ndxi), &
+                                   start=[1, kstart, it_read], count=[sedtot_read, ndxi, 1])
+               call check_error(ierr, 'bed sediment shortage', LEVEL_FATAL)
+            end if
+         end if
          if (allocated(initial_1d_bed)) then
             call restore_1d_restart_profiles(imapfile, it_read, initial_1d_bed, ierr)
             if (ierr /= DFM_NOERR) then

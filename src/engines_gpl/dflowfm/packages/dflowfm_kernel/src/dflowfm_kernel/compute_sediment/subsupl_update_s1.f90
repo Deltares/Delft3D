@@ -89,7 +89,7 @@ contains
    end subroutine subsupl_update_constituents
 
    !> Conserve each transported constituent across a change in wet cell or layer volume.
-   subroutine remap_constituents_after_bed_change(previous_volume, drying_message, previous_ktop)
+   subroutine remap_constituents_after_bed_change(previous_volume, drying_message, previous_ktop, stranded_mass)
       use precision, only: dp
       use m_flow, only: vol1
       use m_flowgeom, only: ndxi
@@ -97,9 +97,10 @@ contains
       use m_get_kbot_ktop, only: getkbotktop
       use messagehandling, only: mess, LEVEL_FATAL
 
-      real(kind=dp), dimension(:), intent(in) :: previous_volume
-      character(len=*), intent(in) :: drying_message
-      integer, dimension(:), optional, intent(in) :: previous_ktop
+      real(kind=dp), dimension(:), intent(in) :: previous_volume !< Water volumes before the bed change.
+      character(len=*), intent(in), optional :: drying_message !< Fatal message if no dry-cell transfer is supplied.
+      integer, dimension(:), optional, intent(in) :: previous_ktop !< Top layers before the bed change.
+      real(kind=dp), dimension(:, :), allocatable, intent(out), optional :: stranded_mass !< Amount left in dry cells.
 
       integer :: n, k, kb, kt, old_kt
       integer :: k_receiver !< cell receiving the constituent mass
@@ -131,8 +132,19 @@ contains
          end do
          if (any(displaced_mass /= 0.0_dp)) then
             if (sum(vol1(kb:kt)) <= 0.0_dp) then
-               call mess(LEVEL_FATAL, drying_message)
-               return
+               if (.not. present(stranded_mass)) then
+                  if (present(drying_message)) then
+                     call mess(LEVEL_FATAL, drying_message)
+                  else
+                     call mess(LEVEL_FATAL, 'A bed change dried a cell containing transported mass.')
+                  end if
+                  return
+               end if
+               if (.not. allocated(stranded_mass)) then
+                  allocate (stranded_mass(numconst, ndxi), source=0.0_dp)
+               end if
+               stranded_mass(:, n) = displaced_mass
+               cycle
             end if
             k_receiver = kb - 1 + maxloc(vol1(kb:kt), dim=1)
             constituents(:, k_receiver) = constituents(:, k_receiver) + displaced_mass / vol1(k_receiver)
