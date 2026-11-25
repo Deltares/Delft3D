@@ -2921,7 +2921,7 @@ contains
             if (twp > 0) then ! To not have a pressure jump at the eye, we interpolate the pressure from the two nearest points in time.
                pintp = connection%sourceItemsPtr(swp)%ptr%sourceT0FieldPtr%arr1dPtr(1) * a0 + &
                   connection%sourceItemsPtr(swp)%ptr%sourceT1FieldPtr%arr1dPtr(1) * a1
-			   end if
+            end if
          elseif (nf >= connection%sourceItemsPtr(1)%ptr%elementSetPtr%n_rows) then
             ! If outside spiderweb set windspeed and pressure drop to zero.
             uintp = 0.0_dp

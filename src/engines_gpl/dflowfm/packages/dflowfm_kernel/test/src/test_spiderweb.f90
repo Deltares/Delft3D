@@ -174,7 +174,7 @@ contains
 
    contains
 
-      !> Write 
+      !> Write the snapshot lines to the spiderweb files.
       subroutine write_snapshot(snapshot, hours, eye, data)
          character(len=*), dimension(:), intent(out) :: snapshot
          real(dp), intent(in) :: hours
