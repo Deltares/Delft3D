@@ -57,7 +57,7 @@ contains
       use M_SEASTATE
       use unstruc_model
       use unstruc_display
-      use M_splines, only: increasespl, maxspl, maxsplen, readsplines, xsp
+      use M_splines, only: resize_spline_capacity, spline_capacity, points_per_spline_capacity, readsplines
       use m_landboundary, only: xlan
       use M_SAMPLES
       use m_commandline_option
@@ -191,9 +191,7 @@ contains
       call INCREASEGRID(2, 2)
 !write (*,*) 'increased grid'
 
-      if (.not. allocated(xsp)) then
-         call increasespl(maxspl, maxsplen)
-      end if
+      call resize_spline_capacity(spline_capacity, points_per_spline_capacity)
 !write (*,*) 'increased spl'
 
       !call increaseCrossSections(maxcrs)
@@ -298,7 +296,7 @@ contains
       use M_SEASTATE
       use unstruc_model
       use unstruc_display
-      use M_splines, only: increasespl, readsplines
+      use M_splines, only: readsplines
       use M_SAMPLES
       use m_commandline_option
       use dfm_signals
@@ -375,7 +373,7 @@ contains
       use M_SEASTATE
       use unstruc_model
       use unstruc_display
-      use M_splines, only: increasespl, readsplines, writesplines
+      use M_splines, only: readsplines, writesplines
       use M_SAMPLES
       use m_commandline_option
       use dfm_signals

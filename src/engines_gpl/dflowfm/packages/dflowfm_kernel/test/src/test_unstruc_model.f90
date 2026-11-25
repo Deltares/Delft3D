@@ -116,6 +116,59 @@ contains
    end subroutine test_repeated_inidat_preserves_storage_capacity
 
    !$gtest
+   subroutine test_resize_spline_capacity_grows_only_the_requested_dimension() bind(C)
+      use m_missing, only: dxymis
+      use m_splines, only: resize_spline_capacity, spline_capacity, points_per_spline_capacity, &
+                          xsp, ysp, xsp2, ysp2, lensp, lensp2
+
+      real(kind=dp), parameter :: point = 42.0_dp
+      real(kind=dp), allocatable, dimension(:, :) :: saved_xsp, saved_ysp, saved_xsp2, saved_ysp2
+      integer, allocatable, dimension(:) :: saved_lensp, saved_lensp2
+      integer :: saved_spline_capacity, saved_points_per_spline_capacity, num_splines, num_points
+      integer, dimension(2) :: grown_shape
+
+      saved_spline_capacity = spline_capacity
+      saved_points_per_spline_capacity = points_per_spline_capacity
+      call move_alloc(xsp, saved_xsp)
+      call move_alloc(ysp, saved_ysp)
+      call move_alloc(xsp2, saved_xsp2)
+      call move_alloc(ysp2, saved_ysp2)
+      call move_alloc(lensp, saved_lensp)
+      call move_alloc(lensp2, saved_lensp2)
+
+      call resize_spline_capacity(1, 1)
+      if (f90_assert_true(allocated(xsp) .and. allocated(ysp) .and. allocated(xsp2) .and. allocated(ysp2) .and. &
+                          allocated(lensp) .and. allocated(lensp2), "A small request must allocate spline storage")) then
+         num_splines = size(xsp, 1)
+         num_points = size(xsp, 2)
+         xsp(1, 1) = point
+
+         call resize_spline_capacity(spline_capacity, points_per_spline_capacity)
+         call f90_expect_true(all(shape(xsp) == [num_splines, num_points]), "An exact fit must not grow storage")
+
+         call resize_spline_capacity(num_splines, num_points + 1)
+         grown_shape = shape(xsp)
+         call f90_expect_eq(grown_shape(1), num_splines, "Growing point storage must not grow the spline count")
+         if (f90_assert_true(grown_shape(2) >= num_points + 1, "Point storage must fit the new point")) then
+            call f90_expect_near(xsp(1, num_points + 1), dxymis, 0.0_dp, "New coordinate entries must be initialized")
+         end if
+         call f90_expect_near(xsp(1, 1), point, 0.0_dp, "Growing storage must preserve existing points")
+         call f90_expect_true(all(shape(ysp) == grown_shape) .and. all(shape(xsp2) == grown_shape) .and. &
+                              all(shape(ysp2) == grown_shape) .and. size(lensp) == num_splines .and. &
+                              size(lensp2) == num_splines, "Live and backup spline buffers must stay in sync")
+      end if
+
+      call move_alloc(saved_xsp, xsp)
+      call move_alloc(saved_ysp, ysp)
+      call move_alloc(saved_xsp2, xsp2)
+      call move_alloc(saved_ysp2, ysp2)
+      call move_alloc(saved_lensp, lensp)
+      call move_alloc(saved_lensp2, lensp2)
+      spline_capacity = saved_spline_capacity
+      points_per_spline_capacity = saved_points_per_spline_capacity
+   end subroutine test_resize_spline_capacity_grows_only_the_requested_dimension
+
+   !$gtest
    subroutine test_zeronet_preserves_saved_edge_lengths() bind(C)
       use gridoperations, only: savenet, restore
       use m_alloc, only: realloc

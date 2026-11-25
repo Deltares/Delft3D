@@ -143,8 +143,7 @@ module m_polygon
    integer, allocatable, dimension(:) :: ipsection
 
 contains
-   !> Increase size of global polyline array.
-   !! A zero-point request still initializes unallocated coordinate arrays.
+   !> Increase size of global polyline arrays and allocate if unallocated.
    subroutine increasepol(N, jaKeepExisting)
       use m_missing
       use m_alloc, only: allocSize, realloc

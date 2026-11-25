@@ -970,7 +970,6 @@ contains
 
       cached_nump_dry = nump
       cached_nump1d2d_dry = nump1d2d
-      ! Reused buffers may have different capacities; cache only active cells.
       number_nodes = nump1d2d
       number_links = size(lnn)
       number_netcells = size(netcell)

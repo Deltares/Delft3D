@@ -18,9 +18,9 @@ contains
    subroutine make_square_grid(self, bottom_left_x, bottom_left_y, side_length, rows, columns, array_size_margin)
       use precision, only: dp
       use network_data, only: xk, yk, zk, kc, nmk, numk, kn, nump, nump1d2d, netcell, tface, lc, numl, &
-                              xzw, yzw, nod, rnod, LINK_2D, discard_network_edge_lengths
+                              xzw, yzw, nod, rnod, LINK_2D, dxe, dxe0
       use m_cell_geometry, only: xz, yz, ndx
-      use m_alloc, only: realloc
+      use m_alloc, only: realloc, deallocate_if_allocated
       use m_dimens, only: kmax, lmax
       use m_set_nod_adm, only: setnodadm
       use gridoperations, only: findcells
@@ -37,7 +37,8 @@ contains
       integer :: istat
       integer :: i, row, col, link_index, bottom_left_node_index, up_node_index, right_node_index, up_right_node_index
 
-      call discard_network_edge_lengths()
+      call deallocate_if_allocated(dxe)
+      call deallocate_if_allocated(dxe0)
 
       array_size_margin_ = 0
       if (present(array_size_margin)) then

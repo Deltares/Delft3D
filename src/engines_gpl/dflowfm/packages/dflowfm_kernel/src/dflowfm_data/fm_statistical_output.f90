@@ -2,6 +2,7 @@
 module fm_statistical_output
    use m_output_config
    use m_statistical_output
+   use m_alloc, only: deallocate_if_allocated
    use messagehandling
    use m_statistical_output_types, only: t_output_variable_item, t_output_variable_set
    use precision, only: dp
@@ -44,60 +45,24 @@ contains
       call dealloc(out_variable_set_his)
       call dealloc(out_variable_set_map)
       call dealloc(out_variable_set_clm)
-      if (allocated(obscrs_data)) then
-         deallocate (obscrs_data)
-      end if
-      if (allocated(time_dredged)) then
-         deallocate (time_dredged)
-      end if
-      if (allocated(time_ploughed)) then
-         deallocate (time_ploughed)
-      end if
-      if (allocated(SBCX)) then
-         deallocate (SBCX)
-      end if
-      if (allocated(SBCY)) then
-         deallocate (SBCY)
-      end if
-      if (allocated(SBWX)) then
-         deallocate (SBWX)
-      end if
-      if (allocated(SBWY)) then
-         deallocate (SBWY)
-      end if
-      if (allocated(SSWX)) then
-         deallocate (SSWX)
-      end if
-      if (allocated(SSWY)) then
-         deallocate (SSWY)
-      end if
-      if (allocated(SSCX)) then
-         deallocate (SSCX)
-      end if
-      if (allocated(SSCY)) then
-         deallocate (SSCY)
-      end if
-      if (allocated(qplat_data)) then
-         deallocate (qplat_data)
-      end if
-      if (allocated(source_sink_discharge_out)) then
-         deallocate (source_sink_discharge_out)
-      end if
-      if (allocated(source_sink_discharge2_out)) then
-         deallocate (source_sink_discharge2_out)
-      end if
-      if (allocated(source_sink_discharge3_out)) then
-         deallocate (source_sink_discharge3_out)
-      end if
-      if (allocated(source_sink_cumulative_volume_out)) then
-         deallocate (source_sink_cumulative_volume_out)
-      end if
-      if (allocated(source_sink_water_discharge_out)) then
-         deallocate (source_sink_water_discharge_out)
-      end if
-      if (allocated(source_sink_average_discharge_previous_out)) then
-         deallocate (source_sink_average_discharge_previous_out)
-      end if
+      call deallocate_if_allocated(obscrs_data)
+      call deallocate_if_allocated(time_dredged)
+      call deallocate_if_allocated(time_ploughed)
+      call deallocate_if_allocated(SBCX)
+      call deallocate_if_allocated(SBCY)
+      call deallocate_if_allocated(SBWX)
+      call deallocate_if_allocated(SBWY)
+      call deallocate_if_allocated(SSWX)
+      call deallocate_if_allocated(SSWY)
+      call deallocate_if_allocated(SSCX)
+      call deallocate_if_allocated(SSCY)
+      call deallocate_if_allocated(qplat_data)
+      call deallocate_if_allocated(source_sink_discharge_out)
+      call deallocate_if_allocated(source_sink_discharge2_out)
+      call deallocate_if_allocated(source_sink_discharge3_out)
+      call deallocate_if_allocated(source_sink_cumulative_volume_out)
+      call deallocate_if_allocated(source_sink_water_discharge_out)
+      call deallocate_if_allocated(source_sink_average_discharge_previous_out)
    end subroutine close_fm_statistical_output
 
    !> allocate array and associate pointer with it if not already done.

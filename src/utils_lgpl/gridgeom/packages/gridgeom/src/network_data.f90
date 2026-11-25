@@ -251,94 +251,86 @@ module network_data
 
 contains
 
-   !> Discard the optional edge lengths and their backup when replacing or destroying a network.
-   subroutine discard_network_edge_lengths()
-      if (allocated(dxe)) then
-         deallocate (dxe)
-      end if
-      if (allocated(dxe0)) then
-         deallocate (dxe0)
-      end if
-   end subroutine discard_network_edge_lengths
-
    function network_data_destructor() result(ierr)
+      use m_alloc, only: deallocate_if_allocated
 
       integer ierr, k
 
       ! deallocate all arrays
       if (allocated(nod0)) then
          do k = 1, size(nod0)
-            if (allocated(nod0(k)%lin)) deallocate (nod0(K)%LIN)
+            call deallocate_if_allocated(nod0(k)%lin)
          end do
          deallocate (nod0)
       end if
 
       if (allocated(nod)) then
          do k = 1, size(nod)
-            if (allocated(nod(k)%lin)) deallocate (nod(K)%LIN)
+            call deallocate_if_allocated(nod(k)%lin)
          end do
          deallocate (nod)
       end if
 
-      if (allocated(cellmask)) deallocate (cellmask)
-      if (allocated(xzw)) deallocate (xzw)
-      if (allocated(xzw0)) deallocate (xzw0)
-      if (allocated(yzw)) deallocate (yzw)
-      if (allocated(yzw0)) deallocate (yzw0)
+      call deallocate_if_allocated(cellmask)
+      call deallocate_if_allocated(xzw)
+      call deallocate_if_allocated(xzw0)
+      call deallocate_if_allocated(yzw)
+      call deallocate_if_allocated(yzw0)
 
-      if (allocated(xk)) deallocate (xk)
-      if (allocated(yk)) deallocate (yk)
-      if (allocated(zk)) deallocate (zk)
-      if (allocated(XK0)) deallocate (XK0)
-      if (allocated(YK0)) deallocate (YK0)
-      if (allocated(ZK0)) deallocate (ZK0)
+      call deallocate_if_allocated(xk)
+      call deallocate_if_allocated(yk)
+      call deallocate_if_allocated(zk)
+      call deallocate_if_allocated(XK0)
+      call deallocate_if_allocated(YK0)
+      call deallocate_if_allocated(ZK0)
 
-      if (allocated(XK1)) deallocate (XK1)
-      if (allocated(YK1)) deallocate (YK1)
-      if (allocated(ZK1)) deallocate (ZK1)
-      if (allocated(RNOD)) deallocate (RNOD)
+      call deallocate_if_allocated(XK1)
+      call deallocate_if_allocated(YK1)
+      call deallocate_if_allocated(ZK1)
+      call deallocate_if_allocated(RNOD)
 
-      if (allocated(netlinkpath_xk)) deallocate (netlinkpath_xk)
-      if (allocated(netlinkpath_yk)) deallocate (netlinkpath_yk)
-      if (allocated(netlinkpath_zk)) deallocate (netlinkpath_zk)
-      if (allocated(netlinkpath_end)) deallocate (netlinkpath_end)
+      call deallocate_if_allocated(netlinkpath_xk)
+      call deallocate_if_allocated(netlinkpath_yk)
+      call deallocate_if_allocated(netlinkpath_zk)
+      call deallocate_if_allocated(netlinkpath_end)
 
-      if (allocated(NMK)) deallocate (NMK)
-      if (allocated(KC)) deallocate (KC)
-      if (allocated(NMK0)) deallocate (NMK0)
-      if (allocated(KC0)) deallocate (KC0)
-      if (allocated(NB)) deallocate (NB)
+      call deallocate_if_allocated(NMK)
+      call deallocate_if_allocated(KC)
+      call deallocate_if_allocated(NMK0)
+      call deallocate_if_allocated(KC0)
+      call deallocate_if_allocated(NB)
 
-      if (allocated(kn)) deallocate (kn)
-      if (allocated(KN0)) deallocate (KN0)
-      if (allocated(LC)) deallocate (LC)
-      if (allocated(LC0)) deallocate (LC0)
-      if (allocated(RLIN)) deallocate (RLIN)
-      if (allocated(xe)) deallocate (xe)
-      if (allocated(ye)) deallocate (ye)
-      call discard_network_edge_lengths()
-      if (allocated(KTRI)) deallocate (KTRI)
-      if (allocated(KTON)) deallocate (KTON)
-      if (allocated(KBT)) deallocate (KBT)
-      if (allocated(lne)) deallocate (lne)
+      call deallocate_if_allocated(kn)
+      call deallocate_if_allocated(KN0)
+      call deallocate_if_allocated(LC)
+      call deallocate_if_allocated(LC0)
+      call deallocate_if_allocated(RLIN)
+      call deallocate_if_allocated(xe)
+      call deallocate_if_allocated(ye)
+      call deallocate_if_allocated(dxe)
+      call deallocate_if_allocated(dxe0)
+      call deallocate_if_allocated(KTRI)
+      call deallocate_if_allocated(KTON)
+      call deallocate_if_allocated(KBT)
+      call deallocate_if_allocated(lne)
 
-      if (allocated(lne0)) deallocate (lne0)
-      if (allocated(LNN)) deallocate (LNN)
-      if (allocated(LNN0)) deallocate (LNN0)
-      if (allocated(ilin)) deallocate (ilin)
-      if (allocated(jlin)) deallocate (jlin)
-      if (allocated(linkcross)) deallocate (linkcross)
-      if (allocated(linkbadqual)) deallocate (linkbadqual)
+      call deallocate_if_allocated(lne0)
+      call deallocate_if_allocated(LNN)
+      call deallocate_if_allocated(LNN0)
+      call deallocate_if_allocated(ilin)
+      call deallocate_if_allocated(jlin)
+      call deallocate_if_allocated(linkcross)
+      call deallocate_if_allocated(linkbadqual)
 
       if (allocated(NETBR)) deallocate (NETBR)
-      if (allocated(IBN)) deallocate (IBN)
-      if (allocated(LIB)) deallocate (LIB)
-      if (allocated(K1BR)) deallocate (K1BR)
-      if (allocated(NRLB)) deallocate (NRLB)
+      call deallocate_if_allocated(IBN)
+      call deallocate_if_allocated(LIB)
+      call deallocate_if_allocated(K1BR)
+      call deallocate_if_allocated(NRLB)
 
-      if (allocated(XPL)) deallocate (XPL)
-      if (allocated(YPL)) deallocate (YPL)
-      if (allocated(ZPL)) deallocate (ZPL)
+      call deallocate_if_allocated(XPL)
+      call deallocate_if_allocated(YPL)
+      call deallocate_if_allocated(ZPL)
 
       ! default initialize all variables
       NUMK0 = 0

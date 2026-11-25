@@ -73,7 +73,8 @@ contains
       if (append_mode == 0) then
          K0 = 0
          L0 = 0
-         call discard_network_edge_lengths()
+         call deallocate_if_allocated(dxe)
+         call deallocate_if_allocated(dxe0)
       else
          K0 = NUMK
          L0 = NUML

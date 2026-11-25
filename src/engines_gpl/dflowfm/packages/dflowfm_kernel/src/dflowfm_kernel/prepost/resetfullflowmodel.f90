@@ -95,7 +95,6 @@ contains
 
       implicit none
 
-      ! Retain reusable model allocatables, but release boundary and output state through their owners.
       call close_fm_statistical_output()
       call default_fm_deprecated_keywords()
 
