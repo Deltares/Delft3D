@@ -12,7 +12,7 @@ digraph fm_communication {
         color="#7890A2";
         style="rounded";
         dimr_init [fillcolor="#EAF5EC",
-                   label="Initialize D-Flow FM first; set D-Waves to mode 1\n(via a DIMR startGroup, or a non-blank FlowFile);\nthen initialize D-Waves"];
+                   label="Initialize D-Flow FM first; set the legacy\nD-Waves BMI mode to online; D-Waves maps it to\nonline=dimr and com_file=netcdf"];
         dimr_update [fillcolor="#EAF5EC",
                      label="Schedule the D-Flow FM and D-Waves updates\nusing the configured component times"];
         dimr_finish [fillcolor="#EAF5EC", label="Finalize components"];
