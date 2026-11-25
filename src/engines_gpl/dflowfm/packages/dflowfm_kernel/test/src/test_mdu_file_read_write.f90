@@ -91,10 +91,6 @@ contains
             write(output_unit, '(a)') 'RstIgnoreBl = 0'
             found_bedlevel = .true.
          end if
-         if (index(adjustl(line), 'useRestartBedComp') == 1) then
-            write(output_unit, '(a)') 'RstIgnoreBedComp = false'
-            found_bedcomp = .true.
-         end if
          write(output_unit, '(a)') trim(line)
       end do
       close(input_unit)

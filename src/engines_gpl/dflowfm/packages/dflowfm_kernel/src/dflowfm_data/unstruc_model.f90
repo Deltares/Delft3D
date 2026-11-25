@@ -554,7 +554,6 @@ contains
       integer :: i, n, iostat, readerr, ierror
       integer :: jadum
       integer :: rst_ignore_bl_value
-      logical :: rst_ignore_bedcomp_value
       real(hp) :: ti_rst_array(3), ti_map_array(3), ti_his_array(3), ti_wav_array(3), ti_waq_array(3), ti_classmap_array(3), ti_st_array(3), ti_com_array(3)
       character(len=200), dimension(:), allocatable :: fnames
       real(kind=dp) :: tim
@@ -2022,11 +2021,8 @@ contains
       call prop_get(md_ptr, 'restart', 'RestartFile', md_restartfile, success)
       call prop_get(md_ptr, 'restart', 'RestartDateTime', restart_date_time, success)
       rst_ignore_bl_value = merge(0, 1, use_restart_bedlevel)
-      rst_ignore_bedcomp_value = .not. use_restart_bedcomp
       call prop_get(md_ptr, 'restart', 'RstIgnoreBl', rst_ignore_bl_value, success)
-      call prop_get(md_ptr, 'restart', 'RstIgnoreBedComp', rst_ignore_bedcomp_value, success)
       use_restart_bedlevel = rst_ignore_bl_value == 0
-      use_restart_bedcomp = .not. rst_ignore_bedcomp_value
       call prop_get(md_ptr, 'restart', 'useRestartBedlevel', use_restart_bedlevel, success)
       call prop_get(md_ptr, 'restart', 'useRestartBedComp', use_restart_bedcomp, success)
       if (flow_solver == FLOW_SOLVER_SEQUENCE) then
