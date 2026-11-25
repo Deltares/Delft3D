@@ -1,7 +1,7 @@
 function(add_fortran_gtest name)
     cmake_parse_arguments(PARSE_ARGV 1 args ""
         "VISUAL_STUDIO_PATH;TEST_TEARDOWN"
-        "SOURCES;CXX_SOURCES;LIBRARIES;INCLUDES;DEFINITIONS")
+        "SOURCES;CXX_SOURCES;LIBRARIES;INCLUDES;DEFINITIONS;TEST_LAUNCHER")
     if(args_UNPARSED_ARGUMENTS OR args_KEYWORDS_MISSING_VALUES OR NOT args_SOURCES)
         message(FATAL_ERROR "Invalid add_fortran_gtest arguments for ${name}")
     endif()
@@ -54,6 +54,9 @@ function(add_fortran_gtest name)
             COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:${name}> $<TARGET_RUNTIME_DLLS:${name}>
             COMMAND_EXPAND_LISTS
         )
+    endif()
+    if(args_TEST_LAUNCHER)
+        set_property(TARGET ${name} PROPERTY TEST_LAUNCHER "${args_TEST_LAUNCHER}")
     endif()
     gtest_discover_tests(${name} WORKING_DIRECTORY $<TARGET_FILE_DIR:${name}>)
 endfunction()

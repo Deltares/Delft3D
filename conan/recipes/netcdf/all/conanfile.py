@@ -1,8 +1,16 @@
 import os
 
-from conan import ConanFile
 from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain, cmake_layout
-from conan.tools.files import apply_conandata_patches, export_conandata_patches, get, copy, rm, rmdir
+from conan.tools.files import (
+    apply_conandata_patches,
+    copy,
+    export_conandata_patches,
+    get,
+    rm,
+    rmdir,
+)
+
+from conan import ConanFile
 
 required_conan_version = ">=2.4"
 
@@ -31,6 +39,7 @@ class NetcdfConan(ConanFile):
         "dap": [True, False],
         "byterange": [True, False],
         "parallel4": [True, False],
+        "build_utilities": [True, False],
     }
     default_options = {
         "shared": False,
@@ -41,6 +50,7 @@ class NetcdfConan(ConanFile):
         "dap": True,
         "byterange": False,
         "parallel4": False,
+        "build_utilities": False,
     }
 
     @property
@@ -68,7 +78,7 @@ class NetcdfConan(ConanFile):
     def generate(self):
         tc = CMakeToolchain(self)
         tc.variables["BUILD_TESTING"] = False
-        tc.variables["BUILD_UTILITIES"] = False
+        tc.variables["BUILD_UTILITIES"] = self.options.build_utilities
         tc.variables["ENABLE_TESTS"] = False
         tc.variables["ENABLE_FILTER_TESTING"] = False
 
@@ -77,11 +87,15 @@ class NetcdfConan(ConanFile):
         tc.variables["ENABLE_DAP"] = self.options.dap
         tc.variables["ENABLE_BYTERANGE"] = self.options.byterange
         tc.variables["USE_HDF5"] = self.options.with_hdf5
-        tc.variables["NC_FIND_SHARED_LIBS"] = self.options.with_hdf5 and self.dependencies["hdf5"].options.shared
+        tc.variables["NC_FIND_SHARED_LIBS"] = (
+            self.options.with_hdf5 and self.dependencies["hdf5"].options.shared
+        )
         tc.variables["ENABLE_PARALLEL4"] = self.options.parallel4
         tc.variables["ENABLE_PARALLEL_TESTS"] = False
         tc.cache_variables["HDF5_HAS_COLL_METADATA_OPS"] = self.options.parallel4
-        tc.cache_variables["CMAKE_TRY_COMPILE_CONFIGURATION"] = str(self.settings.build_type)
+        tc.cache_variables["CMAKE_TRY_COMPILE_CONFIGURATION"] = str(
+            self.settings.build_type
+        )
         tc.generate()
 
         tc = CMakeDeps(self)
@@ -93,21 +107,28 @@ class NetcdfConan(ConanFile):
         cmake.build()
 
     def package(self):
-        copy(self, "COPYRIGHT", src=self.source_folder, dst=os.path.join(self.package_folder, "licenses"))
+        copy(
+            self,
+            "COPYRIGHT",
+            src=self.source_folder,
+            dst=os.path.join(self.package_folder, "licenses"),
+        )
         cmake = CMake(self)
         cmake.install()
 
-        rm(self, "nc-config", os.path.join(self.package_folder, "bin"))
+        bin_dir = os.path.join(self.package_folder, "bin")
+        rm(self, "nc-config", bin_dir)
         rm(self, "*.settings", os.path.join(self.package_folder, "lib"))
         rmdir(self, os.path.join(self.package_folder, "lib", "cmake"))
         rmdir(self, os.path.join(self.package_folder, "lib", "pkgconfig"))
         rmdir(self, os.path.join(self.package_folder, "share"))
         if self.settings.os == "Windows" and self.options.shared:
             for vc_file in ["concrt*.dll", "msvcp*.dll", "vcruntime*.dll"]:
-                rm(self, vc_file, os.path.join(self.package_folder, "bin"))
-            rm(self, "*[!.dll]", os.path.join(self.package_folder, "bin"))
-        else:
-            rmdir(self, os.path.join(self.package_folder, "bin"))
+                rm(self, vc_file, bin_dir)
+            if not self.options.build_utilities:
+                rm(self, "*[!.dll]", bin_dir)
+        elif not self.options.build_utilities:
+            rmdir(self, bin_dir)
 
     def package_info(self):
         self.cpp_info.set_property("cmake_file_name", "netCDF")
@@ -125,5 +146,7 @@ class NetcdfConan(ConanFile):
         elif self.settings.os == "Windows":
             if self.options.shared:
                 self.cpp_info.components["libnetcdf"].defines.append("DLL_NETCDF")
-        self.cpp_info.components["libnetcdf"].set_property("cmake_target_name", "netCDF::netcdf")
+        self.cpp_info.components["libnetcdf"].set_property(
+            "cmake_target_name", "netCDF::netcdf"
+        )
         self.cpp_info.components["libnetcdf"].set_property("pkg_config_name", "netcdf")
