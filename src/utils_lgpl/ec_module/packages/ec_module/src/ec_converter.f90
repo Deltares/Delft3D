@@ -1278,9 +1278,10 @@ contains
                   end if
                   if (valuesT0(i) /= dmiss .and. valuesT1(i) == dmiss) then
                      valuesT1(i) = valuesT0(i)
-                  end if
-                  ! "val0+(val1-val0)*a1" is more precise than "val0*a0+val1*a1" when val0 and val1 are huge
-                  valuesT(i) = valuesT0(i) * (a1 + a0) + (valuesT1(i) - valuesT0(i)) * a1
+                  else 
+                     ! "val0+(val1-val0)*a1" is more precise than "val0*a0+val1*a1" when val0 and val1 are huge
+                     valuesT(i) = valuesT0(i) * (a1 + a0) + (valuesT1(i) - valuesT0(i)) * a1
+                  end if 
                end do
             else
                do i = 1, size(valuesT0, dim=1)
