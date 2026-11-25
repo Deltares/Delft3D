@@ -43,7 +43,9 @@ contains
       character(len=1024) :: tm_md_obsfile
       character(len=1024) :: tm_md_crsfile
       character(len=256) :: output_file
-      integer :: ierr
+      character(len=4096) :: line
+      integer :: ierr, input_unit, output_unit, ios
+      logical :: found_bedlevel, found_bedcomp
 
       jampi = 0
 
@@ -78,8 +80,30 @@ contains
          return
       end if
 
+      open(newunit=input_unit, file=output_file, status='old')
+      open(newunit=output_unit, file='test_restart_options.mdu', status='replace')
+      found_bedlevel = .false.
+      found_bedcomp = .false.
+      do
+         read(input_unit, '(a)', iostat=ios) line
+         if (ios /= 0) exit
+         if (index(adjustl(line), 'useRestartBedlevel') == 1) then
+            write(output_unit, '(a)') 'RstIgnoreBl = 0'
+            found_bedlevel = .true.
+         end if
+         if (index(adjustl(line), 'useRestartBedComp') == 1) then
+            write(output_unit, '(a)') 'RstIgnoreBedComp = false'
+            found_bedcomp = .true.
+         end if
+         write(output_unit, '(a)') trim(line)
+      end do
+      close(input_unit)
+      close(output_unit)
+      call F90_EXPECT_TRUE(found_bedlevel)
+      call F90_EXPECT_TRUE(found_bedcomp)
+
       call resetFullFlowModel()
-      call readMDUFile('test_output.mdu', ierr)
+      call readMDUFile('test_restart_options.mdu', ierr)
       if (.not. f90_assert_eq(ierr, DFM_NOERR, 'Error when re-reading MDU file.')) then
          call f90_expect_true(CHANGEDIRQQ('..'), 'Cannot restore working directory')
          return

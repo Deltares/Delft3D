@@ -2027,6 +2027,8 @@ contains
       call prop_get(md_ptr, 'restart', 'RstIgnoreBedComp', rst_ignore_bedcomp_value, success)
       use_restart_bedlevel = rst_ignore_bl_value == 0
       use_restart_bedcomp = .not. rst_ignore_bedcomp_value
+      call prop_get(md_ptr, 'restart', 'useRestartBedlevel', use_restart_bedlevel, success)
+      call prop_get(md_ptr, 'restart', 'useRestartBedComp', use_restart_bedcomp, success)
       if (flow_solver == FLOW_SOLVER_SEQUENCE) then
          call read_solver_sequence(sequence_file, istat)
          if (istat /= DFM_NOERR) return
@@ -2838,6 +2840,8 @@ contains
          call prop_get(block, 'RstIgnoreBedComp', rst_ignore_bedcomp)
          solver_sequence(period)%use_restart_bedlevel = .not. rst_ignore_bl
          solver_sequence(period)%use_restart_bedcomp = .not. rst_ignore_bedcomp
+         call prop_get(block, 'useRestartBedlevel', solver_sequence(period)%use_restart_bedlevel)
+         call prop_get(block, 'useRestartBedComp', solver_sequence(period)%use_restart_bedcomp)
          if (len_trim(solver_sequence(period)%restart_date_time) > 0 .and. &
              len_trim(solver_sequence(period)%restart_file) == 0) exit
       end do
@@ -4087,8 +4091,8 @@ contains
 ! Restart settings
       call prop_set(prop_ptr, 'restart', 'RestartFile', trim(md_restartfile), 'Restart netcdf-file, either *_rst.nc or *_map.nc')
       call prop_set(prop_ptr, 'restart', 'RestartDateTime', trim(restart_date_time), 'Restart date and time (yyyymmddhhmmss) when restarting from *_map.nc')
-      call prop_set(prop_ptr, 'restart', 'RstIgnoreBl', merge(0, 1, use_restart_bedlevel), 'Flag indicating whether bed level from restart should be ignored (0=no (default), 1=yes)')
-      call prop_set(prop_ptr, 'restart', 'RstIgnoreBedComp', .not. use_restart_bedcomp, 'Ignore bed composition from restart (false=no (default), true=yes)')
+      call prop_set(prop_ptr, 'restart', 'useRestartBedlevel', use_restart_bedlevel, 'Use bed level from restart file (default: true)')
+      call prop_set(prop_ptr, 'restart', 'useRestartBedComp', use_restart_bedcomp, 'Use bed composition from restart file (default: true)')
 
 ! External forcings
       call prop_set(prop_ptr, 'external forcing', 'ExtForceFile', trim(md_extfile), 'Old format for external forcings file *.ext, link with tim/cmp-format boundary conditions specification')
