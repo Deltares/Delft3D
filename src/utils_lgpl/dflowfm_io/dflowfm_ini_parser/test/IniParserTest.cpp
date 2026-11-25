@@ -712,9 +712,8 @@ namespace ini::test
         EXPECT_EQ(property.GetValue(), "value1\n" + continuationValue);
     }
 
-    INSTANTIATE_TEST_SUITE_P(
-        IniParserTest, IniParserMultiLineValueStartingWithSpecialCharacterTest,
-        ::testing::Values('!', '*', ';', ':', '\\'));
+    INSTANTIATE_TEST_SUITE_P(IniParserTest, IniParserMultiLineValueStartingWithSpecialCharacterTest,
+                             ::testing::Values('!', '*', ';', ':', '\\'));
 
     TEST(IniParserTest, Parse_PropertyWithMultiLineValueWithoutDelimiter_PropertyHasMultiLineValue)
     {
@@ -793,6 +792,31 @@ namespace ini::test
                 catch (const std::format_error& ex)
                 {
                     EXPECT_STREQ(ex.what(), "Error on line 2: multi-line values are not allowed.");
+                    throw;
+                }
+            },
+            std::format_error);
+    }
+
+    TEST(IniParserTest, Parse_ContinuationAfterSectionWithoutCurrentProperty_ThrowsFormatError)
+    {
+        IniParserOptions options;
+        options.allowMultiLineValues = true;
+
+        IniScheme scheme;
+        scheme.multiLineValueDelimiter = std::nullopt;
+
+        const std::string ini = "[section]\nproperty=value1\n[section2]\nvalue2";
+
+        EXPECT_THROW(
+            {
+                try
+                {
+                    Parse(ini, scheme, options);
+                }
+                catch (const std::format_error& ex)
+                {
+                    EXPECT_STREQ(ex.what(), "Error on line 4: invalid INI-formatted text.");
                     throw;
                 }
             },

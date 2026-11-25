@@ -342,6 +342,8 @@ namespace ini
 
         void ParsingContext::FinalizeCurrentProperty()
         {
+            multiLineContinuation = false;
+
             if (currentProperty == nullptr || values.empty())
             {
                 return;
