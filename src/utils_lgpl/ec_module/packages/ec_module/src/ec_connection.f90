@@ -189,6 +189,12 @@ contains
          call set_ec_message("ERROR: ec_connection::ecConnectionSetTargetMask: target mask is already allocated.")
          return
       end if
+      if (associated(connectionPtr%converterPtr)) then
+         if (associated(connectionPtr%converterPtr%indexWeight)) then
+            call set_ec_message("ERROR: ec_connection::ecConnectionSetTargetMask: target mask cannot be set after index weights are computed.")
+            return
+         end if
+      end if
       do i = 1, connectionPtr%nTargetItems
          if (.not. associated(connectionPtr%targetItemsPtr(i)%ptr%elementSetPtr)) then
             call set_ec_message("ERROR: ec_connection::ecConnectionSetTargetMask: target item has no element set.")

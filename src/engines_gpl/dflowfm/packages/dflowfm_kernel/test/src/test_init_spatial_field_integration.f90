@@ -3345,13 +3345,13 @@ contains
       integer :: i, j, ierr
 
       call setup_minimal_grid_with_points(4)
-      ndxi = 2
+      ndxi = 3
       ndx2d = 1
       lnx1d = 1
       lnx = 2
       call realloc(ln, [2, lnx], keepExisting=.false., fill=0)
-      ln(:, 1) = [2, 3] ! Fictive example: 1D2D link from flow node 2 (2D internal node) to flow node 3 (1D bnd node)
-      ln(:, 2) = [1, 4] ! 2D boundary link from flow node 1 (2D internal node) to flow node 4 (2D bnd node)
+      ln(:, 1) = [2, 3] ! Internal 1D link between 1D internal nodes 2 and 3
+      ln(:, 2) = [4, 1] ! 2D boundary link from 2D boundary node 4 to 2D internal node 1
       call realloc(prof1d, [3, lnx1d], keepExisting=.false., fill=0.0_dp)
       prof1d(1, 1) = -1.0_dp
 
@@ -3381,7 +3381,7 @@ contains
       lnx1d = 0
       call construct_mask(mask, UNC_LOC_S, SPATIAL_LOCATION_ALL, target_mask_file='', ierr=ierr, exclude_boundary_nodes=.true.)
       call f90_expect_eq(ierr, 0, 'empty polygon selection should succeed')
-      call f90_expect_true(all(mask == [0, 1]), 'default cell activation must respect the internal domain')
+      call f90_expect_true(all(mask == [0, 1, 1]), 'default cell activation must respect the internal domain')
       call teardown_minimal_grid()
    end subroutine test_construct_mask_boundary_domain
 

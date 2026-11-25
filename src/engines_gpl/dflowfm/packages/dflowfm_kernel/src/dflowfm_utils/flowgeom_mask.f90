@@ -113,6 +113,9 @@ contains
       integer :: L !< Loop variable for links.
       integer :: n1 !< The left flow cell number in the link.
       integer :: n2 !< The right flow cell number in the link.
+      integer :: mask_size !< Size of the target mask array.
+
+      mask_size = size(mask)
 
       select case (spatial_location_type)
       case (SPATIAL_LOCATION_1D)
@@ -122,11 +125,11 @@ contains
 
             do L = 1, lnx1D
                n1 = ln(1, L)
-               if (n1 > ndx2d .and. n1 <= size(mask)) then
+               if (n1 > ndx2d) then
                   mask(n1) = 1
                end if
                n2 = ln(2, L)
-               if (n2 > ndx2d .and. n2 <= size(mask)) then
+               if (n2 > ndx2d) then
                   mask(n2) = 1
                end if
             end do
@@ -150,11 +153,11 @@ contains
 
             do L = lnx1D + 1, lnx
                n1 = ln(1, L)
-               if (n1 <= size(mask)) then
+               if (n1 <= mask_size) then
                   mask(n1) = 1
                end if
                n2 = ln(2, L)
-               if (n2 <= size(mask)) then
+               if (n2 <= mask_size) then
                   mask(n2) = 1
                end if
             end do
@@ -178,24 +181,20 @@ contains
                ! * direct profiles (rect/circle, etc.):no pipes pos or neg, others only if pos (==non-closed)
                if (prof1D(1, L) < 0 .or. (abs(prof1D(3, L)) /= 1 .and. prof1D(3, L) > 0)) then
                   n1 = ln(1, L)
-                  if (n1 <= size(mask)) then
-                     mask(n1) = 1
-                  end if
+                  mask(n1) = 1
                   n2 = ln(2, L)
-                  if (n2 <= size(mask)) then
-                     mask(n2) = 1
-                  end if
+                  mask(n2) = 1
                else
                   continue
                end if
             end do
             do L = lnx1D + 1, lnx
                n1 = ln(1, L)
-               if (n1 <= size(mask)) then
+               if (n1 <= mask_size) then
                   mask(n1) = 1
                end if
                n2 = ln(2, L)
-               if (n2 <= size(mask)) then
+               if (n2 <= mask_size) then
                   mask(n2) = 1
                end if
             end do

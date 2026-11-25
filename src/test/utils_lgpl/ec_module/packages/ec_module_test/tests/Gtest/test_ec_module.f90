@@ -9,14 +9,15 @@ contains
 
    !$gtest
    subroutine test_connection_target_mask_initialization() bind(C)
-      use m_ec_module, only: ecCreateInstance, ecFreeInstance, ecCreateConnection, ecSetConnectionTargetMask
+      use m_ec_module, only: ecCreateInstance, ecFreeInstance, ecCreateConnection, ecSetConnectionTargetMask, &
+                             ecCreateConverter, ecSetConnectionConverter
       use m_ec_message, only: clear_ec_message
       use m_ec_support, only: ecSupportFindConnection
       use m_ec_typedefs, only: tEcConnection, tEcInstance
 
       type(tEcInstance), pointer :: ecInstancePtr
       type(tEcConnection), pointer :: connection
-      integer :: connection_id
+      integer :: connection_id, converter_id
       logical :: success
 
       ecInstancePtr => null()
@@ -46,6 +47,14 @@ contains
       success = ecSetConnectionTargetMask(ecInstancePtr, connection_id, [1, 1, 1, 1])
       call f90_expect_true(success, 'trivial mask should be accepted on a fresh connection')
       call f90_expect_false(allocated(connection%targetMask), 'trivial mask must not be allocated')
+
+      converter_id = ecCreateConverter(ecInstancePtr)
+      success = ecSetConnectionConverter(ecInstancePtr, connection_id, converter_id)
+      call f90_expect_true(success, 'converter should attach to the connection')
+      allocate (connection%converterPtr%indexWeight)
+      success = ecSetConnectionTargetMask(ecInstancePtr, connection_id, [1, 0, 1, 0])
+      call f90_expect_false(success, 'mask assignment must be rejected after index weights are computed')
+      call f90_expect_false(allocated(connection%targetMask), 'rejected late mask must not be stored')
 
       success = ecFreeInstance(ecInstancePtr)
       call f90_expect_true(success, 'EC instance should be freed')
