@@ -6614,6 +6614,35 @@
       </file>
     </checks>
   </testCase>
+  <testCase name="e02_f022_c113_dumping_dry_cell_mass_balance" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f022_morphology_2D/c113_dumping_dry_cell_mass_balance</path>
+    <checks>
+      <file name="output/box_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_waterdepth" toleranceAbsolute="1e-7"/>
+          <parameter name="mesh2d_mor_bl" toleranceAbsolute="1e-7"/>
+          <parameter name="mesh2d_Dye" toleranceAbsolute="1e-5"/>
+        </parameters>
+      </file>
+      <file name="output/box_mass_balances.nc" type="netCDF">
+        <parameters>
+          <parameter name="const2_bed_mass" toleranceAbsolute="1e-8"/>
+          <parameter name="const2_bedshort_mass" toleranceAbsolute="1e-9"/>
+          <parameter name="area1const3_flux_values" toleranceAbsolute="1e-9"/>
+          <parameter name="water_balance_error" toleranceAbsolute="1e-9"/>
+          <parameter name="water_balance_cumerror" toleranceAbsolute="1e-9"/>
+          <parameter name="const1_balance_error" toleranceAbsolute="1e-9"/>
+          <parameter name="const1_balance_cumerror" toleranceAbsolute="1e-9"/>
+          <parameter name="const2_balance_error" toleranceAbsolute="1e-9"/>
+          <parameter name="const2_balance_cumerror" toleranceAbsolute="1e-9"/>
+          <parameter name="const3_balance_error" toleranceAbsolute="1e-9"/>
+          <parameter name="const3_balance_cumerror" toleranceAbsolute="1e-9"/>
+          <parameter name="const4_balance_error" toleranceAbsolute="1e-9"/>
+          <parameter name="const4_balance_cumerror" toleranceAbsolute="1e-9"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
   <testCase name="e02_f022_c300_sedimentmodelnr1_1PK" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f022_morphology_2D/c300_sedimentmodelnr1_1PK</path>
 
@@ -7364,6 +7393,42 @@
           <parameter name="const2_bed_mass" toleranceAbsolute="1e-7"/>
           <parameter name="const2_balance_error" toleranceAbsolute="1e-9"/>
           <parameter name="const2_balance_cumerror" toleranceAbsolute="1e-9"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  <testCase name="e02_f039_c13_dumping_dry_cell_mass_balance" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f039_morphology_3d/c13_dumping_dry_cell_mass_balance</path>
+    <checks>
+      <file name="output/box_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_waterdepth" toleranceAbsolute="1e-7"/>
+          <parameter name="mesh2d_mor_bl" toleranceAbsolute="1e-7"/>
+          <parameter name="mesh2d_sedfrac_concentration" toleranceAbsolute="1e-5"/>
+        </parameters>
+      </file>
+      <file name="output/box_mass_balances.nc" type="netCDF">
+        <parameters>
+          <parameter name="const2_mass" toleranceAbsolute="1e-8"/>
+          <parameter name="const2_bed_mass" toleranceAbsolute="1e-9"/>
+          <parameter name="area1const2_flux_values" toleranceAbsolute="1e-9"/>
+          <parameter name="water_balance_error" toleranceAbsolute="1e-9"/>
+          <parameter name="water_balance_cumerror" toleranceAbsolute="1e-9"/>
+          <parameter name="const1_balance_error" toleranceAbsolute="1e-9"/>
+          <parameter name="const1_balance_cumerror" toleranceAbsolute="1e-9"/>
+          <parameter name="const2_balance_error" toleranceAbsolute="1e-9"/>
+          <parameter name="const2_balance_cumerror" toleranceAbsolute="1e-9"/>
+          <parameter name="const3_balance_error" toleranceAbsolute="1e-9"/>
+          <parameter name="const3_balance_cumerror" toleranceAbsolute="1e-9"/>
+          <parameter name="const4_balance_error" toleranceAbsolute="1e-9"/>
+          <parameter name="const4_balance_cumerror" toleranceAbsolute="1e-9"/>
+        </parameters>
+      </file>
+      <file name="output/box_20000101_000001_rst.nc" type="netCDF">
+        <parameters>
+          <parameter name="dredge_dry_mass_fine" toleranceAbsolute="1e-9"/>
+          <parameter name="dredge_dry_mass_salt" toleranceAbsolute="1e-9"/>
+          <parameter name="dredge_dry_mass_Dye" toleranceAbsolute="1e-9"/>
         </parameters>
       </file>
     </checks>
