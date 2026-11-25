@@ -217,7 +217,9 @@ namespace dflowfm_io::test
             vertAdvTypSal.default_value = "6";
             vertAdvTypSal.description = "Vertical advection type for salinity.";
             vertAdvTypSal.status = {StatusType::Deprecated, "Use [numerics] verticalAdvectionType instead."};
-            vertAdvTypSal.enum_values = {{"0"}, {"4"}, {"6"}};
+            vertAdvTypSal.enum_values = {{"0", {StatusType::Obsolete, "Option is obsolete.", "2026.02"}},
+                                         {"4", {StatusType::Deprecated, "Option is deprecated."}},
+                                         {"6"}};
             numerics.properties.push_back(vertAdvTypSal);
 
             // [time]

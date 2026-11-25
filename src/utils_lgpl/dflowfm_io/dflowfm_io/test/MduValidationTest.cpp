@@ -480,6 +480,32 @@ namespace dflowfm_io::test
         EXPECT_NE(warning->message.find("vertAdvTypSal"), std::string::npos);
     }
 
+    TEST_F(MduValidationTest, Validate_DeprecatedPropertyWithDeprecatedEnumValue_ReturnsOnlyPropertyWarning)
+    {
+        iniData.GetSection("numerics").SetPropertyValue("vertAdvTypSal", 4);
+
+        const IssueReport report = validation::Validate(iniData, schema);
+
+        const Issue* warning = FindIssue(report, Severity::Warning, "vertAdvTypSal");
+        ASSERT_NE(warning, nullptr);
+        EXPECT_EQ(FindIssue(report, Severity::Warning, "vertAdvTypSal=4"), nullptr);
+        EXPECT_FALSE(HasIssue(report, Severity::Error));
+    }
+
+    TEST_F(MduValidationTest, Validate_DeprecatedPropertyWithObsoleteEnumValue_ReturnsErrorAndPropertyWarning)
+    {
+        iniData.GetSection("numerics").SetPropertyValue("vertAdvTypSal", 0);
+
+        const IssueReport report = validation::Validate(iniData, schema);
+
+        const Issue* warning = FindIssue(report, Severity::Warning, "vertAdvTypSal");
+        ASSERT_NE(warning, nullptr);
+        const Issue* error = FindIssue(report, Severity::Error, "vertAdvTypSal=0");
+        ASSERT_NE(error, nullptr);
+        EXPECT_NE(error->message.find("obsolete"), std::string::npos);
+        EXPECT_NE(error->message.find("2026.02"), std::string::npos);
+    }
+
     // -------------------------------------------------------------------------
     // Validate — deprecated enum value
     // -------------------------------------------------------------------------

@@ -120,7 +120,6 @@ namespace dflowfm_io::validation
                     {
                         report.Add<Severity::Warning>(property.GetLineNumber(), "Property [{}].{} is deprecated. {}",
                                           section.GetName(), property.GetKey(), propertySchema->status.comment);
-                        continue;
                     }
 
                     if (propertySchema->value_type != ValueType::StringEnum && propertySchema->value_type != ValueType::IntEnum)
@@ -140,11 +139,12 @@ namespace dflowfm_io::validation
                                         enumValueSchema->status.since, enumValueSchema->status.comment);
                     }
                     else if (enumValueSchema->status.type == StatusType::Deprecated &&
+                             propertySchema->status.type != StatusType::Deprecated &&
                              sectionSchema->status.type != StatusType::Obsolete)
                     {
                         report.Add<Severity::Warning>(property.GetLineNumber(), "Property [{}].{}={} is deprecated. {}",
-                                          section.GetName(), property.GetKey(), property.GetValue(),
-                                          enumValueSchema->status.comment);
+                                                      section.GetName(), property.GetKey(), property.GetValue(),
+                                                      enumValueSchema->status.comment);
                     }
                 }
             }
