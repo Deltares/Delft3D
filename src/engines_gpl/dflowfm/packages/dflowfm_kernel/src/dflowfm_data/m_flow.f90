@@ -193,7 +193,7 @@ module m_flow
    real(kind=dp), allocatable, target, dimension(:) :: ucmag !< [m/s] Cell center velocity magnitude. {"location": "face", "shape": ["ndkx"]}
    real(kind=dp), allocatable, dimension(:) :: uc1D !< [m/s] 1D cell center velocities.
    real(kind=dp), allocatable, dimension(:) :: alpha_mom_1D !< [-] Ratio of incoming momentum versus initial estimate of outgoing momentum.
-   real(kind=dp), allocatable, dimension(:) :: alpha_ene_1D !< [-] Ratio of incoming energy versus initial estimate of outgoing energy.
+   real(kind=dp), allocatable, dimension(:) :: alpha_ene_1D !< [-] Square root of the ratio of incoming energy versus initial estimate of outgoing energy.
    real(kind=dp), allocatable, dimension(:) :: dvxc !< [m3/s2] Cell center stress term, global x-dir.
    real(kind=dp), allocatable, dimension(:) :: dvyc !< [m3/s2] Cell center stress term, global y-dir.
    real(kind=dp), allocatable, dimension(:) :: squ !< [m3/s] Cell center outgoing flux.
