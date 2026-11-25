@@ -1,4 +1,4 @@
-#include <dflowfm_io/MduConverter.h>
+#include <dflowfm_io/MduConversion.h>
 #include <dflowfm_io/MduDocument.h>
 
 #include <ini/IniFile.h>

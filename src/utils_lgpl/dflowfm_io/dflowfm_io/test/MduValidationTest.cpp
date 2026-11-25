@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <dflowfm_io/IssueReport.h>
-#include <dflowfm_io/MduValidator.h>
+#include <dflowfm_io/MduValidation.h>
 
 #include <ini/IniData.h>
 #include <ini/IniSection.h>
@@ -15,7 +15,7 @@ namespace dflowfm_io::test
     // Fixture
     // -------------------------------------------------------------------------
 
-    class MduValidatorTest : public ::testing::Test
+    class MduValidationTest : public ::testing::Test
     {
     protected:
         const MduSchema& schema = TestSchema();
@@ -26,14 +26,14 @@ namespace dflowfm_io::test
     // Validate — fully compliant input
     // -------------------------------------------------------------------------
 
-    TEST_F(MduValidatorTest, Validate_FullyCompliantInput_HasNoErrors)
+    TEST_F(MduValidationTest, Validate_FullyCompliantInput_HasNoErrors)
     {
         const IssueReport report = validation::Validate(iniData, schema);
 
         EXPECT_FALSE(HasIssue(report, Severity::Error));
     }
 
-    TEST_F(MduValidatorTest, Validate_FullyCompliantInput_HasNoWarnings)
+    TEST_F(MduValidationTest, Validate_FullyCompliantInput_HasNoWarnings)
     {
         const IssueReport report = validation::Validate(iniData, schema);
 
@@ -44,14 +44,14 @@ namespace dflowfm_io::test
     // Validate — missing required section
     // -------------------------------------------------------------------------
 
-    TEST_F(MduValidatorTest, Validate_MissingRequiredSection_ReturnsError)
+    TEST_F(MduValidationTest, Validate_MissingRequiredSection_ReturnsError)
     {
         const IssueReport report = validation::Validate(ini::IniData{}, schema);
 
         EXPECT_TRUE(HasIssue(report, Severity::Error));
     }
 
-    TEST_F(MduValidatorTest, Validate_MissingRequiredSection_ErrorMentionsSectionName)
+    TEST_F(MduValidationTest, Validate_MissingRequiredSection_ErrorMentionsSectionName)
     {
         const IssueReport report = validation::Validate(ini::IniData{}, schema);
 
@@ -64,7 +64,7 @@ namespace dflowfm_io::test
     // Validate — missing required property
     // -------------------------------------------------------------------------
 
-    TEST_F(MduValidatorTest, Validate_MissingRequiredProperty_ReturnsError)
+    TEST_F(MduValidationTest, Validate_MissingRequiredProperty_ReturnsError)
     {
         iniData.GetSection("general").RemoveAllProperties("fileVersion");
 
@@ -73,7 +73,7 @@ namespace dflowfm_io::test
         EXPECT_TRUE(HasIssue(report, Severity::Error));
     }
 
-    TEST_F(MduValidatorTest, Validate_MissingRequiredProperty_ErrorMentionsSectionAndProperty)
+    TEST_F(MduValidationTest, Validate_MissingRequiredProperty_ErrorMentionsSectionAndProperty)
     {
         iniData.GetSection("general").RemoveAllProperties("fileVersion");
 
@@ -89,7 +89,7 @@ namespace dflowfm_io::test
     // Validate — required property present but without a value
     // -------------------------------------------------------------------------
 
-    TEST_F(MduValidatorTest, Validate_RequiredPropertyWithoutValue_ReturnsError)
+    TEST_F(MduValidationTest, Validate_RequiredPropertyWithoutValue_ReturnsError)
     {
         iniData.GetSection("general").SetPropertyValue("fileVersion", "");
 
@@ -98,7 +98,7 @@ namespace dflowfm_io::test
         EXPECT_TRUE(HasIssue(report, Severity::Error));
     }
 
-    TEST_F(MduValidatorTest, Validate_RequiredPropertyWithoutValue_ErrorMentionsSectionAndProperty)
+    TEST_F(MduValidationTest, Validate_RequiredPropertyWithoutValue_ErrorMentionsSectionAndProperty)
     {
         iniData.GetSection("general").SetPropertyValue("fileVersion", "");
 
@@ -114,7 +114,7 @@ namespace dflowfm_io::test
     // Validate — optional property present but without a value
     // -------------------------------------------------------------------------
 
-    TEST_F(MduValidatorTest, Validate_OptionalPropertyWithoutValue_ReturnsInfo)
+    TEST_F(MduValidationTest, Validate_OptionalPropertyWithoutValue_ReturnsInfo)
     {
         iniData.GetSection("geometry").SetPropertyValue("bedLevUni", "");
 
@@ -123,7 +123,7 @@ namespace dflowfm_io::test
         EXPECT_TRUE(HasIssue(report, Severity::Info));
     }
 
-    TEST_F(MduValidatorTest, Validate_OptionalPropertyWithoutValue_InfoMentionsSectionAndPropertyAndDefault)
+    TEST_F(MduValidationTest, Validate_OptionalPropertyWithoutValue_InfoMentionsSectionAndPropertyAndDefault)
     {
         iniData.GetSection("geometry").SetPropertyValue("bedLevUni", "");
 
@@ -140,7 +140,7 @@ namespace dflowfm_io::test
     // Validate — missing optional property with default value
     // -------------------------------------------------------------------------
 
-    TEST_F(MduValidatorTest, Validate_MissingOptionalPropertyWithDefault_ReturnsDebug)
+    TEST_F(MduValidationTest, Validate_MissingOptionalPropertyWithDefault_ReturnsDebug)
     {
         iniData.GetSection("geometry").RemoveAllProperties("bedLevUni");
 
@@ -149,7 +149,7 @@ namespace dflowfm_io::test
         EXPECT_TRUE(HasIssue(report, Severity::Debug));
     }
 
-    TEST_F(MduValidatorTest, Validate_MissingOptionalPropertyWithDefault_DebugMentionsSectionAndPropertyAndDefault)
+    TEST_F(MduValidationTest, Validate_MissingOptionalPropertyWithDefault_DebugMentionsSectionAndPropertyAndDefault)
     {
         iniData.GetSection("geometry").RemoveAllProperties("bedLevUni");
 
@@ -166,7 +166,7 @@ namespace dflowfm_io::test
     // Validate — unknown section
     // -------------------------------------------------------------------------
 
-    TEST_F(MduValidatorTest, Validate_UnknownSection_ReturnsWarning)
+    TEST_F(MduValidationTest, Validate_UnknownSection_ReturnsWarning)
     {
         iniData.AddSection("UnknownSection_XYZ");
 
@@ -175,7 +175,7 @@ namespace dflowfm_io::test
         EXPECT_TRUE(HasIssue(report, Severity::Warning));
     }
 
-    TEST_F(MduValidatorTest, Validate_UnknownSection_WarningMentionsSectionName)
+    TEST_F(MduValidationTest, Validate_UnknownSection_WarningMentionsSectionName)
     {
         iniData.AddSection("UnknownSection_XYZ");
 
@@ -190,7 +190,7 @@ namespace dflowfm_io::test
     // Validate — unknown property
     // -------------------------------------------------------------------------
 
-    TEST_F(MduValidatorTest, Validate_UnknownProperty_ReturnsWarning)
+    TEST_F(MduValidationTest, Validate_UnknownProperty_ReturnsWarning)
     {
         iniData.GetSection("general").AddProperty("unknownProperty_XYZ", "value");
 
@@ -199,7 +199,7 @@ namespace dflowfm_io::test
         EXPECT_TRUE(HasIssue(report, Severity::Warning));
     }
 
-    TEST_F(MduValidatorTest, Validate_UnknownProperty_WarningMentionsSectionAndProperty)
+    TEST_F(MduValidationTest, Validate_UnknownProperty_WarningMentionsSectionAndProperty)
     {
         iniData.GetSection("general").AddProperty("unknownProperty_XYZ", "value");
 
@@ -215,7 +215,7 @@ namespace dflowfm_io::test
     // Validate — obsolete section
     // -------------------------------------------------------------------------
 
-    TEST_F(MduValidatorTest, Validate_ObsoleteSection_ReturnsError)
+    TEST_F(MduValidationTest, Validate_ObsoleteSection_ReturnsError)
     {
         iniData.AddSection("model");
 
@@ -224,7 +224,7 @@ namespace dflowfm_io::test
         EXPECT_TRUE(HasIssue(report, Severity::Error));
     }
 
-    TEST_F(MduValidatorTest, Validate_ObsoleteSection_ErrorMentionsSection)
+    TEST_F(MduValidationTest, Validate_ObsoleteSection_ErrorMentionsSection)
     {
         iniData.AddSection("model");
 
@@ -236,7 +236,7 @@ namespace dflowfm_io::test
         EXPECT_NE(error->message.find("model"), std::string::npos);
     }
 
-    TEST_F(MduValidatorTest, Validate_ObsoleteSectionWithObsoleteProperty_ErrorMentionsProperty)
+    TEST_F(MduValidationTest, Validate_ObsoleteSectionWithObsoleteProperty_ErrorMentionsProperty)
     {
         ini::IniSection& section = iniData.AddSection("model");
         section.AddProperty("convertLongCulverts", "1");
@@ -250,7 +250,7 @@ namespace dflowfm_io::test
         EXPECT_NE(error->message.find("convertLongCulverts"), std::string::npos);
     }
 
-    TEST_F(MduValidatorTest, Validate_ObsoleteSectionWithDeprecatedProperty_NoMessageForProperty)
+    TEST_F(MduValidationTest, Validate_ObsoleteSectionWithDeprecatedProperty_NoMessageForProperty)
     {
         ini::IniSection& section = iniData.AddSection("model");
         section.AddProperty("mduFormatVersion", "1.09");
@@ -261,7 +261,7 @@ namespace dflowfm_io::test
         EXPECT_EQ(issue, nullptr);
     }
 
-    TEST_F(MduValidatorTest, Validate_ObsoleteSectionWithDeprecatedEnumValue_NoMessageForProperty)
+    TEST_F(MduValidationTest, Validate_ObsoleteSectionWithDeprecatedEnumValue_NoMessageForProperty)
     {
         ini::IniSection& section = iniData.AddSection("model");
         section.SetPropertyValue("autoStart", "2");
@@ -272,7 +272,7 @@ namespace dflowfm_io::test
         EXPECT_EQ(issue, nullptr);
     }
 
-    TEST_F(MduValidatorTest, Validate_ObsoleteSectionWithAvailableProperty_NoMessageForProperty)
+    TEST_F(MduValidationTest, Validate_ObsoleteSectionWithAvailableProperty_NoMessageForProperty)
     {
         ini::IniSection& section = iniData.AddSection("model");
         section.AddProperty("program", "D-Flow FM");
@@ -283,7 +283,7 @@ namespace dflowfm_io::test
         EXPECT_EQ(issue, nullptr);
     }
 
-    TEST_F(MduValidatorTest, Validate_ObsoleteSectionMissingRequiredProperty_NoMessageForProperty)
+    TEST_F(MduValidationTest, Validate_ObsoleteSectionMissingRequiredProperty_NoMessageForProperty)
     {
         iniData.AddSection("model");
 
@@ -293,7 +293,7 @@ namespace dflowfm_io::test
         EXPECT_EQ(issue, nullptr);
     }
 
-    TEST_F(MduValidatorTest, Validate_ObsoleteSectionWithUnknownProperty_NoMessageForProperty)
+    TEST_F(MduValidationTest, Validate_ObsoleteSectionWithUnknownProperty_NoMessageForProperty)
     {
         ini::IniSection& section = iniData.AddSection("model");
         section.AddProperty("someUnknownKey", "value");
@@ -308,7 +308,7 @@ namespace dflowfm_io::test
     // Validate — deprecated section
     // -------------------------------------------------------------------------
 
-    TEST_F(MduValidatorTest, Validate_DeprecatedSection_ReturnsWarning)
+    TEST_F(MduValidationTest, Validate_DeprecatedSection_ReturnsWarning)
     {
         iniData.AddSection("sediment");
 
@@ -317,7 +317,7 @@ namespace dflowfm_io::test
         EXPECT_TRUE(HasIssue(report, Severity::Warning));
     }
 
-    TEST_F(MduValidatorTest, Validate_DeprecatedSection_WarningMentionsSection)
+    TEST_F(MduValidationTest, Validate_DeprecatedSection_WarningMentionsSection)
     {
         iniData.AddSection("sediment");
 
@@ -329,7 +329,7 @@ namespace dflowfm_io::test
         EXPECT_NE(warning->message.find("sediment"), std::string::npos);
     }
 
-    TEST_F(MduValidatorTest, Validate_DeprecatedSectionWithObsoleteProperty_ErrorMentionsProperty)
+    TEST_F(MduValidationTest, Validate_DeprecatedSectionWithObsoleteProperty_ErrorMentionsProperty)
     {
         ini::IniSection& section = iniData.AddSection("sediment");
         section.AddProperty("morMaxDtEps", "0.0");
@@ -344,7 +344,7 @@ namespace dflowfm_io::test
         EXPECT_NE(error->message.find("2022.02"), std::string::npos);
     }
 
-    TEST_F(MduValidatorTest, Validate_DeprecatedSectionWithObsoleteEnumValue_ErrorMentionsPropertyAndValue)
+    TEST_F(MduValidationTest, Validate_DeprecatedSectionWithObsoleteEnumValue_ErrorMentionsPropertyAndValue)
     {
         ini::IniSection& section = iniData.AddSection("sediment");
         section.SetPropertyValue("sedimentModelNr", "2");
@@ -359,7 +359,7 @@ namespace dflowfm_io::test
         EXPECT_NE(error->message.find("2"), std::string::npos);
     }
 
-    TEST_F(MduValidatorTest, Validate_DeprecatedSectionWithDeprecatedProperty_WarningMentionsProperty)
+    TEST_F(MduValidationTest, Validate_DeprecatedSectionWithDeprecatedProperty_WarningMentionsProperty)
     {
         ini::IniSection& section = iniData.AddSection("sediment");
         section.AddProperty("morFile", "test.mor");
@@ -373,7 +373,7 @@ namespace dflowfm_io::test
         EXPECT_NE(warning->message.find("morFile"), std::string::npos);
     }
 
-    TEST_F(MduValidatorTest, Validate_DeprecatedSectionWithDeprecatedEnumValue_WarningMentionsPropertyAndValue)
+    TEST_F(MduValidationTest, Validate_DeprecatedSectionWithDeprecatedEnumValue_WarningMentionsPropertyAndValue)
     {
         ini::IniSection& section = iniData.AddSection("sediment");
         section.SetPropertyValue("sedimentModelNr", "1");
@@ -388,7 +388,7 @@ namespace dflowfm_io::test
         EXPECT_NE(warning->message.find("1"), std::string::npos);
     }
 
-    TEST_F(MduValidatorTest, Validate_DeprecatedSectionWithAvaiableProperty_NoMessageForProperty)
+    TEST_F(MduValidationTest, Validate_DeprecatedSectionWithAvaiableProperty_NoMessageForProperty)
     {
         ini::IniSection& section = iniData.AddSection("sediment");
         section.AddProperty("nrOfSedFractions", "0");
@@ -403,7 +403,7 @@ namespace dflowfm_io::test
     // Validate — obsolete property
     // -------------------------------------------------------------------------
 
-    TEST_F(MduValidatorTest, Validate_ObsoleteProperty_ReturnsError)
+    TEST_F(MduValidationTest, Validate_ObsoleteProperty_ReturnsError)
     {
         iniData.GetSection("numerics").SetPropertyValue("qhRelax", 0.02);
 
@@ -412,7 +412,7 @@ namespace dflowfm_io::test
         EXPECT_TRUE(HasIssue(report, Severity::Error));
     }
 
-    TEST_F(MduValidatorTest, Validate_ObsoleteProperty_ErrorMentionsSectionAndPropertyAndSinceRelease)
+    TEST_F(MduValidationTest, Validate_ObsoleteProperty_ErrorMentionsSectionAndPropertyAndSinceRelease)
     {
         iniData.GetSection("numerics").SetPropertyValue("qhRelax", 0.02);
 
@@ -430,7 +430,7 @@ namespace dflowfm_io::test
     // Validate — obsolete enum value
     // -------------------------------------------------------------------------
 
-    TEST_F(MduValidatorTest, Validate_ObsoleteEnumValue_ReturnsError)
+    TEST_F(MduValidationTest, Validate_ObsoleteEnumValue_ReturnsError)
     {
         iniData.GetSection("geometry").SetPropertyValue("layerType", 4);
 
@@ -439,7 +439,7 @@ namespace dflowfm_io::test
         EXPECT_TRUE(HasIssue(report, Severity::Error));
     }
 
-    TEST_F(MduValidatorTest, Validate_ObsoleteEnumValue_ErrorMentionsSectionAndPropertyAndValueAndSinceRelease)
+    TEST_F(MduValidationTest, Validate_ObsoleteEnumValue_ErrorMentionsSectionAndPropertyAndValueAndSinceRelease)
     {
         iniData.GetSection("geometry").SetPropertyValue("layerType", 4);
 
@@ -458,7 +458,7 @@ namespace dflowfm_io::test
     // Validate — deprecated property
     // -------------------------------------------------------------------------
 
-    TEST_F(MduValidatorTest, Validate_DeprecatedProperty_ReturnsWarning)
+    TEST_F(MduValidationTest, Validate_DeprecatedProperty_ReturnsWarning)
     {
         iniData.GetSection("numerics").SetPropertyValue("vertAdvTypSal", 6);
 
@@ -467,7 +467,7 @@ namespace dflowfm_io::test
         EXPECT_TRUE(HasIssue(report, Severity::Warning));
     }
 
-    TEST_F(MduValidatorTest, Validate_DeprecatedProperty_WarningMentionsSectionAndProperty)
+    TEST_F(MduValidationTest, Validate_DeprecatedProperty_WarningMentionsSectionAndProperty)
     {
         iniData.GetSection("numerics").SetPropertyValue("vertAdvTypSal", 6);
 
@@ -484,7 +484,7 @@ namespace dflowfm_io::test
     // Validate — deprecated enum value
     // -------------------------------------------------------------------------
 
-    TEST_F(MduValidatorTest, Validate_DeprecatedEnumValue_ReturnsWarning)
+    TEST_F(MduValidationTest, Validate_DeprecatedEnumValue_ReturnsWarning)
     {
         iniData.GetSection("geometry").SetPropertyValue("layerType", 3);
 
@@ -493,7 +493,7 @@ namespace dflowfm_io::test
         EXPECT_TRUE(HasIssue(report, Severity::Warning));
     }
 
-    TEST_F(MduValidatorTest, Validate_DeprecatedEnumValue_WarningMentionsSectionAndPropertyAndValue)
+    TEST_F(MduValidationTest, Validate_DeprecatedEnumValue_WarningMentionsSectionAndPropertyAndValue)
     {
         iniData.GetSection("geometry").SetPropertyValue("layerType", 3);
 

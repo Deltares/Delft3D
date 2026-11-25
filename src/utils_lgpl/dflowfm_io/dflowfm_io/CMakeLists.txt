@@ -16,19 +16,19 @@ set_source_files_properties(${MDU_SCHEMA_GENERATED} PROPERTIES GENERATED TRUE)
 
 add_library(dflowfm_io STATIC
     include/dflowfm_io/IssueReport.h
-    include/dflowfm_io/MduConverter.h
+    include/dflowfm_io/MduConversion.h
     include/dflowfm_io/MduData.h
     include/dflowfm_io/MduDocument.h
     include/dflowfm_io/MduSchema.h
     ${MDU_SCHEMA_GENERATED}
-    include/dflowfm_io/MduValidator.h
+    include/dflowfm_io/MduValidation.h
     include/dflowfm_io/StringUtils.h
 
     src/IssueReport.cpp
-    src/MduConverter.cpp
+    src/MduConversion.cpp
     src/MduDocument.cpp
     src/MduSchema.cpp
-    src/MduValidator.cpp
+    src/MduValidation.cpp
 )
 
 target_link_libraries(dflowfm_io
@@ -43,4 +43,3 @@ target_include_directories(dflowfm_io
 )
 
 add_subdirectory(test)
-
