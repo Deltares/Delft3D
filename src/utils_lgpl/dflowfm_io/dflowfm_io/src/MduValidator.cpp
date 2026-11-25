@@ -6,7 +6,7 @@
 #include <ini/IniSection.h>
 #include <ini/IniProperty.h>
 
-namespace dflowfm_io
+namespace dflowfm_io::validation
 {
     namespace
     {
@@ -150,7 +150,7 @@ namespace dflowfm_io
         }
     } // namespace
 
-    IssueReport MduValidator::Validate(const ini::IniData& iniData, const MduSchema& schema)
+    IssueReport Validate(const ini::IniData& iniData, const MduSchema& schema)
     {
         IssueReport report;
         ValidateRequired(iniData, schema, report);
@@ -159,4 +159,4 @@ namespace dflowfm_io
         return report;
     }
 
-} // namespace dflowfm_io
+} // namespace dflowfm_io::validation

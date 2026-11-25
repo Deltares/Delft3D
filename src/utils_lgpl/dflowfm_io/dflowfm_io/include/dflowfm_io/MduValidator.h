@@ -12,7 +12,7 @@ namespace dflowfm_io
 {
     /// @brief Performs schema-based validation of MDU file contents.
     ///
-    /// MduValidator checks a parsed MDU file (represented as an @ref ini::IniData) against
+    /// Checks a parsed MDU file (represented as an @ref ini::IniData) against
     /// a given @ref MduSchema. The validation consists of the following passes:
     ///
     /// 1. **Required validation** — verifies that all sections and properties marked as
@@ -26,16 +26,15 @@ namespace dflowfm_io
     ///    are marked as deprecated or obsolete in the schema.
     ///
     /// All findings are collected into an @ref IssueReport and returned to the caller.
-    class MduValidator
+    namespace validation
     {
-    public:
         /// @brief Validates the given MDU data against the given @ref MduSchema.
         /// @param iniData The parsed MDU file contents to validate.
         /// @param schema The schema to validate against.
         /// @return An @ref IssueReport containing all errors, warnings, and informational
         ///         messages produced during validation. The report is empty if the data
         ///         fully conforms to the schema.
-        static IssueReport Validate(const ini::IniData& iniData, const MduSchema& schema);
-    };
+        IssueReport Validate(const ini::IniData& iniData, const MduSchema& schema);
+    } // namespace validation
 
 } // namespace dflowfm_io

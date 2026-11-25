@@ -56,7 +56,7 @@ namespace dflowfm_io::test
     {
         ini::IniData iniData = TestIniData();
 
-        const auto [mduData, report] = MduConverter::ToMduData(iniData, schema);
+        const auto [mduData, report] = conversion::ToMduData(iniData, schema);
 
         EXPECT_FALSE(HasIssue(report, Severity::Error));
     }
@@ -65,7 +65,7 @@ namespace dflowfm_io::test
     {
         ini::IniData iniData = TestIniData();
 
-        const auto [mduData, report] = MduConverter::ToMduData(iniData, schema);
+        const auto [mduData, report] = conversion::ToMduData(iniData, schema);
 
         EXPECT_FALSE(HasIssue(report, Severity::Warning));
     }
@@ -74,7 +74,7 @@ namespace dflowfm_io::test
     {
         ini::IniData iniData = TestIniData();
 
-        const auto [mduData, report] = MduConverter::ToMduData(iniData, schema);
+        const auto [mduData, report] = conversion::ToMduData(iniData, schema);
 
         EXPECT_FALSE(mduData.empty());
     }
@@ -88,7 +88,7 @@ namespace dflowfm_io::test
         ini::IniData iniData = TestIniData();
         iniData.GetSection("general").RemoveAllProperties("fileVersion");
 
-        const auto [mduData, report] = MduConverter::ToMduData(iniData, schema);
+        const auto [mduData, report] = conversion::ToMduData(iniData, schema);
 
         EXPECT_TRUE(HasIssue(report, Severity::Error));
         const Issue* error = FirstIssue(report, Severity::Error);
@@ -102,7 +102,7 @@ namespace dflowfm_io::test
         ini::IniData iniData = TestIniData();
         iniData.GetSection("general").AddProperty("unknownProperty_XYZ", "value");
 
-        const auto [mduData, report] = MduConverter::ToMduData(iniData, schema);
+        const auto [mduData, report] = conversion::ToMduData(iniData, schema);
 
         EXPECT_TRUE(HasIssue(report, Severity::Warning));
         const Issue* warning = FirstIssue(report, Severity::Warning);
@@ -116,7 +116,7 @@ namespace dflowfm_io::test
         ini::IniData iniData = TestIniData();
         iniData.GetSection("geometry").SetPropertyValue("useCaching", "");
 
-        const auto [mduData, report] = MduConverter::ToMduData(iniData, schema);
+        const auto [mduData, report] = conversion::ToMduData(iniData, schema);
 
         EXPECT_TRUE(HasIssue(report, Severity::Info));
         const Issue* info = FirstIssue(report, Severity::Info);
@@ -130,7 +130,7 @@ namespace dflowfm_io::test
         ini::IniData iniData = TestIniData();
         iniData.GetSection("geometry").RemoveAllProperties("useCaching");
 
-        const auto [mduData, report] = MduConverter::ToMduData(iniData, schema);
+        const auto [mduData, report] = conversion::ToMduData(iniData, schema);
 
         EXPECT_TRUE(HasIssue(report, Severity::Debug));
         const Issue* debug = FirstIssue(report, Severity::Debug);
@@ -164,7 +164,7 @@ namespace dflowfm_io::test
         ini::IniData iniData = TestIniData();
         iniData.GetSection(target.section).SetPropertyValue(target.key, "##invalid##");
 
-        const auto [mduData, report] = MduConverter::ToMduData(iniData, schema);
+        const auto [mduData, report] = conversion::ToMduData(iniData, schema);
 
         EXPECT_TRUE(HasIssue(report, Severity::Error));
         const Issue* error = FirstIssue(report, Severity::Error);
@@ -213,7 +213,7 @@ namespace dflowfm_io::test
         ini::IniData iniData = TestIniData();
         iniData.GetSection(target.section).SetPropertyValue(target.key, "##invalid##");
 
-        const auto [mduData, report] = MduConverter::ToMduData(iniData, schema);
+        const auto [mduData, report] = conversion::ToMduData(iniData, schema);
 
         EXPECT_TRUE(HasIssue(report, Severity::Error));
         const Issue* error = FirstIssue(report, Severity::Error);
@@ -235,7 +235,7 @@ namespace dflowfm_io::test
         ini::IniData iniData = TestIniData();
         iniData.GetSection("time").SetPropertyValue("tStart", "##invalid##");
 
-        const auto [mduData, report] = MduConverter::ToMduData(iniData, schema);
+        const auto [mduData, report] = conversion::ToMduData(iniData, schema);
 
         EXPECT_TRUE(HasIssue(report, Severity::Error));
         const Issue* error = FirstIssue(report, Severity::Error);
@@ -249,7 +249,7 @@ namespace dflowfm_io::test
         ini::IniData iniData = TestIniData();
         iniData.GetSection("time").SetPropertyValue("refDate", "##invalid##");
 
-        const auto [mduData, report] = MduConverter::ToMduData(iniData, schema);
+        const auto [mduData, report] = conversion::ToMduData(iniData, schema);
 
         EXPECT_TRUE(HasIssue(report, Severity::Error));
         const Issue* error = FirstIssue(report, Severity::Error);
@@ -267,7 +267,7 @@ namespace dflowfm_io::test
         ini::IniData iniData = TestIniData();
         iniData.GetSection("numerics").RemoveAllProperties("maxNonLinearIterations");
 
-        const auto [mduData, report] = MduConverter::ToMduData(iniData, schema);
+        const auto [mduData, report] = conversion::ToMduData(iniData, schema);
 
         const std::string key = FormatKey("numerics", "maxNonLinearIterations");
         EXPECT_TRUE(mduData.hasValue(key));
@@ -279,7 +279,7 @@ namespace dflowfm_io::test
         ini::IniData iniData = TestIniData();
         iniData.GetSection("geometry").RemoveAllProperties("bedLevUni");
 
-        const auto [mduData, report] = MduConverter::ToMduData(iniData, schema);
+        const auto [mduData, report] = conversion::ToMduData(iniData, schema);
 
         const std::string key = FormatKey("geometry", "bedLevUni");
         EXPECT_TRUE(mduData.hasValue(key));
@@ -291,7 +291,7 @@ namespace dflowfm_io::test
         ini::IniData iniData = TestIniData();
         iniData.GetSection("numerics").RemoveAllProperties("verticalAdvectionType");
 
-        const auto [mduData, report] = MduConverter::ToMduData(iniData, schema);
+        const auto [mduData, report] = conversion::ToMduData(iniData, schema);
 
         const std::string key = FormatKey("numerics", "verticalAdvectionType");
         EXPECT_TRUE(mduData.hasValue(key));
@@ -309,7 +309,7 @@ namespace dflowfm_io::test
         section.AddProperty("program", "D-Flow FM");
         section.AddProperty("mduFormatVersion", "1.09");
 
-        const auto [mduData, report] = MduConverter::ToMduData(iniData, schema);
+        const auto [mduData, report] = conversion::ToMduData(iniData, schema);
 
         EXPECT_FALSE(mduData.hasValue(FormatKey("model", "program")))
             << "Property from obsolete section should be omitted: model.program";
@@ -322,7 +322,7 @@ namespace dflowfm_io::test
         ini::IniData iniData = TestIniData();
         iniData.GetSection("numerics").AddProperty("qhRelax", 0.05);
 
-        const auto [mduData, report] = MduConverter::ToMduData(iniData, schema);
+        const auto [mduData, report] = conversion::ToMduData(iniData, schema);
 
         const std::string key = FormatKey("numerics", "qhRelax");
         EXPECT_FALSE(mduData.hasValue(key));
@@ -333,7 +333,7 @@ namespace dflowfm_io::test
         ini::IniData iniData = TestIniData();
         iniData.GetSection("geometry").SetPropertyValue("layerType", 4);
 
-        const auto [mduData, report] = MduConverter::ToMduData(iniData, schema);
+        const auto [mduData, report] = conversion::ToMduData(iniData, schema);
 
         const std::string key = FormatKey("geometry", "layerType");
         // The obsolete value (4) is skipped, so the schema default value (1) is used instead.
@@ -351,7 +351,7 @@ namespace dflowfm_io::test
         auto& section = iniData.AddSection("sediment");
         section.AddProperty("nrOfSedFractions", 2);
 
-        const auto [mduData, report] = MduConverter::ToMduData(iniData, schema);
+        const auto [mduData, report] = conversion::ToMduData(iniData, schema);
 
         const std::string key = FormatKey("sediment", "nrOfSedFractions");
         EXPECT_TRUE(mduData.hasValue(key))
@@ -364,7 +364,7 @@ namespace dflowfm_io::test
         ini::IniData iniData = TestIniData();
         iniData.GetSection("numerics").SetPropertyValue("vertAdvTypSal", 6);
 
-        const auto [mduData, report] = MduConverter::ToMduData(iniData, schema);
+        const auto [mduData, report] = conversion::ToMduData(iniData, schema);
 
         const std::string key = FormatKey("numerics", "vertAdvTypSal");
         EXPECT_TRUE(mduData.hasValue(key)) << "Deprecated property should still be converted: numerics.vertAdvTypSal";
@@ -376,7 +376,7 @@ namespace dflowfm_io::test
         ini::IniData iniData = TestIniData();
         iniData.GetSection("geometry").SetPropertyValue("layerType", 3);
 
-        const auto [mduData, report] = MduConverter::ToMduData(iniData, schema);
+        const auto [mduData, report] = conversion::ToMduData(iniData, schema);
 
         const std::string key = FormatKey("geometry", "layerType");
         EXPECT_TRUE(mduData.hasValue(key));
@@ -392,7 +392,7 @@ namespace dflowfm_io::test
         ini::IniData iniData = TestIniData();
         iniData.GetSection("general").SetPropertyValue("fileVersion", "some_string");
 
-        const auto [mduData, report] = MduConverter::ToMduData(iniData, schema);
+        const auto [mduData, report] = conversion::ToMduData(iniData, schema);
 
         EXPECT_FALSE(HasIssue(report, Severity::Error));
         const std::string key = FormatKey("general", "fileVersion");
@@ -405,7 +405,7 @@ namespace dflowfm_io::test
         ini::IniData iniData = TestIniData();
         iniData.GetSection("numerics").SetPropertyValue("maxNonLinearIterations", "42");
 
-        const auto [mduData, report] = MduConverter::ToMduData(iniData, schema);
+        const auto [mduData, report] = conversion::ToMduData(iniData, schema);
 
         EXPECT_FALSE(HasIssue(report, Severity::Error));
         const std::string key = FormatKey("numerics", "maxNonLinearIterations");
@@ -418,7 +418,7 @@ namespace dflowfm_io::test
         ini::IniData iniData = TestIniData();
         iniData.GetSection("geometry").SetPropertyValue("bedLevUni", "3.14");
 
-        const auto [mduData, report] = MduConverter::ToMduData(iniData, schema);
+        const auto [mduData, report] = conversion::ToMduData(iniData, schema);
 
         EXPECT_FALSE(HasIssue(report, Severity::Error));
         const std::string key = FormatKey("geometry", "bedLevUni");
@@ -431,7 +431,7 @@ namespace dflowfm_io::test
         ini::IniData iniData = TestIniData();
         iniData.GetSection("geometry").SetPropertyValue("useCaching", "1");
 
-        const auto [mduData, report] = MduConverter::ToMduData(iniData, schema);
+        const auto [mduData, report] = conversion::ToMduData(iniData, schema);
 
         EXPECT_FALSE(HasIssue(report, Severity::Error));
         const std::string key = FormatKey("geometry", "useCaching");
@@ -444,7 +444,7 @@ namespace dflowfm_io::test
         ini::IniData iniData = TestIniData();
         iniData.GetSection("geometry").SetPropertyValue("netFile", "some/path/file.nc");
 
-        const auto [mduData, report] = MduConverter::ToMduData(iniData, schema);
+        const auto [mduData, report] = conversion::ToMduData(iniData, schema);
 
         EXPECT_FALSE(HasIssue(report, Severity::Error));
         const std::string key = FormatKey("geometry", "netFile");
@@ -457,7 +457,7 @@ namespace dflowfm_io::test
         ini::IniData iniData = TestIniData();
         iniData.GetSection("numerics").SetPropertyValue("verticalAdvectionType", "higherOrderUpwindExplicit");
 
-        const auto [mduData, report] = MduConverter::ToMduData(iniData, schema);
+        const auto [mduData, report] = conversion::ToMduData(iniData, schema);
 
         EXPECT_FALSE(HasIssue(report, Severity::Error));
         const std::string key = FormatKey("numerics", "verticalAdvectionType");
@@ -470,7 +470,7 @@ namespace dflowfm_io::test
         ini::IniData iniData = TestIniData();
         iniData.GetSection("numerics").SetPropertyValue("timeStepType", 2);
 
-        const auto [mduData, report] = MduConverter::ToMduData(iniData, schema);
+        const auto [mduData, report] = conversion::ToMduData(iniData, schema);
 
         EXPECT_FALSE(HasIssue(report, Severity::Error));
         const std::string key = FormatKey("numerics", "timeStepType");
@@ -483,7 +483,7 @@ namespace dflowfm_io::test
         ini::IniData iniData = TestIniData();
         iniData.GetSection("geometry").SetPropertyValue("structureFile", "path/a.nc path/b.nc path/c.nc");
 
-        const auto [mduData, report] = MduConverter::ToMduData(iniData, schema);
+        const auto [mduData, report] = conversion::ToMduData(iniData, schema);
 
         EXPECT_FALSE(HasIssue(report, Severity::Error));
         const std::string key = FormatKey("geometry", "structureFile");
@@ -500,7 +500,7 @@ namespace dflowfm_io::test
         ini::IniData iniData = TestIniData();
         iniData.GetSection("geometry").SetPropertyValue("activeProcesses", "proc1 proc2 proc3");
 
-        const auto [mduData, report] = MduConverter::ToMduData(iniData, schema);
+        const auto [mduData, report] = conversion::ToMduData(iniData, schema);
 
         EXPECT_FALSE(HasIssue(report, Severity::Error));
         const std::string key = FormatKey("geometry", "activeProcesses");
@@ -517,7 +517,7 @@ namespace dflowfm_io::test
         ini::IniData iniData = TestIniData();
         iniData.GetSection("geometry").SetPropertyValue("stretchCoef", "1.0 2.0 3.0");
 
-        const auto [mduData, report] = MduConverter::ToMduData(iniData, schema);
+        const auto [mduData, report] = conversion::ToMduData(iniData, schema);
 
         EXPECT_FALSE(HasIssue(report, Severity::Error));
         const std::string key = FormatKey("geometry", "stretchCoef");
@@ -534,7 +534,7 @@ namespace dflowfm_io::test
         ini::IniData iniData = TestIniData();
         iniData.GetSection("time").SetPropertyValue("tStart", "20230115120000");
 
-        const auto [mduData, report] = MduConverter::ToMduData(iniData, schema);
+        const auto [mduData, report] = conversion::ToMduData(iniData, schema);
 
         EXPECT_FALSE(HasIssue(report, Severity::Error));
         const std::string key = FormatKey("time", "tStart");
@@ -555,7 +555,7 @@ namespace dflowfm_io::test
     {
         MduData mduData = TestMduData();
 
-        const ini::IniData iniData = MduConverter::ToIniData(mduData, schema);
+        const ini::IniData iniData = conversion::ToIniData(mduData, schema);
 
         EXPECT_FALSE(iniData.GetSections().empty());
     }
@@ -564,7 +564,7 @@ namespace dflowfm_io::test
     {
         MduData mduData = TestMduData();
 
-        const ini::IniData iniData = MduConverter::ToIniData(mduData, schema);
+        const ini::IniData iniData = conversion::ToIniData(mduData, schema);
 
         mduData.visitKeyValuePairs([&](std::string_view key, const Value& value) {
             const auto [sectionName, propertyKey] = SplitKey(std::string(key));
@@ -588,7 +588,7 @@ namespace dflowfm_io::test
 
         const MduData mduData(std::move(filteredKeyValuePairs));
 
-        const ini::IniData iniData = MduConverter::ToIniData(mduData, schema);
+        const ini::IniData iniData = conversion::ToIniData(mduData, schema);
 
         ASSERT_TRUE(iniData.HasSection("geometry"));
         EXPECT_FALSE(iniData.GetSection("geometry").HasProperty("bedLevUni"))
@@ -599,7 +599,7 @@ namespace dflowfm_io::test
     {
         MduData mduData = TestMduData();
 
-        const ini::IniData iniData = MduConverter::ToIniData(mduData, schema);
+        const ini::IniData iniData = conversion::ToIniData(mduData, schema);
 
         std::size_t previousIndex = 0;
         for (const auto& section : iniData.GetSections())
@@ -634,7 +634,7 @@ namespace dflowfm_io::test
     {
         MduData mduData = TestMduData();
 
-        const ini::IniData iniData = MduConverter::ToIniData(mduData, schema);
+        const ini::IniData iniData = conversion::ToIniData(mduData, schema);
 
         for (const auto& section : iniData.GetSections())
             EXPECT_TRUE(section.GetComments().empty()) << "Unexpected comment block on section: " << section.GetName();
@@ -644,7 +644,7 @@ namespace dflowfm_io::test
     {
         MduData mduData = TestMduData();
 
-        const ini::IniData iniData = MduConverter::ToIniData(mduData, schema);
+        const ini::IniData iniData = conversion::ToIniData(mduData, schema);
 
         for (const auto& section : iniData.GetSections())
             for (const auto& property : section.GetProperties())
@@ -660,10 +660,10 @@ namespace dflowfm_io::test
     {
         const ini::IniData original = TestIniData();
 
-        const auto [mduData, report] = MduConverter::ToMduData(original, schema);
+        const auto [mduData, report] = conversion::ToMduData(original, schema);
         ASSERT_FALSE(HasIssue(report, Severity::Error));
 
-        const ini::IniData roundTripped = MduConverter::ToIniData(mduData, schema);
+        const ini::IniData roundTripped = conversion::ToIniData(mduData, schema);
 
         for (const auto& sectionSchema : schema.Sections())
         {
@@ -696,7 +696,7 @@ namespace dflowfm_io::test
     TEST_F(MduConverterTest, ValueFromString_String_ReturnsCorrectValue)
     {
         auto schema = MakePropertySchema(ValueType::String);
-        auto result = MduConverter::ValueFromString(schema, "hello");
+        auto result = conversion::ValueFromString(schema, "hello");
 
         EXPECT_EQ(std::get<std::string>(result), "hello");
     }
@@ -708,7 +708,7 @@ namespace dflowfm_io::test
     TEST_F(MduConverterTest, ValueFromString_Int_ReturnsCorrectValue)
     {
         auto schema = MakePropertySchema(ValueType::Int);
-        auto result = MduConverter::ValueFromString(schema, "42");
+        auto result = conversion::ValueFromString(schema, "42");
 
         EXPECT_EQ(std::get<int>(result), 42);
     }
@@ -717,7 +717,7 @@ namespace dflowfm_io::test
     {
         auto schema = MakePropertySchema(ValueType::Int);
 
-        EXPECT_THROW(MduConverter::ValueFromString(schema, "not_an_int"), std::invalid_argument);
+        EXPECT_THROW(conversion::ValueFromString(schema, "not_an_int"), std::invalid_argument);
     }
 
     // -------------------------------------------------------------------------
@@ -727,7 +727,7 @@ namespace dflowfm_io::test
     TEST_F(MduConverterTest, ValueFromString_Float_ReturnsCorrectValue)
     {
         auto schema = MakePropertySchema(ValueType::Float);
-        auto result = MduConverter::ValueFromString(schema, "3.14");
+        auto result = conversion::ValueFromString(schema, "3.14");
 
         EXPECT_DOUBLE_EQ(std::get<double>(result), 3.14);
     }
@@ -735,7 +735,7 @@ namespace dflowfm_io::test
     TEST_F(MduConverterTest, ValueFromString_Float_FortranExponent_ReturnsCorrectValue)
     {
         auto schema = MakePropertySchema(ValueType::Float);
-        auto result = MduConverter::ValueFromString(schema, "1.0d-3");
+        auto result = conversion::ValueFromString(schema, "1.0d-3");
 
         EXPECT_DOUBLE_EQ(std::get<double>(result), 1.0e-3);
     }
@@ -744,7 +744,7 @@ namespace dflowfm_io::test
     {
         auto schema = MakePropertySchema(ValueType::Float);
 
-        EXPECT_THROW(MduConverter::ValueFromString(schema, "not_a_float"), std::invalid_argument);
+        EXPECT_THROW(conversion::ValueFromString(schema, "not_a_float"), std::invalid_argument);
     }
 
     // -------------------------------------------------------------------------
@@ -754,7 +754,7 @@ namespace dflowfm_io::test
     TEST_F(MduConverterTest, ValueFromString_IntBool_Zero_ReturnsFalse)
     {
         auto schema = MakePropertySchema(ValueType::IntBool);
-        auto result = MduConverter::ValueFromString(schema, "0");
+        auto result = conversion::ValueFromString(schema, "0");
 
         EXPECT_EQ(std::get<bool>(result), false);
     }
@@ -762,7 +762,7 @@ namespace dflowfm_io::test
     TEST_F(MduConverterTest, ValueFromString_IntBool_One_ReturnsTrue)
     {
         auto schema = MakePropertySchema(ValueType::IntBool);
-        auto result = MduConverter::ValueFromString(schema, "1");
+        auto result = conversion::ValueFromString(schema, "1");
 
         EXPECT_EQ(std::get<bool>(result), true);
     }
@@ -771,7 +771,7 @@ namespace dflowfm_io::test
     {
         auto schema = MakePropertySchema(ValueType::IntBool);
 
-        EXPECT_THROW(MduConverter::ValueFromString(schema, "not_a_bool"), std::invalid_argument);
+        EXPECT_THROW(conversion::ValueFromString(schema, "not_a_bool"), std::invalid_argument);
     }
 
     // -------------------------------------------------------------------------
@@ -781,7 +781,7 @@ namespace dflowfm_io::test
     TEST_F(MduConverterTest, ValueFromString_Path_ReturnsCorrectValue)
     {
         auto schema = MakePropertySchema(ValueType::Path);
-        auto result = MduConverter::ValueFromString(schema, "some/path/file.txt");
+        auto result = conversion::ValueFromString(schema, "some/path/file.txt");
 
         EXPECT_EQ(std::get<std::filesystem::path>(result), std::filesystem::path("some/path/file.txt"));
     }
@@ -793,7 +793,7 @@ namespace dflowfm_io::test
     TEST_F(MduConverterTest, ValueFromString_DateTime_CompactDateTime_ReturnsCorrectValue)
     {
         auto schema = MakePropertySchema(ValueType::DateTime);
-        auto result = MduConverter::ValueFromString(schema, "20200130120000");
+        auto result = conversion::ValueFromString(schema, "20200130120000");
 
         const auto expected =
             std::chrono::sys_days{std::chrono::year{2020} / std::chrono::month{1} / std::chrono::day{30}} +
@@ -807,7 +807,7 @@ namespace dflowfm_io::test
     TEST_F(MduConverterTest, ValueFromString_DateTime_DateFormat_ReturnsCorrectValue)
     {
         auto schema = MakePropertySchema(ValueType::DateTime, FormatType::Date);
-        auto result = MduConverter::ValueFromString(schema, "20200130");
+        auto result = conversion::ValueFromString(schema, "20200130");
 
         const auto expected =
             std::chrono::sys_days{std::chrono::year{2020} / std::chrono::month{1} / std::chrono::day{30}};
@@ -822,7 +822,7 @@ namespace dflowfm_io::test
         // Schema expects CompactDateOnly, but the value carries a time component.
         auto schema = MakePropertySchema(ValueType::DateTime, FormatType::Date);
 
-        EXPECT_THROW(MduConverter::ValueFromString(schema, "20200130120000"), std::invalid_argument);
+        EXPECT_THROW(conversion::ValueFromString(schema, "20200130120000"), std::invalid_argument);
     }
 
     TEST_F(MduConverterTest, ValueFromString_DateTime_CompactDateTime_DateOnlyValue_ThrowsInvalidArgument)
@@ -830,20 +830,20 @@ namespace dflowfm_io::test
         // Schema expects CompactDateTime, but the value only carries a date.
         auto schema = MakePropertySchema(ValueType::DateTime);
 
-        EXPECT_THROW(MduConverter::ValueFromString(schema, "20200130"), std::invalid_argument);
+        EXPECT_THROW(conversion::ValueFromString(schema, "20200130"), std::invalid_argument);
     }
 
     TEST_F(MduConverterTest, ValueFromString_DateTime_InvalidValue_ThrowsInvalidArgument)
     {
         auto schema = MakePropertySchema(ValueType::DateTime);
 
-        EXPECT_THROW(MduConverter::ValueFromString(schema, "not_a_date"), std::invalid_argument);
+        EXPECT_THROW(conversion::ValueFromString(schema, "not_a_date"), std::invalid_argument);
     }
 
     TEST_F(MduConverterTest, ValueFromString_DateTime_EmptyValue_ReturnsNullopt)
     {
         auto schema = MakePropertySchema(ValueType::DateTime);
-        auto result = MduConverter::ValueFromString(schema, "");
+        auto result = conversion::ValueFromString(schema, "");
 
         const auto& actual = std::get<std::optional<std::chrono::system_clock::time_point>>(result);
         EXPECT_FALSE(actual.has_value());
@@ -856,7 +856,7 @@ namespace dflowfm_io::test
     TEST_F(MduConverterTest, ValueFromString_StringList_ReturnsCorrectValues)
     {
         auto schema = MakePropertySchema(ValueType::StringList);
-        auto result = MduConverter::ValueFromString(schema, "a b c");
+        auto result = conversion::ValueFromString(schema, "a b c");
 
         auto values = std::get<std::vector<std::string>>(result);
         ASSERT_EQ(values.size(), 3u);
@@ -868,7 +868,7 @@ namespace dflowfm_io::test
     TEST_F(MduConverterTest, ValueFromString_FloatList_ReturnsCorrectValues)
     {
         auto schema = MakePropertySchema(ValueType::FloatList);
-        auto result = MduConverter::ValueFromString(schema, "1.0 2.0 3.0");
+        auto result = conversion::ValueFromString(schema, "1.0 2.0 3.0");
 
         auto values = std::get<std::vector<double>>(result);
         ASSERT_EQ(values.size(), 3u);
@@ -880,7 +880,7 @@ namespace dflowfm_io::test
     TEST_F(MduConverterTest, ValueFromString_PathList_ReturnsCorrectValues)
     {
         auto schema = MakePropertySchema(ValueType::PathList);
-        auto result = MduConverter::ValueFromString(schema, "a.txt b.txt");
+        auto result = conversion::ValueFromString(schema, "a.txt b.txt");
 
         auto values = std::get<std::vector<std::filesystem::path>>(result);
         ASSERT_EQ(values.size(), 2u);
@@ -895,7 +895,7 @@ namespace dflowfm_io::test
     TEST_F(MduConverterTest, ValueFromString_StringEnum_ValidName_ReturnsCorrectValue)
     {
         auto schema = MakeEnumSchema(ValueType::StringEnum, {"None", "Explicit", "Implicit"});
-        auto result = MduConverter::ValueFromString(schema, "Explicit");
+        auto result = conversion::ValueFromString(schema, "Explicit");
 
         EXPECT_EQ(std::get<StringEnumValue>(result).value, "Explicit");
     }
@@ -903,7 +903,7 @@ namespace dflowfm_io::test
     TEST_F(MduConverterTest, ValueFromString_StringEnum_NameCaseInsensitive_ReturnsCorrectValue)
     {
         auto schema = MakeEnumSchema(ValueType::StringEnum, {"None", "Explicit"});
-        auto result = MduConverter::ValueFromString(schema, "explicit");
+        auto result = conversion::ValueFromString(schema, "explicit");
 
         EXPECT_EQ(std::get<StringEnumValue>(result).value, "Explicit");
     }
@@ -912,13 +912,13 @@ namespace dflowfm_io::test
     {
         auto schema = MakeEnumSchema(ValueType::StringEnum, {"None", "Explicit"});
 
-        EXPECT_THROW(MduConverter::ValueFromString(schema, "Unknown"), std::invalid_argument);
+        EXPECT_THROW(conversion::ValueFromString(schema, "Unknown"), std::invalid_argument);
     }
 
     TEST_F(MduConverterTest, ValueFromString_IntEnum_ValidNumber_ReturnsCorrectValue)
     {
         auto schema = MakeEnumSchema(ValueType::IntEnum, {"0", "1", "2"});
-        auto result = MduConverter::ValueFromString(schema, "2");
+        auto result = conversion::ValueFromString(schema, "2");
 
         EXPECT_EQ(std::get<IntEnumValue>(result).value, 2);
     }
@@ -927,14 +927,14 @@ namespace dflowfm_io::test
     {
         auto schema = MakeEnumSchema(ValueType::IntEnum, {"0", "1"});
 
-        EXPECT_THROW(MduConverter::ValueFromString(schema, "99"), std::invalid_argument);
+        EXPECT_THROW(conversion::ValueFromString(schema, "99"), std::invalid_argument);
     }
 
     TEST_F(MduConverterTest, ValueFromString_IntEnum_InvalidString_ThrowsInvalidArgument)
     {
         auto schema = MakeEnumSchema(ValueType::IntEnum, {"0", "1"});
 
-        EXPECT_THROW(MduConverter::ValueFromString(schema, "not_a_number"), std::invalid_argument);
+        EXPECT_THROW(conversion::ValueFromString(schema, "not_a_number"), std::invalid_argument);
     }
 
     // -------------------------------------------------------------------------
@@ -944,7 +944,7 @@ namespace dflowfm_io::test
     TEST_F(MduConverterTest, ValueToString_String_ReturnsCorrectValue)
     {
         auto schema = MakePropertySchema(ValueType::String);
-        auto result = MduConverter::ValueToString(schema, Value{std::string("hello")});
+        auto result = conversion::ValueToString(schema, Value{std::string("hello")});
 
         EXPECT_EQ(result, "hello");
     }
@@ -956,7 +956,7 @@ namespace dflowfm_io::test
     TEST_F(MduConverterTest, ValueToString_Int_ReturnsCorrectValue)
     {
         auto schema = MakePropertySchema(ValueType::Int);
-        auto result = MduConverter::ValueToString(schema, Value{42});
+        auto result = conversion::ValueToString(schema, Value{42});
 
         EXPECT_EQ(result, "42");
     }
@@ -968,7 +968,7 @@ namespace dflowfm_io::test
     TEST_F(MduConverterTest, ValueToString_Float_ReturnsCorrectValue)
     {
         auto schema = MakePropertySchema(ValueType::Float);
-        auto result = MduConverter::ValueToString(schema, Value{3.14});
+        auto result = conversion::ValueToString(schema, Value{3.14});
 
         EXPECT_EQ(result, "3.14");
     }
@@ -976,7 +976,7 @@ namespace dflowfm_io::test
     TEST_F(MduConverterTest, ValueToString_Float_FixedFormat_ReturnsFixedNotation)
     {
         auto schema = MakePropertySchema(ValueType::Float, FormatType::Fixed);
-        auto result = MduConverter::ValueToString(schema, Value{1234.5});
+        auto result = conversion::ValueToString(schema, Value{1234.5});
 
         EXPECT_EQ(result, "1234.500000");
     }
@@ -984,7 +984,7 @@ namespace dflowfm_io::test
     TEST_F(MduConverterTest, ValueToString_Float_ScientificFormat_ReturnsScientificNotation)
     {
         auto schema = MakePropertySchema(ValueType::Float, FormatType::Scientific);
-        auto result = MduConverter::ValueToString(schema, Value{1234.5});
+        auto result = conversion::ValueToString(schema, Value{1234.5});
 
         EXPECT_EQ(result, "1.234500e+03");
     }
@@ -996,7 +996,7 @@ namespace dflowfm_io::test
     TEST_F(MduConverterTest, ValueToString_IntBool_False_ReturnsZero)
     {
         auto schema = MakePropertySchema(ValueType::IntBool);
-        auto result = MduConverter::ValueToString(schema, Value{false});
+        auto result = conversion::ValueToString(schema, Value{false});
 
         EXPECT_EQ(result, "0");
     }
@@ -1004,7 +1004,7 @@ namespace dflowfm_io::test
     TEST_F(MduConverterTest, ValueToString_IntBool_True_ReturnsOne)
     {
         auto schema = MakePropertySchema(ValueType::IntBool);
-        auto result = MduConverter::ValueToString(schema, Value{true});
+        auto result = conversion::ValueToString(schema, Value{true});
 
         EXPECT_EQ(result, "1");
     }
@@ -1016,7 +1016,7 @@ namespace dflowfm_io::test
     TEST_F(MduConverterTest, ValueToString_Path_ReturnsCorrectValue)
     {
         auto schema = MakePropertySchema(ValueType::Path);
-        auto result = MduConverter::ValueToString(schema, Value{std::filesystem::path("some/path")});
+        auto result = conversion::ValueToString(schema, Value{std::filesystem::path("some/path")});
 
         EXPECT_EQ(result, "some/path");
     }
@@ -1033,7 +1033,7 @@ namespace dflowfm_io::test
             std::chrono::sys_days{std::chrono::year{2020} / std::chrono::month{1} / std::chrono::day{30}};
 
         auto result =
-            MduConverter::ValueToString(schema, Value{std::optional<std::chrono::system_clock::time_point>{timePoint}});
+            conversion::ValueToString(schema, Value{std::optional<std::chrono::system_clock::time_point>{timePoint}});
 
         EXPECT_EQ(result, "20200130000000");
     }
@@ -1046,7 +1046,7 @@ namespace dflowfm_io::test
             std::chrono::sys_days{std::chrono::year{2020} / std::chrono::month{1} / std::chrono::day{30}};
 
         auto result =
-            MduConverter::ValueToString(schema, Value{std::optional<std::chrono::system_clock::time_point>{timePoint}});
+            conversion::ValueToString(schema, Value{std::optional<std::chrono::system_clock::time_point>{timePoint}});
 
         EXPECT_EQ(result, "20200130");
     }
@@ -1056,7 +1056,7 @@ namespace dflowfm_io::test
         auto schema = MakePropertySchema(ValueType::DateTime);
 
         auto result =
-            MduConverter::ValueToString(schema, Value{std::optional<std::chrono::system_clock::time_point>{std::nullopt}});
+            conversion::ValueToString(schema, Value{std::optional<std::chrono::system_clock::time_point>{std::nullopt}});
 
         EXPECT_TRUE(result.empty());
     }
@@ -1069,7 +1069,7 @@ namespace dflowfm_io::test
     {
         auto schema = MakePropertySchema(ValueType::StringList);
         Value v = std::vector<std::string>{"a", "b", "c"};
-        auto result = MduConverter::ValueToString(schema, v);
+        auto result = conversion::ValueToString(schema, v);
 
         EXPECT_EQ(result, "a b c");
     }
@@ -1078,7 +1078,7 @@ namespace dflowfm_io::test
     {
         auto schema = MakePropertySchema(ValueType::FloatList);
         Value v = std::vector<double>{1.0, 2.0, 3.0};
-        auto result = MduConverter::ValueToString(schema, v);
+        auto result = conversion::ValueToString(schema, v);
 
         EXPECT_EQ(result, "1.0 2.0 3.0");
     }
@@ -1087,7 +1087,7 @@ namespace dflowfm_io::test
     {
         auto schema = MakePropertySchema(ValueType::FloatList, FormatType::Fixed);
         Value v = std::vector<double>{1.0, 2.5};
-        auto result = MduConverter::ValueToString(schema, v);
+        auto result = conversion::ValueToString(schema, v);
 
         EXPECT_EQ(result, "1.000000 2.500000");
     }
@@ -1096,7 +1096,7 @@ namespace dflowfm_io::test
     {
         auto schema = MakePropertySchema(ValueType::FloatList, FormatType::Scientific);
         Value v = std::vector<double>{1.0, 2.5};
-        auto result = MduConverter::ValueToString(schema, v);
+        auto result = conversion::ValueToString(schema, v);
 
         EXPECT_EQ(result, "1.000000e+00 2.500000e+00");
     }
@@ -1108,7 +1108,7 @@ namespace dflowfm_io::test
     TEST_F(MduConverterTest, ValueToString_StringEnum_ReturnsEnumName)
     {
         auto schema = MakeEnumSchema(ValueType::StringEnum, {"None", "Explicit", "Implicit"});
-        auto result = MduConverter::ValueToString(schema, Value{StringEnumValue{"Explicit"}});
+        auto result = conversion::ValueToString(schema, Value{StringEnumValue{"Explicit"}});
 
         EXPECT_EQ(result, "Explicit");
     }
@@ -1116,7 +1116,7 @@ namespace dflowfm_io::test
     TEST_F(MduConverterTest, ValueToString_StringEnum_NameCaseInsensitive_ReturnsEnumName)
     {
         auto schema = MakeEnumSchema(ValueType::StringEnum, {"None", "Explicit"});
-        auto result = MduConverter::ValueToString(schema, Value{StringEnumValue{"explicit"}});
+        auto result = conversion::ValueToString(schema, Value{StringEnumValue{"explicit"}});
 
         EXPECT_EQ(result, "Explicit");
     }
@@ -1125,13 +1125,13 @@ namespace dflowfm_io::test
     {
         auto schema = MakeEnumSchema(ValueType::StringEnum, {"None", "Explicit"});
 
-        EXPECT_THROW(MduConverter::ValueToString(schema, Value{StringEnumValue{"Implicit"}}), std::invalid_argument);
+        EXPECT_THROW(conversion::ValueToString(schema, Value{StringEnumValue{"Implicit"}}), std::invalid_argument);
     }
 
     TEST_F(MduConverterTest, ValueToString_IntEnum_ReturnsIntegerString)
     {
         auto schema = MakeEnumSchema(ValueType::IntEnum, {"0", "1", "2"});
-        auto result = MduConverter::ValueToString(schema, Value{IntEnumValue{2}});
+        auto result = conversion::ValueToString(schema, Value{IntEnumValue{2}});
 
         EXPECT_EQ(result, "2");
     }
@@ -1140,7 +1140,7 @@ namespace dflowfm_io::test
     {
         auto schema = MakeEnumSchema(ValueType::IntEnum, {"0", "1", "2"});
 
-        EXPECT_THROW(MduConverter::ValueToString(schema, Value{IntEnumValue{3}}), std::invalid_argument);
+        EXPECT_THROW(conversion::ValueToString(schema, Value{IntEnumValue{3}}), std::invalid_argument);
     }
 
     // -------------------------------------------------------------------------
@@ -1151,14 +1151,14 @@ namespace dflowfm_io::test
     {
         auto schema = MakePropertySchema(static_cast<ValueType>(9999));
 
-        EXPECT_THROW(MduConverter::ValueFromString(schema, "value"), std::logic_error);
+        EXPECT_THROW(conversion::ValueFromString(schema, "value"), std::logic_error);
     }
 
     TEST_F(MduConverterTest, ValueToString_InvalidValueType_ThrowsLogicError)
     {
         auto schema = MakePropertySchema(static_cast<ValueType>(9999));
 
-        EXPECT_THROW(MduConverter::ValueToString(schema, Value{std::string("value")}), std::logic_error);
+        EXPECT_THROW(conversion::ValueToString(schema, Value{std::string("value")}), std::logic_error);
     }
 
     // -------------------------------------------------------------------------
@@ -1170,8 +1170,8 @@ namespace dflowfm_io::test
         const auto schema = MakePropertySchema(ValueType::Int);
         const Value original = 42;
 
-        auto raw = MduConverter::ValueToString(schema, original);
-        auto result = MduConverter::ValueFromString(schema, raw);
+        auto raw = conversion::ValueToString(schema, original);
+        auto result = conversion::ValueFromString(schema, raw);
 
         EXPECT_EQ(std::get<int>(result), 42);
     }
@@ -1181,8 +1181,8 @@ namespace dflowfm_io::test
         const auto schema = MakePropertySchema(ValueType::Float);
         const Value original = 1.5;
 
-        auto raw = MduConverter::ValueToString(schema, original);
-        auto result = MduConverter::ValueFromString(schema, raw);
+        auto raw = conversion::ValueToString(schema, original);
+        auto result = conversion::ValueFromString(schema, raw);
 
         EXPECT_DOUBLE_EQ(std::get<double>(result), 1.5);
     }
@@ -1192,8 +1192,8 @@ namespace dflowfm_io::test
         auto schema = MakeEnumSchema(ValueType::StringEnum, {"None", "Explicit"});
         const Value original = StringEnumValue{"Explicit"};
 
-        auto raw = MduConverter::ValueToString(schema, original);
-        auto result = MduConverter::ValueFromString(schema, raw);
+        auto raw = conversion::ValueToString(schema, original);
+        auto result = conversion::ValueFromString(schema, raw);
 
         EXPECT_EQ(std::get<StringEnumValue>(result).value, "Explicit");
     }
@@ -1203,8 +1203,8 @@ namespace dflowfm_io::test
         auto schema = MakeEnumSchema(ValueType::IntEnum, {"0", "1", "2"});
         const Value original = IntEnumValue{1};
 
-        auto raw = MduConverter::ValueToString(schema, original);
-        auto result = MduConverter::ValueFromString(schema, raw);
+        auto raw = conversion::ValueToString(schema, original);
+        auto result = conversion::ValueFromString(schema, raw);
 
         EXPECT_EQ(std::get<IntEnumValue>(result).value, 1);
     }
@@ -1217,8 +1217,8 @@ namespace dflowfm_io::test
             std::chrono::hours{12}};
         const Value original = std::optional<std::chrono::system_clock::time_point>{timePoint};
 
-        auto raw = MduConverter::ValueToString(schema, original);
-        auto result = MduConverter::ValueFromString(schema, raw);
+        auto raw = conversion::ValueToString(schema, original);
+        auto result = conversion::ValueFromString(schema, raw);
 
         const auto& actual = std::get<std::optional<std::chrono::system_clock::time_point>>(result);
         ASSERT_TRUE(actual.has_value());
@@ -1232,8 +1232,8 @@ namespace dflowfm_io::test
             std::chrono::sys_days{std::chrono::year{2020} / std::chrono::month{1} / std::chrono::day{30}}};
         const Value original = std::optional<std::chrono::system_clock::time_point>{timePoint};
 
-        auto raw = MduConverter::ValueToString(schema, original);
-        auto result = MduConverter::ValueFromString(schema, raw);
+        auto raw = conversion::ValueToString(schema, original);
+        auto result = conversion::ValueFromString(schema, raw);
 
         const auto& actual = std::get<std::optional<std::chrono::system_clock::time_point>>(result);
         ASSERT_TRUE(actual.has_value());

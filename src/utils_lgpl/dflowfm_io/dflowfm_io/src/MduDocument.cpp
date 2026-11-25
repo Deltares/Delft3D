@@ -32,7 +32,7 @@ namespace dflowfm_io
     IssueReport MduDocument::LoadFromString(const std::string& text)
     {
         const ini::IniData iniData = ini::Parse(text, mduIniOptions.scheme, mduIniOptions.parserOptions);
-        std::pair<MduData, IssueReport> result = MduConverter::ToMduData(iniData, schema);
+        std::pair<MduData, IssueReport> result = conversion::ToMduData(iniData, schema);
         mduData = std::move(result.first);
         return std::move(result.second);
     }
@@ -40,20 +40,20 @@ namespace dflowfm_io
     IssueReport MduDocument::LoadFromFile(const std::filesystem::path& path)
     {
         const ini::IniData iniData = ini::Load(path, mduIniOptions);
-        std::pair<MduData, IssueReport> result = MduConverter::ToMduData(iniData, schema);
+        std::pair<MduData, IssueReport> result = conversion::ToMduData(iniData, schema);
         mduData = std::move(result.first);
         return std::move(result.second);
     }
 
     std::string MduDocument::SaveToString() const
     {
-        const ini::IniData iniData = MduConverter::ToIniData(mduData, schema);
+        const ini::IniData iniData = conversion::ToIniData(mduData, schema);
         return ini::Format(iniData, mduIniOptions.scheme, mduIniOptions.formatterOptions);
     }
 
     void MduDocument::SaveToFile(const std::filesystem::path& path) const
     {
-        const ini::IniData iniData = MduConverter::ToIniData(mduData, schema);
+        const ini::IniData iniData = conversion::ToIniData(mduData, schema);
         ini::Save(path, iniData, mduIniOptions);
     }
 

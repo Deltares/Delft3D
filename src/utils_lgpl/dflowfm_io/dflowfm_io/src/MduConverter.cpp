@@ -11,7 +11,7 @@
 #include <format>
 #include <variant>
 
-namespace dflowfm_io
+namespace dflowfm_io::conversion
 {
 
     namespace
@@ -127,9 +127,9 @@ namespace dflowfm_io
 
     } // namespace
 
-    std::pair<MduData, IssueReport> MduConverter::ToMduData(const ini::IniData& iniData, const MduSchema& schema)
+    std::pair<MduData, IssueReport> ToMduData(const ini::IniData& iniData, const MduSchema& schema)
     {
-        IssueReport report = MduValidator::Validate(iniData, schema);
+        IssueReport report = validation::Validate(iniData, schema);
         MduData mduData(schema.CreateDefaultValues());
 
         for (const auto& sectionSchema : schema.Sections())
@@ -165,7 +165,7 @@ namespace dflowfm_io
         return {std::move(mduData), std::move(report)};
     }
 
-    ini::IniData MduConverter::ToIniData(const MduData& mduData, const MduSchema& schema)
+    ini::IniData ToIniData(const MduData& mduData, const MduSchema& schema)
     {
         ini::IniData iniData;
 
@@ -191,7 +191,7 @@ namespace dflowfm_io
         return std::move(iniData);
     }
 
-    Value MduConverter::ValueFromString(const PropertySchema& schema, const std::string& raw)
+    Value ValueFromString(const PropertySchema& schema, const std::string& raw)
     {
         switch (schema.value_type)
         {
@@ -223,7 +223,7 @@ namespace dflowfm_io
         }
     }
 
-    std::string MduConverter::ValueToString(const PropertySchema& schema, const Value& value)
+    std::string ValueToString(const PropertySchema& schema, const Value& value)
     {
         switch (schema.value_type)
         {
@@ -255,4 +255,4 @@ namespace dflowfm_io
         }
     }
 
-} // namespace dflowfm_io
+} // namespace dflowfm_io::conversion

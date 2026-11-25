@@ -68,7 +68,7 @@ namespace dflowfm_io
             {
                 if (IsObsolete(propertySchema, propertySchema.default_value)) continue;
 
-                Value value = MduConverter::ValueFromString(propertySchema, propertySchema.default_value);
+                Value value = conversion::ValueFromString(propertySchema, propertySchema.default_value);
                 const std::string key = FormatKey(sectionSchema.name, propertySchema.key);
                 entries[key] = std::move(value);
             }

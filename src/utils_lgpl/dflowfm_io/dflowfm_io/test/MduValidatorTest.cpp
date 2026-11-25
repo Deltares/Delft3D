@@ -28,14 +28,14 @@ namespace dflowfm_io::test
 
     TEST_F(MduValidatorTest, Validate_FullyCompliantInput_HasNoErrors)
     {
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         EXPECT_FALSE(HasIssue(report, Severity::Error));
     }
 
     TEST_F(MduValidatorTest, Validate_FullyCompliantInput_HasNoWarnings)
     {
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         EXPECT_FALSE(HasIssue(report, Severity::Warning));
     }
@@ -46,14 +46,14 @@ namespace dflowfm_io::test
 
     TEST_F(MduValidatorTest, Validate_MissingRequiredSection_ReturnsError)
     {
-        const IssueReport report = MduValidator::Validate(ini::IniData{}, schema);
+        const IssueReport report = validation::Validate(ini::IniData{}, schema);
 
         EXPECT_TRUE(HasIssue(report, Severity::Error));
     }
 
     TEST_F(MduValidatorTest, Validate_MissingRequiredSection_ErrorMentionsSectionName)
     {
-        const IssueReport report = MduValidator::Validate(ini::IniData{}, schema);
+        const IssueReport report = validation::Validate(ini::IniData{}, schema);
 
         const Issue* error = FirstIssue(report, Severity::Error);
         ASSERT_NE(error, nullptr);
@@ -68,7 +68,7 @@ namespace dflowfm_io::test
     {
         iniData.GetSection("general").RemoveAllProperties("fileVersion");
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         EXPECT_TRUE(HasIssue(report, Severity::Error));
     }
@@ -77,7 +77,7 @@ namespace dflowfm_io::test
     {
         iniData.GetSection("general").RemoveAllProperties("fileVersion");
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         const Issue* error = FirstIssue(report, Severity::Error);
         ASSERT_NE(error, nullptr);
@@ -93,7 +93,7 @@ namespace dflowfm_io::test
     {
         iniData.GetSection("general").SetPropertyValue("fileVersion", "");
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         EXPECT_TRUE(HasIssue(report, Severity::Error));
     }
@@ -102,7 +102,7 @@ namespace dflowfm_io::test
     {
         iniData.GetSection("general").SetPropertyValue("fileVersion", "");
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         const Issue* error = FirstIssue(report, Severity::Error);
         ASSERT_NE(error, nullptr);
@@ -118,7 +118,7 @@ namespace dflowfm_io::test
     {
         iniData.GetSection("geometry").SetPropertyValue("bedLevUni", "");
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         EXPECT_TRUE(HasIssue(report, Severity::Info));
     }
@@ -127,7 +127,7 @@ namespace dflowfm_io::test
     {
         iniData.GetSection("geometry").SetPropertyValue("bedLevUni", "");
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         const Issue* info = FirstIssue(report, Severity::Info);
         ASSERT_NE(info, nullptr);
@@ -144,7 +144,7 @@ namespace dflowfm_io::test
     {
         iniData.GetSection("geometry").RemoveAllProperties("bedLevUni");
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         EXPECT_TRUE(HasIssue(report, Severity::Debug));
     }
@@ -153,7 +153,7 @@ namespace dflowfm_io::test
     {
         iniData.GetSection("geometry").RemoveAllProperties("bedLevUni");
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         const Issue* debug = FirstIssue(report, Severity::Debug);
         ASSERT_NE(debug, nullptr);
@@ -170,7 +170,7 @@ namespace dflowfm_io::test
     {
         iniData.AddSection("UnknownSection_XYZ");
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         EXPECT_TRUE(HasIssue(report, Severity::Warning));
     }
@@ -179,7 +179,7 @@ namespace dflowfm_io::test
     {
         iniData.AddSection("UnknownSection_XYZ");
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         const Issue* warning = FirstIssue(report, Severity::Warning);
         ASSERT_NE(warning, nullptr);
@@ -194,7 +194,7 @@ namespace dflowfm_io::test
     {
         iniData.GetSection("general").AddProperty("unknownProperty_XYZ", "value");
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         EXPECT_TRUE(HasIssue(report, Severity::Warning));
     }
@@ -203,7 +203,7 @@ namespace dflowfm_io::test
     {
         iniData.GetSection("general").AddProperty("unknownProperty_XYZ", "value");
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         const Issue* warning = FirstIssue(report, Severity::Warning);
         ASSERT_NE(warning, nullptr);
@@ -219,7 +219,7 @@ namespace dflowfm_io::test
     {
         iniData.AddSection("model");
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         EXPECT_TRUE(HasIssue(report, Severity::Error));
     }
@@ -228,7 +228,7 @@ namespace dflowfm_io::test
     {
         iniData.AddSection("model");
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         const Issue* error = FirstIssue(report, Severity::Error);
         ASSERT_NE(error, nullptr);
@@ -241,7 +241,7 @@ namespace dflowfm_io::test
         ini::IniSection& section = iniData.AddSection("model");
         section.AddProperty("convertLongCulverts", "1");
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         const Issue* error = FindIssue(report, Severity::Error, "convertLongCulverts");
         ASSERT_NE(error, nullptr);
@@ -255,7 +255,7 @@ namespace dflowfm_io::test
         ini::IniSection& section = iniData.AddSection("model");
         section.AddProperty("mduFormatVersion", "1.09");
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         const Issue* issue = FindIssue(report, "mduFormatVersion");
         EXPECT_EQ(issue, nullptr);
@@ -266,7 +266,7 @@ namespace dflowfm_io::test
         ini::IniSection& section = iniData.AddSection("model");
         section.SetPropertyValue("autoStart", "2");
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         const Issue* issue = FindIssue(report, "autoStart");
         EXPECT_EQ(issue, nullptr);
@@ -277,7 +277,7 @@ namespace dflowfm_io::test
         ini::IniSection& section = iniData.AddSection("model");
         section.AddProperty("program", "D-Flow FM");
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         const Issue* issue = FindIssue(report, "program");
         EXPECT_EQ(issue, nullptr);
@@ -287,7 +287,7 @@ namespace dflowfm_io::test
     {
         iniData.AddSection("model");
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         const Issue* issue = FindIssue(report, "program");
         EXPECT_EQ(issue, nullptr);
@@ -298,7 +298,7 @@ namespace dflowfm_io::test
         ini::IniSection& section = iniData.AddSection("model");
         section.AddProperty("someUnknownKey", "value");
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         const Issue* issue = FindIssue(report, "someUnknownKey");
         EXPECT_EQ(issue, nullptr);
@@ -312,7 +312,7 @@ namespace dflowfm_io::test
     {
         iniData.AddSection("sediment");
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         EXPECT_TRUE(HasIssue(report, Severity::Warning));
     }
@@ -321,7 +321,7 @@ namespace dflowfm_io::test
     {
         iniData.AddSection("sediment");
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         const Issue* warning = FirstIssue(report, Severity::Warning);
         ASSERT_NE(warning, nullptr);
@@ -334,7 +334,7 @@ namespace dflowfm_io::test
         ini::IniSection& section = iniData.AddSection("sediment");
         section.AddProperty("morMaxDtEps", "0.0");
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         const Issue* error = FindIssue(report, Severity::Error, "morMaxDtEps");
         ASSERT_NE(error, nullptr);
@@ -349,7 +349,7 @@ namespace dflowfm_io::test
         ini::IniSection& section = iniData.AddSection("sediment");
         section.SetPropertyValue("sedimentModelNr", "2");
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         const Issue* error = FindIssue(report, Severity::Error, "sedimentModelNr");
         ASSERT_NE(error, nullptr);
@@ -364,7 +364,7 @@ namespace dflowfm_io::test
         ini::IniSection& section = iniData.AddSection("sediment");
         section.AddProperty("morFile", "test.mor");
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         const Issue* warning = FindIssue(report, Severity::Warning, "morFile");
         ASSERT_NE(warning, nullptr);
@@ -378,7 +378,7 @@ namespace dflowfm_io::test
         ini::IniSection& section = iniData.AddSection("sediment");
         section.SetPropertyValue("sedimentModelNr", "1");
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         const Issue* warning = FindIssue(report, Severity::Warning, "sedimentModelNr");
         ASSERT_NE(warning, nullptr);
@@ -393,7 +393,7 @@ namespace dflowfm_io::test
         ini::IniSection& section = iniData.AddSection("sediment");
         section.AddProperty("nrOfSedFractions", "0");
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         const Issue* issue = FindIssue(report, "nrOfSedFractions");
         EXPECT_EQ(issue, nullptr);
@@ -407,7 +407,7 @@ namespace dflowfm_io::test
     {
         iniData.GetSection("numerics").SetPropertyValue("qhRelax", 0.02);
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         EXPECT_TRUE(HasIssue(report, Severity::Error));
     }
@@ -416,7 +416,7 @@ namespace dflowfm_io::test
     {
         iniData.GetSection("numerics").SetPropertyValue("qhRelax", 0.02);
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         const Issue* error = FirstIssue(report, Severity::Error);
         ASSERT_NE(error, nullptr);
@@ -434,7 +434,7 @@ namespace dflowfm_io::test
     {
         iniData.GetSection("geometry").SetPropertyValue("layerType", 4);
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         EXPECT_TRUE(HasIssue(report, Severity::Error));
     }
@@ -443,7 +443,7 @@ namespace dflowfm_io::test
     {
         iniData.GetSection("geometry").SetPropertyValue("layerType", 4);
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         const Issue* error = FirstIssue(report, Severity::Error);
         ASSERT_NE(error, nullptr);
@@ -462,7 +462,7 @@ namespace dflowfm_io::test
     {
         iniData.GetSection("numerics").SetPropertyValue("vertAdvTypSal", 6);
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         EXPECT_TRUE(HasIssue(report, Severity::Warning));
     }
@@ -471,7 +471,7 @@ namespace dflowfm_io::test
     {
         iniData.GetSection("numerics").SetPropertyValue("vertAdvTypSal", 6);
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         const Issue* warning = FirstIssue(report, Severity::Warning);
         ASSERT_NE(warning, nullptr);
@@ -488,7 +488,7 @@ namespace dflowfm_io::test
     {
         iniData.GetSection("geometry").SetPropertyValue("layerType", 3);
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         EXPECT_TRUE(HasIssue(report, Severity::Warning));
     }
@@ -497,7 +497,7 @@ namespace dflowfm_io::test
     {
         iniData.GetSection("geometry").SetPropertyValue("layerType", 3);
 
-        const IssueReport report = MduValidator::Validate(iniData, schema);
+        const IssueReport report = validation::Validate(iniData, schema);
 
         const Issue* warning = FirstIssue(report, Severity::Warning);
         ASSERT_NE(warning, nullptr);
