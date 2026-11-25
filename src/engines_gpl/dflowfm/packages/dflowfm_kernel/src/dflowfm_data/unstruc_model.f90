@@ -3632,7 +3632,7 @@ contains
       end if
 
       call prop_set(prop_ptr, 'numerics', 'FlowSolver', trim(md_flow_solver), 'Flow solver.')
-      if (flow_solver == FLOW_SOLVER_SEQUENCE) then
+      if (md_flow_solver == 'sequence') then
          call prop_set(prop_ptr, 'numerics', 'solverSequence', trim(sequence_file), 'File containing solver sequence.')
       end if
 
