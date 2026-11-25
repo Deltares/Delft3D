@@ -33,6 +33,7 @@ module swan_flow_grid_maps
 ! NONE
 !!--declarations----------------------------------------------------------------
    use precision_basics
+   implicit none
    !
    type grid_map
       logical :: sferic ! spherical coordinate system (t/f)
@@ -164,7 +165,6 @@ contains
 !
 !==============================================================================
    subroutine init_grids(n_swan_grids, n_flow_grids)
-      implicit none
       !
       ! parameters
       integer, intent(in) :: n_swan_grids
@@ -182,8 +182,6 @@ contains
 !==============================================================================
    subroutine alloc_and_get_grid(i_grid, g, grid_name, grid_file_type, xy_loc, flowLinkConnectivity, filename)
       use read_grids
-      !
-      implicit none
       !
       integer :: i_grid
       type(grid) :: g
@@ -244,7 +242,6 @@ contains
 !
 !==============================================================================
    subroutine grid_dd_corrections(alfas, kcs, mmax, nmax)
-      implicit none
       !
       ! global parameters
       integer, intent(in) :: mmax
@@ -309,7 +306,6 @@ contains
       use nc_check, only : nc_check_err
       use m_polygon
       use m_tpoly
-      implicit none
       !
       ! Parameters
       integer :: i1
@@ -562,7 +558,6 @@ contains
 !==============================================================================
    subroutine alloc_input_fields(g, inpfld, mudfile_deprecated, ice)
       use wave_data
-      implicit none
       !
       ! arguments
       character(LEN=*) :: mudfile_deprecated
@@ -634,8 +629,6 @@ contains
    subroutine init_input_fields(inpfld, sr, itide)
       use swan_input
       !
-      implicit none
-      !
       type(input_fields) :: inpfld
       type(swan_type) :: sr
       integer :: itide
@@ -668,7 +661,6 @@ contains
 !==============================================================================
    subroutine dealloc_input_fields(inpfld, mudfile_deprecated, ice)
       use wave_data
-      implicit none
       !
       integer :: ierr
       character(LEN=*) :: mudfile_deprecated
@@ -709,7 +701,6 @@ contains
 !
 !==============================================================================
    subroutine dealloc_output_fields(outfld)
-      implicit none
       !
       type(output_fields) :: outfld
       integer :: ierr
@@ -760,7 +751,6 @@ contains
 !
 !==============================================================================
    subroutine alloc_output_fields(g, outfld)
-      implicit none
       !
       type(grid) :: g
       type(output_fields) :: outfld
@@ -859,8 +849,6 @@ contains
       use geometry_module
       use m_polygon
       use m_missing
-      !
-      implicit none
       !
       ! Parameters
       !

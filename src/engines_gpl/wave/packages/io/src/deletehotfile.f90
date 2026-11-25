@@ -1,5 +1,7 @@
 module m_deletehotfile
 
+implicit none
+
 contains
 
 function deletehotfile(wavedata) result (dodelete)
@@ -41,8 +43,6 @@ function deletehotfile(wavedata) result (dodelete)
 use precision
 use wave_data
 use swan_input
-!
-implicit none
 !
 ! Global variables
 !

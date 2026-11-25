@@ -72,7 +72,6 @@ function wave_main_init(mode_in, online_in, com_file_type_in,mdw_file) result(re
    ! use ifcore
    ! 
    use deltares_common_version_module
-   implicit none
 !
 ! return value
 !
@@ -138,7 +137,6 @@ function wave_init(mode_in, online_in, com_file_type_in, mdw_file) result(retval
    !
    ! use ifcore
    ! 
-   implicit none
 !
 ! return value
 !
@@ -405,7 +403,6 @@ end function wave_init
 !
 ! ====================================================================================
 function wave_main_step(stepsize) result(retval)
-   implicit none
 !
 ! return value
 !
@@ -442,7 +439,6 @@ end function wave_main_step
 !
 ! ====================================================================================
 function wave_master_step(stepsize) result(retval)
-   implicit none
 !
 ! return value
 !
@@ -583,7 +579,6 @@ end function wave_master_step
 ! ====================================================================================
 function wave_main_finish() result(retval)
    use wave_mpi
-   implicit none
 !
 ! return value
 !
@@ -610,8 +605,6 @@ end function wave_main_finish
 function wave_master_finish() result(retval)
    use swan_input
    use wave_mpi
-
-   implicit none
 !
 ! return value
 !
@@ -643,7 +636,6 @@ end function wave_master_finish
 !
 ! ====================================================================================
 function wave_main_set_com_interval(interval) result(retval)
-   implicit none
 !
 ! return value
 !

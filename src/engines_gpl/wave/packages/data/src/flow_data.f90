@@ -34,6 +34,8 @@ module flow_data
 !!--declarations----------------------------------------------------------------
 use precision_basics
 !
+implicit none
+!
 integer                                 , save :: num_subdomains        = 0
 integer                                 , save :: num_muddomains        = 0
 character(256), dimension(:),allocatable, save :: runids
@@ -54,7 +56,6 @@ subroutine flow_init (wave_flow_mode, it01, tscale)
    use wave_data
    use string_module, only: str_token, count_words
    !
-   implicit none
 !
 ! Global variables
 !

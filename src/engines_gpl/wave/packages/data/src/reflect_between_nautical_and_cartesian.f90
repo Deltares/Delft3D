@@ -25,6 +25,7 @@ module angle_convention
    !  Stichting Deltares. All rights reserved.
    !
    !-------------------------------------------------------------------------------
+implicit none
 contains
    !! \brief Convert angle between Cartesian and Nautical conventions.
    !!
@@ -43,7 +44,6 @@ contains
    !! @return angle_out          Angle in degrees in the opposite convention to `angle_in`, normalized to [0,360).
    !! @note This is an elemental function and therefore applies element-wise to arrays.
    elemental function reflect_between_nautical_and_cartesian(angle_in, north_direction) result(angle_out)
-      implicit none
       real, intent(in) :: angle_in !> In degrees, either Cartesian or Nautical convention
       real, intent(in) :: north_direction !> Direction of north in degrees (clockwise from east)
       real :: angle_out !> In degrees, either Nautical or Cartesian  convention, depending on the input

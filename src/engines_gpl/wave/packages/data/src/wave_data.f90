@@ -33,6 +33,7 @@ module wave_data
 ! NONE
 !!--declarations----------------------------------------------------------------
 use precision_basics
+implicit none
 ! Module parameters
 !
 !

@@ -98,6 +98,8 @@ module swan_input
    use handles
    use table_handles
    !
+   implicit none
+   !
    integer, parameter :: SWAN_MODE_EXE = 0
    integer, parameter :: SWAN_MODE_LIB = 1
    integer, parameter :: NUM_ACCUR = 0
@@ -390,8 +392,6 @@ contains
    !! @param[in] sr SWAN runtime/configuration data.
    !! @return       True when any boundary has bndtyp=4 (overall spectral file).
    logical function has_overall_sp2_boundary(sr)
-      implicit none
-
       type(swan_type), intent(in) :: sr
 
       integer :: ibound
@@ -420,8 +420,6 @@ contains
    !! @param[in] refdate  Reference date (YYYYMMDD) used for time conversion.
    subroutine register_boundary_spectrum_files(sr, refdate)
       use boundary_spectral_cache, only: register_boundary_spectral_file, reset_boundary_spectral_cache
-
-      implicit none
 
       type(swan_type), intent(in) :: sr
       integer, intent(in) :: refdate
@@ -453,8 +451,6 @@ contains
    subroutine cleanup_boundary_spectrum_files()
       use boundary_spectral_cache, only: cleanup_boundary_spectral_cache
 
-      implicit none
-
       call cleanup_boundary_spectral_cache()
    end subroutine cleanup_boundary_spectrum_files
 
@@ -472,8 +468,6 @@ contains
    !! @param[in]    run_end    End of requested run window (seconds).
    subroutine replace_cached_boundary_spectrum_paths(line, sr, run_start, run_end)
       use precision_basics, only: hp
-
-      implicit none
 
       character(*), intent(inout) :: line
       type(swan_type), intent(in) :: sr
@@ -509,8 +503,6 @@ contains
    !! @param[in]    run_end    End of requested run window (seconds).
    subroutine replace_cached_path(line, sourcefile, run_start, run_end)
       use precision_basics, only: hp
-
-      implicit none
 
       character(*), intent(inout) :: line
       character(*), intent(in) :: sourcefile
@@ -572,8 +564,6 @@ contains
       use boundary_spectral_cache, only: resolve_boundary_spectral_file
       use precision_basics, only: hp
 
-      implicit none
-
       character(*), intent(in) :: sourcefile
       real(hp), intent(in) :: run_start
       real(hp), intent(in) :: run_end
@@ -585,7 +575,6 @@ contains
 !
 !==============================================================================
    subroutine dealloc_swan(sr)
-      implicit none
       !
       type(swan_type) :: sr
       integer :: i
@@ -639,8 +628,6 @@ contains
 !
 !==============================================================================
    subroutine read_dwaves_mdw(filnam, sr, wavedata)
-      implicit none
-      !
       character(*) :: filnam
       type(swan_type) :: sr
       type(wave_data_type) :: wavedata
@@ -698,7 +685,6 @@ contains
       use netcdf_utils, only: ncu_format_to_cmode
       use system_utils, only: SCRIPT_EXTENSION
       use wave_mpi, only: engine_comm_world, MPI_COMM_NULL
-      implicit none
       !
       type(swan_type) :: sr
       type(wave_data_type) :: wavedata
@@ -913,7 +899,6 @@ contains
          call handle_errors_mdw(sr)
       end select
       !
-      parname = ' '
       call prop_get(mdw_ptr, 'General', 'FlowMudFile', sr%mudfile_deprecated)
       if (sr%mudfile_deprecated /= ' ') then
          write (*, *) 'SWAN_INPUT: Keyword "FlowMudFile" is deprecated'
@@ -2597,7 +2582,6 @@ contains
 !
 !==============================================================================
    subroutine handle_errors_mdw(sr)
-      implicit none
       type(swan_type) :: sr
 
       !
@@ -2616,9 +2600,6 @@ contains
       use precision_basics
       use iso_c_binding, only: c_char, c_int, c_null_char
       use inja_templates
-      !
-      implicit none
-      
       !
       integer :: itide
       integer :: inest
@@ -2766,8 +2747,6 @@ contains
       use properties
       use read_grids
       use wave_data
-      !
-      implicit none
 !
 ! Global variables
 !
@@ -4431,8 +4410,6 @@ contains
       use precision_basics
       use wave_data
       !
-      implicit none
-      !
       ! Global variables
       integer, intent(in) :: inest
       character(*) :: fname
@@ -4473,8 +4450,6 @@ contains
 !
 !==============================================================================
    subroutine create_hotstart_line(inest, fname, line, sr)
-      implicit none
-
       ! Global variables
       integer, intent(in) :: inest
       character(256) :: line
@@ -4519,8 +4494,6 @@ contains
 !==============================================================================
    subroutine adjustinput(sr)
       use properties
-      implicit none
-      !
       type(swan_type) :: sr
       !
       character(256) :: filnam
@@ -4613,8 +4586,6 @@ contains
 !==============================================================================
 !> add nest index as to the string
    subroutine add_inest(nnest, line, i, inest)
-
-      implicit none
 
       integer, intent(in) :: nnest
       integer, intent(in) :: inest

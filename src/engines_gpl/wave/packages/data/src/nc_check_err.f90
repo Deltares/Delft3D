@@ -25,6 +25,7 @@ module nc_check
    !  Stichting Deltares. All rights reserved.
    !
    !-------------------------------------------------------------------------------
+   implicit none
 
    !!> \brief NetCDF error helper routines.
    !!>
