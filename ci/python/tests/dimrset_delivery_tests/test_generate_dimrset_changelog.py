@@ -201,7 +201,8 @@ class TestPublishReleaseChangelog:
         self.helper._ChangeLogPublisher__changelog_file = changelog_file
 
         self.helper._ChangeLogPublisher__prepend_or_replace_in_changelog(
-            "DIMRset_2.99.99", [
+            "DIMRset_2.99.99",
+            [
                 "<li>New entry</li>",
                 "<li>I edited src\\cmake\\CMakeLists.txt!</li>",  # Fix exception when there are backslashes.
             ],
