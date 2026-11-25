@@ -201,7 +201,7 @@ contains
 
    end subroutine test_read_stretch_coef
 
-   !$f90tw TESTCODE(TEST, test_mdu_file_read_write, test_frozen_2d_velocity, test_frozen_2d_velocity,
+   !$gtest
    subroutine test_frozen_2d_velocity() bind(C)
       use m_u1q1, only: update_frozen_1d2d_velocity
       use m_flow, only: au, q1, qa, u1
@@ -237,6 +237,5 @@ contains
 
       call resetFullFlowModel()
    end subroutine test_frozen_2d_velocity
-   !$f90tw)
 
 end module test_mdu_file_read_write

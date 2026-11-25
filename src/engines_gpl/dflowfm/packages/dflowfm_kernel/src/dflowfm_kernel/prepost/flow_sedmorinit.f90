@@ -341,7 +341,7 @@ contains
       !    set pointers
       call inipointers_erosed()
       !    update d50 and bed composition if there is no restartfile (if a restartfile exists, this is done inside unc_read_map_or_rst instead)
-      if (len_trim(md_restartfile) == 0 .and. use_restart_bedcomp) then
+      if (len_trim(md_restartfile) == 0) then
          call initsedtra(sedtra, stmpar%sedpar, stmpar%trapar, stmpar%morpar, stmpar%morlyr, rhomean, ag, vismol, 1, ndx_mor, ndx_mor, stmpar%lsedsus, stmpar%lsedtot)
       end if
       !
