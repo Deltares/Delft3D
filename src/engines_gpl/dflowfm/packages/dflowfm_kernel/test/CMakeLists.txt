@@ -33,6 +33,7 @@ add_fortran_gtest(${test_target}
         src/test_timespace_parameters.f90
         src/test_ec_module_block.f90
         src/test_ec_module_data_value.f90
+        src/test_spiderweb.f90
         src/test_unstruc_inifields.f90
         src/test_unstruc_model.f90
         src/test_restart_coordinates.f90
