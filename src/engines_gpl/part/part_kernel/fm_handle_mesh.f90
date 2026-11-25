@@ -47,13 +47,18 @@ contains
         use m_part_mesh
         use m_sferic, only: jsferic, jasfer3D
         use geometry_module, only: dbdistance, sphertocart3D, normaloutchk, comp_masscenter
+        use io_ugrid, only: UG_EDGETYPE_INTERNAL, UG_EDGETYPE_BND
+        use precision_basics, only: comparereal
         use timers
 
         type(t_hydrodynamics), intent(in) :: hyd                    !< description of the hydrodynamics
         type(t_ug_meshgeom), intent(in) :: waqgeom                !< model geometry
         type(t_openbndsect_coll), intent(in) :: openbndsect_coll       ! collection of openbndsects
 
-        integer :: ierr, i, j, k, L, ln, N, num_rows
+        type(t_openbnd_section), pointer   :: openbndsect            ! single section
+        type(t_open_boundary_line),pointer :: openbndlin             ! single open boundary lin
+
+        integer :: ierr, i_sect, i_bnd, bnd_id, i, j, k, L, ln, N, num_rows
         real(8) :: bottomlevel
 
         integer(4) ithndl              ! handle to time this subroutine
@@ -65,6 +70,26 @@ contains
         else
             jsferic = 0
         endif
+        
+        nobndl = hyd%nobndl
+        call realloc(xbnd, nobndl, keepExisting = .false., fill = dmiss)
+        call realloc(ybnd, nobndl, keepExisting = .false., fill = dmiss)
+        
+        do i_sect = 1 , openbndsect_coll%current_size
+            openbndsect => openbndsect_coll%openbndsect_pnts(i_sect)
+            do i_bnd = 1 , openbndsect%openbndlin_coll%current_size
+               openbndlin => openbndsect%openbndlin_coll%openbndlin_pnts(i_bnd)
+               if (comparereal(openbndlin%x1, openbndlin%x2) /= 0 .or. comparereal(openbndlin%y1, openbndlin%y2) /= 0) then
+                  bnd_id = abs(openbndlin%ibnd)
+                  If (bnd_id > 0 .and. bnd_id <= nobndl) then
+                     xbnd(bnd_id) = (openbndlin%x1 + openbndlin%x2) / 2.0d0
+                     ybnd(bnd_id) = (openbndlin%y1 + openbndlin%y2) / 2.0d0
+                  else
+                     write(*,*) "Warning: openbndlin%ibnd is out of range: ", openbndlin%ibnd
+                  end if
+               end if
+            end do
+         end do
 
         numk = waqgeom%numnode
         call realloc(xk, numk, keepExisting = .false., fill = dmiss)
@@ -87,7 +112,7 @@ contains
         do L = 1, numl
             kn(1, L) = waqgeom%edge_nodes(1, L)
             kn(2, L) = waqgeom%edge_nodes(2, L)
-            if (hyd%edge_type(L) == 1 .or. hyd%edge_type(L) == 2 .or. hyd%edge_type(L) == 21 .or. hyd%edge_type(L) == 22) then
+            if (hyd%edge_type(L) == UG_EDGETYPE_INTERNAL .or. hyd%edge_type(L) == UG_EDGETYPE_BND) then
                 Lnx = Lnx + 1
                 lne2ln(L) = Lnx
                 lnn = 2
@@ -97,9 +122,33 @@ contains
             endif
             lne(1, L) = max(waqgeom%edge_faces(1, L), 0)
             lne(2, L) = max(waqgeom%edge_faces(2, L), 0)
+            if (hyd%edge_type(L) == UG_EDGETYPE_BND) then
+               do i_bnd = 1, nobndl
+                  if (comparereal(xbnd(i_bnd), waqgeom%edgex(L)) == 0 .and. comparereal(ybnd(i_bnd), waqgeom%edgey(L)) == 0) then
+                     lne(2, L) = -i_bnd
+                     exit
+                  end if
+               end do
+               if (lne(2, L) == 0) then
+                  write (*,*) 'Warning: no boundary id found for edge: ', L
+               end if
+            endif
         enddo
-        call realloc(q0, hyd%num_exchanges, keepExisting = .false., fill = 0d0)
-        call realloc(q1, hyd%num_exchanges, keepExisting = .false., fill = 0d0)
+        
+        ! check lne with pointer table of first layer
+        do l = 1, Lnx
+           if (.not.((lne(1,L)==hyd%ipoint(1,L).and.lne(2,L)==hyd%ipoint(2,L)) .or. &
+                    (lne(1,L)==hyd%ipoint(2,L).and.lne(2,L)==hyd%ipoint(1,L)))) then
+              write(*,*) 'Links do not match for iexch: ', l
+           end if
+        end do
+        
+        call realloc(ln2ln3D, [Lnx, kmx], keepExisting = .false., fill = 0)
+        call make_ln2ln3D(hyd%nosegl, hyd%num_exchanges, hyd%ipoint, hyd%num_exchanges_u_dir, Lnx, hyd%nobndl, kmx, ln2ln3D)
+               
+        noqfull = hyd%num_layers * lnx + hyd%num_exchanges_z_dir
+        call realloc(q0, noqfull, keepExisting = .false., fill = 0d0)
+        call realloc(q1, noqfull, keepExisting = .false., fill = 0d0)
 
         nump = waqgeom%numface
         Ndx = hyd%num_cells! waqgeom%numface
@@ -544,7 +593,7 @@ contains
 
     !  initialise grid and hydro data
     subroutine ini_part_grid(hyd)
-        use partmem, only: ihdel, layt, nolayp, tcktot, nmaxp, mmaxp, mnmax2, mnmaxk, laybot
+        use partmem, only: ihdel, layt, nolayp, tcktot, nmaxp, mmaxp, mnmax2, mnmaxk, laybot, lgrid3
         use m_part_flow
         use m_part_transport, only: constituents, numconst
         use m_missing
@@ -592,6 +641,8 @@ contains
         layt = hyd%num_layers
         nolayp = hyd%num_layers
         allocate (tcktot(hyd%num_layers))
+        ! Dummy allocation
+        allocate (lgrid3(0,0))
         do ilay = 1, hyd%num_layers
             tcktot(ilay) = hyd%waq_layers(ilay)
         enddo
@@ -600,5 +651,88 @@ contains
 
         if (timon) call timstop (ithndl)
     end subroutine ini_part_grid
+    
+    subroutine make_ln2ln3D(nosegl, num_exchanges, ipoint, num_exchanges_u_dir, Lnx, nobndl, kmx, ln2ln3D)
+    integer, intent(in) :: nosegl
+    integer, intent(in) :: num_exchanges
+    integer, intent(in) :: ipoint(4, num_exchanges)
+    integer, intent(in) :: num_exchanges_u_dir
+    integer, intent(in) :: Lnx
+    integer, intent(in) :: nobndl
+    integer, intent(in) :: kmx
+    integer, intent(inout) :: ln2ln3D(Lnx, kmx)
+
+    integer :: i, ifrom, ito, ilayfrom, ilayto, ilink, max_cell_from_exchanges, cell_from_exchanges
+    
+    ! Fill ln2ln3D based on the pointer table of first layer (ipoint)
+    
+    integer, allocatable :: no_cell_exchange(:)
+    integer, allocatable :: cell_to_cell(:,:)
+    integer, allocatable :: cell_exchange(:,:)
+    
+    allocate (no_cell_exchange(-nobndl:nosegl))
+    no_cell_exchange = 0
+    do ilink = 1, Lnx
+       ifrom = ipoint(1, ilink)
+       if (ifrom < -nobndl .or. ifrom > nosegl) cycle
+       no_cell_exchange(ifrom) = no_cell_exchange(ifrom) + 1
+    end do
+    max_cell_from_exchanges = maxval(no_cell_exchange)
+
+    ! allocate tables
+    allocate (cell_to_cell(-nobndl:nosegl, max_cell_from_exchanges))
+    allocate (cell_exchange(-nobndl:nosegl, max_cell_from_exchanges))
+    no_cell_exchange = 0
+    cell_to_cell = 0
+    cell_exchange = 0
+    
+    ! Fill cell_to_cell and cell_exchange arrays with first layer exchanges
+    ilayfrom = 1
+    do ilink = 1, Lnx
+       ifrom = ipoint(1, ilink)
+       no_cell_exchange(ifrom) = no_cell_exchange(ifrom) + 1
+       cell_to_cell(ifrom, no_cell_exchange(ifrom)) = ipoint(2, ilink)
+       cell_exchange(ifrom, no_cell_exchange(ifrom)) = ilink
+       ln2ln3D(ilink, ilayfrom) = ilink
+    end do
+
+    ! For each layer, fill ln2ln3D with the corresponding exchange numbers
+    do ilink = Lnx + 1, num_exchanges_u_dir
+       ifrom = 0
+       ito = 0
+       ilayfrom = 0
+       ilayto = 0
+       if (ipoint(1, ilink) > 0) then
+          ifrom = mod(ipoint(1, ilink) - 1, nosegl) + 1
+          ilayfrom = int((ipoint(1, ilink) - 1) / nosegl) + 1
+       else if (ipoint(1, ilink) < 0) then
+          ifrom = mod(ipoint(1, ilink) + 1, nobndl) - 1
+          ilayfrom = -int(ipoint(1, ilink) / nobndl)
+       end if
+       if (ipoint(2, ilink) > 0) then
+          ito = mod(ipoint(2, ilink) - 1, nosegl) + 1
+          ilayto = int((ipoint(2, ilink) - 1) / nosegl) + 1
+       else if (ipoint(2, ilink) < 0) then
+          ito = mod(ipoint(2, ilink) + 1, nobndl) - 1
+          ilayto = -int(ipoint(2, ilink) / nobndl)
+       end if
+       if (ifrom == 0 .or. ito == 0 .or. ilayfrom == 0 .or. ilayto /= ilayfrom) cycle
+       
+       ! Find the index of cell_from_exchanges in cell_to_cell(ifrom, :)
+       do i = 1, no_cell_exchange(ifrom)
+          if (cell_to_cell(ifrom, i) == ito .and. ln2ln3D(cell_exchange(ifrom, i), ilayfrom) == 0) then
+             ln2ln3D(cell_exchange(ifrom, i), ilayfrom) = ilink
+             exit
+          end if
+       end do
+    end do
+    
+    ! deallocate tables
+    deallocate (no_cell_exchange)
+    deallocate (cell_to_cell)
+    deallocate (cell_exchange)
+
+    return
+    end subroutine make_ln2ln3D
 
 end module m_fm_handle_mesh
