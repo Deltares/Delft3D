@@ -144,16 +144,16 @@ contains
       character(len=len(md_restartfile)) :: original_file
       character(len=len(restart_date_time)) :: original_date_time
       logical :: original_use_bedlevel, original_use_bedcomp
-      real(kind=dp) :: saved_time0, saved_time1, saved_time_user
+      real(kind=dp) :: original_time0, original_time1, original_time_user
       logical :: file_exist
 
       original_file = md_restartfile
       original_date_time = restart_date_time
       original_use_bedlevel = use_restart_bedlevel
       original_use_bedcomp = use_restart_bedcomp
-      saved_time0 = time0
-      saved_time1 = time1
-      saved_time_user = time_user
+      original_time0 = time0
+      original_time1 = time1
+      original_time_user = time_user
       md_restartfile = solver_sequence(solver_period_index)%restart_file
       restart_date_time = solver_sequence(solver_period_index)%restart_date_time
       use_restart_bedlevel = solver_sequence(solver_period_index)%use_restart_bedlevel
@@ -163,9 +163,9 @@ contains
       restart_date_time = original_date_time
       use_restart_bedlevel = original_use_bedlevel
       use_restart_bedcomp = original_use_bedcomp
-      time0 = saved_time0
-      time1 = saved_time1
-      time_user = saved_time_user
+      time0 = original_time0
+      time1 = original_time1
+      time_user = original_time_user
       if (iresult /= DFM_NOERR .or. .not. file_exist) then
          call mess(LEVEL_ERROR, 'Solver sequence: failed to read restart file.')
          iresult = DFM_GENERICERROR
