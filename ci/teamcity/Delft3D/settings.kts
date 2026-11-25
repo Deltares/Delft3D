@@ -57,6 +57,7 @@ project {
     template(TemplateLinuxAgentNoFips)
     template(TemplateMergeRequest)
     template(TemplateDetermineProduct)
+    template(TemplateDetermineChangedFiles)
     template(TemplatePublishStatus)
     template(TemplateMonitorPerformance)
     template(TemplateFailureCondition)
