@@ -54,7 +54,7 @@ add_fortran_gtest(test_ec_module
     SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/Gtest/test_ec_module.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/Gtest/test_ec_harmonic_projection.f90
-    LIBRARIES ec_module
+    LIBRARIES ec_module netCDF::netcdff
     VISUAL_STUDIO_PATH tests/utils_lgpl/ec_module/test
 )
 

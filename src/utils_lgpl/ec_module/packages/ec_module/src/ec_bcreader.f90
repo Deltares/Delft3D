@@ -76,7 +76,6 @@ contains
     character(len=*), optional,    intent(in)      :: funtype
 
     integer(kind=8)                                :: fhandle
-    integer                                        :: nrVar    
     success = .false.
     bc%qname = quantityName
     bc%bcname = plilabel
@@ -102,24 +101,15 @@ contains
           allocate(bc%columns(bc%numcols))
        endif
     case (BC_FTYPE_NETCDF)
-       allocate(bc%ncvarndx(1))
        if (.not.ecNetCDFscan(bc%ncptr, quantityName, plilabel, bc%ncvarndx, bc%nclocndx, &
-                              bc%dimvector, vectormax=bc%quantity%vectormax)) then
+                              bc%nc_dimension_indices, vectormax=bc%quantity%vectormax)) then
           return                                               ! quantityName-plilabel combination not found
        endif
-       
-       ! Find number of quantity, get dimension (2 or 3) and then decide TSERIES or TIM3D
-       do nrVar = 1, size(bc%ncptr%variable_names)
-          if (strcmpi(bc%ncptr%variable_names(nrVar),quantityName)) then
-            exit
-          end if
-       end do
-                              
-       if (bc%ncptr%variable_ndims(nrVar) == 2) then 
+
+       if (bc%nc_dimension_indices(1)%layer_index == 0) then
           bc%func = BC_FUNC_TSERIES
-       end if
-       if (bc%ncptr%variable_ndims(nrVar) == 3) then
-         bc%func = BC_FUNC_TIM3D
+       else
+          bc%func = BC_FUNC_TIM3D
        end if
        
        ! TODO:
@@ -900,7 +890,7 @@ contains
           return
        endif
                  
-       if (.not.ecNetCDFGetTimeseriesValue (BCPtr%ncptr,BCPtr%ncvarndx,BCPtr%nclocndx,BCPtr%dimvector, &
+       if (.not.ecNetCDFGetTimeseriesValue (BCPtr%ncptr,BCPtr%ncvarndx,BCPtr%nclocndx,BCPtr%nc_dimension_indices, &
           BCPtr%nctimndx,ec_timesteps,values, BCPtr%buffer,BCPtr%func)) then
           call set_ec_message("Read failure in file: "//trim(BCPtr%fname))
           return

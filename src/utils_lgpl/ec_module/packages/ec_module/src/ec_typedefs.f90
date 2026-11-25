@@ -97,6 +97,13 @@ module m_ec_typedefs
 
    !===========================================================================
 
+   !> Positions in a NetCDF boundary variable's dimension list; zero means absent.
+   type :: tEcBoundaryDimensionIndices
+      integer :: station_index = 0
+      integer :: time_index = 0
+      integer :: layer_index = 0
+   end type tEcBoundaryDimensionIndices
+
    type :: tEcBCBlock
       integer :: id !< unique BCBlock number, set by ecInstanceCreateBCBlock
       integer :: numcols !< number of data columns
@@ -127,8 +134,7 @@ module m_ec_typedefs
       integer, dimension(:), allocatable :: ncvarndx !< varid(s) in the associated netcdf for the requested quantity
       integer :: nclocndx = -1 !< index in the timeseries_id dimension for the requested location
       integer :: nctimndx = 1 !< record number to be read
-      integer, dimension(:), allocatable :: ncdimvector !< List of dimensions in NetCDF describing the chosen variable
-      integer, allocatable, dimension(:) :: dimvector !< dimension ID's indexing the variable of interest
+      type(tEcBoundaryDimensionIndices), dimension(:), allocatable :: nc_dimension_indices !< Layout per NetCDF variable.
       logical :: feof = .false. !< End-Of-File signal
       real(hp), dimension(:), allocatable :: buffer !< buffer for temporary storage in readers
       !
@@ -379,17 +385,12 @@ module m_ec_typedefs
       logical :: end_of_data !< End of data reached?
       character(len=100), dimension(:), allocatable :: standard_names !<Standard names by varid in a netcdf-file
       character(len=100), dimension(:), allocatable :: variable_names !<Variable names by varid in a netcdf file
-!     integer, dimension(:), allocatable            :: dim_varids                    !<For each dimension in NetCDF: id of the associated variable
 !     integer, dimension(:), allocatable            :: dim_length                    !<For each dimension in NetCDF: length
-      integer :: relndx = 0 !<Index of realization in an ensemble, for the reader
-      ! ignored if below zero or file is not an ensemble
-      integer, dimension(:), pointer :: dim_varids => null() !<For each dimension in NetCDF: id of the associated variable
       integer, dimension(:), pointer :: dim_length => null() !<For each dimension in NetCDF: length
-      integer :: time_id
-      integer :: lonx_id
-      integer :: laty_id
+      integer :: time_dimid = -1 !< Dimension of the file's time coordinate.
+      integer :: lonx_dimid
+      integer :: laty_dimid
       logical :: one_time_field = .false. !< TRUE: input file contains single time field
-      logical :: is_column_major = .false. !< TRUE: input file contains X/Y ordered data instead of Y/X
    end type tEcFileReader
 
    type tEcFileReaderPtr
@@ -398,12 +399,25 @@ module m_ec_typedefs
 
    !===========================================================================
 
+   !> Positions in a gridded NetCDF variable's dimension list; zero means absent.
+   type :: tEcDimensionIndices
+      integer :: x_index = 0 !< X or station dimension.
+      integer :: y_index = 0
+      integer :: z_index = 0
+      integer :: time_index = 0
+   end type tEcDimensionIndices
+
    !>
    type tEcItem
       integer :: id !< unique Item number, set by ecInstanceCreateItem
       integer :: role !< source or target Item, see itemType enumeration
       integer :: accessType !< file reader, file writer, data provider
       integer :: providerId = ec_undef_int !< identifier of the provider (usually a file reader)
+      integer :: nc_varid = -1 !< NetCDF variable ID in the source file.
+      integer :: nc_rank = 0 !< Rank of the source NetCDF variable.
+      type(tEcDimensionIndices) :: dimension_indices !< Layout of the source NetCDF variable.
+      real(hp) :: factor = 1.0_hp !< Scale applied to source values before adding the offset.
+      real(hp) :: offset = 0.0_hp !< Offset added to scaled source values.
       type(tEcQuantity), pointer :: quantityPtr => null() !< Quantity, stored in tEcInstance%ecQuantitiesPtr
       type(tEcElementSet), pointer :: elementSetPtr => null() !< ElementSet, stored in tEcInstance%ecElementSetsPtr
       type(tEcField), pointer :: sourceT0FieldPtr => null() !< Field containing source data of second to last read data block.
@@ -433,11 +447,7 @@ module m_ec_typedefs
       integer :: timeint = timeint_lin !< Temporal interpolation type, default is linear
       logical :: periodic = .false. !< Use timeseries periodically if True
       logical :: constant = .false. !< Provide constant value if True
-      !< Intended for quantities from NetCDF:
-      real(hp) :: fillvalue = ec_undef_hp !<    default if NaN, missing value
-      real(hp) :: factor = 1.d0 !<    multiplication (scale) factor
-      real(hp) :: offset = 0.d0 !<    offset (new = raw*factor + offset)
-      integer :: ncid = -1 !<    NetCDF variable ID, only used in case of NetCDF format
+      real(hp) :: fillvalue = ec_undef_hp !< Missing-value marker.
    end type tEcQuantity
 
    type tEcQuantityPtr

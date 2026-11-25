@@ -109,7 +109,7 @@ contains
    end subroutine create_scalar_netcdf
 
    !> Create a gridded field with one or two snapshots, or no time axis, for initialization tests.
-   subroutine create_initial_gridded_netcdf(file_name, variable_name, standard_name, unit, with_time, snapshot_count, with_depth)
+   subroutine create_initial_gridded_netcdf(file_name, variable_name, standard_name, unit, with_time, snapshot_count)
       use netcdf
 
       character(len=*), intent(in) :: file_name !< NetCDF fixture path.
@@ -118,19 +118,12 @@ contains
       character(len=*), intent(in), optional :: unit !< Data units; defaults to meters.
       logical, intent(in), optional :: with_time !< Include a time axis; defaults to true.
       integer, intent(in), optional :: snapshot_count !< Number of snapshots, one or two; defaults to two.
-      logical, intent(in), optional :: with_depth !< Include two depth levels; defaults to false.
-      integer :: ncid, x_dimid, y_dimid, time_dimid, depth_dimid
-      integer :: x_varid, y_varid, time_varid, field_varid, depth_varid
+      integer :: ncid, x_dimid, y_dimid, time_dimid
+      integer :: x_varid, y_varid, time_varid, field_varid
       integer :: num_snapshots
       real(dp), dimension(2, 2, 2) :: values
-      real(dp), dimension(2, 2, 2, 2) :: layered_values
-      real(dp), dimension(2), parameter :: TIMES = [0.0_dp, 100.0_dp]
-      logical :: has_time, has_depth
+      logical :: has_time
 
-      has_depth = .false.
-      if (present(with_depth)) then
-         has_depth = with_depth
-      end if
       has_time = .true.
       if (present(with_time)) then
          has_time = with_time
@@ -141,43 +134,12 @@ contains
       end if
       values(:, :, 1) = reshape([1.0_dp, 3.0_dp, 5.0_dp, 7.0_dp], [2, 2])
       values(:, :, 2) = values(:, :, 1) + 10.0_dp
-      layered_values(:, :, 1, :) = values + 20.0_dp
-      layered_values(:, :, 2, :) = values
-      call check_netcdf(nf90_create(file_name, NF90_CLOBBER, ncid))
-      call check_netcdf(nf90_def_dim(ncid, 'x', 2, x_dimid))
-      call check_netcdf(nf90_def_dim(ncid, 'y', 2, y_dimid))
+      call define_initial_grid(file_name, has_time, num_snapshots, ncid, &
+                               x_dimid, y_dimid, time_dimid, x_varid, y_varid, time_varid)
       if (has_time) then
-         call check_netcdf(nf90_def_dim(ncid, 'time', num_snapshots, time_dimid))
-      end if
-      call check_netcdf(nf90_def_var(ncid, 'x', NF90_DOUBLE, [x_dimid], x_varid))
-      call check_netcdf(nf90_put_att(ncid, x_varid, 'standard_name', 'projection_x_coordinate'))
-      call check_netcdf(nf90_put_att(ncid, x_varid, 'units', 'm'))
-      call check_netcdf(nf90_def_var(ncid, 'y', NF90_DOUBLE, [y_dimid], y_varid))
-      call check_netcdf(nf90_put_att(ncid, y_varid, 'standard_name', 'projection_y_coordinate'))
-      call check_netcdf(nf90_put_att(ncid, y_varid, 'units', 'm'))
-      if (has_depth) then
-         call check_netcdf(nf90_def_dim(ncid, 'depth', 2, depth_dimid))
-         call check_netcdf(nf90_def_var(ncid, 'depth', NF90_DOUBLE, [depth_dimid], depth_varid))
-         call check_netcdf(nf90_put_att(ncid, depth_varid, 'standard_name', 'depth'))
-         call check_netcdf(nf90_put_att(ncid, depth_varid, 'axis', 'Z'))
-         call check_netcdf(nf90_put_att(ncid, depth_varid, 'positive', 'down'))
-         call check_netcdf(nf90_put_att(ncid, depth_varid, 'units', 'm'))
-      end if
-      if (has_time) then
-         call check_netcdf(nf90_def_var(ncid, 'time', NF90_DOUBLE, [time_dimid], time_varid))
-         call check_netcdf(nf90_put_att(ncid, time_varid, 'standard_name', 'time'))
-         call check_netcdf(nf90_put_att(ncid, time_varid, 'units', 'seconds since 2000-01-01 00:00:00'))
-         if (has_depth) then
-            call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, [x_dimid, y_dimid, depth_dimid, time_dimid], field_varid))
-         else
-            call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, [x_dimid, y_dimid, time_dimid], field_varid))
-         end if
+         call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, [x_dimid, y_dimid, time_dimid], field_varid))
       else
-         if (has_depth) then
-            call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, [x_dimid, y_dimid, depth_dimid], field_varid))
-         else
-            call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, [x_dimid, y_dimid], field_varid))
-         end if
+         call check_netcdf(nf90_def_var(ncid, variable_name, NF90_DOUBLE, [x_dimid, y_dimid], field_varid))
       end if
       if (present(standard_name)) then
          call check_netcdf(nf90_put_att(ncid, field_varid, 'standard_name', standard_name))
@@ -191,27 +153,103 @@ contains
       end if
       call check_netcdf(nf90_put_att(ncid, field_varid, 'coordinates', 'x y'))
       call check_netcdf(nf90_enddef(ncid))
-      call check_netcdf(nf90_put_var(ncid, x_varid, [-1.0_dp, 1.0_dp]))
-      call check_netcdf(nf90_put_var(ncid, y_varid, [-1.0_dp, 1.0_dp]))
-      if (has_depth) then
-         call check_netcdf(nf90_put_var(ncid, depth_varid, [3.0_dp, 1.0_dp]))
-      end if
+      call write_initial_grid_coordinates(ncid, x_varid, y_varid, time_varid, num_snapshots)
       if (has_time) then
-         call check_netcdf(nf90_put_var(ncid, time_varid, TIMES(1:num_snapshots)))
-         if (has_depth) then
-            call check_netcdf(nf90_put_var(ncid, field_varid, layered_values(:, :, :, 1:num_snapshots)))
-         else
-            call check_netcdf(nf90_put_var(ncid, field_varid, values(:, :, 1:num_snapshots)))
-         end if
+         call check_netcdf(nf90_put_var(ncid, field_varid, values(:, :, 1:num_snapshots)))
       else
-         if (has_depth) then
-            call check_netcdf(nf90_put_var(ncid, field_varid, layered_values(:, :, :, 1)))
-         else
-            call check_netcdf(nf90_put_var(ncid, field_varid, values(:, :, 1)))
-         end if
+         call check_netcdf(nf90_put_var(ncid, field_varid, values(:, :, 1)))
       end if
       call check_netcdf(nf90_close(ncid))
    end subroutine create_initial_gridded_netcdf
+
+   subroutine define_initial_grid(file_name, has_time, num_snapshots, ncid, &
+                                  x_dimid, y_dimid, time_dimid, x_varid, y_varid, time_varid)
+      use netcdf
+
+      character(len=*), intent(in) :: file_name
+      logical, intent(in) :: has_time
+      integer, intent(in) :: num_snapshots
+      integer, intent(out) :: ncid, x_dimid, y_dimid, time_dimid, x_varid, y_varid, time_varid
+
+      call check_netcdf(nf90_create(file_name, NF90_CLOBBER, ncid))
+      call check_netcdf(nf90_def_dim(ncid, 'x', 2, x_dimid))
+      call check_netcdf(nf90_def_dim(ncid, 'y', 2, y_dimid))
+      time_dimid = -1
+      time_varid = -1
+      if (has_time) then
+         call check_netcdf(nf90_def_dim(ncid, 'time', num_snapshots, time_dimid))
+      end if
+      call check_netcdf(nf90_def_var(ncid, 'x', NF90_DOUBLE, [x_dimid], x_varid))
+      call check_netcdf(nf90_put_att(ncid, x_varid, 'standard_name', 'projection_x_coordinate'))
+      call check_netcdf(nf90_put_att(ncid, x_varid, 'units', 'm'))
+      call check_netcdf(nf90_def_var(ncid, 'y', NF90_DOUBLE, [y_dimid], y_varid))
+      call check_netcdf(nf90_put_att(ncid, y_varid, 'standard_name', 'projection_y_coordinate'))
+      call check_netcdf(nf90_put_att(ncid, y_varid, 'units', 'm'))
+      if (has_time) then
+         call check_netcdf(nf90_def_var(ncid, 'time', NF90_DOUBLE, [time_dimid], time_varid))
+         call check_netcdf(nf90_put_att(ncid, time_varid, 'standard_name', 'time'))
+         call check_netcdf(nf90_put_att(ncid, time_varid, 'units', 'seconds since 2000-01-01 00:00:00'))
+      end if
+   end subroutine define_initial_grid
+
+   subroutine write_initial_grid_coordinates(ncid, x_varid, y_varid, time_varid, num_snapshots)
+      use netcdf
+
+      integer, intent(in) :: ncid, x_varid, y_varid, time_varid, num_snapshots
+      real(dp), dimension(2), parameter :: TIMES = [0.0_dp, 100.0_dp]
+
+      call check_netcdf(nf90_put_var(ncid, x_varid, [-1.0_dp, 1.0_dp]))
+      call check_netcdf(nf90_put_var(ncid, y_varid, [-1.0_dp, 1.0_dp]))
+      if (time_varid > 0) then
+         call check_netcdf(nf90_put_var(ncid, time_varid, TIMES(1:num_snapshots)))
+      end if
+   end subroutine write_initial_grid_coordinates
+
+   logical function create_layered_salinity_netcdf(file_name, snapshot_count, field_dimensions, field_values) result(success)
+      use m_file_helpers, only: create_netcdf_from_cdl
+
+      character(len=*), intent(in) :: file_name
+      integer, intent(in) :: snapshot_count
+      character(len=*), intent(in) :: field_dimensions, field_values
+      character(len=256), dimension(:), allocatable :: cdl
+      character(len=512) :: cmdmsg
+      character(len=16) :: time_dimension
+      integer :: cmdstat, exitstat
+
+      cdl = [character(len=256) :: 'netcdf layered_salinity {', 'dimensions:', 'x = 2;', 'y = 2;', 'depth = 2;']
+      if (snapshot_count > 0) then
+         write (time_dimension, '(a,i0,a)') 'time = ', snapshot_count, ';'
+         cdl = [character(len=256) :: cdl, time_dimension]
+      end if
+      if (index(field_dimensions, 'member') > 0) then
+         cdl = [character(len=256) :: cdl, 'member = 2;']
+      end if
+      cdl = [character(len=256) :: cdl, 'variables:', &
+             'double x(x);', 'x:standard_name = "projection_x_coordinate";', 'x:units = "m";', &
+             'double y(y);', 'y:standard_name = "projection_y_coordinate";', 'y:units = "m";', &
+             'double depth(depth);', 'depth:standard_name = "depth";', 'depth:axis = "Z";', &
+             'depth:positive = "down";', 'depth:units = "m";']
+      if (snapshot_count > 0) then
+         cdl = [character(len=256) :: cdl, 'double time(time);', 'time:standard_name = "time";', &
+                'time:units = "seconds since 2000-01-01 00:00:00";']
+      end if
+      cdl = [character(len=256) :: cdl, 'double Field('//field_dimensions//');', &
+             'Field:units = "m";', 'Field:coordinates = "x y";', &
+             'data:', 'x = -1, 1;', 'y = -1, 1;', 'depth = 3, 1;']
+      select case (snapshot_count)
+      case (1)
+         cdl = [character(len=256) :: cdl, 'time = 0;']
+      case (2)
+         cdl = [character(len=256) :: cdl, 'time = 0, 100;']
+      end select
+      cdl = [character(len=256) :: cdl, 'Field = '//field_values//';', '}']
+
+      call create_netcdf_from_cdl(file_name, cdl, cmdstat, exitstat, cmdmsg)
+      success = f90_assert_eq(cmdstat, 0, 'Could not execute ncgen for '//file_name//': '//trim(cmdmsg))
+      if (success) then
+         success = f90_assert_eq(exitstat, 0, 'ncgen conversion failed for '//file_name)
+      end if
+   end function create_layered_salinity_netcdf
 
    subroutine create_netcdf_timeseries_with_coordinates(file_name)
       use netcdf
@@ -2425,22 +2463,40 @@ contains
       call teardown_minimal_grid()
    end subroutine test_initial_salinity_netcdf_interpolates_at_start
 
+   ! CDL lists dimensions slowest to fastest, the reverse of the NetCDF Fortran API order.
    !$gtest
    subroutine test_initial_3d_salinity_two_timestamps() bind(C)
-      call run_initial_3d_salinity_case('two_timestamps', .true., 2, 9.0_dp)
+      call run_initial_3d_salinity_case('two_timestamps', 2, 'time, depth, y, x', &
+                                        '21, 23, 25, 27, 1, 3, 5, 7, 31, 33, 35, 37, 11, 13, 15, 17', 9.0_dp)
    end subroutine test_initial_3d_salinity_two_timestamps
 
    !$gtest
    subroutine test_initial_3d_salinity_one_timestamp() bind(C)
-      call run_initial_3d_salinity_case('one_timestamp', .true., 1, 4.0_dp)
+      call run_initial_3d_salinity_case('one_timestamp', 1, 'time, depth, y, x', '21, 23, 25, 27, 1, 3, 5, 7', 4.0_dp)
    end subroutine test_initial_3d_salinity_one_timestamp
 
    !$gtest
    subroutine test_initial_3d_salinity_timeless() bind(C)
-      call run_initial_3d_salinity_case('timeless', .false., 1, 4.0_dp)
+      call run_initial_3d_salinity_case('timeless', 0, 'depth, y, x', '21, 23, 25, 27, 1, 3, 5, 7', 4.0_dp)
    end subroutine test_initial_3d_salinity_timeless
 
-   subroutine run_initial_3d_salinity_case(case_name, with_time, snapshot_count, expected_surface)
+   !$gtest
+   subroutine test_initial_3d_salinity_permuted_axes() bind(C)
+      call run_initial_3d_salinity_case('permuted_time', 2, 'x, depth, y, time', &
+                                        '21, 31, 25, 35, 1, 11, 5, 15, 23, 33, 27, 37, 3, 13, 7, 17', 9.5_dp, sample_x=0.5_dp)
+      call run_initial_3d_salinity_case('permuted_timeless', 0, 'x, y, depth', &
+                                        '21, 1, 25, 5, 23, 3, 27, 7', 4.5_dp, sample_x=0.5_dp)
+   end subroutine test_initial_3d_salinity_permuted_axes
+
+   !$gtest
+   subroutine test_initial_3d_salinity_uses_first_extra_slice() bind(C)
+      call run_initial_3d_salinity_case('extra_axis', 2, 'x, depth, member, y, time', &
+                                        '21, 31, 25, 35, 121, 131, 125, 135, 1, 11, 5, 15, 101, 111, 105, 115, '// &
+                                        '23, 33, 27, 37, 123, 133, 127, 137, 3, 13, 7, 17, 103, 113, 107, 117', &
+                                        9.5_dp, sample_x=0.5_dp)
+   end subroutine test_initial_3d_salinity_uses_first_extra_slice
+
+   subroutine run_initial_3d_salinity_case(case_name, snapshot_count, field_dimensions, field_values, expected_surface, sample_x)
       use m_flow, only: sa1, kmx, ndkx, kbot, ktop, zws, zcs, layertype, LAYTP_SIGMA
       use m_flowparameters, only: jasal
       use m_flowtimes, only: irefdate, tzone, tstart_user
@@ -2449,9 +2505,10 @@ contains
       use messagehandling, only: mess, LEVEL_WARN
 
       character(len=*), intent(in) :: case_name
-      logical, intent(in) :: with_time
       integer, intent(in) :: snapshot_count
+      character(len=*), intent(in) :: field_dimensions, field_values
       real(dp), intent(in) :: expected_surface
+      real(dp), intent(in), optional :: sample_x
 
       character(len=64) :: nc_file, ext_file
       type(tree_data), pointer :: bnd_ptr, block_ptr
@@ -2460,11 +2517,21 @@ contains
       integer :: saved_jasal
       character(len=1024) :: ec_message
 
+      nc_file = 'test_initial_3d_salinity_'//case_name//'.nc'
+      ext_file = 'test_initial_3d_salinity_'//case_name//'.ext'
+      if (.not. create_layered_salinity_netcdf(trim(nc_file), snapshot_count, field_dimensions, field_values)) then
+         return
+      end if
+
       saved_kmx = kmx
       saved_ndkx = ndkx
       saved_layertype = layertype
       saved_jasal = jasal
       call setup_minimal_grid()
+      if (present(sample_x)) then
+         ! An off-centre point distinguishes X and Y in the interpolated result.
+         xz(1) = sample_x
+      end if
       kmx = 2
       ndkx = 3
       layertype = LAYTP_SIGMA
@@ -2482,11 +2549,7 @@ contains
       jsferic = 0
       threshold_abort = LEVEL_FATAL
 
-      write (nc_file, '(a,a,a)') 'test_initial_3d_salinity_', trim(case_name), '.nc'
-      write (ext_file, '(a,a,a)') 'test_initial_3d_salinity_', trim(case_name), '.ext'
       call initialize_ec_module()
-      call create_initial_gridded_netcdf(trim(nc_file), 'field', with_time=with_time, &
-                                         snapshot_count=snapshot_count, with_depth=.true.)
       call create_file(trim(ext_file), [ &
                        '[Spatial]', &
                        '    quantity            = initialSalinity', &

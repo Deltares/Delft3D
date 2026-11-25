@@ -146,8 +146,8 @@ python build.py --config FM-SUITE --build-type Release
 ```
 
 The Delft3D recipe enables the NetCDF utilities for the D-Flow FM kernel tests.
-Run those tests through CTest to pick up the packaged `ncgen` and its shared
-libraries without adding them to your global `PATH`.
+The fixture helper uses the configured Conan `ncgen` and its shared libraries
+whether the kernel tests run through CTest or directly from an IDE.
 
 ### 8. Wire the package into CMake
 

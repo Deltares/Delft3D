@@ -44,7 +44,7 @@ contains
          call f90_expect_true(.false., "Could not execute ncgen: "//trim(cmdmsg))
          return
       end if
-      call f90_expect_eq(exitstat, 0, "ncgen conversion failed; check PATH and process output")
+      call f90_expect_eq(exitstat, 0, "ncgen conversion failed; check process output")
       if (exitstat /= 0) then
          return
       end if

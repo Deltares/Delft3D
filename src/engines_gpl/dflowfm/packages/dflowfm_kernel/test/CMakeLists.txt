@@ -34,7 +34,7 @@ function(conan_test_directory output variable_prefix)
 endfunction()
 
 conan_test_directory(netcdf_bin netcdf_BIN_DIRS)
-set(ncgen_test_launcher "${CMAKE_COMMAND}" -E env --modify "PATH=path_list_prepend:${netcdf_bin}")
+set(ncgen_command "${CMAKE_COMMAND}" -E env --modify "PATH=path_list_prepend:${netcdf_bin}")
 if(WIN32)
     set(runtime_variable PATH)
     set(runtime_directory BIN)
@@ -42,17 +42,26 @@ else()
     set(runtime_variable LD_LIBRARY_PATH)
     set(runtime_directory LIB)
     conan_test_directory(netcdf_lib netcdf_LIB_DIRS)
-    list(APPEND ncgen_test_launcher --modify "${runtime_variable}=path_list_prepend:${netcdf_lib}")
+    list(APPEND ncgen_command --modify "${runtime_variable}=path_list_prepend:${netcdf_lib}")
 endif()
 foreach(package IN ITEMS hdf5 zlib)
     conan_test_directory(dependency_dir "${package}_${runtime_directory}_DIRS")
-    list(APPEND ncgen_test_launcher --modify "${runtime_variable}=path_list_prepend:${dependency_dir}")
+    list(APPEND ncgen_command --modify "${runtime_variable}=path_list_prepend:${dependency_dir}")
 endforeach()
-list(APPEND ncgen_test_launcher --)
+list(APPEND ncgen_command -- "${netcdf_bin}/ncgen${CMAKE_EXECUTABLE_SUFFIX}")
+
+# Embed the configured command so direct GoogleTest runs do not depend on a CTest launcher.
+set(ncgen_command_source "character(len=*), parameter :: ncgen_command = &\n")
+foreach(argument IN LISTS ncgen_command)
+    string(REPLACE "'" "''" argument "${argument}")
+    string(APPEND ncgen_command_source "   '\"${argument}\" '// &\n")
+endforeach()
+string(APPEND ncgen_command_source "   '-o '\n")
+set(ncgen_include_dir "${CMAKE_CURRENT_BINARY_DIR}/ncgen/$<CONFIG>")
+file(GENERATE OUTPUT "${ncgen_include_dir}/ncgen_command.inc" CONTENT "${ncgen_command_source}")
 
 add_fortran_gtest(${test_target}
     TEST_TEARDOWN reset_dflowfm_after_test
-    TEST_LAUNCHER ${ncgen_test_launcher}
     SOURCES
         src/dflowfm_test_cleanup.f90
         src/test_dflowfm_kernel_example.f90
@@ -89,6 +98,7 @@ add_fortran_gtest(${test_target}
     VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
 )
 add_subdirectory(helpers)
+target_include_directories(test_helpers PRIVATE "${ncgen_include_dir}")
 
 copy_test_resources("${test_target}" "${CMAKE_CURRENT_SOURCE_DIR}/resources/MDUversion" "$<TARGET_FILE_DIR:${test_target}>/MDUversion")
 
