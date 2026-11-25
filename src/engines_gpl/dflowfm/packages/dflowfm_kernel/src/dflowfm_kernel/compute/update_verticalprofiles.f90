@@ -50,11 +50,11 @@ contains
                         a1, vicwwu, VON_KARMAN, c2e, ndkx, turbulent_advection_scheme, turbulent_kinetic_energy_ws, turbulent_kinetic_energy_ws_old, &
                         turbulent_dissipation_ws, turbulent_dissipation_ws_old, turbulent_kinetic_energy_wu, turbulent_kinetic_energy_wu_old, &
                         turbulent_dissipation_wu, turbulent_dissipation_wu_old, sum_q_times_turbulent_kinetic_energy_ws, ktop, kbot, &
-                        sum_q_times_turbulent_dissipation_ws, sum_inflowing_discharges_ws, q1, THETA_KEPS_DIFFUSION, &
+                        sum_q_times_turbulent_dissipation_ws, sum_inflowing_discharges_ws, q1, &
                         EPS4, trsh_u1lb, ustw, zws, ak, bk, ck, dk, hs, epshu, ucx, ucy, qw, kmxn, &
                         jarichardsononoutput, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, tke_min, kmxl, &
                         c1e, c1t, c2t, C9OF1, EPS6, eps_min, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
-                        vicwws, kmxx, tur_time_int_factor, EPS20, tur_time_int_method, TURB_LAX_ALL, VISKIN, jawavebreakerturbulence, &
+                        vicwws, kmxx, tur_time_int_factor, EPS20, tur_time_int_method, TURB_LAX_ALL, jawavebreakerturbulence, &
                         rhomean, minimum_vertical_eddy_viscosity_for_production, dijdij, v, eddyviscositysurfacmax, use_density, &
                         TURBULENCE_MODEL_NONE, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS_FLOW_LINKS, &
                         TURBULENCE_MODEL_KTAU, TURBULENCE_MODEL_KEPS_CELL_CENTERS, minimum_vertical_eddy_viscosity_for_production
@@ -76,11 +76,6 @@ contains
       use m_waveconst
 
       ! Local variables
-      real(kind=dp) :: theta_complement
-      real(kind=dp) :: turbulent_viscosity_up !< [m2/s] Turbulent viscosity in the layer above.
-      real(kind=dp) :: turbulent_viscosity_down !< [m2/s] Turbulent viscosity in the layer below.
-      real(kind=dp) :: turbulent_diffusion_up !< [m2/s] Turbulent diffusion in the layer above.
-      real(kind=dp) :: turbulent_diffusion_down !< [m2/s] Turbulent diffusion in the layer below.
       real(kind=dp) :: sourtu
       real(kind=dp) :: sinktu
       real(kind=dp) :: zz, z00, ac1, ac2
@@ -88,7 +83,7 @@ contains
       real(kind=dp) :: turbulent_kinetic_energy_at_top !< [m2/s2] Turbulent kinetic energy at the top layer.
       real(kind=dp) :: turbulent_dissipation_at_bottom !< [m2/s3] Turbulent dissipation at the bottom layer.
       real(kind=dp) :: turbulent_dissipation_at_top !< [m2/s3] Turbulent dissipation at the top layer.
-      real(kind=dp) :: hdzb, adv, omegu
+      real(kind=dp) :: hdzb
       real(kind=dp) :: dt_inverse !< [1/s] Inverse of the previous time step (1/dtprev).
       real(kind=dp), dimension(kmxx) :: dzu !< [m] Layer thickness at flow links.
       real(kind=dp), dimension(kmxx) :: dzw !< [m] Vertical distance between layer centers. (= 0.5 * (dzu(k) + dzu(k+1)))
@@ -258,7 +253,6 @@ contains
             end do
          end if
 
-         theta_complement = 1.0_dp - THETA_KEPS_DIFFUSION
          dt_inverse = 1.0_dp / dtprev ! turbulence transport in current velocity field => do not use new timestep but previous step
 
          do LL = 1, lnx ! all this at velocity points
@@ -341,27 +335,13 @@ contains
                   end if
                end if
 
-               turbulent_viscosity_up = VISKIN + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE
-
                ! Setting up system of equations for turbulent kinetic energy (k)
                do L = Lb, Lt - 1 ! Loop over layer interfaces. Doesn't work for kmx==1
                   Lu = L + 1
 
                   k = L - Lb + 1
-                  ku = k + 1
-
-                  ! We move up a layer, viscosity up becomes viscosity down
-                  turbulent_viscosity_down = turbulent_viscosity_up
-                  turbulent_viscosity_up = VISKIN + 0.5_dp * (vicwwu(L) + vicwwu(Lu)) * SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE
-
-                  turbulent_diffusion_down = turbulent_viscosity_down / (dzw(k) * dzu(k))
-                  turbulent_diffusion_up = turbulent_viscosity_up / (dzw(k) * dzu(ku))
-
-                  ak(k) = ak(k) - turbulent_diffusion_down * THETA_KEPS_DIFFUSION
-                  bk(k) = bk(k) + (turbulent_diffusion_down + turbulent_diffusion_up) * THETA_KEPS_DIFFUSION
-                  ck(k) = ck(k) - turbulent_diffusion_up * THETA_KEPS_DIFFUSION
-                  dk(k) = dk(k) - turbulent_diffusion_up * (turbulent_kinetic_energy_wu_old(L) - turbulent_kinetic_energy_wu_old(Lu)) * theta_complement &
-                          + turbulent_diffusion_down * (turbulent_kinetic_energy_wu_old(L - 1) - turbulent_kinetic_energy_wu_old(L)) * theta_complement
+                  call add_vertical_diffusion(dzu(k), dzu(k + 1), dzw(k), vicwwu(L - 1:Lu), turbulent_kinetic_energy_wu_old(L - 1:Lu), &
+                                              real(SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE, kind=dp), ak(k), bk(k), ck(k), dk(k))
 
                   ! Source and sink terms turbulent kinetic energy (k)
                   if (use_density()) then
@@ -481,21 +461,7 @@ contains
                      arLL = ac1 * a1(n1) + ac2 * a1(n2)
                      do L = Lb, Lt - 1
                         k = L - Lb + 1
-                        omegu = 0.5_dp * womegu(k)
-                        if (k > 1) then
-                           omegu = omegu + 0.5_dp * womegu(k - 1) ! Omega at U-point in between layer interfaces
-                        end if
-                        if (omegu > 0.0_dp) then ! omegu(k) lies below interface(k)
-                           adv = omegu / dzw(k) ! omegu(k) > 0 contributes to k
-                           bk(k) = bk(k) + adv
-                           ak(k) = ak(k) - adv
-                        else
-                           if (k > 1) then
-                              adv = -omegu / dzw(k - 1)
-                              bk(k - 1) = bk(k - 1) + adv
-                              ck(k - 1) = ck(k - 1) - adv
-                           end if
-                        end if
+                        call add_vertical_upwind_advection(k, womegu, dzw, ak, bk, ck)
 
                         if (turbulent_advection_scheme == 3) then ! turkin
                            if (q1(L) + q1(L + 1) > 0) then
@@ -602,28 +568,14 @@ contains
                   call apply_horizontal_coupling(turbulent_dissipation_wu_old, turbulent_dissipation_ws)
                end if
 
-               turbulent_viscosity_up = VISKIN + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * SIGMA_TURBULENT_DISSIPATION_INVERSE
-
                do L = Lb, Lt - 1
                   Lu = L + 1
 
                   k = L - Lb + 1
                   ku = k + 1
 
-                  ! We move up a layer, viscosity up becomes viscosity down
-                  turbulent_viscosity_down = turbulent_viscosity_up
-                  turbulent_viscosity_up = VISKIN + 0.5_dp * (vicwwu(L) + vicwwu(Lu)) * SIGMA_TURBULENT_DISSIPATION_INVERSE
-
-                  turbulent_diffusion_down = turbulent_viscosity_down / (dzw(k) * dzu(k))
-                  turbulent_diffusion_up = turbulent_viscosity_up / (dzw(k) * dzu(ku))
-
-                  ak(k) = ak(k) - turbulent_diffusion_down * THETA_KEPS_DIFFUSION
-                  bk(k) = bk(k) + (turbulent_diffusion_down + turbulent_diffusion_up) * THETA_KEPS_DIFFUSION
-                  ck(k) = ck(k) - turbulent_diffusion_up * THETA_KEPS_DIFFUSION
-                  if (THETA_KEPS_DIFFUSION /= 1.0_dp) then
-                     dk(k) = dk(k) - turbulent_diffusion_up * (turbulent_dissipation_wu_old(L) - turbulent_dissipation_wu_old(Lu)) * theta_complement &
-                             + turbulent_diffusion_down * (turbulent_dissipation_wu_old(L - 1) - turbulent_dissipation_wu_old(L)) * theta_complement
-                  end if
+                  call add_vertical_diffusion(dzu(k), dzu(ku), dzw(k), vicwwu(L - 1:Lu), turbulent_dissipation_wu_old(L - 1:Lu), &
+                                              SIGMA_TURBULENT_DISSIPATION_INVERSE, ak(k), bk(k), ck(k), dk(k))
 
                   if (iturbulencemodel == TURBULENCE_MODEL_KEPS_FLOW_LINKS) then
 
@@ -722,21 +674,7 @@ contains
                if (turbulent_advection_scheme >= 3) then ! Advection of tureps, vertical implicit, horizontal explicit
                   do L = Lb, Lt - 1
                      k = L - Lb + 1
-                     omegu = 0.5_dp * womegu(k)
-                     if (k > 1) then
-                        omegu = omegu + 0.5_dp * womegu(k - 1) ! Omega at U-point in between layer interfaces
-                     end if
-                     if (omegu > 0.0_dp) then
-                        adv = omegu / dzw(k)
-                        bk(k) = bk(k) + adv
-                        ak(k) = ak(k) - adv
-                     else
-                        if (k > 1) then
-                           adv = -omegu / dzw(k - 1)
-                           bk(k - 1) = bk(k - 1) + adv
-                           ck(k - 1) = ck(k - 1) - adv
-                        end if
-                     end if
+                     call add_vertical_upwind_advection(k, womegu, dzw, ak, bk, ck)
 
                      if (turbulent_advection_scheme == 3) then ! tureps
                         if (q1(L) + q1(L + 1) > 0) then
@@ -901,7 +839,6 @@ contains
             end do
          end if
 
-         theta_complement = 1.0_dp - THETA_KEPS_DIFFUSION
          dt_inverse = 1.0_dp / dtprev ! turbulence transport in current velocity field => do not use new timestep but previous step
 
          do LL = 1, lnx ! all this at velocity points
@@ -953,28 +890,12 @@ contains
                ck(0:kxL) = 0.0_dp
                dk(0:kxL) = dt_inverse * turbulent_kinetic_energy_ws_old(kb0:kt)
 
-               turbulent_viscosity_up = VISKIN + 0.5_dp * (vicwws(kb0) + vicwws(kb)) * SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE !
-
                do L = kb, kt - 1 ! Loop over layer interfaces. Doesn't work for kmx==1
                   Lu = L + 1
 
                   k = L - kb + 1
-                  ku = k + 1
-
-                  ! We move up a layer, viscosity up becomes viscosity down
-                  turbulent_viscosity_down = turbulent_viscosity_up
-                  turbulent_viscosity_up = VISKIN + 0.5_dp * (vicwws(L) + vicwws(Lu)) * SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE
-
-                  turbulent_diffusion_down = turbulent_viscosity_down / (dzws(k) * dzs(k))
-                  turbulent_diffusion_up = turbulent_viscosity_up / (dzws(k) * dzs(ku))
-
-                  ak(k) = ak(k) - turbulent_diffusion_down * THETA_KEPS_DIFFUSION
-                  bk(k) = bk(k) + (turbulent_diffusion_down + turbulent_diffusion_up) * THETA_KEPS_DIFFUSION
-                  ck(k) = ck(k) - turbulent_diffusion_up * THETA_KEPS_DIFFUSION
-                  if (THETA_KEPS_DIFFUSION /= 1.0_dp) then
-                     dk(k) = dk(k) - turbulent_diffusion_up * (turbulent_kinetic_energy_ws_old(L) - turbulent_kinetic_energy_ws_old(Lu)) * theta_complement &
-                             + turbulent_diffusion_down * (turbulent_kinetic_energy_ws_old(L - 1) - turbulent_kinetic_energy_ws_old(L)) * theta_complement
-                  end if
+                  call add_vertical_diffusion(dzs(k), dzs(k + 1), dzws(k), vicwws(L - 1:Lu), turbulent_kinetic_energy_ws_old(L - 1:Lu), &
+                                              real(SIGMA_TURBULENT_KINETIC_ENERGY_INVERSE, kind=dp), ak(k), bk(k), ck(k), dk(k))
 
                   !c Source and sink terms                                                                           k turkin
                   if (use_density()) then
@@ -1043,21 +964,7 @@ contains
                      arLL = a1(kk)
                      do L = kb, kt - 1
                         k = L - kb + 1
-                        omegu = 0.5_dp * womegu(k)
-                        if (k > 1) then
-                           omegu = omegu + 0.5_dp * womegu(k - 1) ! Omega at U-point in between layer interfaces
-                        end if
-                        if (omegu > 0.0_dp) then ! omegu(k) lies below interface(k)
-                           adv = omegu / dzws(k) ! omegu(k) > 0 contributes to k
-                           bk(k) = bk(k) + adv
-                           ak(k) = ak(k) - adv
-                        else
-                           if (k > 1) then
-                              adv = -omegu / dzws(k - 1)
-                              bk(k - 1) = bk(k - 1) + adv
-                              ck(k - 1) = ck(k - 1) - adv
-                           end if
-                        end if
+                        call add_vertical_upwind_advection(k, womegu, dzws, ak, bk, ck)
 
                         volki = 1.0_dp / (dzws(k) * arLL)
                         dk(k) = dk(k) + sum_q_times_turbulent_kinetic_energy_ws(L) * volki
@@ -1081,28 +988,12 @@ contains
                ! Vertical diffusion; Neumann condition on surface;
                ! Dirichlet condition on bed ; teta method:
 
-               turbulent_viscosity_up = VISKIN + 0.5_dp * (vicwws(kb0) + vicwws(kb)) * SIGMA_TURBULENT_DISSIPATION_INVERSE
-
                do L = kb, kt - 1
                   Lu = L + 1
 
                   k = L - kb + 1
-                  ku = k + 1
-
-                  ! We move up a layer, viscosity up becomes viscosity down
-                  turbulent_viscosity_down = turbulent_viscosity_up
-                  turbulent_viscosity_up = VISKIN + 0.5_dp * (vicwws(L) + vicwws(Lu)) * SIGMA_TURBULENT_DISSIPATION_INVERSE
-
-                  turbulent_diffusion_down = turbulent_viscosity_down / (dzws(k) * dzs(k))
-                  turbulent_diffusion_up = turbulent_viscosity_up / (dzws(k) * dzs(ku))
-
-                  ak(k) = ak(k) - turbulent_diffusion_down * THETA_KEPS_DIFFUSION
-                  bk(k) = bk(k) + (turbulent_diffusion_down + turbulent_diffusion_up) * THETA_KEPS_DIFFUSION
-                  ck(k) = ck(k) - turbulent_diffusion_up * THETA_KEPS_DIFFUSION
-                  if (THETA_KEPS_DIFFUSION /= 1.0_dp) then
-                     dk(k) = dk(k) - turbulent_diffusion_up * (turbulent_dissipation_ws_old(L) - turbulent_dissipation_ws_old(Lu)) * theta_complement &
-                             + turbulent_diffusion_down * (turbulent_dissipation_ws_old(L - 1) - turbulent_dissipation_ws_old(L)) * theta_complement
-                  end if
+                  call add_vertical_diffusion(dzs(k), dzs(k + 1), dzws(k), vicwws(L - 1:Lu), turbulent_dissipation_ws_old(L - 1:Lu), &
+                                              SIGMA_TURBULENT_DISSIPATION_INVERSE, ak(k), bk(k), ck(k), dk(k))
 
                   !c Source and sink terms                                                                epsilon
                   if (bruva(k) < 0.0_dp) then ! instable, increase rhs
@@ -1143,19 +1034,7 @@ contains
                if (turbulent_advection_scheme >= 3) then ! Advection of tureps, vertical implicit, horizontal explicit
                   do L = kb, kt - 1
                      k = L - kb + 1
-                     omegu = 0.5_dp * womegu(k)
-                     if (k > 1) omegu = omegu + 0.5_dp * womegu(k - 1) ! Omega at U-point in between layer interfaces
-                     if (omegu > 0.0_dp) then ! omegu(k) lies below interface(k)
-                        adv = omegu / dzws(k) ! omegu(k) > 0 contributes to k
-                        bk(k) = bk(k) + adv
-                        ak(k) = ak(k) - adv
-                     else
-                        if (k > 1) then
-                           adv = -omegu / dzws(k - 1)
-                           bk(k - 1) = bk(k - 1) + adv
-                           ck(k - 1) = ck(k - 1) - adv
-                        end if
-                     end if
+                     call add_vertical_upwind_advection(k, womegu, dzws, ak, bk, ck)
 
                      volki = 1.0_dp / (dzws(k) * arLL)
                      dk(k) = dk(k) + sum_q_times_turbulent_dissipation_ws(L) * volki
@@ -1250,6 +1129,66 @@ contains
       end subroutine apply_horizontal_coupling
 
    end subroutine update_verticalprofiles
+
+   !> Add theta-weighted vertical diffusion to one interior row of a turbulence equation.
+   pure subroutine add_vertical_diffusion(thickness_below, thickness_above, interface_spacing, eddy_viscosity, old_profile, &
+                                         sigma_inverse, lower, diagonal, upper, rhs)
+      use m_flow, only: VISKIN, THETA_KEPS_DIFFUSION
+
+      real(kind=dp), intent(in) :: thickness_below !< [m] Thickness of the layer below the current interface.
+      real(kind=dp), intent(in) :: thickness_above !< [m] Thickness of the layer above the current interface.
+      real(kind=dp), intent(in) :: interface_spacing !< [m] Distance between the layer centers below and above the current interface.
+      real(kind=dp), dimension(3), intent(in) :: eddy_viscosity !< [m2/s] Eddy viscosity at the lower, current, and upper interfaces.
+      real(kind=dp), dimension(3), intent(in) :: old_profile !< Previous-step k, epsilon, or tau at the lower, current, and upper interfaces.
+      real(kind=dp), intent(in) :: sigma_inverse !< Inverse turbulent Prandtl number for the equation being assembled.
+      real(kind=dp), intent(inout) :: lower !< Matrix coefficient coupling this row to the interface below.
+      real(kind=dp), intent(inout) :: diagonal !< Matrix coefficient for the current interface.
+      real(kind=dp), intent(inout) :: upper !< Matrix coefficient coupling this row to the interface above.
+      real(kind=dp), intent(inout) :: rhs !< Right-hand side of this row, updated with explicit diffusion.
+
+      real(kind=dp), parameter :: theta_complement = 1.0_dp - THETA_KEPS_DIFFUSION
+      real(kind=dp) :: diffusivity_below, diffusivity_above, diffusion_below, diffusion_above
+
+      diffusivity_below = VISKIN + 0.5_dp * (eddy_viscosity(1) + eddy_viscosity(2)) * sigma_inverse
+      diffusivity_above = VISKIN + 0.5_dp * (eddy_viscosity(2) + eddy_viscosity(3)) * sigma_inverse
+      diffusion_below = diffusivity_below / (interface_spacing * thickness_below)
+      diffusion_above = diffusivity_above / (interface_spacing * thickness_above)
+
+      lower = lower - diffusion_below * THETA_KEPS_DIFFUSION
+      diagonal = diagonal + (diffusion_below + diffusion_above) * THETA_KEPS_DIFFUSION
+      upper = upper - diffusion_above * THETA_KEPS_DIFFUSION
+      if (THETA_KEPS_DIFFUSION /= 1.0_dp) then
+         rhs = rhs - diffusion_above * (old_profile(2) - old_profile(3)) * theta_complement &
+               + diffusion_below * (old_profile(1) - old_profile(2)) * theta_complement
+      end if
+   end subroutine add_vertical_diffusion
+
+   !> Add implicit upwind advection between neighboring vertical interfaces.
+   pure subroutine add_vertical_upwind_advection(k, omega, interface_spacing, lower, diagonal, upper)
+      integer, intent(in) :: k !< Interior row above the layer center where the advecting velocity is evaluated.
+      real(kind=dp), dimension(:), intent(in) :: omega !< [m/s] Vertical transport velocity at each interface.
+      real(kind=dp), dimension(:), intent(in) :: interface_spacing !< [m] Distance between the layer centers straddling each interface.
+      real(kind=dp), dimension(0:), intent(inout) :: lower !< Matrix coefficients coupling each row to the interface below; row 0 is the bed.
+      real(kind=dp), dimension(0:), intent(inout) :: diagonal !< Matrix coefficients for each row's own interface; row 0 is the bed.
+      real(kind=dp), dimension(0:), intent(inout) :: upper !< Matrix coefficients coupling each row to the interface above; row 0 is the bed.
+
+      real(kind=dp) :: center_velocity, advection
+
+      center_velocity = 0.5_dp * omega(k)
+      if (k > 1) then
+         center_velocity = center_velocity + 0.5_dp * omega(k - 1)
+      end if
+
+      if (center_velocity > 0.0_dp) then
+         advection = center_velocity / interface_spacing(k)
+         diagonal(k) = diagonal(k) + advection
+         lower(k) = lower(k) - advection
+      else if (k > 1) then ! Do not alter the prescribed bed boundary row.
+         advection = -center_velocity / interface_spacing(k - 1)
+         diagonal(k - 1) = diagonal(k - 1) + advection
+         upper(k - 1) = upper(k - 1) - advection
+      end if
+   end subroutine add_vertical_upwind_advection
 
    !> Calculates vertical density gradient for Brunt-Vaisala frequency
    subroutine calculate_drhodz(zws, drhodz)
