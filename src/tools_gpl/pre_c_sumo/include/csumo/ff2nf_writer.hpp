@@ -24,7 +24,6 @@ namespace pre_c_sumo::c_sumo
 
     private:
         constexpr static std::string_view root_element_name = "COSUMO";
-        constexpr static std::string_view file_version = "0.3";
         FF2NFConfig config_;
 
         [[nodiscard]] std::expected<void, utils::io_errors::WriteError> validate() const;

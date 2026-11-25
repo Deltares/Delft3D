@@ -22,6 +22,17 @@ TEST(PreciceSinkSourceConnectionsMeshTest, SizesCoordinatesForRequestedVertexCou
     EXPECT_EQ(sink_source_connections_mesh.coordinates.size(), 6u);
 }
 
+TEST(PreciceSinkSourceConnectionsMeshTest, KeepsNameWhenResizing)
+{
+    pre_c_sumo::precice::SinkSourceConnectionsMesh mesh{"sources_sinks_nodes"};
+
+    mesh.setVertexCount(3);
+    mesh.setVertexCount(0);
+
+    EXPECT_EQ(mesh.name, "sources_sinks_nodes");
+    EXPECT_EQ(mesh.precice_ids.size(), 1u);
+}
+
 TEST(PreciceZSpecificationTest, UsesTwoDimensionsAndOneZCoordinateIn2D)
 {
     const pre_c_sumo::precice::ZSpecification z_spec{true, -10.0, 2.0, 10.0};

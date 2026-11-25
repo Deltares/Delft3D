@@ -2,8 +2,6 @@
 #define SRC_TOOLS_GPL_PRE_C_SUMO_PRECICE_EXCHANGE_HPP
 
 #include <expected>
-#include <string_view>
-#include <vector>
 
 #include "precice/data.hpp"
 #include "precice/sink_source_connections.hpp"
@@ -26,8 +24,7 @@ namespace pre_c_sumo::precice
      * match the registered vertex count.
      */
     [[nodiscard]] std::expected<void, SinkSourceConnectionsError> writeSinkSourceConnections(
-        ::precice::Participant& participant, std::string_view mesh_name, const std::vector<int>& vertex_ids,
-        SinkSourceConnections& connections);
+        ::precice::Participant& participant, const SinkSourceConnectionsMesh& mesh, SinkSourceConnections& connections);
 } // namespace pre_c_sumo::precice
 
 #endif // SRC_TOOLS_GPL_PRE_C_SUMO_PRECICE_EXCHANGE_HPP

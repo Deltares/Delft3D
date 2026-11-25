@@ -49,8 +49,7 @@ namespace pre_c_sumo::utils::file_io
         // The current Linux image uses GCC Toolset 14 headers but an older system libstdc++
         // that ignores std::ios::noreplace. This check is not atomic with the subsequent open.
         // Once the OS runtime supports noreplace, replace this check with std::ios::noreplace
-        // in the open flags to restore atomic exclusive creation. (std::ofstream(file_path, std::ios::out |
-        // std::ios::noreplace))
+        // in the open flags to restore atomic exclusive creation. (std::ofstream(file_path, std::ios::out | std::ios::noreplace))
         std::error_code status_error;
         const bool file_exists = std::filesystem::exists(file_path, status_error);
         if (status_error)
@@ -60,7 +59,8 @@ namespace pre_c_sumo::utils::file_io
         }
         if (file_exists)
         {
-            return std::unexpected(io_errors::WriteError{std::format("File already exists: {}", file_path.string())});
+            return std::unexpected(io_errors::WriteError{
+                std::format("File already exists: {}", file_path.string())});
         }
 
         errno = 0;

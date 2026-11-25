@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "csumo/data.hpp"
+#include "csumo/file_version.hpp"
 #include "utils/file_io.hpp"
 #include "utils/io_errors.hpp"
 #include "utils/monadic.hpp"
@@ -273,7 +274,7 @@ namespace pre_c_sumo::c_sumo
 
     void FF2NFWriter::createFileVersionSection(pugi::xml_node& root) const
     {
-        addChildWithText(root, "fileVersion", file_version.data());
+        addChildWithText(root, "fileVersion", csumo_file_version.data());
     }
 
     void FF2NFWriter::createCommSection(pugi::xml_node& root) const

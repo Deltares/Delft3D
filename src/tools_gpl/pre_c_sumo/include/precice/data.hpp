@@ -54,6 +54,7 @@ namespace pre_c_sumo::precice
     /// Registration buffers for the preCICE sink/source mesh.
     struct SinkSourceConnectionsMesh
     {
+        std::string name{};
         std::vector<double> coordinates{};
         std::vector<int> precice_ids{};
         void setVertexCount(std::size_t vertex_count);

@@ -28,12 +28,11 @@ namespace pre_c_sumo::precice
     }
 
     std::expected<void, SinkSourceConnectionsError> writeSinkSourceConnections(::precice::Participant& participant,
-                                                                               std::string_view mesh_name,
-                                                                               const std::vector<int>& precice_ids,
+                                                                               const SinkSourceConnectionsMesh& mesh,
                                                                                SinkSourceConnections& connections)
     {
         const auto& data = connections.data();
-        const std::size_t registered_vertex_count = precice_ids.size();
+        const std::size_t registered_vertex_count = mesh.precice_ids.size();
         const std::size_t entry_count = connections.get_number_of_entries();
 
         if (registered_vertex_count == 0)
@@ -56,11 +55,11 @@ namespace pre_c_sumo::precice
         auto write_or_zero = [&](std::string_view data_name, const std::vector<double>& values) {
             if (values.empty())
             {
-                participant.writeData(mesh_name, data_name, precice_ids, zero_values);
+                participant.writeData(mesh.name, data_name, mesh.precice_ids, zero_values);
                 return;
             }
 
-            participant.writeData(mesh_name, data_name, precice_ids, values);
+            participant.writeData(mesh.name, data_name, mesh.precice_ids, values);
         };
 
         write_or_zero("sinks_x", data.sink_x_vector);

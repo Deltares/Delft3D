@@ -14,9 +14,6 @@ namespace pre_c_sumo::c_sumo
     {
     public:
         [[nodiscard]] static std::expected<NF2FFData, utils::io_errors::ParseError> fromString(std::string_view xml);
-
-    private:
-        constexpr static std::string_view current_file_version = "0.3";
     };
 } // namespace pre_c_sumo::c_sumo
 

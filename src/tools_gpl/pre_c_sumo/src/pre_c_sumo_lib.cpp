@@ -78,10 +78,9 @@ namespace pre_c_sumo
         precice::SinkSourceConnections initial_sink_source_connections = initial_result.value();
 
         // Set sinks/sources mesh
-        constexpr std::string_view sink_source_connections_mesh_name = "sources_sinks_nodes";
-        precice::SinkSourceConnectionsMesh sink_source_connections_mesh;
+        precice::SinkSourceConnectionsMesh sink_source_connections_mesh{"sources_sinks_nodes"};
         sink_source_connections_mesh.setVertexCount(initial_sink_source_connections.get_number_of_entries());
-        participant.setMeshVertices(sink_source_connections_mesh_name, sink_source_connections_mesh.coordinates,
+        participant.setMeshVertices(sink_source_connections_mesh.name, sink_source_connections_mesh.coordinates,
                                     sink_source_connections_mesh.precice_ids);
         if (participant.requiresInitialData())
         {
@@ -141,9 +140,9 @@ namespace pre_c_sumo
 
             if (participant.isTimeWindowComplete())
             {
-                participant.resetMesh(sink_source_connections_mesh_name);
+                participant.resetMesh(sink_source_connections_mesh.name);
                 sink_source_connections_mesh.setVertexCount(sink_source_connections.get_number_of_entries());
-                participant.setMeshVertices(sink_source_connections_mesh_name, sink_source_connections_mesh.coordinates,
+                participant.setMeshVertices(sink_source_connections_mesh.name, sink_source_connections_mesh.coordinates,
                                             sink_source_connections_mesh.precice_ids);
                 std::println("Reset sinks/sources mesh to {} vertices.",
                              sink_source_connections.get_number_of_entries());
@@ -156,8 +155,7 @@ namespace pre_c_sumo
             }
 
             auto write_result =
-                precice::writeSinkSourceConnections(participant, sink_source_connections_mesh_name,
-                                                    sink_source_connections_mesh.precice_ids, sink_source_connections);
+                precice::writeSinkSourceConnections(participant, sink_source_connections_mesh, sink_source_connections);
 
             if (!write_result.has_value())
             {

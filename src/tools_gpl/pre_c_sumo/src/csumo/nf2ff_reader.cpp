@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "csumo/data.hpp"
+#include "csumo/file_version.hpp"
 #include "csumo/xml.hpp"
 #include "utils/io_errors.hpp"
 #include "utils/monadic.hpp"
@@ -235,7 +236,7 @@ namespace pre_c_sumo::c_sumo
     {
         ASSIGN_OR_RETURN(auto doc, utils::xml_parsing::parseXmlDocument(xml));
         ASSIGN_OR_RETURN(const auto root, utils::xml_parsing::validateRoot(doc, {"NF2FF"}));
-        ASSIGN_OR_RETURN(auto file_version, parseNFFileVersion(root, current_file_version));
+        ASSIGN_OR_RETURN(auto file_version, parseNFFileVersion(root, csumo_file_version));
 
         // Discharge
         ASSIGN_OR_RETURN(auto discharge_node, parseDischarge(root));

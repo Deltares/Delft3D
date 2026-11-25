@@ -40,7 +40,7 @@ namespace pre_c_sumo::c_sumo
         std::vector<Point2D> ambient_positions{};
         std::optional<Point2D> intake{};
         Discharge discharge{};
-        double nozzle_diameter{};  ///< Nozzle diameter [m].
+        double nozzle_diameter{}; ///< Nozzle diameter [m].
         double nozzle_elevation{}; ///< Height above the bed [m].
         double vertical_angle{};   ///< Discharge angle [degrees].
         double horizontal_angle{}; ///< Discharge angle, 0=east, 90=north [degrees].
@@ -60,7 +60,7 @@ namespace pre_c_sumo::c_sumo
         double z_coordinate{};
         double x_velocity{}; ///< Horizontal velocity [m/s].
         double y_velocity{}; ///< Horizontal velocity [m/s].
-        double density{};    ///< Density [kg/m3].
+        double density{}; ///< Density [kg/m3].
         std::vector<double> constituents{};
     };
 
