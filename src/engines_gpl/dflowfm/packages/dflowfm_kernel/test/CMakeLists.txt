@@ -146,6 +146,18 @@ endforeach()
 add_test(NAME mass_balance_subsupl.volume_remap COMMAND test_subsupl_balance volume_remap)
 add_test(NAME mass_balance_subsupl.sigma_boundary COMMAND test_subsupl_balance sigma_boundary)
 
+foreach(dimensions IN ITEMS 2 3)
+    set(case_name "mass_balance_dredging.${dimensions}d")
+    set(case_directory "${CMAKE_CURRENT_BINARY_DIR}/dredging_cases/${case_name}")
+    file(MAKE_DIRECTORY "${case_directory}")
+    add_test(NAME ${case_name} COMMAND test_subsupl_balance dredging ${dimensions})
+    set_tests_properties(${case_name} PROPERTIES
+        WORKING_DIRECTORY "${case_directory}"
+        ENVIRONMENT "OMP_NUM_THREADS=1"
+        TIMEOUT 30
+    )
+endforeach()
+
 add_executable(test_1d_bed_geometry src/test_1d_bed_geometry.f90)
 target_link_libraries(test_1d_bed_geometry PRIVATE dflowfm_kernel test_helpers netCDF::netcdff)
 set_target_properties(test_1d_bed_geometry PROPERTIES

@@ -31,6 +31,10 @@ program test_subsupl_balance
       call check_sigma_boundary()
       stop
    end if
+   if (argument == 'dredging') then
+      call check_dredging()
+      stop
+   end if
    read (argument, *) dimensions
    call get_command_argument(2, morphology)
    call get_command_argument(3, argument)
@@ -105,6 +109,56 @@ program test_subsupl_balance
 
 contains
 
+   !> Check that a sand-mining update conserves the transported mass in a closed domain.
+   subroutine check_dredging()
+      use m_dad, only: dadpar
+      use m_file_helpers, only: create_file
+
+      real(dp), dimension(:), allocatable :: mass_before, mass_after
+      real(dp) :: exported_mass
+
+      call get_command_argument(2, argument)
+      read (argument, *) dimensions
+      call require(dimensions == 2 .or. dimensions == 3, 'Expected 2D or 3D')
+      morphology = 'suspended'
+      update_s1 = 0
+      direction = 0
+      jampi = 0
+      numranks = 1
+      my_rank = 0
+      jagui = 0
+      call init_core()
+      call create_input(dredging=.true.)
+      call append_file('box.mdu', ['DredgeFile = mine.dad'])
+      call create_file('mine.dad', [character(len=80) :: '[DredgeFileInformation]', 'FileVersion = 01.02', &
+                       'PolygonFile = mine.pol', '[Sandmining]', 'Name = mine', 'Volume = 31536'])
+      call create_file('mine.pol', [character(len=80) :: 'mine', '5 2', '0 0', '1 0', '1 1', '0 1', '0 0'])
+      call append_file('box_mba.ini', [character(len=80) :: &
+                       '[MassBalanceArea]', 'name = mine', 'locationFile = mine.pol'])
+      call api_loadmodel('box.mdu')
+      status = flowinit()
+      call require(status == DFM_NOERR, 'Sand-mining model initialization failed')
+      mass_before = total_mass()
+      do step = 1, 64
+         if (time_user >= tstop_user) then
+            exit
+         end if
+         call flowstep(stop_requested, status)
+         call require(status == DFM_NOERR .and. stop_requested == 0, 'Sand-mining timestep failed')
+         call check_balances()
+      end do
+      call require(abs(time_user - 6.0_dp) < tolerance, 'Sand-mining model did not finish')
+      exported_mass = 1600.0_dp * dadpar%totvoldump(dadpar%nadump)
+      call require(exported_mass > 1.0_dp, 'The regression must remove sediment from the domain')
+      mass_after = total_mass()
+      call require(maxval(abs(mass_after - mass_before), mask=imbs2sed == 0) < tolerance, 'Tracer or salinity mass changed')
+      call require(abs(sum(mass_before - mass_after, mask=imbs2sed > 0) - exported_mass) < tolerance, &
+                   'Sediment mass loss differs from the independently reported export')
+      call mba_final(time_user)
+      call check_balances()
+      call flowfinalize()
+   end subroutine check_dredging
+
    !> Boundary sigma volumes must follow subsidence and uplift with either water-level setting.
    subroutine check_sigma_boundary()
       use m_flowgeom, only: ndx
@@ -150,7 +204,7 @@ contains
    subroutine check_volume_remap()
       use m_flow, only: kmx, kbot, ktop, ktop0
       use m_subsidence, only: sdu_volp
-      use m_subsupl_update_s1, only: subsupl_update_constituents
+      use m_subsupl_update_s1, only: subsupl_update_constituents, remap_constituents_after_bed_change
       use m_transport, only: numconst, constituents
 
       ndxi = 2
@@ -180,6 +234,13 @@ contains
       call subsupl_update_constituents()
       call require(maxval(abs(constituents(:, 5))) < tolerance, 'A newly wet layer created mass')
       call require(maxval(abs(constituents(:, 6) - [8.0_dp / 3.0_dp, 4.0_dp])) < tolerance, 'Rewetting changed column mass')
+
+      sdu_volp = vol1
+      ktop(2) = 5
+      vol1(5:6) = [4.0_dp, 0.0_dp]
+      call remap_constituents_after_bed_change(sdu_volp, 'The test column must stay wet.', previous_ktop=[4, 6])
+      call require(maxval(abs(constituents(:, 5) - [2.0_dp, 3.0_dp])) < tolerance, 'Inactive top-layer mass was lost')
+      call require(maxval(abs(constituents(:, 6))) < tolerance, 'An inactive top layer retained concentration')
    end subroutine check_volume_remap
 
    !> Include suspension, bed stratigraphy and pending shortages in each constituent inventory.
@@ -187,13 +248,13 @@ contains
       real(dp) :: mass(nombs)
       integer :: i, fraction
 
-      mass = mbamassend(:, 1)
+      mass = sum(mbamassend, dim=2)
       do i = 1, nombs
          fraction = imbs2sed(i)
          if (fraction > 0) then
-            mass(i) = mass(i) + mbabedmassend(fraction, 1) + mbabedshortmassend(fraction, 1)
+            mass(i) = mass(i) + sum(mbabedmassend(fraction, :)) + sum(mbabedshortmassend(fraction, :))
             if (iflufflyr > 0) then
-               mass(i) = mass(i) + mbafluffmassend(fraction, 1)
+               mass(i) = mass(i) + sum(mbafluffmassend(fraction, :))
             end if
          end if
       end do
@@ -228,10 +289,13 @@ contains
    end subroutine check_inventory
 
    !> Build a closed three-cell domain with a tracer, salinity and optional sediment fractions.
-   subroutine create_input()
+   subroutine create_input(dredging)
       use m_file_helpers, only: create_file
 
+      logical, optional, intent(in) :: dredging
+
       character(len=32) :: layers, end_elevation, sediment_type, transport_formula, bed_update
+      character(len=32) :: forcing_file
 
       call create_network()
       write (layers, '("Kmx = ",i0)') 2 * (dimensions - 2)
@@ -239,6 +303,12 @@ contains
       sediment_type = 'SedTyp = bedload'
       transport_formula = 'TraFrm = 1'
       bed_update = 'BedUpd = true'
+      forcing_file = 'ExtForceFileNew = ground.ext'
+      if (present(dredging)) then
+         if (dredging) then
+            forcing_file = ''
+         end if
+      end if
       if (morphology == 'composition') then
          bed_update = 'BedUpd = false'
       end if
@@ -254,7 +324,7 @@ contains
                        '[numerics]', 'SubsUplUpdateS1 = '//achar(iachar('0') + update_s1), &
                        '[time]', 'RefDate = 20000101', 'Tunit = S', 'TStart = 0', 'TStop = 6', &
                        'DtUser = 0.3', 'DtMax = 0.3', 'DtInit = 0.3', &
-                       '[external forcing]', 'ExtForceFileNew = ground.ext', &
+                       '[external forcing]', forcing_file, &
                        '[output]', 'OutputDir = output', 'MapInterval = 0', 'HisInterval = 0', 'RstInterval = 0', &
                        'MbaFile = box_mba.ini', 'MbaInterval = 0.3', 'MbaWriteTxt = 1', 'MbaWriteNetCDF = 1'])
       if (morphology /= 'off') then

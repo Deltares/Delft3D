@@ -32,7 +32,7 @@
 
 module m_step_reduce_transport_morpho
 
-   use m_subsupl_update_s1, only: subsupl_update_s1, subsupl_update_constituents
+   use m_subsupl_update_s1, only: subsupl_update_s1, subsupl_update_constituents, remap_constituents_after_bed_change
    use m_setucxucy_mor, only: setucxucy_mor
    use m_fm_flocculate, only: fm_flocculate
    use m_fm_fallve, only: fm_fallve
@@ -70,6 +70,7 @@ contains
       use unstruc_display
       use m_waves
       use m_subsidence, only: jasubsupl
+      use m_dad, only: dad_included
       use m_fm_bott3d, only: fm_bott3d
       use m_fm_erosed, only: bedupd, ti_sedtrans
       use m_curvature, only: get_curvature
@@ -81,7 +82,7 @@ contains
       use m_fm_erosed_sub, only: fm_erosed
       use m_source_sink, only: source_sinks
 
-      logical :: morphology_active, update_morphology_geometry
+      logical :: morphology_active, update_morphology_geometry, bed_updated
 
       morphology_active = jased > 0 .and. stm_included
       update_morphology_geometry = .false.
@@ -167,7 +168,7 @@ contains
          if (jamba > 0) then
             call comp_fixedbed_fluxmba()
          end if
-         call fm_bott3d() ! bottom update
+         call fm_bott3d(bed_updated)
          ! Account for the corrected bedload used by this step's composition update.
          call comp_bedload_fluxmba()
       end if
@@ -176,6 +177,9 @@ contains
          ! Complete the morphology volume change before saving the subsidence volumes.
          call setbobs_after_morphology()
          call update_bed_volumes()
+         if (bed_updated .and. dad_included) then
+            call update_dredged_bed()
+         end if
       end if
       if (jasubsupl > 0) then
          call apply_subsupl()
@@ -190,6 +194,34 @@ contains
       end if
 
    end subroutine step_reduce_transport_morpho
+
+   !> Update geometry and remap transported mass for the bed change due to dredging and dumping.
+   subroutine update_dredged_bed()
+      use m_fm_bott3d, only: fm_update_dredged_bed
+      use m_flow, only: vol1, kmx, ktop
+      use m_set_bobs, only: setbobs_after_morphology
+      use m_transport, only: numconst
+
+      character(len=*), parameter :: drying_message = 'Dredging or dumping dried a cell containing transported mass.'
+      real(kind=dp), dimension(:), allocatable :: previous_volume
+      integer, dimension(:), allocatable :: previous_ktop
+      logical :: geometry_changed
+
+      if (numconst > 0) then
+         previous_volume = vol1
+         if (kmx > 0) then
+            previous_ktop = ktop
+         end if
+      end if
+      call fm_update_dredged_bed(geometry_changed)
+      if (geometry_changed) then
+         call setbobs_after_morphology()
+         call update_bed_volumes()
+         if (numconst > 0) then
+            call remap_constituents_after_bed_change(previous_volume, drying_message, previous_ktop)
+         end if
+      end if
+   end subroutine update_dredged_bed
 
    !> Rebuild cell volumes after bed movement, including all vertical layers.
    subroutine update_bed_volumes()

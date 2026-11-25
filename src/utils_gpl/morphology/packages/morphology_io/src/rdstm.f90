@@ -62,7 +62,7 @@ contains
 !! (and files referenced therein).
    subroutine rdstm(stm, griddim, filsed, filmor, filtrn, &
                   & lundia, lsal, ltem, ltur, lsec, lfbedfrm, &
-                  & julrefday, dtunit, nambnd, error, ag)
+                  & julrefday, dtunit, nambnd, error, ag, track_shortage_by_default)
       use grid_dimens_module
       use sediment_basics_module, only: TRA_ADVDIFF
       use morphology_data_module, only: NPARDEF
@@ -90,6 +90,7 @@ contains
       character(*), intent(in) :: dtunit
       logical, intent(out) :: error
       real(fp), intent(in) :: ag
+      logical, optional, intent(in) :: track_shortage_by_default
 !
 ! Local variables
 !
@@ -188,7 +189,7 @@ contains
       call rdmor(lundia, error, filmor, lsec, stm%lsedtot, &
                  & stm%lsedsus, nmaxus, nto, lfbedfrm, nambnd, julrefday, morfil_tree, &
                  & stm%sedpar, stm%morpar, stm%fwfac, stm%morlyr, &
-                 & griddim, ag)
+                 & griddim, ag, track_shortage_by_default)
       if (error) return
       !
       ! Some other parameters are transport formula specific. Use the value

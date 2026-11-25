@@ -42,6 +42,7 @@ module mass_balance_areas_routines
    public comp_horfluxmba
    public comp_bedload_fluxmba
    public comp_fixedbed_fluxmba
+   public comp_dredging_mba
    public comp_bedflowmba
 
    character(len=1), parameter :: space = ' '
@@ -58,6 +59,7 @@ module mass_balance_areas_routines
    character(len=12), parameter :: labelbsh = 'Bed shortage'
    character(len=11), parameter :: labelflf = 'Fluff layer'
    character(len=18), parameter :: labelfixbed = 'Fixed bed exchange'
+   character(len=*), parameter :: labeldredge = 'Dredging and dumping'
    character(len=10), parameter :: labelbedvol = 'Moving bed'
 
    character(len=14), parameter :: postfix_sus = ' in suspension'
@@ -76,6 +78,7 @@ module mass_balance_areas_routines
    integer, parameter :: MASS_UNIT = 1
    integer, parameter :: CONC_UNIT = 2
    logical :: mba_has_moving_bed = .false. !< Geometry accounting is independent of sediment transport.
+   logical :: mba_has_dredging = .false.
 
 contains
 
@@ -89,7 +92,7 @@ contains
       use m_flowtimes, only: tstart_user
       use m_flowparameters, only: jambawritecsv, jambawritetxt, jambawritenetcdf
       use m_flowgeom, only: Lnxi, ln, lne2ln
-      use unstruc_model, only: md_ident, md_ident_sequential
+      use unstruc_model, only: md_ident, md_ident_sequential, md_dredgefile
       use fm_external_forcings_data
       use m_sediment, only: stm_included
       use m_subsidence, only: jasubsupl
@@ -108,6 +111,7 @@ contains
       jamba = 1
       ibflag = 1
       mba_has_moving_bed = stm_included .or. jasubsupl > 0
+      mba_has_dredging = stm_included .and. len_trim(md_dredgefile) > 0
 
       timembastart = tstart_user ! when DFM doesn't start at t=0.0_dp??
       timembastarttot = timembastart
@@ -181,6 +185,11 @@ contains
       if (stm_included) then
          call realloc(mbafluxfixbed, [2, lsedtot, nomba], keepExisting=.false., fill=0.0_dp)
          call realloc(mbafluxfixbedtot, [2, lsedtot, nomba], keepExisting=.false., fill=0.0_dp)
+         if (mba_has_dredging) then
+            call realloc(mbadredgebefore, [lsedtot, nomba], keepExisting=.false., fill=0.0_dp)
+            call realloc(mbadredge, [lsedtot, nomba], keepExisting=.false., fill=0.0_dp)
+            call realloc(mbadredgetot, [lsedtot, nomba], keepExisting=.false., fill=0.0_dp)
+         end if
          call realloc(mbabedmassbegin, [lsedtot, nomba], keepExisting=.false., fill=0.0_dp)
          call realloc(mbabedmassbegintot, [lsedtot, nomba], keepExisting=.false., fill=0.0_dp)
          call realloc(mbabedmassend, [lsedtot, nomba], keepExisting=.false., fill=0.0_dp)
@@ -494,6 +503,10 @@ contains
             mbasedflux(:, :, :, :) = mbasedfluxreduce(:, :, :, :)
             call reduce_double_sum(2 * lsedtot * nomba, mbafluxfixbed, mbafluxfixbedreduce)
             mbafluxfixbed(:, :, :) = mbafluxfixbedreduce(:, :, :)
+            if (mba_has_dredging) then
+               call reduce_double_sum(lsedtot * nomba, mbadredge, mbamassreduce)
+               mbadredge = mbamassreduce
+            end if
          end if
       end if
 
@@ -514,6 +527,9 @@ contains
       if (stm_included) then
          mbasedfluxtot(:, :, :, :) = mbasedfluxtot(:, :, :, :) + mbasedflux(:, :, :, :)
          mbafluxfixbedtot = mbafluxfixbedtot + mbafluxfixbed
+         if (mba_has_dredging) then
+            mbadredgetot = mbadredgetot + mbadredge
+         end if
       end if
 
       ! Write balances to file
@@ -563,6 +579,9 @@ contains
       if (stm_included) then
          mbasedflux(:, :, :, :) = 0.0_dp
          mbafluxfixbed = 0.0_dp
+         if (mba_has_dredging) then
+            mbadredge = 0.0_dp
+         end if
       end if
 
    end subroutine mba_update
@@ -668,7 +687,7 @@ contains
       end do
    end subroutine mba_sum
 
-   subroutine mba_sum_morphology(lsedtot, nomba, mbadef, mbamorfac, mbabedmass, mbabedshortmass, mbafluffmass, mbamassreduce)
+   subroutine mba_sum_morphology(lsedtot, nomba, mbadef, mbamorfac, mbabedmass, mbabedshortmass, mbafluffmass, mbamassreduce, local_only)
       use m_partitioninfo, only: jampi, idomain, my_rank
       use m_flowgeom, only: ndxi, ba_mor
       use m_fm_erosed, only: lsed, stmpar, mfluff, morfac, iflufflyr
@@ -682,6 +701,7 @@ contains
       real(kind=dp), intent(out) :: mbabedshortmass(lsedtot, nomba)
       real(kind=dp), allocatable, intent(inout) :: mbafluffmass(:, :)
       real(kind=dp), allocatable, intent(inout) :: mbamassreduce(:, :)
+      logical, optional, intent(in) :: local_only
 
       integer :: imba !< mass balance area number
       integer :: ised !< sediment fraction
@@ -727,6 +747,11 @@ contains
          end if
       end do
 
+      if (present(local_only)) then
+         if (local_only) then
+            return
+         end if
+      end if
       if (jampi == 1) then
          call reduce_double_sum(lsedtot * nomba, mbabedmass, mbamassreduce)
          mbabedmass(:, :) = mbamassreduce(:, :)
@@ -738,6 +763,30 @@ contains
          end if
       end if
    end subroutine mba_sum_morphology
+
+   !> Account for transfers between areas and across the model boundary due to dredging and dumping.
+   subroutine comp_dredging_mba(before_dredging)
+      use m_mass_balance_area_data, only: jamba, nomba, mbadefdomain, mbadredgebefore, mbadredge, mbamassreduce
+      use m_fm_erosed, only: lsedtot
+
+      logical, intent(in) :: before_dredging
+
+      real(kind=dp) :: morfac
+      real(kind=dp), dimension(lsedtot, nomba) :: bed_mass, bed_shortage
+      real(kind=dp), dimension(:, :), allocatable :: unused_fluff
+
+      if (jamba == 0 .or. .not. mba_has_dredging) then
+         return
+      end if
+      ! Retain rank-local changes and reduce them only at a mass balance output time.
+      call mba_sum_morphology(lsedtot, nomba, mbadefdomain, morfac, bed_mass, bed_shortage, &
+                              unused_fluff, mbamassreduce, local_only=.true.)
+      if (before_dredging) then
+         mbadredgebefore = bed_mass + bed_shortage
+      else
+         mbadredge = mbadredge + ((bed_mass + bed_shortage) - mbadredgebefore)
+      end if
+   end subroutine comp_dredging_mba
 
    subroutine mba_sum_area(nomba, mbadef, mbaba)
       use m_partitioninfo
@@ -1783,6 +1832,9 @@ contains
          if (ised <= lsed) then
             call add_name(balance, labelext, labelfixbed)
          end if
+         if (mba_has_dredging) then
+            call add_name(balance, labelext, labeldredge)
+         end if
       end if
    end subroutine mba_prepare_names_fluxes
 
@@ -1960,6 +2012,13 @@ contains
          if (ised <= lsed) then
             call add_values(fluxes, imbf, p_mbafluxfixbed(:, ised, imba))
          end if
+         if (mba_has_dredging) then
+            flux(1) = mbadredge(ised, imba)
+            if (overall_balance) then
+               flux(1) = mbadredgetot(ised, imba)
+            end if
+            call add_values(fluxes, imbf, [max(flux(1), 0.0_dp), max(-flux(1), 0.0_dp)])
+         end if
       end if
 
       const_flux(imbs)%bal_error(imba) = sum(fluxes(DIR_TO, :)) - sum(fluxes(DIR_FROM, :))
@@ -2082,6 +2141,9 @@ contains
          end if
          if (ised <= lsed) then
             call add_name(balance, labelext, labelfixbed)
+         end if
+         if (mba_has_dredging) then
+            call add_name(balance, labelext, labeldredge)
          end if
       end if
    end subroutine mba_prepare_names_fluxes_whole_model
@@ -2242,6 +2304,13 @@ contains
          end if
          if (ised <= lsed) then
             call add_values(fluxes, imbf, sum(p_mbafluxfixbed(:, ised, :), 2))
+         end if
+         if (mba_has_dredging) then
+            flux(1) = sum(mbadredge(ised, :))
+            if (overall_balance) then
+               flux(1) = sum(mbadredgetot(ised, :))
+            end if
+            call add_values(fluxes, imbf, [max(flux(1), 0.0_dp), max(-flux(1), 0.0_dp)])
          end if
       end if
 

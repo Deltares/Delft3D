@@ -150,6 +150,9 @@ module m_mass_balance_area_data
    real(kind=dp), allocatable, target :: mbafluxfixbed(:, :, :) !< periodical sediment exchange with a fixed bed reservoir
    real(kind=dp), allocatable, target :: mbafluxfixbedtot(:, :, :) !< total sediment exchange with a fixed bed reservoir
    real(kind=dp), allocatable :: mbafluxfixbedreduce(:, :, :) !< fixed bed exchange reduction buffer
+   real(kind=dp), allocatable :: mbadredgebefore(:, :) !< Bed sediment mass plus shortage before dredging (kg).
+   real(kind=dp), allocatable :: mbadredge(:, :) !< Net dredging and dumping mass per area over the interval (kg).
+   real(kind=dp), allocatable :: mbadredgetot(:, :) !< Net dredging and dumping mass per area since model start (kg).
 
    real(kind=dp), allocatable, target :: mbafluxhor(:, :, :, :) !< periodical fluxes between balance areas and between boundaries and balance areas
    real(kind=dp), allocatable, target :: mbafluxhortot(:, :, :, :) !< total fluxes between balance areas and between boundaries and balance areas

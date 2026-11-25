@@ -46,6 +46,7 @@ module m_fm_bott3d
 
    private !Prevent used modules from being exported
    public :: fm_bott3d
+   public :: fm_update_dredged_bed
    public :: fm_suspended_sand_correction
 
 contains
@@ -62,7 +63,7 @@ contains
    !! in bottom sediment.
    !! Includes erosion of dry points and associated
    !! bathymetry changes
-   subroutine fm_bott3d()
+   subroutine fm_bott3d(bed_updated)
 
    !!
    !! Declarations
@@ -98,6 +99,8 @@ contains
       use m_bedform, only: bfmpar
       implicit none
 
+      logical, intent(out) :: bed_updated
+
    !!
    !! Local parameters
    !!
@@ -131,6 +134,8 @@ contains
       associate (&
          cmpupd => stmpar%morpar%cmpupd &
          )
+
+      bed_updated = .false.
 
       if (associated(bfmpar%dunelength)) then
          dunelength_tmp => bfmpar%dunelength
@@ -330,6 +335,7 @@ contains
       end if
       
       call fm_update_bed_level(dtmor)
+      bed_updated = stmpar%morpar%bedupd
 
       !
       call timstop(handle_extra(89))
@@ -1853,16 +1859,12 @@ contains
    !! Declarations
    !!
 
-      use Messagehandling
-      use message_module, only: writemessages, write_error
-      use m_flowgeom, only: ndx, bl_ave, bl, bl_ave0
+      use m_flowgeom, only: ndx, bl_ave, bl
       use m_fm_erosed, only: bedupd, blchg, stmpar
       use m_dad, only: dad_included
       use m_fm_update_crosssections, only: fm_update_crosssections
       use morphology_data_module, only: bedbndtype
       use fm_external_forcings_data, only: nopenbndsect
-      use m_fm_dredge, only: fm_dredge
-      use m_physcoef, only: dynamic_vegetation_roughness_enabled
 
       implicit none
 
@@ -1875,8 +1877,6 @@ contains
    !!
    !! Local variables
    !!
-
-      logical :: error
 
       integer :: nm, jb, ib
       integer :: icond
@@ -1924,35 +1924,43 @@ contains
          ! Remember erosion velocity for dilatancy
          !
          call fm_erosion_velocity(dtmor)
-         !
-         ! Dredging and Dumping
-         !
-         if (dad_included) then
-            !
-            bl_ave0 = bl_ave ! backup average bed level before dredging, needed to compute bed level change due to dredging
-            !
-            call fm_dredge(error)
-            if (error) then
-               call mess(LEVEL_FATAL, 'Error in fm_bott3d :: fm_dredge returned an error.')
-               return
-            end if
-            !
-            do nm = 1, ndx
-               blchg(nm) = bl_ave(nm) - bl_ave0(nm) ! get average bed level change
-            end do
-            !
-            if (dynamic_vegetation_roughness_enabled > 0) then
-               call determine_linkbased_cumblchg()
-            end if
-            !
-            call fm_update_crosssections(blchg) ! update 1d cross-sections after dredging (updates bl for 1D).
-            !
-            call fm_update_bl()
-            !
-         end if
       end if !bedupd
 
    end subroutine fm_update_bed_level
+
+   !> Apply dredging and dumping after rebuilding the transport-driven bed geometry.
+   subroutine fm_update_dredged_bed(geometry_changed)
+      use m_flowgeom, only: ndx, bl_ave, bl_ave0
+      use m_fm_erosed, only: blchg
+      use m_fm_dredge, only: fm_dredge
+      use m_fm_update_crosssections, only: fm_update_crosssections
+      use m_physcoef, only: dynamic_vegetation_roughness_enabled
+      use messagehandling, only: mess, LEVEL_FATAL
+      use mass_balance_areas_routines, only: comp_dredging_mba
+
+      logical, intent(out) :: geometry_changed
+
+      logical :: error
+
+      geometry_changed = .false.
+      bl_ave0 = bl_ave
+      call comp_dredging_mba(before_dredging=.true.)
+      call fm_dredge(error)
+      if (error) then
+         call mess(LEVEL_FATAL, 'Error updating the dredged bed.')
+         return
+      end if
+      call comp_dredging_mba(before_dredging=.false.)
+      blchg(1:ndx) = bl_ave(1:ndx) - bl_ave0(1:ndx)
+      if (dynamic_vegetation_roughness_enabled > 0) then
+         call determine_linkbased_cumblchg()
+      end if
+      geometry_changed = any(blchg(1:ndx) /= 0.0_dp)
+      if (geometry_changed) then
+         call fm_update_crosssections(blchg)
+         call fm_update_bl()
+      end if
+   end subroutine fm_update_dredged_bed
 
    !> Maximize and minimize water level
    subroutine fm_correct_water_level()
