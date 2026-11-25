@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 
-#include <dflowfm_io/MduConversion.h>
 #include <dflowfm_io/MduSchema.h>
 #include <dflowfm_io/StringUtils.h>
 
+#include "MduConversion.h"
 #include "MduTestData.h"
 
 namespace dflowfm_io::test

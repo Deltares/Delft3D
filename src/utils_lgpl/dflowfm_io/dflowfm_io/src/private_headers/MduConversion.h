@@ -3,12 +3,10 @@
 #include <dflowfm_io/IssueReport.h>
 #include <dflowfm_io/MduData.h>
 
-#include <utility>
+#include <ini/IniData.h>
 
-namespace ini
-{
-    class IniData;
-}
+#include <string>
+#include <utility>
 
 namespace dflowfm_io
 {

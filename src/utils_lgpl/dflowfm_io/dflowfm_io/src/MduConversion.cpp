@@ -1,6 +1,7 @@
-#include <dflowfm_io/MduConversion.h>
+#include "MduConversion.h"
+#include "MduValidation.h"
+
 #include <dflowfm_io/MduSchema.h>
-#include <dflowfm_io/MduValidation.h>
 #include <dflowfm_io/StringUtils.h>
 
 #include <ini/IniData.h>

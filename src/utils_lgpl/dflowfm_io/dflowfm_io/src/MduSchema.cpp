@@ -1,7 +1,8 @@
 #include <dflowfm_io/MduSchema.h>
 #include <dflowfm_io/MduSchemaGenerated.h>
-#include <dflowfm_io/MduConversion.h>
 #include <dflowfm_io/StringUtils.h>
+
+#include "MduConversion.h"
 
 #include <format>
 #include <stdexcept>

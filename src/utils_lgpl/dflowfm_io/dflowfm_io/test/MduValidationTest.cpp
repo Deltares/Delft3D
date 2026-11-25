@@ -1,12 +1,12 @@
 #include <gtest/gtest.h>
 
 #include <dflowfm_io/IssueReport.h>
-#include <dflowfm_io/MduValidation.h>
 
 #include <ini/IniData.h>
 #include <ini/IniSection.h>
 
 #include "MduTestData.h"
+#include "MduValidation.h"
 
 namespace dflowfm_io::test
 {

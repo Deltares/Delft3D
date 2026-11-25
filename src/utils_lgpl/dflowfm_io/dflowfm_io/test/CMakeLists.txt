@@ -29,6 +29,9 @@ endif()
 
 target_link_libraries(dflowfm_io_tests PRIVATE dflowfm_io dflowfm_ini_parser GTest::gtest_main)
 
+# The tests also cover the internal (non-public) headers of dflowfm_io.
+target_include_directories(dflowfm_io_tests PRIVATE ${DFLOWFM_IO_PRIVATE_HEADER_DIR})
+
 if(WIN32)
     add_custom_command(TARGET dflowfm_io_tests POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:dflowfm_io_tests> $<TARGET_RUNTIME_DLLS:dflowfm_io_tests>
