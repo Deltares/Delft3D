@@ -2035,8 +2035,8 @@ contains
          if (len_trim(solver_sequence(1)%restart_file) > 0) then
             md_restartfile = solver_sequence(1)%restart_file
             restart_date_time = solver_sequence(1)%restart_date_time
-            use_restart_bedlevel = .not. solver_sequence(1)%ignore_bl
-            use_restart_bedcomp = .not. solver_sequence(1)%ignore_bedcomp
+            use_restart_bedlevel = solver_sequence(1)%use_restart_bedlevel
+            use_restart_bedcomp = solver_sequence(1)%use_restart_bedcomp
          end if
       end if
 
@@ -2773,7 +2773,7 @@ contains
       character(len=255) :: file_type, solver_name, block_name
       real(kind=dp) :: start_time, step_number
       real(kind=dp) :: version
-      logical :: found
+      logical :: found, rst_ignore_bl, rst_ignore_bedcomp
       integer :: i, period, readerr, nperiods
 
       istat = DFM_GENERICERROR
@@ -2832,8 +2832,12 @@ contains
          end select
          call prop_get(block, 'RestartFile', solver_sequence(period)%restart_file)
          call prop_get(block, 'RestartDateTime', solver_sequence(period)%restart_date_time)
-         call prop_get(block, 'RstIgnoreBl', solver_sequence(period)%ignore_bl)
-         call prop_get(block, 'RstIgnoreBedComp', solver_sequence(period)%ignore_bedcomp)
+         rst_ignore_bl = .not. solver_sequence(period)%use_restart_bedlevel
+         rst_ignore_bedcomp = .not. solver_sequence(period)%use_restart_bedcomp
+         call prop_get(block, 'RstIgnoreBl', rst_ignore_bl)
+         call prop_get(block, 'RstIgnoreBedComp', rst_ignore_bedcomp)
+         solver_sequence(period)%use_restart_bedlevel = .not. rst_ignore_bl
+         solver_sequence(period)%use_restart_bedcomp = .not. rst_ignore_bedcomp
          if (len_trim(solver_sequence(period)%restart_date_time) > 0 .and. &
              len_trim(solver_sequence(period)%restart_file) == 0) exit
       end do

@@ -428,8 +428,8 @@ module m_flowparameters
       integer :: solver = FLOW_SOLVER_FROZEN_1D2D
       character(len=255) :: restart_file = ' '
       character(len=20) :: restart_date_time = ' '
-      logical :: ignore_bl = .true.
-      logical :: ignore_bedcomp = .true.
+      logical :: use_restart_bedlevel = .false.
+      logical :: use_restart_bedcomp = .false.
    end type solver_period
    type(solver_period), allocatable :: solver_sequence(:)
    integer :: solver_period_index = 0

@@ -156,8 +156,8 @@ contains
       saved_time_user = time_user
       md_restartfile = solver_sequence(solver_period_index)%restart_file
       restart_date_time = solver_sequence(solver_period_index)%restart_date_time
-      use_restart_bedlevel = .not. solver_sequence(solver_period_index)%ignore_bl
-      use_restart_bedcomp = .not. solver_sequence(solver_period_index)%ignore_bedcomp
+      use_restart_bedlevel = solver_sequence(solver_period_index)%use_restart_bedlevel
+      use_restart_bedcomp = solver_sequence(solver_period_index)%use_restart_bedcomp
       call load_restart_file(file_exist, iresult)
       md_restartfile = original_file
       restart_date_time = original_date_time
