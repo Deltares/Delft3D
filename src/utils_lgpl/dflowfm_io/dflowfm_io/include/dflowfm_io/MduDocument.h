@@ -6,6 +6,7 @@
 
 #include <filesystem>
 #include <string>
+#include <utility>
 
 namespace dflowfm_io
 {
@@ -64,20 +65,27 @@ namespace dflowfm_io
             return mduData.getValueAs<T>(key);
         }
 
-        /// @brief Sets the value of an enum property.
+        /// @brief Sets the value of a property.
         /// @tparam T The value type to store.
         /// @param key Fully qualified property key in the form "section.property" (case-insensitive).
-        /// @param value The enum value to store. Must be a valid entry in the property's enum definition.
+        /// @param value The value to store.
         /// @throws std::invalid_argument if @p key is not defined in the MDU schema.
-        /// @throws std::out_of_range if @p value is not a valid enum entry for the property.
+        /// @throws std::out_of_range if @p value is outside the allowed range for the property.
         template <typename T>
         void SetValue(const std::string& key, T value)
         {
+            SetValue(key, Value(std::move(value)));
+        }
+
+        /// @brief Sets the value of a property.
+        /// @param key Fully qualified property key in the form "section.property" (case-insensitive).
+        /// @param value The value to store.
+        /// @throws std::invalid_argument if @p key is not defined in the MDU schema.
+        /// @throws std::out_of_range if @p value is outside the allowed range for the property.
+        void SetValue(const std::string& key, Value value)
+        {
             EnsureKeyInSchema(key);
-            if constexpr (std::same_as<T, IntEnumValue> || std::same_as<T, StringEnumValue>)
-            {
-                EnsureEnumInRange(key, value);
-            }
+            EnsureValueInRange(key, value);
             mduData.setValue(key, std::move(value));
         }
 
@@ -86,8 +94,7 @@ namespace dflowfm_io
         MduData mduData;
 
         void EnsureKeyInSchema(const std::string& key) const;
-        void EnsureEnumInRange(const std::string& key, const IntEnumValue& value) const;
-        void EnsureEnumInRange(const std::string& key, const StringEnumValue& value) const;
+        void EnsureValueInRange(const std::string& key, const Value& value) const;
     };
 
 } // namespace dflowfm_io

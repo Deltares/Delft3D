@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <limits>
 #include <ios>
+#include <utility>
 
 namespace dflowfm_io::test
 {
@@ -299,6 +300,29 @@ namespace dflowfm_io::test
         EXPECT_THROW(doc.SetValue(key, outOfRange), std::out_of_range);
     }
 
+    TEST_F(MduDocumentTest, SetValue_IntEnumWrappedInValueOutOfRange_ThrowsOutOfRange)
+    {
+        const std::string key = FormatKey("geometry", "layerType");
+
+        EXPECT_THROW(doc.SetValue(key, Value{IntEnumValue{-1}}), std::out_of_range);
+    }
+
+    TEST_F(MduDocumentTest, SetValue_StringEnumWrappedInValueOutOfRange_ThrowsOutOfRange)
+    {
+        const std::string key = FormatKey("general", "fileType");
+
+        EXPECT_THROW(doc.SetValue(key, Value{StringEnumValue{"invalid"}}), std::out_of_range);
+    }
+
+    TEST_F(MduDocumentTest, SetValue_ValidIntEnumWrappedInValue_UpdatesData)
+    {
+        const std::string key = FormatKey("geometry", "layerType");
+
+        doc.SetValue(key, Value{IntEnumValue{2}});
+
+        EXPECT_EQ(doc.GetValue<IntEnumValue>(key).value, 2);
+    }
+
     TEST_F(MduDocumentTest, SetValue_ValidIntValue_UpdatesData)
     {
         const std::string key = FormatKey("numerics", "maxNonLinearIterations");
@@ -365,9 +389,9 @@ namespace dflowfm_io::test
     TEST_F(MduDocumentTest, SetValue_ValidPathListValue_UpdatesData)
     {
         const std::string key = FormatKey("geometry", "structureFile");
-        const std::vector<std::filesystem::path> newValue{"a.ini", "b.ini"};
+        std::vector<std::filesystem::path> newValue{"a.ini", "b.ini"};
 
-        doc.SetValue(key, newValue);
+        doc.SetValue(key, std::move(newValue));
 
         const auto& value = doc.GetValue<std::vector<std::filesystem::path>>(key);
         ASSERT_EQ(value.size(), 2u);
@@ -378,9 +402,9 @@ namespace dflowfm_io::test
     TEST_F(MduDocumentTest, SetValue_ValidStringListValue_UpdatesData)
     {
         const std::string key = FormatKey("geometry", "activeProcesses");
-        const std::vector<std::string> newValue{"Foo", "Bar"};
+        std::vector<std::string> newValue{"Foo", "Bar"};
 
-        doc.SetValue(key, newValue);
+        doc.SetValue(key, std::move(newValue));
 
         const auto& value = doc.GetValue<std::vector<std::string>>(key);
         ASSERT_EQ(value.size(), 2u);
@@ -391,9 +415,9 @@ namespace dflowfm_io::test
     TEST_F(MduDocumentTest, SetValue_ValidFloatListValue_UpdatesData)
     {
         const std::string key = FormatKey("geometry", "stretchCoef");
-        const std::vector<double> newValue{0.2, 0.3, 0.5};
+        std::vector<double> newValue{0.2, 0.3, 0.5};
 
-        doc.SetValue(key, newValue);
+        doc.SetValue(key, std::move(newValue));
 
         const auto& value = doc.GetValue<std::vector<double>>(key);
         ASSERT_EQ(value.size(), 3u);
