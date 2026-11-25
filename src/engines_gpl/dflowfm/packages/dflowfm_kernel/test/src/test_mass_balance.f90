@@ -5,7 +5,7 @@ module test_mass_balance
    use m_mass_balance_area_data
    use mass_balance_areas_routines, only: mba_init, mba_update, mba_final, comp_fixedbed_fluxmba, comp_bedflowmba, comp_bedload_fluxmba
    use m_sediment, only: stmpar, sedtra, stmtype, stm_included
-   use morphology_data_module, only: morpar_type, fluffy_type, sedtra_type
+   use morphology_data_module, only: morpar_type, fluffy_type, sedpar_type, sedtra_type
    use bedcomposition_module, only: bedcomp_data
    use m_flow, only: vol1, kmx, kbot, ktop
    use m_flowtimes, only: time1, tstart_user, tfac, dts
@@ -16,13 +16,16 @@ module test_mass_balance
    public :: test_mba_spinup, test_mba_fixed_cmp, test_mba_bedload_start
    public :: test_mba_fluff_spin, test_mba_moving_volume, test_mba_moving_3d, test_mba_labels
    public :: test_mba_cmp_only, test_mba_bed_first, test_mba_mor_area
+   public :: test_mba_fixed_frac
 
    real(dp), parameter :: tolerance = 1.0e-10_dp
    type(stmtype) :: saved_stmpar
    type(sedtra_type) :: saved_sedtra
+   type(sedpar_type), target :: local_sedpar
    type(morpar_type), target :: local_morpar
    type(fluffy_type), target :: local_fluff
    type(bedcomp_data), target :: local_bed
+   logical, dimension(1), target :: local_cmpupdfrac
    integer, target :: local_reference(4, 1)
    real(fp), target :: local_source(4, 1), local_bedload(3, 1), local_fluff_source(1, 4)
    integer, pointer :: saved_lsed, saved_lsedtot, saved_ifluff
@@ -79,6 +82,22 @@ contains
       call f90_expect_near(sum(abs(mbasedflux)), 0.0_dp, tolerance)
       call cleanup_mba()
    end subroutine test_mba_fixed_cmp
+
+   !$gtest
+   !> Account for a fixed fraction after bed composition updates start.
+   subroutine test_mba_fixed_frac() bind(C)
+      call setup_mba([1, 1])
+      local_morpar%tcmp = 0.0_fp
+      local_cmpupdfrac(1) = .false.
+      local_source(1, 1) = 0.2_fp
+      sinksetot(1, 1) = 0.1_dp
+      constituents(1, 1) = 1.3_dp
+      call comp_fixedbed_fluxmba()
+      call mba_update(time1)
+      call expect_entry(const_flux(1)%bal_area(1), 'External forcing', 'Fixed bed exchange', [6.0_dp, 0.0_dp])
+      call f90_expect_near(const_flux(1)%bal_error, [0.0_dp, 0.0_dp], tolerance)
+      call cleanup_mba()
+   end subroutine test_mba_fixed_frac
 
    !$gtest
    !> Composition changes inventory through exchange and bedload while the bed level remains fixed.
@@ -310,6 +329,9 @@ contains
       allocate (local_bed%state%bodsed(1, 4), local_bed%state%sedshort(1, 4))
       local_bed%state%bodsed = 100.0_dp
       local_bed%state%sedshort = 0.0_fp
+      local_cmpupdfrac = .true.
+      local_sedpar%cmpupdfrac => local_cmpupdfrac
+      stmpar%sedpar => local_sedpar
       stmpar%morpar => local_morpar
       stmpar%morlyr => local_bed
       stmpar%lsedsus = 1
