@@ -198,7 +198,7 @@ function wave_init(mode_in, online_in, com_file_type_in, mdw_file) result(retval
       end select
    !
    n_swan_grids = swan_run%nnest
-   if (online_in/=ONLINE_NONE) then
+   if (online_in /= ONLINE_NONE) then
       swan_run%nttide = 1
    endif
    !
@@ -554,7 +554,7 @@ function wave_master_step(stepsize) result(retval)
                   i = i + 1
                endif
             enddo
-            if (i <= swan_run%nttide .and. i/=iold) then
+            if (i <= swan_run%nttide .and. i /= iold) then
                !
                ! Found an i to do a computation
                ! iold is needed when timwav(i)="current time" or "step_end_time",
@@ -574,7 +574,7 @@ function wave_master_step(stepsize) result(retval)
          enddo
       endif
    endif
-   if (numranks>1) call wave_mpi_bcast(SWAN_DONE, ierr)
+   if (numranks > 1) call wave_mpi_bcast(SWAN_DONE, ierr)
 end function wave_master_step
 
 
