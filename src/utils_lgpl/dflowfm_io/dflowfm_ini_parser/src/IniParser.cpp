@@ -38,7 +38,7 @@ namespace ini
 
             std::unordered_set<std::string> foundSections;
             std::unordered_set<std::string> foundProperties;
-            std::unordered_set<char> invalidChars;
+            std::unordered_set<char> invalidStartChars;
 
             std::string currentLine;
             int lineNumber{0};
@@ -50,7 +50,7 @@ namespace ini
             void ParseCurrentLine();
 
             bool IsEmptyLine() const;
-            bool IsValidLine() const;
+            bool IsValidLineStart() const;
             bool IsCommentLine() const;
             bool IsSectionLine() const;
             bool IsPropertyLine() const;
@@ -93,11 +93,11 @@ namespace ini
 
         void ParsingContext::SetInvalidChars()
         {
-            invalidChars = {'*', ':', ';', ']', '[', '\\', '?', '!', '@', '#', '$',
-                            '%', '^', '&', '(', ')', '<',  '>', '|', '~', '`'};
+            invalidStartChars = {'*', ':', ';', ']', '[', '\\', '?', '!', '@', '#', '$',
+                                 '%', '^', '&', '(', ')', '<',  '>', '|', '~', '`'};
 
-            invalidChars.erase(scheme.commentDelimiter);
-            invalidChars.erase(scheme.sectionStartDelimiter);
+            invalidStartChars.erase(scheme.commentDelimiter);
+            invalidStartChars.erase(scheme.sectionStartDelimiter);
         }
 
         void ParsingContext::CleanCurrentLine()
@@ -128,7 +128,7 @@ namespace ini
                 return;
             }
 
-            if (!IsValidLine())
+            if (!IsValidLineStart() && !IsMultiLineContinuation())
             {
                 HandleInvalidLineFormat();
             }
@@ -159,7 +159,10 @@ namespace ini
 
         bool ParsingContext::IsEmptyLine() const { return currentLine.empty(); }
 
-        bool ParsingContext::IsValidLine() const { return invalidChars.find(currentLine[0]) == invalidChars.end(); }
+        bool ParsingContext::IsValidLineStart() const
+        {
+            return invalidStartChars.find(currentLine[0]) == invalidStartChars.end();
+        }
 
         bool ParsingContext::IsCommentLine() const { return currentLine[0] == scheme.commentDelimiter; }
 
