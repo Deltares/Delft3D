@@ -9,6 +9,7 @@ from src.suite.test_case_result import TestCaseResult
 from src.suite.test_set_runner import TestSetRunner
 from src.utils.logging.i_logger import ILogger
 from src.utils.logging.test_loggers.i_test_logger import ITestLogger
+from src.utils.paths import Paths
 
 
 class ReferenceRunner(TestSetRunner):
@@ -29,9 +30,9 @@ class ReferenceRunner(TestSetRunner):
             )
         if not os.path.exists(test_case_config.absolute_test_case_reference_path):
             os.makedirs(test_case_config.absolute_test_case_reference_path)
-        files = self.__findCharacteristicsChangedFiles__(
-            os.path.join(test_case_config.absolute_test_case_path, "_tb3_char.run")
-        )
+
+        files = [file_check.name for file_check in test_case_config.checks]
+
         for f in files:
             fl = os.path.join(test_case_config.absolute_test_case_path, f)
             fr = os.path.join(test_case_config.absolute_test_case_reference_path, f)
