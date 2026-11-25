@@ -1,9 +1,9 @@
-name: Validate JSON files
+name: File specifications - Validate JSON files
 
 on:
   push:
-    branches:
-      - '**'
+    branches: ["**"]
+    paths: "file_specs/**"
 
 jobs:
   json-validation:
@@ -22,4 +22,4 @@ jobs:
         run: pip install jsonschema
 
       - name: Run JSON Schema validation
-        run: python "scripts/validate_json_files.py"
+        run: python "file_specs/scripts/validate_json_files.py"

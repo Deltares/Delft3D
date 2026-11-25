@@ -48,14 +48,14 @@ def git(*args):
 
 
 def get_file_at_ref(filepath: str, ref: str) -> str | None:
-    result = git("show", f"{ref}:{filepath}")
+    result = git("show", f"{ref}:./{filepath}")
     return result.stdout if result.returncode == 0 else None
 
 
 def get_changed_spec_files(source_ref: str, target_ref: str) -> list[str]:
     """Return specification JSON files that differ between two refs (snapshot diff)."""
 
-    diff = git("diff", "--name-only", source_ref, target_ref, "--", "specifications/")
+    diff = git("diff", "--relative", "--name-only", source_ref, target_ref, "--", "specifications/")
     return [f for f in diff.stdout.strip().splitlines() if is_spec_json(f)]
 
 
@@ -85,13 +85,19 @@ def _write_changelogs(documents_by_file: dict[str, ChangelogDocument], suffix: s
         print(f"Wrote changelog to {changelog_path}")
 
 
-def run(source_ref: str, target_ref: str, cicd: bool = False):
+def run(
+    source_ref: str,
+    target_ref: str,
+    cicd: bool = False,
+    source_label: str | None = None,
+):
     """Diff the specification files at two refs directly, ignoring intermediate commits."""
 
     changed_spec_files = get_changed_spec_files(source_ref, target_ref)
 
     changelog_per_spec_file: dict[str, ChangelogDocument] = {}
 
+    source_ref_name = source_label if source_label is not None else source_ref
     target_ref_name = "main" if cicd else target_ref
 
     for spec_file_path in changed_spec_files:
@@ -109,12 +115,12 @@ def run(source_ref: str, target_ref: str, cicd: bool = False):
         changelog_per_spec_file[spec_file_path] = ChangelogDocument(
             schema_version=CHANGELOG_SCHEMA_VERSION,
             specification_file=spec_file_path,
-            source_ref=source_ref,
+            source_ref=source_ref_name,
             target_ref=target_ref_name,
             changes=changes,
         )
 
-    suffix = f"{_sanitize_ref(source_ref)}_to_{_sanitize_ref(target_ref_name)}"
+    suffix = f"{_sanitize_ref(source_ref_name)}_to_{_sanitize_ref(target_ref_name)}"
     _write_changelogs(changelog_per_spec_file, suffix=suffix)
 
 
@@ -123,13 +129,14 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("source_ref", help="The older git ref (commit, tag, or branch) to compare from.")
     parser.add_argument("target_ref", help="The newer git ref (commit, tag, or branch) to compare to.")
     parser.add_argument("--cicd", action="store_true", help="Enable CI/CD mode, which sets the target ref to main.")
+    parser.add_argument("--source-label", help="Display name for the source ref in changelog content and filenames.")
     return parser.parse_args(argv)
 
 
 if __name__ == "__main__":
     try:
         args = parse_args(sys.argv[1:])
-        run(args.source_ref, args.target_ref, args.cicd)
+        run(args.source_ref, args.target_ref, args.cicd, args.source_label)
     except Exception as e:
         print(e)
         sys.exit(1)
