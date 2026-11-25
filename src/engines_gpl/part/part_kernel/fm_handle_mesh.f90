@@ -144,7 +144,7 @@ contains
         end do
         
         call realloc(ln2ln3D, [Lnx, kmx], keepExisting = .false., fill = 0)
-        call make_ln2ln3D (hyd%nosegl, hyd%num_exchanges_u_dir, hyd%ipoint(1:2, 1:hyd%num_exchanges_u_dir), Lnx, hyd%nobndl, kmx, ln2ln3D)
+        call make_ln2ln3D(hyd%nosegl, hyd%num_exchanges, hyd%ipoint, hyd%num_exchanges_u_dir, Lnx, hyd%nobndl, kmx, ln2ln3D)
                
         noqfull = hyd%num_layers * lnx + hyd%num_exchanges_z_dir
         call realloc(q0, noqfull, keepExisting = .false., fill = 0d0)
@@ -652,10 +652,11 @@ contains
         if (timon) call timstop (ithndl)
     end subroutine ini_part_grid
     
-    subroutine make_ln2ln3D(nosegl, num_exchanges, ipoint, Lnx, nobndl, kmx, ln2ln3D)
+    subroutine make_ln2ln3D(nosegl, num_exchanges, ipoint, num_exchanges_u_dir, Lnx, nobndl, kmx, ln2ln3D)
     integer, intent(in) :: nosegl
     integer, intent(in) :: num_exchanges
-    integer, intent(in) :: ipoint(2, num_exchanges)
+    integer, intent(in) :: ipoint(4, num_exchanges)
+    integer, intent(in) :: num_exchanges_u_dir
     integer, intent(in) :: Lnx
     integer, intent(in) :: nobndl
     integer, intent(in) :: kmx
@@ -673,6 +674,7 @@ contains
     no_cell_exchange = 0
     do ilink = 1, Lnx
        ifrom = ipoint(1, ilink)
+       if (ifrom < -nobndl .or. ifrom > nosegl) cycle
        no_cell_exchange(ifrom) = no_cell_exchange(ifrom) + 1
     end do
     max_cell_from_exchanges = maxval(no_cell_exchange)
@@ -695,7 +697,7 @@ contains
     end do
 
     ! For each layer, fill ln2ln3D with the corresponding exchange numbers
-    do ilink = Lnx + 1, num_exchanges
+    do ilink = Lnx + 1, num_exchanges_u_dir
        ifrom = 0
        ito = 0
        ilayfrom = 0
