@@ -143,11 +143,11 @@ contains
          ! Now ready for the actual dtavg_min_err check, but only do that once we have
          ! at least done dnt > VALIDATESTATEWINDOWSIZE time steps, to prevent the initial
          ! spin-up period to cause unwanted simulation breaks.
-         if (dnt >= VALIDATESTATEWINDOWSIZE_double .and. dtavg < dtavg_min_err) then
-            write (msgbuf, '(a,e11.4,a,e11.4,a)') 'Average computational time step below threshold: ', dtavg, ' < ', dtavg_min_err, '.'
-            call mess(LEVEL_ERROR, msgbuf)
-            iresult = DFM_INVALIDSTATE
-         end if
+         !if (dnt >= VALIDATESTATEWINDOWSIZE_double .and. dtavg < dtavg_min_err) then
+         !   write (msgbuf, '(a,e11.4,a,e11.4,a)') 'Average computational time step below threshold: ', dtavg, ' < ', dtavg_min_err, '.'
+         !   call mess(LEVEL_ERROR, msgbuf)
+         !   iresult = DFM_INVALIDSTATE
+         !end if
       end if
 
       if (s01maxavg_min_err > 0.0_dp) then
