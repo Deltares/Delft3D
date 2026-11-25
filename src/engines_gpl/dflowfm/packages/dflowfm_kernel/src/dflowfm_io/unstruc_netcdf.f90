@@ -12394,7 +12394,7 @@ contains
       ! Read bedlevels (flow elem)
       if (jaoldrstfile == 1) then
          call mess(LEVEL_INFO, 'The restart file is of an old version, therefore no bedlevel info is read')
-      else if (jarstignorebl == 1) then
+      else if (.not. use_restart_bedlevel) then
          call mess(LEVEL_INFO, 'Ignoring bedlevel information on restart file')
       else if (jased > 0) then
          ierr = get_var_and_shift(imapfile, 'FlowElem_bl', bl, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, 1, um%jamergedmap, &
@@ -12489,7 +12489,7 @@ contains
                call check_error(ierr, 's1_bnd')
             end if
 
-            if (jarstignorebl == 0) then
+            if (use_restart_bedlevel) then
                ierr = nf90_inq_varid(imapfile, 'bl_bnd', id_blbnd)
                if (ierr == 0) then
                   ierr = nf90_get_var(imapfile, id_blbnd, tmp_bl, start=[kstart_bnd, it_read], count=[um%nbnd_read, 1])
@@ -12526,7 +12526,7 @@ contains
                   kk = ln(1, lnxi + i)
                   s0(kk) = tmp_s0(i)
                   s1(kk) = tmp_s1(i)
-                  if (jarstignorebl == 0) then
+                  if (use_restart_bedlevel) then
                      bl(kk) = tmp_bl(i)
                   end if
                   squ(kk) = tmp_squ(i)
@@ -12540,7 +12540,7 @@ contains
                   kk = ln(1, Lf) ! boundary flow node (the external one)
                   s0(kk) = tmp_s0(i)
                   s1(kk) = tmp_s1(i)
-                  if (jarstignorebl == 0) then
+                  if (use_restart_bedlevel) then
                      bl(kk) = tmp_bl(i)
                   end if
                   squ(kk) = tmp_squ(i)
@@ -12557,7 +12557,7 @@ contains
          if (ndxbnd_own > 0 .and. jaoldrstfile == 0) then
             call realloc(tmp_s1, ndx - ndxi, stat=ierr, keepExisting=.false.)
             call realloc(tmp_s0, ndx - ndxi, stat=ierr, keepExisting=.false.)
-            if (jarstignorebl == 0) then
+            if (use_restart_bedlevel) then
                call realloc(tmp_bl, ndx - ndxi, stat=ierr, keepExisting=.false.)
             end if
             call realloc(tmp_squ, ndx - ndxi, stat=ierr, keepExisting=.false.)
@@ -12571,7 +12571,7 @@ contains
             ierr = get_var_and_shift(imapfile, 's1_bnd', tmp_s1, tmpvar1, UNC_LOC_S, kmx, kstart, ndxbnd_own, it_read, &
                                      um%jamergedmap, ibnd_own, um%ibnd_merge)
             call check_error(ierr, 's1_bnd')
-            if (jarstignorebl == 0) then
+            if (use_restart_bedlevel) then
                ierr = get_var_and_shift(imapfile, 'bl_bnd', tmp_bl, tmpvar1, UNC_LOC_S, kmx, kstart, ndxbnd_own, it_read, &
                                         um%jamergedmap, ibnd_own, um%ibnd_merge)
                call check_error(ierr, 'bl_bnd')
@@ -12594,7 +12594,7 @@ contains
                kk = ln(1, Lf)
                s0(kk) = tmp_s0(j)
                s1(kk) = tmp_s1(j)
-               if (jarstignorebl == 0) then
+               if (use_restart_bedlevel) then
                   bl(kk) = tmp_bl(j)
                end if
                squ(kk) = tmp_squ(j)
@@ -12889,7 +12889,7 @@ contains
          end if !lsedsus
 
          ! morbl
-         if (jarstignorebl == 0) then
+         if (use_restart_bedlevel) then
             ierr = get_var_and_shift(imapfile, 'mor_bl', bl, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, &
                                      um%inode_own, um%inode_merge)
             
@@ -12900,7 +12900,7 @@ contains
          end if
 
          ! mfluff
-         if (stmpar%morpar%flufflyr%iflufflyr > 0 .and. stmpar%lsedsus > 0 .and. sedsus_read == stmpar%lsedsus .and. .not. rst_ignore_bedcomp) then
+         if (stmpar%morpar%flufflyr%iflufflyr > 0 .and. stmpar%lsedsus > 0 .and. sedsus_read == stmpar%lsedsus .and. use_restart_bedcomp) then
             ierr = nf90_inq_varid(imapfile, 'mfluff', id_mfluff)
             if (ierr == nf90_noerr) then
                if (allocated(tmpvar)) then
@@ -12927,7 +12927,7 @@ contains
          end if
 
          ! Bed composition
-         if (stmpar%morlyr%settings%iunderlyr > 0 .and. nlyr_read == stmpar%morlyr%settings%nlyr .and. .not. rst_ignore_bedcomp) then
+         if (stmpar%morlyr%settings%iunderlyr > 0 .and. nlyr_read == stmpar%morlyr%settings%nlyr .and. use_restart_bedcomp) then
             select case (stmpar%morlyr%settings%iunderlyr)
             case (1)
                ! bodsed
@@ -13138,7 +13138,7 @@ contains
          ndx1d = ndxi - ndx2d
          if (ndx1d > 0 .and. stm_included) then
             if (stmpar%morpar%bedupd) then
-               if (jarstignorebl == 0) then
+               if (use_restart_bedlevel) then
                   ierr = nf90_inq_dimid(imapfile, trim(mesh1dname)//'_crs_maxdim', id_jmax)
                   if (ierr == 0) then
                      ierr = nf90_inquire_dimension(imapfile, id_jmax, len=jmax)

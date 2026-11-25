@@ -34,7 +34,7 @@ contains
    subroutine test_mdu_read_write_read() bind(C)
       use messagehandling, only: LEVEL_INFO, LEVEL_WARN, LEVEL_ERROR, msgbuf, mess
       use unstruc_model, only: readMDUFile, md_obsfile, writeMDUFile, md_crsfile
-      use m_flowparameters, only: rst_ignore_bedcomp
+      use m_flowparameters, only: use_restart_bedlevel, use_restart_bedcomp
       use dfm_error, only: DFM_NOERR
       use m_partitioninfo, only: jampi
       use ifport, only: CHANGEDIRQQ
@@ -68,8 +68,10 @@ contains
 
       call f90_expect_gt(len_trim(tm_md_crsfile), 255, 'md_crsfile is maybe truncated.')
 
-      call F90_EXPECT_FALSE(rst_ignore_bedcomp)
-      rst_ignore_bedcomp = .true.
+      call F90_EXPECT_TRUE(use_restart_bedlevel)
+      call F90_EXPECT_TRUE(use_restart_bedcomp)
+      use_restart_bedlevel = .false.
+      use_restart_bedcomp = .false.
       call writeMDUFile(output_file, ierr)
       if (.not. f90_assert_eq(ierr, DFM_NOERR, 'Error when writing MDU file.')) then
          call f90_expect_true(CHANGEDIRQQ('..'), 'Cannot restore working directory')
@@ -82,7 +84,8 @@ contains
          call f90_expect_true(CHANGEDIRQQ('..'), 'Cannot restore working directory')
          return
       end if
-      call F90_EXPECT_TRUE(rst_ignore_bedcomp)
+      call F90_EXPECT_FALSE(use_restart_bedlevel)
+      call F90_EXPECT_FALSE(use_restart_bedcomp)
 
       call f90_expect_streq(trim(md_obsfile), trim(tm_md_obsfile), 'Difference in md_obsfile after read-write-read cycle.')
       call f90_expect_streq(trim(md_crsfile), trim(tm_md_crsfile), 'Difference in md_crsfile after read-write-read cycle.')

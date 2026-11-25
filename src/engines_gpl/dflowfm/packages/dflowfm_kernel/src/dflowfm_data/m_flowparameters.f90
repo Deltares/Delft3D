@@ -640,8 +640,8 @@ module m_flowparameters
    logical :: write_surface_data_to_map_file
 
    ! read from restart
-   integer :: jarstignorebl !< Flag indicating if bed level on restart file should be ignored (0/1, default: 0)
-   logical :: rst_ignore_bedcomp !< Ignore bed composition on restart file (default: false).
+    logical :: use_restart_bedlevel !< Use bed level from restart file (default: true).
+    logical :: use_restart_bedcomp !< Use bed composition from restart file (default: true).
 
    ! Write partition domain file
    integer :: japartdomain !< Write a separate netcdf file for partition domain info., 0: no, 1: yes
@@ -1014,8 +1014,8 @@ contains
 
       write_surface_data_to_map_file = .false.
 
-      jarstignorebl = 0
-      rst_ignore_bedcomp = .false.
+      use_restart_bedlevel = .true.
+      use_restart_bedcomp = .true.
 
       epswetout = epshs ! the same as numerical threshold to counts as 'wet'.
       jatekcd = 1 ! wind cd coeffs on tek

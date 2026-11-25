@@ -134,7 +134,7 @@ contains
       use m_a1vol1tot, only: a1vol1tot
       use m_flow, only: s1, s00, hs, vol0, vol1, vol0tot, vol1tot, a0tot, a1tot
       use m_flowgeom, only: bl
-      use m_flowparameters, only: solver_sequence, solver_period_index, jarstignorebl, rst_ignore_bedcomp
+      use m_flowparameters, only: solver_sequence, solver_period_index, use_restart_bedlevel, use_restart_bedcomp
       use m_flowtimes, only: restart_date_time, time0, time1, time_user
       use unstruc_model, only: md_restartfile
       use messagehandling, only: mess, LEVEL_INFO, LEVEL_ERROR
@@ -143,27 +143,26 @@ contains
       integer, intent(out) :: iresult
       character(len=len(md_restartfile)) :: original_file
       character(len=len(restart_date_time)) :: original_date_time
-      integer :: original_ignore_bl
-      logical :: original_ignore_bedcomp
+      logical :: original_use_bedlevel, original_use_bedcomp
       real(kind=dp) :: saved_time0, saved_time1, saved_time_user
       logical :: file_exist
 
       original_file = md_restartfile
       original_date_time = restart_date_time
-      original_ignore_bl = jarstignorebl
-      original_ignore_bedcomp = rst_ignore_bedcomp
+      original_use_bedlevel = use_restart_bedlevel
+      original_use_bedcomp = use_restart_bedcomp
       saved_time0 = time0
       saved_time1 = time1
       saved_time_user = time_user
       md_restartfile = solver_sequence(solver_period_index)%restart_file
       restart_date_time = solver_sequence(solver_period_index)%restart_date_time
-      jarstignorebl = merge(1, 0, solver_sequence(solver_period_index)%ignore_bl)
-      rst_ignore_bedcomp = solver_sequence(solver_period_index)%ignore_bedcomp
+      use_restart_bedlevel = .not. solver_sequence(solver_period_index)%ignore_bl
+      use_restart_bedcomp = .not. solver_sequence(solver_period_index)%ignore_bedcomp
       call load_restart_file(file_exist, iresult)
       md_restartfile = original_file
       restart_date_time = original_date_time
-      jarstignorebl = original_ignore_bl
-      rst_ignore_bedcomp = original_ignore_bedcomp
+      use_restart_bedlevel = original_use_bedlevel
+      use_restart_bedcomp = original_use_bedcomp
       time0 = saved_time0
       time1 = saved_time1
       time_user = saved_time_user

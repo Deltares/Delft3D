@@ -553,6 +553,8 @@ contains
       integer :: ibuf, ifil
       integer :: i, n, iostat, readerr, ierror
       integer :: jadum
+      integer :: rst_ignore_bl_value
+      logical :: rst_ignore_bedcomp_value
       real(hp) :: ti_rst_array(3), ti_map_array(3), ti_his_array(3), ti_wav_array(3), ti_waq_array(3), ti_classmap_array(3), ti_st_array(3), ti_com_array(3)
       character(len=200), dimension(:), allocatable :: fnames
       real(kind=dp) :: tim
@@ -2019,8 +2021,12 @@ contains
 ! Restart information
       call prop_get(md_ptr, 'restart', 'RestartFile', md_restartfile, success)
       call prop_get(md_ptr, 'restart', 'RestartDateTime', restart_date_time, success)
-      call prop_get(md_ptr, 'restart', 'RstIgnoreBl', jarstignorebl, success)
-      call prop_get(md_ptr, 'restart', 'RstIgnoreBedComp', rst_ignore_bedcomp, success)
+      rst_ignore_bl_value = merge(0, 1, use_restart_bedlevel)
+      rst_ignore_bedcomp_value = .not. use_restart_bedcomp
+      call prop_get(md_ptr, 'restart', 'RstIgnoreBl', rst_ignore_bl_value, success)
+      call prop_get(md_ptr, 'restart', 'RstIgnoreBedComp', rst_ignore_bedcomp_value, success)
+      use_restart_bedlevel = rst_ignore_bl_value == 0
+      use_restart_bedcomp = .not. rst_ignore_bedcomp_value
       if (flow_solver == FLOW_SOLVER_SEQUENCE) then
          call read_solver_sequence(sequence_file, istat)
          if (istat /= DFM_NOERR) return
@@ -2029,8 +2035,8 @@ contains
          if (len_trim(solver_sequence(1)%restart_file) > 0) then
             md_restartfile = solver_sequence(1)%restart_file
             restart_date_time = solver_sequence(1)%restart_date_time
-            jarstignorebl = merge(1, 0, solver_sequence(1)%ignore_bl)
-            rst_ignore_bedcomp = solver_sequence(1)%ignore_bedcomp
+            use_restart_bedlevel = .not. solver_sequence(1)%ignore_bl
+            use_restart_bedcomp = .not. solver_sequence(1)%ignore_bedcomp
          end if
       end if
 
@@ -4077,8 +4083,8 @@ contains
 ! Restart settings
       call prop_set(prop_ptr, 'restart', 'RestartFile', trim(md_restartfile), 'Restart netcdf-file, either *_rst.nc or *_map.nc')
       call prop_set(prop_ptr, 'restart', 'RestartDateTime', trim(restart_date_time), 'Restart date and time (yyyymmddhhmmss) when restarting from *_map.nc')
-      call prop_set(prop_ptr, 'restart', 'RstIgnoreBl', jarstignorebl, 'Flag indicating whether bed level from restart should be ignored (0=no (default), 1=yes)')
-      call prop_set(prop_ptr, 'restart', 'RstIgnoreBedComp', rst_ignore_bedcomp, 'Ignore bed composition from restart (false=no (default), true=yes)')
+      call prop_set(prop_ptr, 'restart', 'RstIgnoreBl', merge(0, 1, use_restart_bedlevel), 'Flag indicating whether bed level from restart should be ignored (0=no (default), 1=yes)')
+      call prop_set(prop_ptr, 'restart', 'RstIgnoreBedComp', .not. use_restart_bedcomp, 'Ignore bed composition from restart (false=no (default), true=yes)')
 
 ! External forcings
       call prop_set(prop_ptr, 'external forcing', 'ExtForceFile', trim(md_extfile), 'Old format for external forcings file *.ext, link with tim/cmp-format boundary conditions specification')
