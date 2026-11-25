@@ -36,7 +36,7 @@ module m_setumod
 
    private
 
-   public :: setumod, compute_tangential_velocity_spherical
+   public :: setumod, compute_tangential_velocity_spherical, compute_smagorinsky_strain_squared
 
    real(kind=dp), dimension(:), allocatable :: hmin_
 
@@ -435,7 +435,7 @@ contains
                            plotlin(LL) = (dutdn - dundt)
                         end if
                         if (smagorinsky_coefficient > 0) then
-                           shearvar = 2.0_dp * (dundn * dundn + dutdt * dutdt + dundt * dutdn) + dundt * dundt + dutdn * dutdn
+                           shearvar = compute_smagorinsky_strain_squared(dundn, dutdt, dundt, dutdn)
                            vicL = vicL + smagorinsky_coefficient * smagorinsky_coefficient * sqrt(shearvar) / (dxi(LL) * wui(LL))
                         end if
                      end if
@@ -802,7 +802,7 @@ contains
             dundt = +csu(L) * duxdt + snu(L) * duydt
             dutdt = -snu(L) * duxdt + csu(L) * duydt
 
-            shearvar = 2.0_dp * (dundn**2 + dutdt**2 + dundt * dutdn) + dundt**2 + dutdn**2
+            shearvar = compute_smagorinsky_strain_squared(dundn, dutdt, dundt, dutdn)
             vicL = vicL + merge(smagorinsky_coefficient**2 * sqrt(shearvar) * dxL * wuL, 0.0_dp, shearvar > 1.0e-15_dp)
          end if
 
@@ -872,6 +872,19 @@ contains
          dvyc(k2) = dvyc(k2) + dvy2(L)
       end do
    end subroutine compute_viscosity_and_stress_vectorized
+
+   !> Compute the squared strain magnitude for the Smagorinsky closure.
+   !! Sum squares to avoid cancellation when opposing shears nearly cancel.
+   pure elemental function compute_smagorinsky_strain_squared(dundn, dutdt, dundt, dutdn) result(strain_squared)
+      real(kind=dp), intent(in) :: dundn !< Normal derivative of normal velocity (1/s).
+      real(kind=dp), intent(in) :: dutdt !< Tangential derivative of tangential velocity (1/s).
+      real(kind=dp), intent(in) :: dundt !< Tangential derivative of normal velocity (1/s).
+      real(kind=dp), intent(in) :: dutdn !< Normal derivative of tangential velocity (1/s).
+
+      real(kind=dp) :: strain_squared !< Squared strain magnitude (1/s^2).
+
+      strain_squared = 2.0_dp * (dundn**2 + dutdt**2) + (dundt + dutdn)**2
+   end function compute_smagorinsky_strain_squared
 
    !> Set tangential velocity v(L) for newcorio=1, kmx=0 case
    subroutine set_V_2D_default(jasfer3D)
