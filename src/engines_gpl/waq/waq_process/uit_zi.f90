@@ -32,7 +32,7 @@ module m_uitzicht_spectrum
     !***********************************************************************
     !
     private
-    public :: num_spectrum, uit_zi, planck, nearest_spectrum_band, fm_uitzicht
+    public :: num_spectrum, uit_zi, get_spectrum, nearest_spectrum_band, fm_uitzicht
 
     integer            :: num_spectrum
     integer, parameter :: num_spectrum_std = 61
@@ -616,5 +616,19 @@ integer function nearest_spectrum_band( target ) result(idx)
     enddo
 
 end function nearest_spectrum_band
+
+! Note: this subroutine forces the initialisation of the UITZICHT module
+!       in a transparent way.
+
+subroutine get_spectrum( spectrum )
+    real(dp), allocatable, intent(out) :: spectrum(:)
+
+    if ( init_uitzicht ) then
+        init_uitzicht = .false.
+        call read_table
+    endif
+
+    spectrum = planck
+end subroutine get_spectrum
 
 end module m_uitzicht_spectrum

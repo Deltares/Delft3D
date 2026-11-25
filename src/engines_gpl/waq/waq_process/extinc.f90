@@ -49,7 +49,7 @@ contains
 
         !   For the renaming: see the remark below
 
-        use m_uitzicht_spectrum, DayLightPlanck => planck
+        use m_uitzicht_spectrum
         use m_dhnolay
         use m_logger_helper, only: write_log_message
 
@@ -263,8 +263,8 @@ contains
                 endif
 
 
-                SpectrumTop = DaylightPlanck
-                SpectrumBot = DaylightPlanck
+                call get_spectrum( SpectrumTop )
+                call get_spectrum( SpectrumBot )
 
                 localdepth = process_space_real(ipoint(37)+(iseg-1)*increm(37))
                 secvermax  = localdepth

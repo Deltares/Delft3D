@@ -69,7 +69,7 @@ contains
         !     Name     Type   Library
         !     ------   -----  ------------
         !
-        use m_uitzicht_spectrum, DayLightPlanck => planck
+        use m_uitzicht_spectrum
 
         integer, parameter :: num_pmsa_input  = 23
         integer, parameter :: num_pmsa_output = 1
@@ -129,6 +129,8 @@ contains
                     !
                     !  calculate secchi depth with uitzicht
                     !
+                    call get_spectrum( spectrum )
+
                     aim1 = process_space_real(ip(2))
                     aim2 = process_space_real(ip(3))
                     aim3 = process_space_real(ip(4))
