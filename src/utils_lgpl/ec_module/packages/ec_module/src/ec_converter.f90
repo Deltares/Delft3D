@@ -67,6 +67,12 @@ module m_ec_converter
    public :: interpolate_harmonic_coefficients
    public :: find_harmonic_extrapolation_donors
    public :: apply_harmonics
+
+   interface apply_operand_masked
+      module procedure apply_operand_masked_array
+      module procedure apply_operand_masked_scalar
+   end interface apply_operand_masked
+
 contains
 
    ! =======================================================================
@@ -1618,7 +1624,6 @@ contains
       real(dp) :: winddirection !< time interpolated wind direction
       real(dp), dimension(:), pointer :: u !< calculated u value
       real(dp), dimension(:), pointer :: v !< calculated v value
-      integer :: i !< loop counter
       integer :: targetnCoordinates !< number of coordinates in the target Field
       real(dp) :: targetU !< new u value to be written to all target grid points
       real(dp) :: targetV !< new v value to be written to all target grid points
@@ -1650,22 +1655,23 @@ contains
 
          ! === space conversion using nautical convention ===
          winddirection = (270.0_dp - winddirection) * degrad
-         u => connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr
-         v => connection%targetItemsPtr(2)%ptr%targetFieldPtr%arr1dPtr
          targetU = windspeed * cos(winddirection)
          targetV = windspeed * sin(winddirection)
-         targetnCoordinates = connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
 
          select case (connection%converterPtr%operandType)
 
          case (EC_OPERAND_REPLACE, EC_OPERAND_REPLACE_IF_MISSING, EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM)
 
+            targetnCoordinates = connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
+            u => connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1:targetnCoordinates)
+            v => connection%targetItemsPtr(2)%ptr%targetFieldPtr%arr1dPtr(1:targetnCoordinates)
+
             if (allocated(connection%targetMask)) then
-               call check_undefined_values_for_operand(connection%converterPtr%operandType, u(1:targetnCoordinates), status_u, connection%targetMask(1:targetnCoordinates))
-               call check_undefined_values_for_operand(connection%converterPtr%operandType, v(1:targetnCoordinates), status_v, connection%targetMask(1:targetnCoordinates))
+               call check_undefined_values_for_operand(connection%converterPtr%operandType, u, status_u, connection%targetMask)
+               call check_undefined_values_for_operand(connection%converterPtr%operandType, v, status_v, connection%targetMask)
             else
-               call check_undefined_values_for_operand(connection%converterPtr%operandType, u(1:targetnCoordinates), status_u)
-               call check_undefined_values_for_operand(connection%converterPtr%operandType, v(1:targetnCoordinates), status_v)
+               call check_undefined_values_for_operand(connection%converterPtr%operandType, u, status_u)
+               call check_undefined_values_for_operand(connection%converterPtr%operandType, v, status_v)
             end if
 
             if (.not. status_u .or. .not. status_v) then
@@ -1673,15 +1679,11 @@ contains
             end if
 
             if (allocated(connection%targetMask)) then
-               do i = 1, targetnCoordinates
-                  if (connection%targetMask(i) /= 0) then
-                     call apply_operand(connection%converterPtr%operandType, u(i), targetU)
-                     call apply_operand(connection%converterPtr%operandType, v(i), targetV)
-                  end if
-               end do
+               call apply_operand_masked(connection%converterPtr%operandType, u, targetU, connection%targetMask)
+               call apply_operand_masked(connection%converterPtr%operandType, v, targetV, connection%targetMask)
             else
-               call apply_operand(connection%converterPtr%operandType, u(1:targetnCoordinates), targetU)
-               call apply_operand(connection%converterPtr%operandType, v(1:targetnCoordinates), targetV)
+               call apply_operand(connection%converterPtr%operandType, u, targetU)
+               call apply_operand(connection%converterPtr%operandType, v, targetV)
             end if
 
             connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
@@ -4900,7 +4902,7 @@ contains
 
    !> Applies the specified operand to the target values where mask /= 0.
    !! Selects the operand once for the whole array, so each case is a single vectorizable masked assignment.
-   subroutine apply_operand_masked(operand, target_values, provided_values, mask)
+   subroutine apply_operand_masked_array(operand, target_values, provided_values, mask)
       integer, intent(in) :: operand !< operand type (EC_OPERAND_REPLACE, EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, ...)
       real(dp), dimension(:), intent(inout) :: target_values !< target values to apply the operand to
       real(dp), dimension(:), intent(in) :: provided_values !< values to apply with the operand, same size as target_values
@@ -4933,7 +4935,44 @@ contains
          end where
       end select
 
-   end subroutine apply_operand_masked
+   end subroutine apply_operand_masked_array
+
+   !> Applies one uniform value to all selected targets without constructing an array of repeated values.
+   subroutine apply_operand_masked_scalar(operand, target_values, provided_value, mask)
+      integer, intent(in) :: operand !< operand type (EC_OPERAND_REPLACE, EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, ...)
+      real(dp), dimension(:), intent(inout) :: target_values !< target values to apply the operand to
+      real(dp), intent(in) :: provided_value !< value to apply at every selected target
+      integer, dimension(:), intent(in) :: mask !< only target values with mask /= 0 are updated, same size as target_values
+
+      select case (operand)
+      case (EC_OPERAND_REPLACE, EC_OPERAND_REPLACE_ELEMENT)
+         where (mask /= 0)
+            target_values = provided_value
+         end where
+      case (EC_OPERAND_REPLACE_IF_MISSING)
+         ! Match the exact missing-value sentinel used by apply_operand.
+         where (mask /= 0 .and. target_values == ec_undef_hp)
+            target_values = provided_value
+         end where
+      case (EC_OPERAND_ADD, EC_OPERAND_ADD_ELEMENT)
+         where (mask /= 0)
+            target_values = target_values + provided_value
+         end where
+      case (EC_OPERAND_MULTIPLY)
+         where (mask /= 0)
+            target_values = target_values * provided_value
+         end where
+      case (EC_OPERAND_MINIMUM)
+         where (mask /= 0)
+            target_values = min(target_values, provided_value)
+         end where
+      case (EC_OPERAND_MAXIMUM)
+         where (mask /= 0)
+            target_values = max(target_values, provided_value)
+         end where
+      end select
+
+   end subroutine apply_operand_masked_scalar
 
    !> Checks for undefined values in the target values array when using add, multiply, minimum, or maximum operands.
    subroutine check_undefined_values_for_operand(operand, target_values, istat, target_mask)
