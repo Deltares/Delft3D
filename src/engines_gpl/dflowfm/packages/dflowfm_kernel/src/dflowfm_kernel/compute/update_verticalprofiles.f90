@@ -92,12 +92,11 @@ contains
       real(kind=dp) :: womegu(kmxx), pkwav(kmxx)
       real(kind=dp) :: dzs(kmxx), dzws(kmxx), hdzbs
       real(kind=dp) :: gradk, gradt, grad, gradd, gradu, volki, arLL
-      real(kind=dp) :: discharge_at_layer_interface !< [m3/s] Discharge at the layer interface
       real(kind=dp) :: wk, wke, vk, um, tauinv, tauinf, xlveg, rnv, diav, ap1, alf, teps, tkin
       real(kind=dp) :: cfuhi3D, vicwmax, zint, z1, vicwww, alfaT, tke, eps
       real(kind=dp) :: rhoLL, pkwmag, hrmsLL, wdep, dzwav, dis1, dis2, surdisLL
       integer :: k, ku, LL, L, Lb, Lt, kxL, Lu, Lb0, whit
-      integer :: k1, k2, n1, n2, kup, ierror
+      integer :: k1, k2, n1, n2, kup
       integer :: kk, kb, kb0, kt
 
       ! Initialization
@@ -201,56 +200,8 @@ contains
          call links_to_centers(turbulent_kinetic_energy_ws, turbulent_kinetic_energy_wu)
          call links_to_centers(turbulent_dissipation_ws, turbulent_dissipation_wu)
 
-         if (turbulent_advection_scheme > 0) then ! transport switched on: prepare horizontal advection k and eps
-
-            if (source_sinks%num_total > 0 .and. source_sinks%add_k_to_turkin) then
-               call doaddksources()
-            end if
-
-            if (jampi == 1) then
-               call update_ghosts(ITYPE_Sall3D, 1, Ndkx, turbulent_kinetic_energy_ws, ierror)
-               call update_ghosts(ITYPE_Sall3D, 1, Ndkx, turbulent_dissipation_ws, ierror)
-            end if
-
-            sum_q_times_turbulent_kinetic_energy_ws(:) = 0.0_dp
-            sum_q_times_turbulent_dissipation_ws(:) = 0.0_dp
-            sum_inflowing_discharges_ws(:) = 0.0_dp
-
-            do LL = 1, lnx
-               call getLbotLtop(LL, Lb, Lt)
-               do L = Lb, Lt - 1
-                  k1 = ln(1, L)
-                  k2 = ln(2, L)
-                  discharge_at_layer_interface = 0.5_dp * (q1(L) + q1(L + 1))
-
-                  if (discharge_at_layer_interface > 0) then ! set upwind center values on links
-
-                     sum_q_times_turbulent_kinetic_energy_ws(k2) = &
-                        sum_q_times_turbulent_kinetic_energy_ws(k2) &
-                        + discharge_at_layer_interface * turbulent_kinetic_energy_ws(k1)
-                     
-                     sum_q_times_turbulent_dissipation_ws(k2) = &
-                        sum_q_times_turbulent_dissipation_ws(k2) &
-                        + discharge_at_layer_interface * turbulent_dissipation_ws(k1)
-                     
-                     sum_inflowing_discharges_ws(k2) = sum_inflowing_discharges_ws(k2) + discharge_at_layer_interface
-                  
-                  else if (discharge_at_layer_interface < 0) then
-
-                     sum_q_times_turbulent_kinetic_energy_ws(k1) = &
-                        sum_q_times_turbulent_kinetic_energy_ws(k1) &
-                        - discharge_at_layer_interface * turbulent_kinetic_energy_ws(k2)
-                     
-                     sum_q_times_turbulent_dissipation_ws(k1) = &
-                        sum_q_times_turbulent_dissipation_ws(k1) &
-                        - discharge_at_layer_interface * turbulent_dissipation_ws(k2)
-                     
-                     sum_inflowing_discharges_ws(k1) = sum_inflowing_discharges_ws(k1) - discharge_at_layer_interface
-                  
-                  end if
-
-               end do
-            end do
+         if (turbulent_advection_scheme > 0) then
+            call prepare_horizontal_advection()
          end if
 
          dt_inverse = 1.0_dp / dtprev ! turbulence transport in current velocity field => do not use new timestep but previous step
@@ -549,11 +500,7 @@ contains
                   end if
                end if
 
-               call tridag(ak, bk, ck, dk, ek, turbulent_kinetic_energy_wu(Lb0:Lt), kxL + 1) ! solve k
-               turbulent_kinetic_energy_wu(Lb0:Lt) = max(tke_min, turbulent_kinetic_energy_wu(Lb0:Lt))
-               do L = Lt + 1, Lb + kmxL(LL) - 1 ! copy to surface for z-layers
-                  turbulent_kinetic_energy_wu(L) = turbulent_kinetic_energy_wu(Lt)
-               end do
+               call solve_turbulence_profile(turbulent_kinetic_energy_wu, Lb0, Lt, Lb + kmxL(LL) - 1, tke_min)
 
                !_____________________________________________________________________________________!
 
@@ -705,11 +652,7 @@ contains
                   end do
                end if
 
-               call tridag(ak, bk, ck, dk, ek, turbulent_dissipation_wu(Lb0:Lt), kxL + 1) ! solve eps
-               turbulent_dissipation_wu(Lb0:Lt) = max(eps_min, turbulent_dissipation_wu(Lb0:Lt))
-               do L = Lt + 1, Lb + kmxL(LL) - 1 ! copy to surface for z-layers
-                  turbulent_dissipation_wu(L) = turbulent_dissipation_wu(Lt)
-               end do
+               call solve_turbulence_profile(turbulent_dissipation_wu, Lb0, Lt, Lb + kmxL(LL) - 1, eps_min)
 
                if ((t_spinup_turb_log_prof > 0.0_dp .and. Time1 < tstart_tlfsmo_user + t_spinup_turb_log_prof) .or. &
                    (jaLogprofkepsbndin == 1 .and. LL > lnxi .and. u1(LL) >= 0.0_dp) .or. &
@@ -787,56 +730,8 @@ contains
 
          call calculate_drhodz(zws, drhodz)
 
-         if (turbulent_advection_scheme > 0) then ! transport switched on: prepare horizontal advection k and eps
-
-            if (source_sinks%num_total > 0 .and. source_sinks%add_k_to_turkin) then
-               call doaddksources()
-            end if
-
-            if (jampi == 1) then
-               call update_ghosts(ITYPE_Sall3D, 1, Ndkx, turbulent_kinetic_energy_ws, ierror)
-               call update_ghosts(ITYPE_Sall3D, 1, Ndkx, turbulent_dissipation_ws, ierror)
-            end if
-
-            sum_q_times_turbulent_kinetic_energy_ws = 0.0_dp
-            sum_q_times_turbulent_dissipation_ws = 0.0_dp
-            sum_inflowing_discharges_ws = 0.0_dp
-
-            do LL = 1, lnx
-               call getLbotLtop(LL, Lb, Lt)
-               do L = Lb, Lt - 1
-                  k1 = ln(1, L)
-                  k2 = ln(2, L)
-                  discharge_at_layer_interface = 0.5_dp * (q1(L) + q1(L + 1))
-
-                  if (discharge_at_layer_interface > 0) then ! set upwind center values on links
-
-                     sum_q_times_turbulent_kinetic_energy_ws(k2) = &
-                        sum_q_times_turbulent_kinetic_energy_ws(k2) &
-                        + discharge_at_layer_interface * turbulent_kinetic_energy_ws(k1)
-                     
-                     sum_q_times_turbulent_dissipation_ws(k2) = &
-                        sum_q_times_turbulent_dissipation_ws(k2) &
-                        + discharge_at_layer_interface * turbulent_dissipation_ws(k1)
-                     
-                     sum_inflowing_discharges_ws(k2) = sum_inflowing_discharges_ws(k2) + discharge_at_layer_interface
-                  
-                  else if (discharge_at_layer_interface < 0) then
-
-                     sum_q_times_turbulent_kinetic_energy_ws(k1) = &
-                        sum_q_times_turbulent_kinetic_energy_ws(k1) &
-                        - discharge_at_layer_interface * turbulent_kinetic_energy_ws(k2)
-                     
-                     sum_q_times_turbulent_dissipation_ws(k1) = &
-                        sum_q_times_turbulent_dissipation_ws(k1) &
-                        - discharge_at_layer_interface * turbulent_dissipation_ws(k2)
-                     
-                     sum_inflowing_discharges_ws(k1) = sum_inflowing_discharges_ws(k1) - discharge_at_layer_interface
-                  
-                  end if
-
-               end do
-            end do
+         if (turbulent_advection_scheme > 0) then
+            call prepare_horizontal_advection()
          end if
 
          dt_inverse = 1.0_dp / dtprev ! turbulence transport in current velocity field => do not use new timestep but previous step
@@ -973,11 +868,7 @@ contains
                   end if
                end if
 
-               call tridag(ak, bk, ck, dk, ek, turbulent_kinetic_energy_ws(kb0:kt), kxL + 1) ! solve k
-               turbulent_kinetic_energy_ws(kb0:kt) = max(tke_min, turbulent_kinetic_energy_ws(kb0:kt))
-               do L = kt + 1, kb + kmxn(kk) - 1 ! copy to surface for z-layers
-                  turbulent_kinetic_energy_ws(L) = turbulent_kinetic_energy_ws(kt)
-               end do
+               call solve_turbulence_profile(turbulent_kinetic_energy_ws, kb0, kt, kb + kmxn(kk) - 1, tke_min)
 
                !_____________________________________________________________________________________!
 
@@ -1042,11 +933,7 @@ contains
                   end do
                end if
 
-               call tridag(ak, bk, ck, dk, ek, turbulent_dissipation_ws(kb0:kt), kxL + 1) ! solve eps
-               turbulent_dissipation_ws(kb0:kt) = max(eps_min, turbulent_dissipation_ws(kb0:kt))
-               do L = kt + 1, kb + kmxn(kk) - 1 ! copy to surface for z-layers
-                  turbulent_dissipation_ws(L) = turbulent_dissipation_ws(kt)
-               end do
+               call solve_turbulence_profile(turbulent_dissipation_ws, kb0, kt, kb + kmxn(kk) - 1, eps_min)
 
                vicwmax = 0.1_dp * hs(kk) ! 0.009UH, Elder, uavmax=
                vicwws(kb0:kt) = min(vicwmax, CMUKEP * turbulent_kinetic_energy_ws(kb0:kt) * turbulent_kinetic_energy_ws(kb0:kt) / turbulent_dissipation_ws(kb0:kt))
@@ -1110,6 +997,59 @@ contains
       end if
 
    contains
+
+      !> Prepare upwind horizontal fluxes for k and dissipation at cell interfaces.
+      subroutine prepare_horizontal_advection()
+         integer :: link, layer, bottom, top, cell1, cell2, ierror
+         real(kind=dp) :: discharge_at_layer_interface
+
+         if (source_sinks%num_total > 0 .and. source_sinks%add_k_to_turkin) then
+            call doaddksources()
+         end if
+
+         if (jampi == 1) then
+            call update_ghosts(ITYPE_Sall3D, 1, Ndkx, turbulent_kinetic_energy_ws, ierror)
+            call update_ghosts(ITYPE_Sall3D, 1, Ndkx, turbulent_dissipation_ws, ierror)
+         end if
+
+         sum_q_times_turbulent_kinetic_energy_ws = 0.0_dp
+         sum_q_times_turbulent_dissipation_ws = 0.0_dp
+         sum_inflowing_discharges_ws = 0.0_dp
+
+         do link = 1, lnx
+            call getLbotLtop(link, bottom, top)
+            do layer = bottom, top - 1
+               cell1 = ln(1, layer)
+               cell2 = ln(2, layer)
+               discharge_at_layer_interface = 0.5_dp * (q1(layer) + q1(layer + 1))
+
+               if (discharge_at_layer_interface > 0) then
+                  sum_q_times_turbulent_kinetic_energy_ws(cell2) = sum_q_times_turbulent_kinetic_energy_ws(cell2) &
+                     + discharge_at_layer_interface * turbulent_kinetic_energy_ws(cell1)
+                  sum_q_times_turbulent_dissipation_ws(cell2) = sum_q_times_turbulent_dissipation_ws(cell2) &
+                     + discharge_at_layer_interface * turbulent_dissipation_ws(cell1)
+                  sum_inflowing_discharges_ws(cell2) = sum_inflowing_discharges_ws(cell2) + discharge_at_layer_interface
+               else if (discharge_at_layer_interface < 0) then
+                  sum_q_times_turbulent_kinetic_energy_ws(cell1) = sum_q_times_turbulent_kinetic_energy_ws(cell1) &
+                     - discharge_at_layer_interface * turbulent_kinetic_energy_ws(cell2)
+                  sum_q_times_turbulent_dissipation_ws(cell1) = sum_q_times_turbulent_dissipation_ws(cell1) &
+                     - discharge_at_layer_interface * turbulent_dissipation_ws(cell2)
+                  sum_inflowing_discharges_ws(cell1) = sum_inflowing_discharges_ws(cell1) - discharge_at_layer_interface
+               end if
+            end do
+         end do
+      end subroutine prepare_horizontal_advection
+
+      !> Solve a turbulence profile, enforce its minimum, and extend it above the surface.
+      subroutine solve_turbulence_profile(profile, bottom_interface, top_interface, last_interface, minimum)
+         real(kind=dp), dimension(:), intent(inout) :: profile
+         integer, intent(in) :: bottom_interface, top_interface, last_interface
+         real(kind=dp), intent(in) :: minimum
+
+         call tridag(ak, bk, ck, dk, ek, profile(bottom_interface:top_interface), top_interface - bottom_interface + 1)
+         profile(bottom_interface:top_interface) = max(minimum, profile(bottom_interface:top_interface))
+         profile(top_interface + 1:last_interface) = profile(top_interface)
+      end subroutine solve_turbulence_profile
 
       !> Lax-inspired time integration method to couple turbulence quantities horizontally
       !! By using a subroutine inside "update_verticalprofiles", all parameters defined in "update_verticalprofiles" are accessible
