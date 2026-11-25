@@ -656,12 +656,12 @@ contains
       character(256) :: line
       !
       sr%filnam = filnam
-      sr%prname = ''
-      sr%prnumb = ''
-      sr%title1 = ''
-      sr%title2 = ''
-      sr%title3 = ''
-      sr%comfile = ''
+      sr%prname = ' '
+      sr%prnumb = ' '
+      sr%title1 = ' '
+      sr%title2 = ' '
+      sr%title3 = ' '
+      sr%comfile = ' '
       sr%mudfile_deprecated = ' '
       sr%useflowdata = .false.
       sr%exemode = SWAN_MODE_EXE
@@ -684,8 +684,8 @@ contains
       sr%casl = filnam(indstart + 1:indend - 1)
       return
 999   continue
-      write (*, '(a)') '*** ERROR: While reading file ''waves_alone''.'
-      call wavestop(1, '*** ERROR: While reading file ''waves_alone''.')
+      write (*, '(a)') '*** ERROR: While reading file "waves_alone".'
+      call wavestop(1, '*** ERROR: While reading file "waves_alone".')
    end subroutine read_dwaves_mdw
 !
 !
@@ -792,7 +792,7 @@ contains
       !
       ! Check version number of wave input file
       !
-      versionstring = ''
+      versionstring = ' '
       call prop_get(mdw_ptr, 'WaveFileInformation', 'FileVersion', versionstring)
       if (trim(versionstring) < '02.00') return
       keywbased = .true.
@@ -800,9 +800,9 @@ contains
       !
       call tree_get_node_by_name(mdw_ptr, 'General', gen_ptr)
       ! Read the Template INPUT keyword before everything else
-      sr%inputtemplatefile = ''
+      sr%inputtemplatefile = ' '
       call prop_get(mdw_ptr, 'General', 'INPUTTemplateFile', sr%inputtemplatefile)
-      if (sr%inputtemplatefile /= '') then
+      if (sr%inputtemplatefile /= ' ') then
          inquire (file=trim(sr%inputtemplatefile), exist=ex)
          if (.not. ex) then
             write (*, *) 'SWAN_INPUT: specified INPUTTemplateFile "', trim(sr%inputtemplatefile), '" does not exist.'
@@ -853,9 +853,9 @@ contains
       !
       sr%deltc = -999.0
       sr%nonstat_interval = -999.0
-      parname = ''
+      parname = ' '
 
-      if (swan_run%inputtemplatefile /= '') then
+      if (swan_run%inputtemplatefile /= ' ') then
          ! Read ModSim from SWAN INPUT file when using a template
          open (newunit=old_input, file=swan_run%inputtemplatefile, form='formatted', status='old', iostat=ierr)
          if (ierr /= 0) then
@@ -913,7 +913,7 @@ contains
          call handle_errors_mdw(sr)
       end select
       !
-      parname = ''
+      parname = ' '
       call prop_get(mdw_ptr, 'General', 'FlowMudFile', sr%mudfile_deprecated)
       if (sr%mudfile_deprecated /= ' ') then
          write (*, *) 'SWAN_INPUT: Keyword "FlowMudFile" is deprecated'
@@ -925,7 +925,7 @@ contains
       end if
       call prop_get(mdw_ptr, 'General', 'ComFile', sr%comfile)
       !
-      parname = ''
+      parname = ' '
       call prop_get(mdw_ptr, 'General', 'DirConvention', parname)
       call str_lower(parname, len(parname))
       select case (parname)
@@ -937,13 +937,13 @@ contains
          write (*, *) 'SWAN_INPUT: missing or invalid direction convention'
          call handle_errors_mdw(sr)
       end select
-      obstfil = ''
+      obstfil = ' '
       call prop_get(mdw_ptr, 'General', 'ObstacleFile', obstfil)
       !
       ! Determine reference date. Date string converted from YYYY-MM-DD
       ! to YYYYMMDD.
       !
-      parname = ''
+      parname = ' '
       call prop_get(mdw_ptr, 'General', 'ReferenceDate', parname)
       parname(5:6) = parname(6:7)
       parname(7:8) = parname(9:10)
@@ -963,7 +963,7 @@ contains
       call prop_get(mdw_ptr, 'General', 'TScale', tscale)
       call settscale(wavedata%time, tscale)
       !
-      tseriesfilename = ''
+      tseriesfilename = ' '
       call prop_get(mdw_ptr, 'General', 'TSeriesFile', tseriesfilename)
       if (tseriesfilename /= ' ') then
          sr%timedependent = .true.
@@ -1131,7 +1131,7 @@ contains
       !
       ! Default settings for domains
       !
-      parname = ''
+      parname = ' '
       call prop_get(mdw_ptr, 'General', 'DirSpace', parname)
       call str_lower(parname, len(parname))
       def_dirspace = -999
@@ -1141,7 +1141,7 @@ contains
       case ('sector')
          def_dirspace = 2
       case default
-         if (parname /= '') then
+         if (parname /= ' ') then
             write (*, *) 'SWAN_INPUT: unknown General/DirSpace: ', parname
             call handle_errors_mdw(sr)
          end if
@@ -1173,7 +1173,7 @@ contains
          ! Allocate temporary array for names of external forcing files
          !
          allocate (tmp_extforce_names(sr%n_extforces_gen), stat=istat)
-         tmp_extforce_names = ''
+         tmp_extforce_names = ' '
          !
          ! The input can be read
          !
@@ -1201,7 +1201,7 @@ contains
                   end if
                end do
                !
-               if (tmp_extforce_names(par) == '') then
+               if (tmp_extforce_names(par) == ' ') then
                   !
                   ! Index par points to empty names, so store the file name in the array
                   !
@@ -1289,7 +1289,7 @@ contains
          call prop_get(mdw_ptr, 'Processes', 'TriadsBeta', sr%cftriad2)
       end if
       !
-      parname = ''
+      parname = ' '
       call prop_get(mdw_ptr, 'Processes', 'BedFriction', parname)
       call str_lower(parname, len(parname))
       select case (parname)
@@ -1333,7 +1333,7 @@ contains
          write (*, '(a)') 'SWAN_INPUT: AlfaWind is not allowed to be equal to 0.0.'
          call handle_errors_mdw(sr)
       end if
-      parname = ''
+      parname = ' '
       call prop_get(mdw_ptr, 'Processes', 'WhiteCapping', parname)
       call str_lower(parname, len(parname))
       select case (parname)
@@ -1356,7 +1356,7 @@ contains
       call prop_get(mdw_ptr, 'Processes', 'Refraction', sr%refraction)
       call prop_get(mdw_ptr, 'Processes', 'FreqShift', sr%fshift)
       !
-      parname = ''
+      parname = ' '
       call prop_get(mdw_ptr, 'Processes', 'WaveForces', parname)
       call str_lower(parname, len(parname))
       select case (parname)
@@ -1375,7 +1375,7 @@ contains
          call handle_errors_mdw(sr)
       end select
       !
-      parname = ''
+      parname = ' '
       call prop_get(mdw_ptr, 'Processes', 'IceDamp', parname)
       call str_lower(parname, len(parname))
       select case (parname)
@@ -1416,7 +1416,7 @@ contains
       sr%gamma0 = 3.3
       sr%alfa = 0.0
       !
-      parname = ''
+      parname = ' '
       call prop_get(mdw_ptr, 'Numerics', 'Scheme', parname)
       call str_lower(parname, len(parname))
       select case (parname)
@@ -1426,7 +1426,7 @@ contains
          sr%num_scheme = 2
          write (*, *) 'SWAN_INPUT: Numerics/Scheme = BSBT'
       case default
-         if (parname /= '') then
+         if (parname /= ' ') then
             write (*, *) 'SWAN_INPUT: unknown Numerics/Scheme: ', parname
             goto 999
          end if
@@ -1506,7 +1506,7 @@ contains
       call prop_get(mdw_ptr, 'Output', 'WriteCOM', sr%swwav)
       call prop_get(mdw_ptr, 'Output', 'MassFluxToCOM', sr%swflux)
       call prop_get(mdw_ptr, 'Output', 'COMWriteInterval', sr%deltcom)
-      parname = ''
+      parname = ' '
       call prop_get(mdw_ptr, 'Output', 'COMFile', parname)
       if (parname /= ' ') then
          if (sr%comfile /= ' ') then
@@ -1707,7 +1707,7 @@ contains
          call prop_get(mdw_ptr, 'General', 'FlowWaterLevel', sr%dom(1)%qextnd(q_wl))
          call prop_get(mdw_ptr, 'General', 'FlowVelocity', sr%dom(1)%qextnd(q_cur))
          call prop_get(mdw_ptr, 'General', 'FlowWind', sr%dom(1)%qextnd(q_wind))
-         parname = ''
+         parname = ' '
          call prop_get(mdw_ptr, 'General', 'FlowVelocityType', parname)
          call str_lower(parname, len(parname))
          select case (parname)
@@ -1734,11 +1734,11 @@ contains
          dom%nfreq = def_nfreq
          dom%nestnr = -999
          dom%cgnum = .true.
-         dom%botfil = ''
-         dom%curlif = ''
-         dom%depfil = ''
-         dom%nesfil = ''
-         dom%vegfil = ''
+         dom%botfil = ' '
+         dom%curlif = ' '
+         dom%depfil = ' '
+         dom%nesfil = ' '
+         dom%vegfil = ' '
          dom%nesnam = '--DUMMY--' !!dummy
          dom%mxb = -999
          dom%myb = -999
@@ -1779,7 +1779,7 @@ contains
             call handle_errors_mdw(sr)
          end if
          call readgriddims(dom%curlif, dom%mxc, dom%myc)
-         if (dom%curlif == '') then
+         if (dom%curlif == ' ') then
             write (*, *) 'SWAN_INPUT: grid not found for domain', domainnr
             call handle_errors_mdw(sr)
          end if
@@ -1791,9 +1791,9 @@ contains
          !
          ! Read bathymetry
          !
-         dom%depfil = ''
+         dom%depfil = ' '
          call prop_get(tmp_ptr, '*', 'BedLevelGrid', dom%depfil)
-         if (dom%depfil /= '') then
+         if (dom%depfil /= ' ') then
             call readgriddims(dom%depfil, dom%mxb, dom%myb)
             !
             ! poles? No, fences!
@@ -1808,7 +1808,7 @@ contains
             dom%curvibot = 1
          end if
          call prop_get(tmp_ptr, '*', 'BedLevel', dom%botfil)
-         if (dom%botfil == '') then
+         if (dom%botfil == ' ') then
             write (*, *) 'SWAN_INPUT: bathymetry not found for domain', domainnr
             call handle_errors_mdw(sr)
          end if
@@ -1845,7 +1845,7 @@ contains
             ! Read vegetation map
             !
             call prop_get(tmp_ptr, '*', 'VegetationMap', dom%vegfil)
-            if (dom%vegetation > 0 .and. dom%vegfil == '') then
+            if (dom%vegetation > 0 .and. dom%vegfil == ' ') then
                write (*, *) 'SWAN_INPUT: no vegetation map used for domain ', domainnr
             end if
          end if
@@ -1869,7 +1869,7 @@ contains
             write (*, *) 'SWAN_INPUT: invalid number of directions: ', dom%ndir
             call handle_errors_mdw(sr)
          end if
-         parname = ''
+         parname = ' '
          call prop_get(tmp_ptr, '*', 'DirSpace', parname)
          call str_lower(parname, len(parname))
          select case (parname)
@@ -1878,7 +1878,7 @@ contains
          case ('sector')
             dom%dirspace = 2
          case default
-            if (parname /= '' .or. dom%dirspace < 0) then
+            if (parname /= ' ' .or. dom%dirspace < 0) then
                write (*, *) 'SWAN_INPUT: unknown DirSpace: ', parname
                call handle_errors_mdw(sr)
             end if
@@ -1922,7 +1922,7 @@ contains
          if (dom%qextnd(q_wind) > 0) sr%swwindt = .true.
          !
          if (sr%swuvt) then
-            parname = ''
+            parname = ' '
             call prop_get(tmp_ptr, '*', 'FlowVelocityType', parname)
             call str_lower(parname, len(parname))
             select case (parname)
@@ -1979,7 +1979,7 @@ contains
             ! Allocate temporary array for names of external forcing files
             !
             allocate (tmp_extforce_names(dom%n_extforces), stat=istat)
-            tmp_extforce_names = ''
+            tmp_extforce_names = ' '
             !
             ! The input can be read
             !
@@ -2006,7 +2006,7 @@ contains
                      end if
                   end do
                   !
-                  if (tmp_extforce_names(par) == '') then
+                  if (tmp_extforce_names(par) == ' ') then
                      !
                      ! Index par points to empty string, so store the read file name in the array
                      !
@@ -2163,14 +2163,14 @@ contains
          !
          call prop_get(bnd_ptr, '*', 'Name', bnd%name)
          !
-         parname = ''
+         parname = ' '
          call prop_get(bnd_ptr, '*', 'Definition', parname)
          call str_lower(parname, len(parname))
          select case (parname)
          case ('orientation')
             bnd%bndtyp = 1
             !
-            parname = ''
+            parname = ' '
             call prop_get(bnd_ptr, '*', 'Orientation', parname)
             call str_lower(parname, len(parname))
             select case (parname)
@@ -2196,7 +2196,7 @@ contains
             end select
             bnd%turn = 1
             !
-            parname = ''
+            parname = ' '
             call prop_get(bnd_ptr, '*', 'DistanceDir', parname)
             call str_lower(parname, len(parname))
             select case (parname)
@@ -2244,7 +2244,7 @@ contains
             call handle_errors_mdw(sr)
          end select
          !
-         parname = ''
+         parname = ' '
          call prop_get(bnd_ptr, '*', 'SpectrumSpec', parname)
          call str_lower(parname, len(parname))
          select case (parname)
@@ -2257,7 +2257,7 @@ contains
          case ('parametric')
             bnd%parread = 2
             !
-            parname = ''
+            parname = ' '
             call prop_get(bnd_ptr, '*', 'SpShapeType', parname)
             call str_lower(parname, len(parname))
             select case (parname)
@@ -2274,7 +2274,7 @@ contains
                call handle_errors_mdw(sr)
             end select
             !
-            parname = ''
+            parname = ' '
             call prop_get(bnd_ptr, '*', 'PeriodType', parname)
             call str_lower(parname, len(parname))
             select case (parname)
@@ -2287,7 +2287,7 @@ contains
                call handle_errors_mdw(sr)
             end select
             !
-            parname = ''
+            parname = ' '
             call prop_get(bnd_ptr, '*', 'DirSpreadType', parname)
             call str_lower(parname, len(parname))
             select case (parname)
@@ -2445,7 +2445,7 @@ contains
          call tree_put_data(obst_ptr, transfer(trim(obstfil), node_value), 'STRING')
          call prop_file('ini', trim(obstfil), obst_ptr, istat)
          if (istat /= 0) then
-            write (*, *) 'SWAN_INPUT: error reading obstacle file ''', trim(obstfil), ''''
+            write (*, *) 'SWAN_INPUT: error reading obstacle file "', trim(obstfil), '"'
             call handle_errors_mdw(sr)
          end if
          !
@@ -2458,7 +2458,7 @@ contains
          call tree_get_data_string(pol_ptr, polylinefile, flag)
          call prop_file('tekal', polylinefile, pol_ptr, istat)
          if (istat /= 0) then
-            write (*, *) 'SWAN_INPUT: error reading obstacle polygon file ''', trim(polylinefile), ''''
+            write (*, *) 'SWAN_INPUT: error reading obstacle polygon file "', trim(polylinefile), '"'
             call handle_errors_mdw(sr)
          end if
          !
@@ -2470,11 +2470,11 @@ contains
             if (parname /= 'obstacle') cycle
             !
             nobst = nobst + 1
-            parname = ''
+            parname = ' '
             call prop_get(tmp_ptr, '*', 'Name', parname)
             call tree_get_node_by_name(pol_ptr, parname, tmp_ptr)
             if (.not. associated(tmp_ptr)) then
-               write (*, *) 'SWAN_INPUT: obstacle polygon ''', trim(parname), ''' not found'
+               write (*, *) 'SWAN_INPUT: obstacle polygon "', trim(parname), '" not found'
                call handle_errors_mdw(sr)
             end if
             !
@@ -2520,7 +2520,7 @@ contains
             if (parname /= 'obstacle') cycle
             obstnr = obstnr + 1
             !
-            parname = ''
+            parname = ' '
             call prop_get(tmp_ptr, '*', 'Type', parname)
             call str_lower(parname, len(parname))
             select case (parname)
@@ -2533,7 +2533,7 @@ contains
                call prop_get(tmp_ptr, '*', 'Beta', sr%obet(obstnr))
             end select
             !
-            parname = ''
+            parname = ' '
             call prop_get(tmp_ptr, '*', 'Reflections', parname)
             call str_lower(parname, len(parname))
             select case (parname)
@@ -2552,7 +2552,7 @@ contains
                call prop_get(tmp_ptr, '*', 'ReflecCoef', sr%refl_coeff(obstnr))
             end if
             !
-            parname = ''
+            parname = ' '
             call prop_get(tmp_ptr, '*', 'Name', parname)
             call tree_get_node_by_name(pol_ptr, parname, tmp_ptr)
             if (.not. associated(tmp_ptr)) then
@@ -2601,7 +2601,7 @@ contains
       type(swan_type) :: sr
 
       !
-      if (sr%inputtemplatefile /= '') then
+      if (sr%inputtemplatefile /= ' ') then
          ! use existing INPUT, mdw keywords not needed
          continue
       else
@@ -2637,7 +2637,7 @@ contains
       wvel = sr%wvel(itide)
       wdir = sr%wdir(itide)
       !
-      if (sr%inputtemplatefile /= '') then
+      if (sr%inputtemplatefile /= ' ') then
          call update_swan_inp_injs(sr%inputtemplatefile, itide, sr%nttide, calccount, inest, sr, wavedata)
       else
          call write_swan_inp(wavedata, calccount, &
@@ -2977,7 +2977,7 @@ contains
       lc = len_trim(casl)
       casl_short = casl(1:8)
       if (lc > 8) then
-         write (*, '(5a)') '*** MESSAGE: ''', trim(casl), ''' is truncated to ''', trim(casl_short), ''' in SWAN input file'
+         write (*, '(5a)') '*** MESSAGE: "', trim(casl), '" is truncated to "', trim(casl_short), '" in SWAN input file'
          lc = len_trim(casl_short)
       end if
       open (newunit=luninp, file='INPUT', status='replace')
@@ -4558,7 +4558,7 @@ contains
          domain_ptr => input_tree%child_nodes(i)%node_ptr
          parname = tree_get_name(domain_ptr)
          if (parname /= 'domain') cycle
-         parname = ''
+         parname = ' '
          call prop_get(domain_ptr, '*', 'Grid', parname)
          !
          do in = 1, sr%nnest

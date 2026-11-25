@@ -314,7 +314,7 @@ if (sr%swveg .and. sr%dom(1)%qextnd(q_veg) >= 1) then
          sr%veg_height = maxval
       endif
    endif
-   if (sr%mudfile_deprecated /= '') then
+   if (sr%mudfile_deprecated /= ' ') then
       write(*,'(4x,a)') 'Mud:'
       write(mudfilnam,'(a,a)')'com-',trim(mudids(1))
       !

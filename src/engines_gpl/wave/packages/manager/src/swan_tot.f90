@@ -110,7 +110,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
       if (wavedata%output%write_wavm) then
          call setoutputcount(wavedata%output, wavedata%output%count + 1)
       end if
-      if (wavedata%time%calccount == 1 .and. swan_run%modsim == 3 .and. swan_run%inputtemplatefile == '') then
+      if (wavedata%time%calccount == 1 .and. swan_run%modsim == 3 .and. swan_run%inputtemplatefile == ' ') then
          !
          ! SWANFile is going to contain two datasets: from tstart and tend
          ! Output from tend will always be written
@@ -148,7 +148,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
          !
          ! Vegetation map
          if (.not.dom%veg_from_flow) then
-            if (dom%vegfil /= '') then
+            if (dom%vegfil /= ' ') then
                write (*, '(a)') '  Allocate and read vegetation map'
                call get_vegi_map(swan_input_fields, dom%vegfil)
             else
@@ -303,7 +303,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
                                 & sumvars, 0.0)
          end if
          mult = 1.0
-         if (dom%veg_from_flow .or. (dom%vegetation >= 1 .and. dom%vegfil /= '')) then
+         if (dom%veg_from_flow .or. (dom%vegetation >= 1 .and. dom%vegfil /= ' ')) then
             !
             ! Write Vegetation map file
             !
@@ -369,7 +369,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
          !
          write (*, '(a)') '  Read SWAN output'
          offset = 0
-         if (wavedata%time%calccount == 1 .and. swan_run%modsim == 3 .and. swan_run%inputtemplatefile == '') then
+         if (wavedata%time%calccount == 1 .and. swan_run%modsim == 3 .and. swan_run%inputtemplatefile == ' ') then
             ! SWANFile contains two datasets: from tstart and tend
             ! First read the first dataset
             ! This must be placed in output%count-1

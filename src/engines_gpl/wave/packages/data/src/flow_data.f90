@@ -136,7 +136,7 @@ subroutine flow_init (wave_flow_mode, it01, tscale)
       enddo
       call wave_to_flow_status(flow_wave_comm_result_ok, mud)
       !
-      if (swan_run%mudfile_deprecated /= '') then
+      if (swan_run%mudfile_deprecated /= ' ') then
          mud          = .true.
          subdom_names = ' '
          write (*,'(a)') '  Waiting for initialisation from MUD layer'
@@ -145,7 +145,7 @@ subroutine flow_init (wave_flow_mode, it01, tscale)
             write(*,'(a)') '*** ERROR: Delftio initialization WAVE side failed'
             call wavestop(1, '           Is file ''dioconfig.ini'' present?')
          endif
-         swan_run%mudfile_deprecated = ''
+         swan_run%mudfile_deprecated = ' '
          allocate (mudids(num_muddomains))
          write(*,'(a,i0,a)') '*** MESSAGE: Connected to the following ',num_muddomains,' MUD domain(s):'
          do idom = 1,num_muddomains

@@ -615,7 +615,7 @@ contains
       !
       ! Interaction with Fluid Mud
       !
-      if (mudfile_deprecated /= '') then
+      if (mudfile_deprecated /= ' ') then
          allocate (inpfld%s1mud(inpfld%mmax, inpfld%nmax))
          allocate (inpfld%dpsmud(inpfld%mmax, inpfld%nmax))
          inpfld%s1mud = 0.0
@@ -696,7 +696,7 @@ contains
       deallocate (inpfld%veg_stemheight, stat=ierr)
       deallocate (inpfld%windu, stat=ierr)
       deallocate (inpfld%windv, stat=ierr)
-      if (mudfile_deprecated /= '') then
+      if (mudfile_deprecated /= ' ') then
          deallocate (inpfld%s1mud, stat=ierr)
          deallocate (inpfld%dpsmud, stat=ierr)
       end if
