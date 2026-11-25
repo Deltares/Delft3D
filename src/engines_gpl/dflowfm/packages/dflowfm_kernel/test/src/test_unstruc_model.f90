@@ -39,8 +39,8 @@ contains
         open(newunit=unit, file=filename, status='replace')
         write(unit, '(a)') '[General]', 'fileType = solverSequence', 'fileVersion = 1.0', &
             '[Period]', 'tStart = 0', '[Period]', 'tStart = 1', 'flowSolver = generic1d2d3d', &
-            'RestartFile = state_map.nc', 'RestartDateTime = 20250101010000', 'RstIgnoreBl = 0', &
-            'RstIgnoreBedComp = 0', &
+            'RestartFile = state_map.nc', 'RestartDateTime = 20250101010000', &
+            'useRestartBedlevel = true', 'useRestartBedComp = true', &
             '[Period]', 'tStart = 2', 'flowSolver = frozen1d2d'
         close(unit)
 
@@ -65,39 +65,6 @@ contains
         open(newunit=unit, file=filename, status='old')
         close(unit, status='delete')
     end subroutine test_solver_sequence_periods
-
-    !$gtest
-    subroutine test_solver_sequence_positive_restart_options() bind(C)
-        use m_flowparameters, only: solver_sequence
-        use m_flowtimes, only: dt_user, tstart_user, tstop_user, tfac
-
-        integer :: unit, status
-        character(len=*), parameter :: filename = 'test_solver_sequence_positive_restart.ini'
-
-        tfac = 3600.0_dp
-        dt_user = 1800.0_dp
-        tstart_user = 0.0_dp
-        tstop_user = 10800.0_dp
-        open(newunit=unit, file=filename, status='replace')
-        write(unit, '(a)') '[General]', 'fileType = solverSequence', 'fileVersion = 1.0', &
-            '[Period]', 'tStart = 0', 'RstIgnoreBl = 1', 'RstIgnoreBedComp = 1', &
-            'useRestartBedlevel = true', 'useRestartBedComp = true', &
-            '[Period]', 'tStart = 1', 'RstIgnoreBl = 0', 'RstIgnoreBedComp = 0', &
-            'useRestartBedlevel = false', 'useRestartBedComp = false'
-        close(unit)
-
-        call read_solver_sequence(filename, status)
-        call F90_EXPECT_EQ(status, 0)
-        if (status == 0) then
-            call F90_EXPECT_TRUE(solver_sequence(1)%use_restart_bedlevel)
-            call F90_EXPECT_TRUE(solver_sequence(1)%use_restart_bedcomp)
-            call F90_EXPECT_FALSE(solver_sequence(2)%use_restart_bedlevel)
-            call F90_EXPECT_FALSE(solver_sequence(2)%use_restart_bedcomp)
-            deallocate(solver_sequence)
-        end if
-        open(newunit=unit, file=filename, status='old')
-        close(unit, status='delete')
-    end subroutine test_solver_sequence_positive_restart_options
 
     !$gtest
     subroutine test_solver_sequence_off_grid_period() bind(C)

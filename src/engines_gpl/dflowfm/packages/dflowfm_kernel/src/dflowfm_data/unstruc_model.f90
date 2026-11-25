@@ -2775,7 +2775,7 @@ contains
       character(len=255) :: file_type, solver_name, block_name
       real(kind=dp) :: start_time, step_number
       real(kind=dp) :: version
-      logical :: found, rst_ignore_bl, rst_ignore_bedcomp
+      logical :: found
       integer :: i, period, readerr, nperiods
 
       istat = DFM_GENERICERROR
@@ -2834,12 +2834,6 @@ contains
          end select
          call prop_get(block, 'RestartFile', solver_sequence(period)%restart_file)
          call prop_get(block, 'RestartDateTime', solver_sequence(period)%restart_date_time)
-         rst_ignore_bl = .not. solver_sequence(period)%use_restart_bedlevel
-         rst_ignore_bedcomp = .not. solver_sequence(period)%use_restart_bedcomp
-         call prop_get(block, 'RstIgnoreBl', rst_ignore_bl)
-         call prop_get(block, 'RstIgnoreBedComp', rst_ignore_bedcomp)
-         solver_sequence(period)%use_restart_bedlevel = .not. rst_ignore_bl
-         solver_sequence(period)%use_restart_bedcomp = .not. rst_ignore_bedcomp
          call prop_get(block, 'useRestartBedlevel', solver_sequence(period)%use_restart_bedlevel)
          call prop_get(block, 'useRestartBedComp', solver_sequence(period)%use_restart_bedcomp)
          if (len_trim(solver_sequence(period)%restart_date_time) > 0 .and. &
