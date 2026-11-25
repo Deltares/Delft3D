@@ -1150,10 +1150,7 @@ contains
       call prop_get(md_ptr, 'numerics', 'Zwsbtol', zwsbtol)
       call prop_get(md_ptr, 'numerics', 'Trsh_u1Lb', Trsh_u1Lb)
 
-      call prop_get(md_ptr, 'numerics', 'minimumDepthForHeatAndEvaporationFluxes', minimum_depth_for_heat_and_evaporation_fluxes, success)
-      if (.not. success) then
-         call prop_get(md_ptr, 'numerics', 'Epshstem', minimum_depth_for_heat_and_evaporation_fluxes)
-      end if
+      call prop_get(md_ptr, 'numerics', 'epshstem', minimum_depth_for_heat_and_evaporation_fluxes)
 
       call prop_get(md_ptr, 'numerics', 'Teta0', teta0)
       call prop_get(md_ptr, 'numerics', 'Jbasqbnddownwindhs', jbasqbnddownwindhs)
@@ -1309,10 +1306,7 @@ contains
       end if
 
       ! Additions for dynamic roughness for storm impacts with morphology
-      call prop_get(md_ptr, 'physics', 'enableDynamicVegetationRoughness', dynamic_vegetation_roughness_enabled, success)
-      if (.not. success) then
-         call prop_get(md_ptr, 'physics', 'dynRoughVeg', dynamic_vegetation_roughness_enabled)
-      end if
+      call prop_get(md_ptr, 'physics', 'dynRoughVeg', dynamic_vegetation_roughness_enabled)
 
       if (dynamic_vegetation_roughness_enabled /= 0) then
          if (uniform_friction_type /= 1) then
@@ -1428,19 +1422,10 @@ contains
 
       call prop_get(md_ptr, 'physics', 'Salimax', salinity_max)
       call prop_get(md_ptr, 'physics', 'Salimin', salinity_min)
-
-      call prop_get(md_ptr, 'physics', 'surfaceTemperatureSmoothingFactor', surface_temperature_smoothing_factor, success)
-      if (.not. success) then
-         call prop_get(md_ptr, 'physics', 'Surftempsmofac', surface_temperature_smoothing_factor)
-      end if
-
+      call prop_get(md_ptr, 'physics', 'surfTempSmoFac', surface_temperature_smoothing_factor)
       call prop_get(md_ptr, 'physics', 'Albedo', albedo)
       call prop_get(md_ptr, 'physics', 'Heat_eachstep', jaheat_eachstep)
-
-      call prop_get(md_ptr, 'physics', 'soilHeatBufferThickness', soil_heat_buffer_thickness, success)
-      if (.not. success) then
-         call prop_get(md_ptr, 'physics', 'Soiltempthick', soil_heat_buffer_thickness)
-      end if
+      call prop_get(md_ptr, 'physics', 'soilTempThick', soil_heat_buffer_thickness)
       if (soil_heat_buffer_thickness > 0.0_dp) then
          jaheat_eachstep = 1
       end if
@@ -3289,7 +3274,7 @@ contains
       end if
 
       if (writeall .or. minimum_depth_for_heat_and_evaporation_fluxes /= 0.001_dp) then
-         call prop_set(prop_ptr, 'numerics', 'minimumDepthForHeatAndEvaporationFluxes', minimum_depth_for_heat_and_evaporation_fluxes, 'Minimum water depth for heat flux and evaporation computations.')
+         call prop_set(prop_ptr, 'numerics', 'epshstem', minimum_depth_for_heat_and_evaporation_fluxes, 'Minimum water depth for heat flux and evaporation computations.')
       end if
 
       if (writeall .or. Zwsbtol /= 0.0_dp) then
@@ -3471,7 +3456,7 @@ contains
       if (writeall) then
          call prop_set(prop_ptr, 'physics', 'Umodlin', umodlin, 'Linear friction umod, for friction_type=4,5,6')
       end if
-      call prop_set(prop_ptr, 'physics', 'enableDynamicVegetationRoughness', dynamic_vegetation_roughness_enabled, 'Switch for dynamic vegetation roughness. Default 0.')
+      call prop_set(prop_ptr, 'physics', 'dynRoughVeg', dynamic_vegetation_roughness_enabled, 'Switch for dynamic vegetation roughness. Default 0.')
       call prop_set(prop_ptr, 'physics', 'dRoot', dynamic_vegetation_root_depth, 'Root depth (m)')
       call prop_set(prop_ptr, 'physics', 'dStem', dynamic_vegetation_stem_height, 'Stem height (m)')
       call prop_set(prop_ptr, 'physics', 'unifFrictCoefNoVeg', manning_friction_no_vegetation, 'Uniform friction (Manning) coefficient without vegetation (s/m^{1/3})')
@@ -3571,10 +3556,10 @@ contains
                           'Enable salinity-dependent freezing point (0 = no, 1 = yes). tempMin should be below 0 degrees Celsius.')
          end if
          if (writeall .or. surface_temperature_smoothing_factor > 0.0_dp) then
-            call prop_set(prop_ptr, 'physics', 'surfaceTemperatureSmoothingFactor', surface_temperature_smoothing_factor, 'Horizontal smoothing factor for surface water in heatflux computations (range: [0,1]), 0=no smoothing')
+            call prop_set(prop_ptr, 'physics', 'surfTempSmoFac', surface_temperature_smoothing_factor, 'Horizontal smoothing factor for surface water in heatflux computations (range: [0,1]), 0=no smoothing')
          end if
          if (writeall .or. soil_heat_buffer_thickness /= 0.0_dp) then
-            call prop_set(prop_ptr, 'physics', 'soilHeatBufferThickness', soil_heat_buffer_thickness, 'Use soil temperature buffer if > 0, e.g. 0.2 (m)')
+            call prop_set(prop_ptr, 'physics', 'soilTempThick', soil_heat_buffer_thickness, 'Use soil temperature buffer if > 0, e.g. 0.2 (m)')
          end if
          if (writeall .or. jaheat_eachstep > 0) then
             call prop_set(prop_ptr, 'physics', 'Heat_eachstep', jaheat_eachstep, '1=heat each timestep, 0=heat each usertimestep')
