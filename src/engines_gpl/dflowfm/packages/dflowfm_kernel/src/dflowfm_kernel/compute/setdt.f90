@@ -68,7 +68,7 @@ contains
       ! compute CFL-based maximum time step and limiting flownode/time step, per subomdain
       jareduced = 0
       if (flow_solver == FLOW_SOLVER_FM) then
-         call setdtorg(jareduced) ! 7.1 2031
+         call setdtorg(jareduced)
       else
          dts = dt_max
       end if
@@ -141,6 +141,9 @@ contains
          end if
       else
          dts = dt_max
+         if (time_user - time0 < dts) then
+            dts = time_user - time0
+         end if
          dtsc = 0.0_dp ! SPvdP: safety, was undefined but could be used later
          kkcflmx = 0 ! SPvdP: safety, was undefined but could be used later
       end if
@@ -170,7 +173,6 @@ contains
       if (jaGUI == 1) then
          call tekcflmx()
       end if
-
 
    end subroutine setdt
 
