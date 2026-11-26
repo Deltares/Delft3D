@@ -2,6 +2,7 @@
 module fm_statistical_output
    use m_output_config
    use m_statistical_output
+   use m_alloc, only: deallocate_if_allocated
    use messagehandling
    use m_statistical_output_types, only: t_output_variable_item, t_output_variable_set
    use precision, only: dp
@@ -34,49 +35,34 @@ module fm_statistical_output
    real(dp), dimension(:), allocatable, target :: qplat_data
 
    real(dp), dimension(:), allocatable, target :: source_sink_discharge_out, source_sink_discharge2_out, source_sink_discharge3_out, &
-            source_sink_cumulative_volume_out, source_sink_water_discharge_out, source_sink_average_discharge_previous_out
+                                                  source_sink_cumulative_volume_out, source_sink_water_discharge_out, source_sink_average_discharge_previous_out
 
    logical, public :: apply_statistics_on_output
 
 contains
 
    subroutine close_fm_statistical_output()
-      if (allocated(obscrs_data)) then
-         deallocate (obscrs_data)
-      end if
-      if (allocated(time_dredged)) then
-         deallocate (time_dredged)
-      end if
-      if (allocated(time_ploughed)) then
-         deallocate (time_ploughed)
-      end if
-      if (allocated(SBCX)) then
-         deallocate (SBCX)
-      end if
-      if (allocated(SBCY)) then
-         deallocate (SBCY)
-      end if
-      if (allocated(SBWX)) then
-         deallocate (SBWX)
-      end if
-      if (allocated(SBWY)) then
-         deallocate (SBWY)
-      end if
-      if (allocated(SSWX)) then
-         deallocate (SSWX)
-      end if
-      if (allocated(SSWY)) then
-         deallocate (SSWY)
-      end if
-      if (allocated(SSCX)) then
-         deallocate (SSCX)
-      end if
-      if (allocated(SSCY)) then
-         deallocate (SSCY)
-      end if
-      if (allocated(qplat_data)) then
-         deallocate (qplat_data)
-      end if
+      call dealloc(out_variable_set_his)
+      call dealloc(out_variable_set_map)
+      call dealloc(out_variable_set_clm)
+      call deallocate_if_allocated(obscrs_data)
+      call deallocate_if_allocated(time_dredged)
+      call deallocate_if_allocated(time_ploughed)
+      call deallocate_if_allocated(SBCX)
+      call deallocate_if_allocated(SBCY)
+      call deallocate_if_allocated(SBWX)
+      call deallocate_if_allocated(SBWY)
+      call deallocate_if_allocated(SSWX)
+      call deallocate_if_allocated(SSWY)
+      call deallocate_if_allocated(SSCX)
+      call deallocate_if_allocated(SSCY)
+      call deallocate_if_allocated(qplat_data)
+      call deallocate_if_allocated(source_sink_discharge_out)
+      call deallocate_if_allocated(source_sink_discharge2_out)
+      call deallocate_if_allocated(source_sink_discharge3_out)
+      call deallocate_if_allocated(source_sink_cumulative_volume_out)
+      call deallocate_if_allocated(source_sink_water_discharge_out)
+      call deallocate_if_allocated(source_sink_average_discharge_previous_out)
    end subroutine close_fm_statistical_output
 
    !> allocate array and associate pointer with it if not already done.
@@ -185,7 +171,7 @@ contains
 
       ! Parameters
       real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "source_sink_discharge" item, to be assigned once on first call.
-      
+
       call allocate_and_associate(source_input, source_sinks%num_normal, source_sink_discharge_out)
       source_sink_discharge_out = pack(source_sink_all_discharges(1, :), source_sinks%is_normal)
 
@@ -196,7 +182,7 @@ contains
 
       ! Parameters
       real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "source_sink_discharge2" item, to be assigned once on first call.
-      
+
       call allocate_and_associate(source_input, source_sinks%num_normal, source_sink_discharge2_out)
       source_sink_discharge2_out = pack(source_sink_all_discharges(2, :), source_sinks%is_normal)
 
@@ -207,7 +193,7 @@ contains
 
       ! Parameters
       real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "source_sink_discharge3" item, to be assigned once on first call.
-      
+
       call allocate_and_associate(source_input, source_sinks%num_normal, source_sink_discharge3_out)
       source_sink_discharge3_out = pack(source_sink_all_discharges(3, :), source_sinks%is_normal)
 
@@ -218,7 +204,7 @@ contains
 
       ! Parameters
       real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "source_sink_cumulative_volume" item, to be assigned once on first call.
-      
+
       call allocate_and_associate(source_input, source_sinks%num_normal, source_sink_cumulative_volume_out)
       source_sink_cumulative_volume_out = pack(source_sinks%cumulative_volume, source_sinks%is_normal)
 
@@ -229,7 +215,7 @@ contains
 
       ! Parameters
       real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "source_sink_water_discharge" item, to be assigned once on first call.
-      
+
       ! Local variables
       logical :: is_init
 
@@ -250,10 +236,10 @@ contains
 
       ! Parameters
       real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "source_sink_average_discharge_previous" item, to be assigned once on first call.
-      
+
       call allocate_and_associate(source_input, source_sinks%num_normal, source_sink_average_discharge_previous_out)
       source_sink_average_discharge_previous_out = pack(source_sinks%average_discharge_previous, source_sinks%is_normal)
-      
+
    end subroutine filter_source_sink_average_discharge_previous
 
    subroutine add_station_water_quality_configs(output_config_set, idx_his_hwq)
@@ -883,11 +869,10 @@ contains
       !
       ! HIS: Bubble Screens
       !
-      call ncu_set_att(atts(1), 'geometry', 'bubblescreen_geom')                             
+      call ncu_set_att(atts(1), 'geometry', 'bubblescreen_geom')
       call add_output_config(config_set_his, IDX_HIS_BUBBLE_SCREEN_AIR_DISCHARGE, &
                              'Wrihis_bubblescreens', 'bubblescreen_air_discharge', '', '', &
                              'm3 s-1', UNC_LOC_BUBBLE_SCREEN, nc_attributes=atts(1:1), description='Bubble Screen Air discharge')
-
 
       !
       ! HIS: run-up gauges
@@ -1415,9 +1400,9 @@ contains
                              'm2 s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                              nc_dim_ids=station_nc_dims_3D_interface_center)
       call add_output_config(config_set_his, IDX_HIS_VICWWS_TOTAL, &
-                    'Wrihis_turbulence', 'vicwws_total', 'total vertical eddy viscosity at pressure point', '', &
-                    'm2 s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
-                    nc_dim_ids=station_nc_dims_3D_interface_center)
+                             'Wrihis_turbulence', 'vicwws_total', 'total vertical eddy viscosity at pressure point', '', &
+                             'm2 s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                             nc_dim_ids=station_nc_dims_3D_interface_center)
       call add_output_config(config_set_his, IDX_HIS_VICWWU, &
                              'Wrihis_turbulence', 'vicwwu', 'turbulent vertical eddy viscosity at nearest velocity point', '', &
                              'm2 s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
@@ -1447,9 +1432,9 @@ contains
                              '', 'm2 s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                              nc_dim_ids=station_nc_dims_3D_interface_center)
       call add_output_config(config_set_his, IDX_HIS_DIFWWS_TOTAL, &
-                    'Wrihis_turbulence', 'difwws_total', 'total vertical eddy diffusivity of salinity at pressure point', &
-                    '', 'm2 s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
-                    nc_dim_ids=station_nc_dims_3D_interface_center)
+                             'Wrihis_turbulence', 'difwws_total', 'total vertical eddy diffusivity of salinity at pressure point', &
+                             '', 'm2 s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                             nc_dim_ids=station_nc_dims_3D_interface_center)
 
       ! Gravity + buoyancy
       call add_output_config(config_set_his, IDX_HIS_SALINITY, &
@@ -1541,40 +1526,40 @@ contains
                              nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_WINDSTRESSX, &
                              'Wrihis_windstress', 'windstressx', 'wind stress on flow element center, x-component', 'surface_downward_x_stress', &
-                    'N m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write wind stress to his-file', &
-                    nc_dim_ids=station_nc_dims_2D)
+                             'N m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write wind stress to his-file', &
+                             nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_WINDSTRESSX_SFERIC, &
                              'Wrihis_windstress', 'windstressx', 'wind stress on flow element center, x-component', 'surface_downward_eastward_stress', &
-                    'N m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), &
-                    nc_dim_ids=station_nc_dims_2D)
+                             'N m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                             nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_WINDSTRESSY, &
                              'Wrihis_windstress', 'windstressy', 'wind stress on flow element center, y-component', 'surface_downward_y_stress', &
-                    'N m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), &
-                    nc_dim_ids=station_nc_dims_2D)
+                             'N m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                             nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_WINDSTRESSY_SFERIC, &
                              'Wrihis_windstress', 'windstressy', 'wind stress on flow element center, y-component', 'surface_downward_northward_stress', &
-                    'N m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), &
-                    nc_dim_ids=station_nc_dims_2D)
+                             'N m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                             nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_WSTAR, &
-                    'wriHis_BulkExchangeCoefficients', 'w_star', 'Free convective velocity scale', '', &
-              'm s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
-              nc_dim_ids=station_nc_dims_2D)
+                             'wriHis_BulkExchangeCoefficients', 'w_star', 'Free convective velocity scale', '', &
+                             'm s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                             nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_OBUKHOV_LENGTH, &
-                    'wriHis_BulkExchangeCoefficients', 'obukhov_length', 'Obukhov length', 'atmosphere_obukhov_length', &
-              'm', UNC_LOC_STATION, nc_attributes=atts(1:1), &
-              nc_dim_ids=station_nc_dims_2D)
+                             'wriHis_BulkExchangeCoefficients', 'obukhov_length', 'Obukhov length', 'atmosphere_obukhov_length', &
+                             'm', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                             nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_TRANSFER_COEFF_MOMENTUM, &
-                    'wriHis_BulkExchangeCoefficients', 'Cd', 'Bulk transfer coefficient of momentum flux', '', &
-              '-', UNC_LOC_STATION, nc_attributes=atts(1:1), &
-              nc_dim_ids=station_nc_dims_2D)
+                             'wriHis_BulkExchangeCoefficients', 'Cd', 'Bulk transfer coefficient of momentum flux', '', &
+                             '-', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                             nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_TRANSFER_COEFF_SENSIBLE_HEAT, &
-                    'wriHis_BulkExchangeCoefficients', 'Ch', 'Bulk transfer coefficient of sensible heat flux', '', &
-              '-', UNC_LOC_STATION, nc_attributes=atts(1:1), &
-              nc_dim_ids=station_nc_dims_2D)
+                             'wriHis_BulkExchangeCoefficients', 'Ch', 'Bulk transfer coefficient of sensible heat flux', '', &
+                             '-', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                             nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_TRANSFER_COEFF_LATENT_HEAT, &
-                    'wriHis_BulkExchangeCoefficients', 'Ce', 'Bulk transfer coefficient of latent heat flux', '', &
-              '-', UNC_LOC_STATION, nc_attributes=atts(1:1), &
-              nc_dim_ids=station_nc_dims_2D)
+                             'wriHis_BulkExchangeCoefficients', 'Ce', 'Bulk transfer coefficient of latent heat flux', '', &
+                             '-', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                             nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_RAIN, &
                              'Wrihis_rain', 'rain', 'precipitation depth per time unit', 'lwe_precipitation_rate', &
                              'mm day-1', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write precipitation to his-file', &
@@ -2906,7 +2891,7 @@ contains
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WINDSTRESSY_SFERIC), valobs(:, IPNT_windstressy))
             end if
          end if
-         
+
          if (his_write_settings%bulk_exchange_coeff > 0 .and. air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST) then
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WSTAR), valobs(:, IPNT_wstar))
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_OBUKHOV_LENGTH), valobs(:, IPNT_obukhov_length))
@@ -2939,7 +2924,7 @@ contains
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_RWIN), valobs(:, IPNT_RWIN))
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TAIR), valobs(:, IPNT_TAIR))
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_RHUM), valobs(:, IPNT_RHUM))
-               
+
             elseif (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WIND), valobs(:, IPNT_WIND))
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TAIR), valobs(:, IPNT_TAIR))
@@ -2957,7 +2942,7 @@ contains
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QFREVA), valobs(:, IPNT_QFRE))
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QFRCON), valobs(:, IPNT_QFRC))
                end if
-               
+
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QTOT), valobs(:, IPNT_QTOT))
             end if
          end if

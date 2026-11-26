@@ -50,7 +50,7 @@ contains
       use m_physcoef
       use m_turbulence
       use m_flow
-      use fm_external_forcings_data, only: default_fm_external_forcing_data, kbndz
+      use fm_external_forcings_data, only: default_fm_external_forcing_data
       use m_flowparameters
       use m_flowgeom
       use m_modelbounds
@@ -95,8 +95,7 @@ contains
 
       implicit none
 
-      ! Only reset counters and other scalars, allocatables should be
-      ! automatically reset elsewhere (e.g., allocateandset*, flow_geominit)
+      call close_fm_statistical_output()
       call default_fm_deprecated_keywords()
 
       call default_unstruc_netcdf_data()
@@ -193,10 +192,6 @@ contains
       call delCrossSections()
       call delThinDams()
       call delFixedWeirs()
-
-      if (allocated(kbndz)) then
-         deallocate(kbndz)
-      end if
 
       call cleanup_prefetch_arrays()
 

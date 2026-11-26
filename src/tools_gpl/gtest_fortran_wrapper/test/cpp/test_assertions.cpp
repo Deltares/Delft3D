@@ -10,6 +10,8 @@ void passing_status_after_failure();
 void passing_string_edge_cases();
 void failing_array_edge_cases();
 void failing_message_edge_cases();
+void passing_relative_near_cases();
+void failing_relative_near_cases();
 void passing_documented_api();
 void failing_documented_api();
 extern int assertion_continued;
@@ -89,6 +91,27 @@ TEST(FortranAssertions, LongEmptyAndNulTerminatedMessages) {
     EXPECT_NE(nul_message.find("visible"), std::string::npos);
     EXPECT_EQ(nul_message.find("not-visible"), std::string::npos);
     EXPECT_FALSE(failures.GetTestPartResult(2).fatally_failed());
+}
+
+TEST(FortranAssertions, SymmetricRelativeTolerance) {
+    passing_relative_near_cases();
+
+    testing::TestPartResultArray failures;
+    {
+        testing::ScopedFakeTestPartResultReporter reporter(
+            testing::ScopedFakeTestPartResultReporter::INTERCEPT_ONLY_CURRENT_THREAD, &failures);
+        failing_relative_near_cases();
+    }
+    ASSERT_EQ(failures.size(), 4);
+    const char* messages[] = {
+        "relative scalar", "swapped relative scalar", "relative vector : (2) INDX",
+        "bad relative vector : arrays of different shape"
+    };
+    for (int i = 0; i < failures.size(); ++i) {
+        const auto& failure = failures.GetTestPartResult(i);
+        EXPECT_FALSE(failure.fatally_failed());
+        EXPECT_NE(std::string(failure.message()).find(messages[i]), std::string::npos);
+    }
 }
 
 TEST(FortranAssertions, CompleteDocumentedApiPasses) {

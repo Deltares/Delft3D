@@ -39,57 +39,63 @@ module m_splines
    real(kind=dp), dimension(:, :), allocatable :: xsp, ysp, xsp2, ysp2
    integer, allocatable :: lensp(:), lensp2(:) !< Length of each spline
 
-   integer :: maxspl = 5 !< Max nr. of splines
-   integer :: maxsplen = 10 !< Max nr. of points per spline.
+   integer :: spline_capacity = 5 !< Number of splines that storage can accommodate.
+   integer :: points_per_spline_capacity = 10 !< Number of points that storage can accommodate per spline.
    integer :: mcs = 0 !< Current nr. of splines
    integer :: mcs2 = 0 !< Current nr. of backup splines
    integer :: mp = 0 !< Nr. of active spline.
    integer :: np = 0 !< Nr. of active spline point.
 contains
 
-!> Increases memory for splines.
-   subroutine increasespl(m, n)
+!> Ensures storage for the requested number of splines and points per spline.
+   subroutine resize_spline_capacity(required_splines, required_points_per_spline)
       use m_alloc, only: realloc, aerr
 
       implicit none
 
-      integer, intent(in) :: m !< Nr. of splines
-      integer, intent(in) :: n !< Nr. of points per spline
-
-      integer, dimension(2) :: ibounds
+      integer, value, intent(in) :: required_splines !< Minimum number of splines to accommodate.
+      integer, value, intent(in) :: required_points_per_spline !< Minimum number of points to accommodate per spline.
 
       integer :: ierr
 
-      IERR = 0
-      if (M >= MAXSPL) then
-         maxspl = max(10, int(1.2 * m))
-         IERR = 1
+      spline_capacity = max(10, spline_capacity)
+      points_per_spline_capacity = max(100, points_per_spline_capacity)
+      if (allocated(xsp)) then
+         spline_capacity = max(spline_capacity, size(xsp, 1))
+         points_per_spline_capacity = max(points_per_spline_capacity, size(xsp, 2))
+      end if
+      if (required_splines > spline_capacity) then
+         spline_capacity = int(1.2_dp * required_splines)
+      end if
+      if (required_points_per_spline > points_per_spline_capacity) then
+         points_per_spline_capacity = int(1.2_dp * required_points_per_spline)
       end if
 
-      if (N >= MAXSPLEN) then
-         MAXSPLEN = max(100, int(1.2 * N))
-         IERR = 1
-      end if
+      associate (coordinate_shape => [spline_capacity, points_per_spline_capacity])
+         if (allocated(xsp) .and. allocated(ysp) .and. allocated(xsp2) .and. allocated(ysp2) .and. &
+             allocated(lensp) .and. allocated(lensp2)) then
+            if (all(shape(xsp) == coordinate_shape) .and. all(shape(ysp) == coordinate_shape) .and. &
+                all(shape(xsp2) == coordinate_shape) .and. all(shape(ysp2) == coordinate_shape) .and. &
+                size(lensp) == spline_capacity .and. size(lensp2) == spline_capacity) then
+               return
+            end if
+         end if
 
-      if (IERR == 0) then
-         return
-      end if
+         call realloc(xsp, coordinate_shape, stat=ierr, fill=dxymis)
+         call aerr('xsp(spline_capacity, points_per_spline_capacity)', ierr, product(coordinate_shape))
+         call realloc(ysp, coordinate_shape, stat=ierr, fill=dxymis)
+         call aerr('ysp(spline_capacity, points_per_spline_capacity)', ierr, product(coordinate_shape))
+         call realloc(xsp2, coordinate_shape, stat=ierr, fill=dxymis)
+         call aerr('xsp2(spline_capacity, points_per_spline_capacity)', ierr, product(coordinate_shape))
+         call realloc(ysp2, coordinate_shape, stat=ierr, fill=dxymis)
+         call aerr('ysp2(spline_capacity, points_per_spline_capacity)', ierr, product(coordinate_shape))
+      end associate
+      call realloc(lensp, spline_capacity, stat=ierr, fill=0)
+      call aerr('lensp(spline_capacity)', ierr, spline_capacity / 2)
+      call realloc(lensp2, spline_capacity, stat=ierr, fill=0)
+      call aerr('lensp2(spline_capacity)', ierr, spline_capacity / 2)
 
-      ibounds = [maxspl, maxsplen]
-      call realloc(xsp, ibounds, stat=ierr, fill=dxymis)
-      call aerr('xsp(maxspl, maxsplen)', ierr, maxspl * maxsplen)
-      call realloc(ysp, ibounds, stat=ierr, fill=dxymis)
-      call aerr('ysp(maxspl, maxsplen)', ierr, maxspl * maxsplen)
-      call realloc(xsp2, ibounds, stat=ierr, fill=dxymis)
-      call aerr('xsp2(maxspl, maxsplen)', ierr, maxspl * maxsplen)
-      call realloc(ysp2, ibounds, stat=ierr, fill=dxymis)
-      call aerr('ysp2(maxspl, maxsplen)', ierr, maxspl * maxsplen)
-      call realloc(lensp, maxspl, stat=ierr, fill=0)
-      call aerr('lensp(maxspl)', ierr, maxspl / 2)
-      call realloc(lensp2, maxspl, stat=ierr, fill=0)
-      call aerr('lensp2(maxspl)', ierr, maxspl / 2)
-
-   end subroutine increasespl
+   end subroutine resize_spline_capacity
 
    subroutine nump(m, npts)
       integer, intent(in) :: m !< Index of spline
@@ -119,9 +125,9 @@ contains
    subroutine newSpline(len)
       integer, optional, intent(in) :: len
       if (present(len)) then
-         call increasespl(mcs + 1, len)
+         call resize_spline_capacity(mcs + 1, len)
       else
-         call increasespl(mcs + 1, 0)
+         call resize_spline_capacity(mcs + 1, required_points_per_spline=0)
       end if
       mcs = mcs + 1
       if (present(len)) then
@@ -158,7 +164,7 @@ contains
          call addSplinePoint(mp, xp, yp)
       else if (n <= lensp(m)) then
 !       EEN NIEUW PUNT OP EEN BESTAANDE SPLINE TUSSENVOEGEN
-         call increasespl(0, lensp(m) + 1)
+         call resize_spline_capacity(required_splines=0, required_points_per_spline=lensp(m) + 1)
          do j = lensp(m), n + 1, -1
             xsp(m, j + 1) = xsp(m, j)
             ysp(m, j + 1) = ysp(m, j)
@@ -195,7 +201,7 @@ contains
       end if
 
       npts = size(x)
-      call increasespl(mcs, lensp(m) + npts)
+      call resize_spline_capacity(mcs, lensp(m) + npts)
 
       xsp(m, lensp(m) + 1:lensp(m) + npts) = x
       ysp(m, lensp(m) + 1:lensp(m) + npts) = y
@@ -280,13 +286,13 @@ contains
          M1 = max(1, MVold - 3)
          N1 = max(1, NVold - 3)
          M2 = min(mcs, MVold + 3)
-         N2 = min(maxsplen, NVold + 3)
+         N2 = min(points_per_spline_capacity, NVold + 3)
          ISHOT = 1
       else
          M1 = 1
          N1 = 1
          M2 = mcs
-         N2 = maxsplen
+         N2 = points_per_spline_capacity
          ISHOT = 0
       end if
 
