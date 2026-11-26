@@ -4,6 +4,7 @@ module wrapper_assertion_edge_cases
    implicit none(type, external)
    private
    public :: passing_string_edge_cases, failing_array_edge_cases, failing_message_edge_cases
+   public :: passing_relative_near_cases, failing_relative_near_cases
 contains
    subroutine passing_string_edge_cases() bind(C)
       character(len=8) :: padded
@@ -30,6 +31,20 @@ contains
       call f90_expect_double_eq(reshape([1.0_c_double, 2.0_c_double], [1, 2]), &
                                 reshape([1.0_c_double, 2.0_c_double], [2, 1]), 'bad matrix')
    end subroutine failing_array_edge_cases
+
+   subroutine passing_relative_near_cases() bind(C)
+      call f90_expect_relative_near(1.0_c_double, 3.0_c_double, 1.0_c_double)
+      call f90_expect_relative_near(3.0_c_double, 1.0_c_double, 1.0_c_double)
+      call f90_expect_relative_near([0.0_c_double, -100.0_c_double], [0.0_c_double, -105.0_c_double], 0.05_c_double)
+   end subroutine passing_relative_near_cases
+
+   subroutine failing_relative_near_cases() bind(C)
+      call f90_expect_relative_near(1.0_c_double, 3.0_c_double, 0.75_c_double, 'relative scalar')
+      call f90_expect_relative_near(3.0_c_double, 1.0_c_double, 0.75_c_double, 'swapped relative scalar')
+      call f90_expect_relative_near([100.0_c_double, 0.0_c_double], [105.0_c_double, 1.0e-12_c_double], &
+                                    0.05_c_double, 'relative vector')
+      call f90_expect_relative_near([1.0_c_double], [1.0_c_double, 2.0_c_double], 0.1_c_double, 'bad relative vector')
+   end subroutine failing_relative_near_cases
 
    subroutine failing_message_edge_cases() bind(C)
       call f90_expect_eq(1_c_int32_t, 2_c_int32_t, repeat('x', 4096)//':end'//c_null_char)

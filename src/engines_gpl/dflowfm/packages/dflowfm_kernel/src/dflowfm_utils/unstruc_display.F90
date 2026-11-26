@@ -1172,8 +1172,8 @@ contains
       call DMINMAX(Xc, mc * nc, XCMIN, XCMAX, mc * nc)
       call DMINMAX(Yc, mc * nc, YCMIN, YCMAX, mc * nc)
 
-      call DMINMAX(XSP, mcS * MAXSPLEN, XSPMIN, XSPMAX, mcS * MAXSPLEN) ! SPLINES
-      call DMINMAX(YSP, mcS * MAXSPLEN, YSPMIN, YSPMAX, mcS * MAXSPLEN)
+      call DMINMAX(XSP, mcS * points_per_spline_capacity, XSPMIN, XSPMAX, mcS * points_per_spline_capacity) ! SPLINES
+      call DMINMAX(YSP, mcS * points_per_spline_capacity, YSPMIN, YSPMAX, mcS * points_per_spline_capacity)
 
       call DMINMAX(XPL, NPL, XPLMIN, XPLMAX, MAXPOL)
       call DMINMAX(YPL, NPL, YPLMIN, YPLMAX, MAXPOL)
