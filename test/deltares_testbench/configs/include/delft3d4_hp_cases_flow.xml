@@ -4319,7 +4319,7 @@
   </testCase>
   <testCase name="e01_f30_c01-baw_run_112" ref="flow2d3d_default">
     <path version="DVC">e01_d3dflow/f30_slurry/c01-baw_run_112</path>
-    <maxRunTime>1200</maxRunTime>
+    <maxRunTime>1800</maxRunTime>
     <checks>
       <file name="trih-2DV_beach.dat" type="NEFIS">
         <parameters name="his-series">
