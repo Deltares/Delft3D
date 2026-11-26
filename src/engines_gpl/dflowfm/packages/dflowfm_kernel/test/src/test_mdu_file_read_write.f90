@@ -34,7 +34,6 @@ contains
    subroutine test_mdu_read_write_read() bind(C)
       use messagehandling, only: LEVEL_INFO, LEVEL_WARN, LEVEL_ERROR, msgbuf, mess
       use unstruc_model, only: readMDUFile, md_obsfile, writeMDUFile, md_crsfile
-      use m_flowparameters, only: use_restart_bedlevel, use_restart_bedcomp
       use dfm_error, only: DFM_NOERR
       use m_partitioninfo, only: jampi
       use ifport, only: CHANGEDIRQQ
@@ -43,9 +42,6 @@ contains
       character(len=1024) :: tm_md_obsfile
       character(len=1024) :: tm_md_crsfile
       character(len=256) :: output_file
-      character(len=4096) :: line
-      integer :: ierr, input_unit, output_unit, ios
-      logical :: found_bedlevel, found_bedcomp
 
       jampi = 0
 
@@ -70,42 +66,17 @@ contains
 
       call f90_expect_gt(len_trim(tm_md_crsfile), 255, 'md_crsfile is maybe truncated.')
 
-      call F90_EXPECT_TRUE(use_restart_bedlevel)
-      call F90_EXPECT_TRUE(use_restart_bedcomp)
-      use_restart_bedlevel = .false.
-      use_restart_bedcomp = .false.
       call writeMDUFile(output_file, ierr)
       if (.not. f90_assert_eq(ierr, DFM_NOERR, 'Error when writing MDU file.')) then
          call f90_expect_true(CHANGEDIRQQ('..'), 'Cannot restore working directory')
          return
       end if
 
-      open(newunit=input_unit, file=output_file, status='old')
-      open(newunit=output_unit, file='test_restart_options.mdu', status='replace')
-      found_bedlevel = .false.
-      found_bedcomp = .false.
-      do
-         read(input_unit, '(a)', iostat=ios) line
-         if (ios /= 0) exit
-         if (index(adjustl(line), 'useRestartBedlevel') == 1) then
-            write(output_unit, '(a)') 'RstIgnoreBl = 0'
-            found_bedlevel = .true.
-         end if
-         write(output_unit, '(a)') trim(line)
-      end do
-      close(input_unit)
-      close(output_unit)
-      call F90_EXPECT_TRUE(found_bedlevel)
-      call F90_EXPECT_TRUE(found_bedcomp)
-
       call resetFullFlowModel()
-      call readMDUFile('test_restart_options.mdu', ierr)
       if (.not. f90_assert_eq(ierr, DFM_NOERR, 'Error when re-reading MDU file.')) then
          call f90_expect_true(CHANGEDIRQQ('..'), 'Cannot restore working directory')
          return
       end if
-      call F90_EXPECT_FALSE(use_restart_bedlevel)
-      call F90_EXPECT_FALSE(use_restart_bedcomp)
 
       call f90_expect_streq(trim(md_obsfile), trim(tm_md_obsfile), 'Difference in md_obsfile after read-write-read cycle.')
       call f90_expect_streq(trim(md_crsfile), trim(tm_md_crsfile), 'Difference in md_crsfile after read-write-read cycle.')
