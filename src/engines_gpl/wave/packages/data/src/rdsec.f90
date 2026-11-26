@@ -33,12 +33,13 @@ module rdsec_module
 ! NONE
 !!--declarations----------------------------------------------------------------
 
+implicit none
+
 contains
 
 function rdsec(iuni      ,parread   ,convar    ,nsect     ,distance  , &
              & waveheight,period    ,direction ,dirspread , &
              & cbuf      ,turn      ,rccnt     )
-    implicit none
 !
 ! Global variables
 !

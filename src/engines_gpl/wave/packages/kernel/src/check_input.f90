@@ -49,7 +49,7 @@ subroutine check_input(sr, wavedata)
 !
 !! executable statements -------------------------------------------------------
 !
-    if (wavedata%mode /= stand_alone) then
+    if (wavedata%wave_flow_mode%online /= ONLINE_NONE) then
        if (.not.sr%swwav) then
           write(*,'(a)') '*** ERROR: Online calculation but no writing to com-file'
           write(*,'(a)') '           Is flag ''WriteCOM'' set to true?'
