@@ -1150,10 +1150,7 @@ contains
       call prop_get(md_ptr, 'numerics', 'Zwsbtol', zwsbtol)
       call prop_get(md_ptr, 'numerics', 'Trsh_u1Lb', Trsh_u1Lb)
 
-      call prop_get(md_ptr, 'numerics', 'minimumDepthForHeatAndEvaporationFluxes', minimum_depth_for_heat_and_evaporation_fluxes, success)
-      if (.not. success) then
-         call prop_get(md_ptr, 'numerics', 'Epshstem', minimum_depth_for_heat_and_evaporation_fluxes)
-      end if
+      call prop_get(md_ptr, 'numerics', 'epshstem', minimum_depth_for_heat_and_evaporation_fluxes)
 
       call prop_get(md_ptr, 'numerics', 'Teta0', teta0)
       call prop_get(md_ptr, 'numerics', 'Jbasqbnddownwindhs', jbasqbnddownwindhs)
@@ -1292,50 +1289,24 @@ contains
       call prop_get(md_ptr, 'implicit1d', 'exrstp', f1dimppar%exrstp)
 
       ! Physics
-
-      call prop_get(md_ptr, 'physics', 'uniformFrictionCoefficient2D', uniform_friction_coefficient_2D, success)
-      if (.not. success) then
-         call prop_get(md_ptr, 'physics', 'UnifFrictCoef', uniform_friction_coefficient_2D)
-      end if
+      call prop_get(md_ptr, 'physics', 'UnifFrictCoef', uniform_friction_coefficient_2D)
 
       ! Set default value for 1D and 1D2D uniform friction coefficients to the value of uniform_friction_coefficient_2D
       uniform_friction_coefficient_1D = uniform_friction_coefficient_2D
       uniform_friction_coefficient_1D2D = uniform_friction_coefficient_2D
 
-      call prop_get(md_ptr, 'physics', 'uniformFrictiontype', uniform_friction_type, success)
-      if (.not. success) then
-         call prop_get(md_ptr, 'physics', 'UnifFrictType', uniform_friction_type)
-      end if
-
-      call prop_get(md_ptr, 'physics', 'uniformFrictionCoefficient1D', uniform_friction_coefficient_1D, success)
-      if (.not. success) then
-         call prop_get(md_ptr, 'physics', 'UnifFrictCoef1D', uniform_friction_coefficient_1D)
-      end if
-
-      call prop_get(md_ptr, 'physics', 'uniformFrictionCoefficient1D2D', uniform_friction_coefficient_1D2D, success)
-      if (.not. success) then
-         call prop_get(md_ptr, 'physics', 'UnifFrictCoef1D2D', uniform_friction_coefficient_1D2D)
-      end if
-
-      call prop_get(md_ptr, 'physics', 'uniformFrictionCoefficientLinear', uniform_friction_coefficient_linear, success)
-      if (.not. success) then
-         call prop_get(md_ptr, 'physics', 'UnifFrictCoefLin', uniform_friction_coefficient_linear)
-      end if
-
-      call prop_get(md_ptr, 'physics', 'uniformFrictionCoefficientGroundlayer', uniform_friction_coefficient_groundlayer, success)
-      if (.not. success) then
-         call prop_get(md_ptr, 'physics', 'UnifFrictCoef1DgrLay', uniform_friction_coefficient_groundlayer)
-      end if
+      call prop_get(md_ptr, 'physics', 'UnifFrictType', uniform_friction_type)
+      call prop_get(md_ptr, 'physics', 'UnifFrictCoef1D', uniform_friction_coefficient_1D)
+      call prop_get(md_ptr, 'physics', 'UnifFrictCoef1D2D', uniform_friction_coefficient_1D2D)
+      call prop_get(md_ptr, 'physics', 'UnifFrictCoefLin', uniform_friction_coefficient_linear)
+      call prop_get(md_ptr, 'physics', 'UnifFrictCoef1DgrLay', uniform_friction_coefficient_groundlayer)
 
       if (uniform_friction_coefficient_linear > 0) then
          jafrculin = 1
       end if
 
       ! Additions for dynamic roughness for storm impacts with morphology
-      call prop_get(md_ptr, 'physics', 'enableDynamicVegetationRoughness', dynamic_vegetation_roughness_enabled, success)
-      if (.not. success) then
-         call prop_get(md_ptr, 'physics', 'dynRoughVeg', dynamic_vegetation_roughness_enabled)
-      end if
+      call prop_get(md_ptr, 'physics', 'dynRoughVeg', dynamic_vegetation_roughness_enabled)
 
       if (dynamic_vegetation_roughness_enabled /= 0) then
          if (uniform_friction_type /= 1) then
@@ -1354,40 +1325,13 @@ contains
          end if
       end if
 
-      call prop_get(md_ptr, 'physics', 'Umodlin', umodlin)
-      call prop_get(md_ptr, 'physics', 'uniformHorizontalEddyViscosity', uniform_horizontal_eddy_viscosity, success)
-      if (.not. success) then
-         ! Fallback to the deprecated name if 'uniformHorizontalEddyViscosity' is not found.
-         call prop_get(md_ptr, 'physics', 'Vicouv', uniform_horizontal_eddy_viscosity)
-      end if
-
-      call prop_get(md_ptr, 'physics', 'uniformHorizontalEddyDiffusivity', uniform_horizontal_eddy_diffusivity, success)
-      if (.not. success) then
-         ! Fallback to the deprecated name if 'uniformHorizontalEddyDiffusivity' is not found.
-         call prop_get(md_ptr, 'physics', 'Dicouv', uniform_horizontal_eddy_diffusivity)
-      end if
-
-      call prop_get(md_ptr, 'physics', 'backgroundVerticalEddyViscosity', background_vertical_eddy_viscosity%scalar, success)
-      if (.not. success) then
-         ! Fallback to the deprecated name if 'backgroundVerticalEddyViscosity' is not found.
-         call prop_get(md_ptr, 'physics', 'Vicoww', background_vertical_eddy_viscosity%scalar)
-      end if
-
-      call prop_get(md_ptr, 'physics', 'backgroundVerticalEddyDiffusivity', background_vertical_eddy_diffusivity%scalar, success)
-      if (.not. success) then
-         ! Fallback to the deprecated name if 'backgroundVerticalEddyDiffusivity' is not found.
-         call prop_get(md_ptr, 'physics', 'Dicoww', background_vertical_eddy_diffusivity%scalar)
-      end if
-
-      call prop_get(md_ptr, 'physics', 'minimumVerticalEddyViscosityForProduction', minimum_vertical_eddy_viscosity_for_production, success)
-      if (.not. success) then
-         call prop_get(md_ptr, 'physics', 'Vicwminb', minimum_vertical_eddy_viscosity_for_production)
-      end if
-
-      call prop_get(md_ptr, 'physics', 'OzmidovLengthScale', ozmidov_length_scale, success)
-      if (.not. success) then
-         call prop_get(md_ptr, 'physics', 'Xlozmidov', ozmidov_length_scale)
-      end if
+      call prop_get(md_ptr, 'physics', 'umodlin', umodlin)
+      call prop_get(md_ptr, 'physics', 'vicouv', uniform_horizontal_eddy_viscosity)
+      call prop_get(md_ptr, 'physics', 'dicouv', uniform_horizontal_eddy_diffusivity)
+      call prop_get(md_ptr, 'physics', 'vicoww', background_vertical_eddy_viscosity%scalar)
+      call prop_get(md_ptr, 'physics', 'dicoww', background_vertical_eddy_diffusivity%scalar)
+      call prop_get(md_ptr, 'physics', 'Vicwminb', minimum_vertical_eddy_viscosity_for_production)
+      call prop_get(md_ptr, 'physics', 'xlOzmidov', ozmidov_length_scale)
 
       call prop_get(md_ptr, 'physics', 'TKEMin', tke_min)
       if (iturbulencemodel == TURBULENCE_MODEL_KTAU) then
@@ -1409,15 +1353,8 @@ contains
          call mess(LEVEL_ERROR, 'In [physics] tracerConcentrationMin must be greater than tracerConcentrationMax')
       end if
 
-      call prop_get(md_ptr, 'physics', 'SmagorinskyCoefficient', smagorinsky_coefficient, success)
-      if (.not. success) then
-         call prop_get(md_ptr, 'physics', 'Smagorinsky', smagorinsky_coefficient)
-      end if
-
-      call prop_get(md_ptr, 'physics', 'ElderCoefficient', elder_coefficient, success)
-      if (.not. success) then
-         call prop_get(md_ptr, 'physics', 'Elder', elder_coefficient)
-      end if
+      call prop_get(md_ptr, 'physics', 'Smagorinsky', smagorinsky_coefficient)
+      call prop_get(md_ptr, 'physics', 'Elder', elder_coefficient)
 
       call prop_get(md_ptr, 'physics', 'irov', irov)
       call prop_get(md_ptr, 'physics', 'wall_ks', wall_ks)
@@ -1485,19 +1422,10 @@ contains
 
       call prop_get(md_ptr, 'physics', 'Salimax', salinity_max)
       call prop_get(md_ptr, 'physics', 'Salimin', salinity_min)
-
-      call prop_get(md_ptr, 'physics', 'surfaceTemperatureSmoothingFactor', surface_temperature_smoothing_factor, success)
-      if (.not. success) then
-         call prop_get(md_ptr, 'physics', 'Surftempsmofac', surface_temperature_smoothing_factor)
-      end if
-
+      call prop_get(md_ptr, 'physics', 'surfTempSmoFac', surface_temperature_smoothing_factor)
       call prop_get(md_ptr, 'physics', 'Albedo', albedo)
       call prop_get(md_ptr, 'physics', 'Heat_eachstep', jaheat_eachstep)
-
-      call prop_get(md_ptr, 'physics', 'soilHeatBufferThickness', soil_heat_buffer_thickness, success)
-      if (.not. success) then
-         call prop_get(md_ptr, 'physics', 'Soiltempthick', soil_heat_buffer_thickness)
-      end if
+      call prop_get(md_ptr, 'physics', 'soilTempThick', soil_heat_buffer_thickness)
       if (soil_heat_buffer_thickness > 0.0_dp) then
          jaheat_eachstep = 1
       end if
@@ -3347,7 +3275,7 @@ contains
       end if
 
       if (writeall .or. minimum_depth_for_heat_and_evaporation_fluxes /= 0.001_dp) then
-         call prop_set(prop_ptr, 'numerics', 'minimumDepthForHeatAndEvaporationFluxes', minimum_depth_for_heat_and_evaporation_fluxes, 'Minimum water depth for heat flux and evaporation computations.')
+         call prop_set(prop_ptr, 'numerics', 'epshstem', minimum_depth_for_heat_and_evaporation_fluxes, 'Minimum water depth for heat flux and evaporation computations.')
       end if
 
       if (writeall .or. Zwsbtol /= 0.0_dp) then
@@ -3518,33 +3446,33 @@ contains
       call prop_set(prop_ptr, 'numerics', 'FlowSolver', trim(md_flow_solver), 'Flow solver.')
 
       ! Physics
-      call prop_set(prop_ptr, 'physics', 'uniformFrictionCoefficient2D', uniform_friction_coefficient_2D, 'Uniform friction coefficient [the unit depends on uniformFrictionType].')
-      call prop_set(prop_ptr, 'physics', 'uniformFrictionType', uniform_friction_type, 'Uniform friction type (0: Chezy, 1: Manning, 2: White-Colebrook, 3: White-Colebrook in WAQUA)')
-      call prop_set(prop_ptr, 'physics', 'uniformFrictionCoefficient1D', uniform_friction_coefficient_1D, 'Uniform friction coefficient in 1D links [the unit depends on uniformFrictionType].')
-      call prop_set(prop_ptr, 'physics', 'uniformFrictionCoefficient1D2D', uniform_friction_coefficient_1D2D, 'Uniform friction coefficient in 1D2D links [the unit depends on uniformFrictionType].')
-      call prop_set(prop_ptr, 'physics', 'uniformFrictionCoefficientLinear', uniform_friction_coefficient_linear, 'Uniform linear friction coefficient.')
+      call prop_set(prop_ptr, 'physics', 'unifFrictCoef', uniform_friction_coefficient_2D, 'Uniform friction coefficient [the unit depends on unifFrictType].')
+      call prop_set(prop_ptr, 'physics', 'unifFrictType', uniform_friction_type, 'Uniform friction type (0: Chezy, 1: Manning, 2: White-Colebrook, 3: White-Colebrook in WAQUA)')
+      call prop_set(prop_ptr, 'physics', 'unifFrictCoef1D', uniform_friction_coefficient_1D, 'Uniform friction coefficient in 1D links [the unit depends on unifFrictType].')
+      call prop_set(prop_ptr, 'physics', 'unifFrictCoef1D2D', uniform_friction_coefficient_1D2D, 'Uniform friction coefficient in 1D2D links [the unit depends on unifFrictType].')
+      call prop_set(prop_ptr, 'physics', 'unifFrictCoefLin', uniform_friction_coefficient_linear, 'Uniform linear friction coefficient.')
       if (writeall .or. uniform_friction_coefficient_groundlayer > 0) then
-         call prop_set(prop_ptr, 'physics', 'uniformFrictionCoefficientGroundlayer', uniform_friction_coefficient_groundlayer, 'Uniform ground layer friction coefficient for ocean models (m/s) (0: no friction)')
+         call prop_set(prop_ptr, 'physics', 'unifFrictCoef1DgrLay', uniform_friction_coefficient_groundlayer, 'Uniform ground layer friction coefficient for ocean models (m/s) (0: no friction)')
       end if
       if (writeall) then
          call prop_set(prop_ptr, 'physics', 'Umodlin', umodlin, 'Linear friction umod, for friction_type=4,5,6')
       end if
-      call prop_set(prop_ptr, 'physics', 'enableDynamicVegetationRoughness', dynamic_vegetation_roughness_enabled, 'Switch for dynamic vegetation roughness. Default 0.')
+      call prop_set(prop_ptr, 'physics', 'dynRoughVeg', dynamic_vegetation_roughness_enabled, 'Switch for dynamic vegetation roughness. Default 0.')
       call prop_set(prop_ptr, 'physics', 'dRoot', dynamic_vegetation_root_depth, 'Root depth (m)')
       call prop_set(prop_ptr, 'physics', 'dStem', dynamic_vegetation_stem_height, 'Stem height (m)')
       call prop_set(prop_ptr, 'physics', 'unifFrictCoefNoVeg', manning_friction_no_vegetation, 'Uniform friction (Manning) coefficient without vegetation (s/m^{1/3})')
       call prop_set(prop_ptr, 'physics', 'dynVegPol', md_dynvegpol, 'Area to apply dynamic vegetation roughness. If empty, no roughness update.')
 
-      call prop_set(prop_ptr, 'physics', 'uniformHorizontalEddyViscosity', uniform_horizontal_eddy_viscosity, 'Uniform horizontal eddy viscosity (m2/s)')
-      call prop_set(prop_ptr, 'physics', 'uniformHorizontalEddyDiffusivity', uniform_horizontal_eddy_diffusivity, 'Uniform horizontal eddy diffusivity (m2/s)')
+      call prop_set(prop_ptr, 'physics', 'vicouv', uniform_horizontal_eddy_viscosity, 'Uniform horizontal eddy viscosity (m2/s)')
+      call prop_set(prop_ptr, 'physics', 'dicouv', uniform_horizontal_eddy_diffusivity, 'Uniform horizontal eddy diffusivity (m2/s)')
       if (writeall .or. (kmx > 0)) then
-         call prop_set(prop_ptr, 'physics', 'backgroundVerticalEddyViscosity', background_vertical_eddy_viscosity%scalar, 'Uniform vertical eddy viscosity (m2/s)')
-         call prop_set(prop_ptr, 'physics', 'backgroundVerticalEddyDiffusivity', background_vertical_eddy_diffusivity%scalar, 'Uniform vertical eddy diffusivity (m2/s)')
+         call prop_set(prop_ptr, 'physics', 'vicoww', background_vertical_eddy_viscosity%scalar, 'Uniform vertical eddy viscosity (m2/s)')
+         call prop_set(prop_ptr, 'physics', 'dicoww', background_vertical_eddy_diffusivity%scalar, 'Uniform vertical eddy diffusivity (m2/s)')
 
          if (writeall .or. (minimum_vertical_eddy_viscosity_for_production > 0.0_dp)) then
-            call prop_set(prop_ptr, 'physics', 'minimumVerticalEddyViscosityForProduction', minimum_vertical_eddy_viscosity_for_production, 'Minimum visc in prod and buoyancy term (m2/s)')
+            call prop_set(prop_ptr, 'physics', 'vicwminb', minimum_vertical_eddy_viscosity_for_production, 'Minimum visc in prod and buoyancy term (m2/s)')
          end if
-         call prop_set(prop_ptr, 'physics', 'OzmidovLengthScale', ozmidov_length_scale, 'Ozmidov length scale (m), default=0.0, no contribution of internal waves to vertical diffusion')
+         call prop_set(prop_ptr, 'physics', 'xlOzmidov', ozmidov_length_scale, 'Ozmidov length scale (m), default=0.0, no contribution of internal waves to vertical diffusion')
          if (writeall .or. (comparereal(tke_min, MINIMUM_VALUE_K_EPS_TAU) /= 0)) then
             call prop_set(prop_ptr, 'physics', 'TKEMin', tke_min, 'Minimum turbulence kinetic energy (TKE) value in k-eps turbulence model')
          end if
@@ -3563,8 +3491,8 @@ contains
       call prop_set(prop_ptr, 'physics', 'tracerConcentrationMin', tracer_concentration_min, 'Lower limit of cell centre tracer concentration after transport timestep; default: no limit.')
       call prop_set(prop_ptr, 'physics', 'tracerConcentrationMax', tracer_concentration_max, 'Upper limit of cell centre tracer concentration after transport timestep; default: no limit.')
 
-      call prop_set(prop_ptr, 'physics', 'SmagorinskyCoefficient', smagorinsky_coefficient, '[-] Smagorinsky coefficient in horizontal turbulence, e.g. 0.15')
-      call prop_set(prop_ptr, 'physics', 'ElderCoefficient', elder_coefficient, '[m2/s] Elder viscosity contribution in horizontal turbulence.')
+      call prop_set(prop_ptr, 'physics', 'Smagorinsky', smagorinsky_coefficient, '[-] Smagorinsky coefficient in horizontal turbulence, e.g. 0.15')
+      call prop_set(prop_ptr, 'physics', 'Elder', elder_coefficient, '[m2/s] Elder viscosity contribution in horizontal turbulence.')
       call prop_set(prop_ptr, 'physics', 'irov', irov, '0=free slip, 1 = partial slip using wall_ks')
       call prop_set(prop_ptr, 'physics', 'wall_ks', wall_ks, 'Wall roughness type (0: free slip, 1: partial slip using wall_ks)')
       call prop_set(prop_ptr, 'physics', 'Rhomean', rhomean, 'Average water density (kg/m3)')
@@ -3629,10 +3557,10 @@ contains
                           'Enable salinity-dependent freezing point (0 = no, 1 = yes). tempMin should be below 0 degrees Celsius.')
          end if
          if (writeall .or. surface_temperature_smoothing_factor > 0.0_dp) then
-            call prop_set(prop_ptr, 'physics', 'surfaceTemperatureSmoothingFactor', surface_temperature_smoothing_factor, 'Horizontal smoothing factor for surface water in heatflux computations (range: [0,1]), 0=no smoothing')
+            call prop_set(prop_ptr, 'physics', 'surfTempSmoFac', surface_temperature_smoothing_factor, 'Horizontal smoothing factor for surface water in heatflux computations (range: [0,1]), 0=no smoothing')
          end if
          if (writeall .or. soil_heat_buffer_thickness /= 0.0_dp) then
-            call prop_set(prop_ptr, 'physics', 'soilHeatBufferThickness', soil_heat_buffer_thickness, 'Use soil temperature buffer if > 0, e.g. 0.2 (m)')
+            call prop_set(prop_ptr, 'physics', 'soilTempThick', soil_heat_buffer_thickness, 'Use soil temperature buffer if > 0, e.g. 0.2 (m)')
          end if
          if (writeall .or. jaheat_eachstep > 0) then
             call prop_set(prop_ptr, 'physics', 'Heat_eachstep', jaheat_eachstep, '1=heat each timestep, 0=heat each usertimestep')

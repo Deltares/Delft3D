@@ -1,4 +1,4 @@
-subroutine put_wave_fields (fg, fof, itide, wavedata, swflux, flowgridfile, netcdf_sp)
+subroutine put_wave_fields (fg, fof, itide, wavedata, swflux, netcdf_sp)
 !
 ! Head routine for calling crewav
 !
@@ -10,12 +10,11 @@ implicit none
 integer                    :: itide        ! time step number of wave group on com-file
 logical                    :: swflux       ! switch to indicate if mass flux is taken into account
 logical                    :: netcdf_sp    ! true: write netcdf files in single precision
-character(*)               :: flowgridfile ! ' ' when using nefis com-file; '<name>.nc' when using d-flowfm NetCDF file
 type (grid)                :: fg           ! flow grid
 type (output_fields)       :: fof          ! wave output fields defined on flow grid
 type (wave_data_type)      :: wavedata
    !
-   if (flowgridfile == ' ') then
+   if (wavedata%wave_flow_mode%com_file == COM_NEFIS) then
       call crewav(fg%grid_name ,itide    ,fof%hrms  ,fof%tp      ,fof%dir     , &
                 & fof%dissip   ,fof%fx   ,fof%fy    ,fof%mx      ,fof%my      , &
                 & fof%tps      ,fof%ubot ,fof%wlen  ,fof%wsbodyu ,fof%wsbodyv , &
