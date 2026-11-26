@@ -75,12 +75,18 @@ module m_ec_interpolationsettings
 
    integer :: INTERPOLATIONTYPE ! 1 = TRIANGULATION/BILINEAR INTERPOLATION 2= CELL AVERAGING
    integer :: JTEKINTERPOLATIONPROCESS ! TEKEN INTERPOLATION PROCESS YES/NO 1/0
-   integer :: IAV ! AVERAGING METHOD, One of AVGTP_* parameters: 1 = SIMPLE AVERAGING, 2 = CLOSEST POINT, 3 = MAX, 4 = MIN, 5 = INVERSE WEIGHTED DISTANCE, 6 = MINABS, 7 = MEDIAN
-   integer :: NUMMIN ! MINIMUM NR OF POINTS NEEDED INSIDE CELL TO HANDLE CELL
    real(kind=hp), parameter :: RCEL_DEFAULT = 1.01d0 ! we need a default
-   real(kind=hp) :: RCEL ! RELATIVE SEARCH CELL SIZE, DEFAULT 1D0 = ACTUAL CELL SIZE, 2D0=TWICE AS LARGE
    integer :: Interpolate_to ! 1=bathy, 2=zk, 3=s1, 4=Zc
-   real(kind=hp) :: percentileminmax ! if non zero, take average of highest or lowest percentile
+
+   !> Settings for a single call to averaging2.
+   type :: t_averaging_options
+      integer :: method = AVGTP_MEAN !< Averaging method (AVGTP_*).
+      integer :: min_samples = 1 !< Minimum sample count.
+      real(kind=hp) :: relative_size = RCEL_DEFAULT !< Footprint scale.
+      real(kind=hp) :: percentile = 0.0_hp !< Percentage of the lowest or highest values to average for min/max.
+   end type t_averaging_options
+
+   type(t_averaging_options) :: averaging_settings !< Default options shared by legacy callers and the GUI.
 
 contains
 
@@ -90,11 +96,8 @@ contains
 
       INTERPOLATIONTYPE = INTP_INTP ! 1 = TRIANGULATION/BILINEAR INTERPOLATION 2= CELL AVERAGING
       JTEKINTERPOLATIONPROCESS = 0 ! TEKEN INTERPOLATION PROCESS YES/NO 1/0
-      IAV = AVGTP_MEAN ! AVERAGING METHOD, 1 = SIMPLE AVERAGING, 2 = CLOSEST POINT, 3 = MAX, 4 = MIN, 5 = INVERSE WEIGHTED DISTANCE, 6 = MINABS, 7 = MEDIAN
-      NUMMIN = 1 ! MINIMUM NR OF POINTS NEEDED INSIDE CELL TO HANDLE CELL
-      RCEL = RCEL_DEFAULT ! RELATIVE SEARCH CELL SIZE, DEFAULT 1D0 = ACTUAL CELL SIZE, 2D0=TWICE AS LARGE
+      averaging_settings = t_averaging_options()
       Interpolate_to = 2 ! 1=bathy, 2=zk, 3=s1, 4=Zc
-      percentileminmax = 0d0
    end subroutine default_interpolationsettings
 
 end module m_ec_interpolationsettings
@@ -262,7 +265,8 @@ contains
       else if (mca > 0) then
          call bilinarc(xz, yz, bl, ndx)
       else ! Delauny
-         call TRIINTfast(XS, YS, ZS, NS, 1, XZ, YZ, BL, Ndx, JDLA, jakdtree, jsferic, Npl, jins, dmiss, jasfer3D, XPL, YPL, ZPL, transformcoef, kcc)
+         call TRIINTfast(XS, YS, ZS, NS, 1, XZ, YZ, BL, Ndx, JDLA, jakdtree, jsferic, Npl, jins, dmiss, jasfer3D, &
+                         XPL, YPL, ZPL, transformcoef, save_weights=jagetwf == 1, kc=kcc)
       end if
 
    end subroutine triinterp2_dbldbl
@@ -359,7 +363,7 @@ contains
    end subroutine triinterp2_realreal
 
    subroutine TRIINTfast(XS_IN, YS_IN, ZS_IN, NS, NDIM, X, Y, Z, NXY, JDLA, jakdtree, jsferic, NH, jins, dmiss, jasfer3D, &
-                         XH, YH, ZH, transformcoef, kc)
+                         XH, YH, ZH, transformcoef, save_weights, kc)
       implicit none
       !
       ! parameters
@@ -373,6 +377,7 @@ contains
       real(kind=hp), intent(in) :: X(:), Y(:) !< node coordinates
       real(kind=hp), intent(inout) :: Z(NDIM, nxy) !< node values
       real(kind=hp), intent(in) :: XH(:), YH(:), ZH(:), transformcoef(:)
+      logical, intent(in) :: save_weights !< Store interpolation indices and weights in indxx and wfxx.
       integer, intent(in), optional :: kc(:)
       !
       ! locals
@@ -621,7 +626,7 @@ contains
                      z(:, n) = zp
                   end if
 
-                  if (jagetwf == 1) then
+                  if (save_weights) then
                      indxx(1:3, n) = indf(1:3)
                      wfxx(1:3, n) = wf(1:3)
                   end if
@@ -1584,7 +1589,7 @@ contains
    !>         zss contains a ndim-dimensional vector for each of the ns samples, dim(ndim,ns)
 
    subroutine averaging2(ndim, ns, xs, ys, zss, ipsam, xc, yc, zc, grid_width, xx, yy, n6, nnn, jakdtree, &
-                         dmiss, jsferic, jasfer3D, jins, npl, xpl, ypl, zpl, errorInfo, kcc) ! Werkt alleen voor cell regions, die zitten in xx en yy
+                         dmiss, jsferic, jasfer3D, jins, npl, xpl, ypl, zpl, errorInfo, options, kcc)
       use m_missing, only: polygon_inside_mode => jins
       use stdlib_sorting, only: radix_sort
       implicit none
@@ -1606,6 +1611,7 @@ contains
       integer, intent(in) :: npl !< number of polygon points
       double precision, dimension(:), intent(in) :: xpl, ypl, zpl !< grid coordinates
       type(TerrorInfo), intent(out) :: errorInfo !< struct holding all error information
+      type(t_averaging_options), intent(in) :: options !< Settings selected by the caller.
       integer, dimension(:), optional, intent(in) :: kcc !< Masking array for each of the target points.
 
       real(kind=hp), allocatable :: xh(:), yh(:)
@@ -1636,7 +1642,7 @@ contains
 
       japrogressbar = 1
 
-      if (percentileminmax > 0d0) then
+      if (options%percentile > 0.0_hp) then
          allocate (zz(ns), kkin(ns))
       end if
 
@@ -1680,8 +1686,8 @@ contains
             yh(k) = yy(k, n)
          end do
          do k = 1, nn
-            xh(k) = rcel * xh(k) + (1d0 - rcel) * xc(n)
-            yh(k) = rcel * yh(k) + (1d0 - rcel) * yc(n)
+            xh(k) = options%relative_size * xh(k) + (1.0_hp - options%relative_size) * xc(n)
+            yh(k) = options%relative_size * yh(k) + (1.0_hp - options%relative_size) * yc(n)
          end do
 
          xlow = minval(xh(1:nn))
@@ -1743,7 +1749,7 @@ contains
 
          hparr = 0
          numxy = 0
-         if (iav == AVGTP_NEARESTNB) then
+         if (options%method == AVGTP_NEARESTNB) then
             rmin2 = dbdistance(xhih, yhih, xlow, ylow, jsferic, jasfer3D, dmiss)
          end if
          ! pinpok uses the module's mode and treats polygons with at most two vertices as inside.
@@ -1775,7 +1781,7 @@ contains
                call pinpok(xs(k), ys(k), nn, xh, yh, inhul, jins, dmiss)
                if (inhul == 1) then
                   do ivar = 1, ndim
-                     select case (iav)
+                     select case (options%method)
                      case (AVGTP_MEAN)
                         numxy = numxy + 1 ! NOTE: numxy will be equal to#included samples TIMES ndim!
                         hparr(ivar) = hparr(ivar) + zss(ivar, k)
@@ -1792,16 +1798,16 @@ contains
                            hparr(ivar) = zss(ivar, k)
                            numxy = 1
                         end if
-                        select case (iav)
+                        select case (options%method)
                         case (AVGTP_MAX)
                            hparr(ivar) = max(hparr(ivar), zss(ivar, k))
-                           if (percentileminmax > 0d0 .and. ivar == 1) then
+                           if (options%percentile > 0.0_hp .and. ivar == 1) then
                               nin = nin + 1
                               kkin(nin) = k
                            end if
                         case (AVGTP_MIN)
                            hparr(ivar) = min(hparr(ivar), zss(ivar, k))
-                           if (percentileminmax > 0d0 .and. ivar == 1) then
+                           if (options%percentile > 0.0_hp .and. ivar == 1) then
                               nin = nin + 1
                               kkin(nin) = k
                            end if
@@ -1824,7 +1830,7 @@ contains
                      case default
                         errorInfo%success = .false.
                         errorInfo%message = repeat(' ', len(cfmt) + 10)
-                        write (errorInfo%message, cfmt) iav
+                        write (errorInfo%message, cfmt) options%method
                         return
                      end select
                   end do ! do ivar=1,ndim
@@ -1833,18 +1839,18 @@ contains
          end do sam
 
          rhp = dmiss
-         if (iav == AVGTP_MEAN .or. iav == AVGTP_INVDIST) then
-            if (numxy >= nummin) then
-               if (iav == AVGTP_MEAN) then
+         if (options%method == AVGTP_MEAN .or. options%method == AVGTP_INVDIST) then
+            if (numxy >= options%min_samples) then
+               if (options%method == AVGTP_MEAN) then
                   rhp = hparr / real(numxy)
-               else if (iav == AVGTP_INVDIST) then
+               else if (options%method == AVGTP_INVDIST) then
                   rhp = hparr / wall
                end if
             end if
          else if (numxy >= 1) then
             rhp = hparr
-            if ((((iav == AVGTP_MAX .or. iav == AVGTP_MIN) .and. percentileminmax > 0d0) &
-                 .or. iav == AVGTP_MEDIAN) &
+            if ((((options%method == AVGTP_MAX .or. options%method == AVGTP_MIN) .and. options%percentile > 0.0_hp) &
+                 .or. options%method == AVGTP_MEDIAN) &
                 .and. ndim == 1) then ! compute percentile or median
 
                ! Sort selected samples
@@ -1853,20 +1859,20 @@ contains
                end do
                call radix_sort(zz(1:nin))
 
-               if (iav == AVGTP_MEDIAN) then
+               if (options%method == AVGTP_MEDIAN) then
                   n1 = floor(nin / 2d0)
                   n2 = ceiling(nin / 2d0)
                   rhp(1) = (zz(n1) + zz(n2)) / 2d0
 
-               else if (iav == AVGTP_MAX .or. iav == AVGTP_MIN) then
+               else if (options%method == AVGTP_MAX .or. options%method == AVGTP_MIN) then
                   rnn = 0
                   rhp(1) = 0d0
-                  num = nint(0.01d0 * percentileminmax * nin)
-                  if (iav == AVGTP_MIN) then
+                  num = nint(0.01_hp * options%percentile * nin)
+                  if (options%method == AVGTP_MIN) then
                      n1 = 1
                      n2 = num
                      n12 = 1
-                  else if (iav == AVGTP_MAX) then
+                  else if (options%method == AVGTP_MAX) then
                      n1 = nin
                      n2 = nin - num + 1
                      n12 = -1
@@ -1892,7 +1898,7 @@ contains
 
       deallocate (XH, YH)
 
-      if (percentileminmax > 0d0) then
+      if (options%percentile > 0.0_hp) then
          deallocate (zz, kkin)
       end if
 

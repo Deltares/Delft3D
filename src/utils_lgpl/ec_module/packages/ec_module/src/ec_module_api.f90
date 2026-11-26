@@ -220,8 +220,8 @@ function averaging(meshtwoddim, meshtwod, startIndex, c_sampleX, c_sampleY, c_sa
     double precision, allocatable           :: targetX(:)
     double precision, allocatable           :: targetY(:)
     double precision, allocatable           :: rawTargetValues(:)
-    integer                                 :: k, IAVtmp, NUMMINtmp, INTTYPEtmp, i, jakdtree, numTargets
-    double precision                        :: RCELtmp, valFirstNode,valSecondNode
+    integer                                 :: k, INTTYPEtmp, i, jakdtree, numTargets
+    double precision                        :: valFirstNode,valSecondNode
     integer                                 :: nMaxNodesPolygon
     real(hp), allocatable                   :: xx(:,:), yy(:,:), xxx(:), yyy(:)
     integer, allocatable                    :: nnn(:)
@@ -258,10 +258,7 @@ function averaging(meshtwoddim, meshtwod, startIndex, c_sampleX, c_sampleY, c_sa
     allocate (XPL(1), YPL(1), ZPL(1))
 
     ! cache interpolation settings
-    IAVtmp = IAV
-    NUMMINtmp = NUMMIN
     INTTYPEtmp = INTERPOLATIONTYPE
-    RCELtmp = RCEL
 
     !sample arrays
     allocate(sampleValues(1, numSamples), ipsam(numSamples), interpolationResults(1,numTargets))
@@ -276,19 +273,13 @@ function averaging(meshtwoddim, meshtwod, startIndex, c_sampleX, c_sampleY, c_sa
     interpolationResults(1,:)  = dmiss
     
     !set interpolation settings
-    if(method > 0 .and. method < 8) then
-       IAV = method
-    else
+    if (method <= 0 .or. method >= 8) then
        goto 1234
     endif
-    if(minNumSamples > 0) then
-       NUMMIN = minNumSamples
-    else
+    if (minNumSamples <= 0) then
        goto 1234
     endif
-    if(relativeSearchSize > 0 .and. relativeSearchSize < 10) then
-       RCEL = relativeSearchSize
-    else
+    if (.not. (relativeSearchSize > 0.0_hp .and. relativeSearchSize < 10.0_hp)) then
        goto 1234
     endif
     INTERPOLATIONTYPE = 2
@@ -309,8 +300,8 @@ function averaging(meshtwoddim, meshtwod, startIndex, c_sampleX, c_sampleY, c_sa
        do i = 1,nNetCells
           nnn(i) = netcell(i)%n
           do k=1,nnn(i)
-             xx(k,i) = xzw(i) + rcel*(xk(netcell(i)%nod(k))-xzw(i))
-             yy(k,i) = yzw(i) + rcel*(yk(netcell(i)%nod(k))-yzw(i))
+             xx(k,i) = xzw(i) + relativeSearchSize*(xk(netcell(i)%nod(k))-xzw(i))
+             yy(k,i) = yzw(i) + relativeSearchSize*(yk(netcell(i)%nod(k))-yzw(i))
           enddo
        enddo
 
@@ -319,7 +310,7 @@ function averaging(meshtwoddim, meshtwod, startIndex, c_sampleX, c_sampleY, c_sa
        nMaxNodesPolygon = 3*maxval(nmk)   ! 2: safe upper bound , 3 : even safer!
        allocate( xx(nMaxNodesPolygon,numk), yy(nMaxNodesPolygon,numk), nnn(numk), xxx(nMaxNodesPolygon), yyy(nMaxNodesPolygon) )
        do i = 1,numk
-          call make_dual_cell(i, nMaxNodesPolygon, rcel, xxx, yyy, nnn(i), Wu1Duni)
+          call make_dual_cell(i, nMaxNodesPolygon, relativeSearchSize, xxx, yyy, nnn(i), Wu1Duni)
           do k=1,nnn(i)
              xx(k,i) = xxx(k)
              yy(k,i) = yyy(k)
@@ -352,7 +343,7 @@ function averaging(meshtwoddim, meshtwod, startIndex, c_sampleX, c_sampleY, c_sa
     XPL,&
     YPL,&
     ZPL, &
-    errorInfo)
+    errorInfo, t_averaging_options(method, minNumSamples, relativeSearchSize, averaging_settings%percentile))
 
     !delete kdtree
     call delete_kdtree2(treeglob)
@@ -403,10 +394,7 @@ function averaging(meshtwoddim, meshtwod, startIndex, c_sampleX, c_sampleY, c_sa
 1234 continue
 
     !unroll & cleanup
-    IAV = IAVtmp
-    NUMMIN = NUMMINtmp
     INTERPOLATIONTYPE = INTTYPEtmp
-    RCEL = RCELtmp
     if (allocated(sampleValues)) deallocate(sampleValues)
     if (allocated(ipsam)) deallocate(ipsam)
     if (allocated(interpolationResults))  deallocate(interpolationResults)

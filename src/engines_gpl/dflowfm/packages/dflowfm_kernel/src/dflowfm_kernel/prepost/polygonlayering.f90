@@ -47,7 +47,7 @@ contains
       use m_flowgeom, only: ndx, ndxi, xz, yz
       use m_polygon, only: npl, xpl, ypl, zpl, iistart, iiend
       use m_samples, only: increasesam, xs, ys, zs, ns
-      use m_ec_triangle, only: jagetwf, indxx, wfxx
+      use m_ec_triangle, only: indxx, wfxx
       use geometry_module, only: get_startend
       use m_reapol, only: reapol
       use m_sferic, only: jsferic, jasfer3D
@@ -150,11 +150,10 @@ contains
       jakdtree = 1
       ndim = 1
 
-      jagetwf = 1
-      allocate (indxx(3, ndxi), wfxx(3, ndxi)) ! if module variable jagetw == 1, make weightfactor_index arrays
+      allocate (indxx(3, ndxi), wfxx(3, ndxi))
 
       call TRIINTfast(XS, YS, ZS, NS, NDIM, Xz, Yz, Zz, ndxi, JDLA, jakdtree, jsferic, 0, jins, dmiss, jasfer3D, &
-                      Xpl, Ypl, ZPL, transformcoef) !
+                      Xpl, Ypl, ZPL, transformcoef, save_weights=.true.)
 
       allocate (nds(nspl))
       do j = 1, nspl

@@ -1399,11 +1399,11 @@ contains
    !> Read an XYZ sample file and interpolate onto the supplied target points.
    !! Averaging additionally requires the caller's mesh footprints.
    function ecInterpolateSampleFile(filename, method, x, y, values, missing, jsferic, jasfer3d, &
-                                    npl, jins, xpl, ypl, zpl, coefficients, mask, polygon_x, polygon_y, vertex_counts) result(success)
+                                    npl, jins, xpl, ypl, zpl, coefficients, averaging_options, mask, &
+                                    polygon_x, polygon_y, vertex_counts) result(success)
       use kdtree2Factory
       use m_ec_basic_interpolation, only: TRIINTfast, averaging2, TerrorInfo
-      use m_ec_interpolationsettings, only: iav, rcel, percentileminmax, nummin
-      use m_ec_triangle, only: jagetwf
+      use m_ec_interpolationsettings, only: t_averaging_options
       use messageHandling, only: mess, LEVEL_WARN
 
       character(len=*), intent(in) :: filename !< ASCII XYZ sample file.
@@ -1414,7 +1414,8 @@ contains
       integer, intent(in) :: jsferic, jasfer3d !< Spherical coordinate settings.
       integer, intent(in) :: npl, jins !< Number of selection polygon vertices and inside/outside setting.
       real(dp), dimension(:), intent(in) :: xpl, ypl, zpl !< Selection polygon coordinates.
-      real(dp), dimension(:), intent(in) :: coefficients !< Legacy interpolation settings.
+      real(dp), dimension(:), intent(in) :: coefficients !< Triangulation settings.
+      type(t_averaging_options), intent(in) :: averaging_options !< Settings used for the averaging method.
       integer, dimension(:), intent(in), optional :: mask !< Target points to interpolate (1) or skip (0).
       real(dp), dimension(:, :), intent(in), optional :: polygon_x, polygon_y !< Averaging footprints.
       integer, dimension(:), intent(in), optional :: vertex_counts !< Number of vertices per averaging footprint.
@@ -1423,8 +1424,7 @@ contains
       real(dp), dimension(:), allocatable :: xs, ys
       real(dp), dimension(:, :), allocatable :: zs, interpolated
       integer, dimension(:), allocatable :: sample_order
-      integer :: lun, stat, ns, kx, nt, jdla, use_kdtree, old_iav, old_nummin, old_jagetwf
-      real(dp) :: old_rcel, old_percentile
+      integer :: lun, stat, ns, kx, nt, jdla, use_kdtree
       type(TerrorInfo) :: error_info
 
       success = .false.
@@ -1450,12 +1450,9 @@ contains
       select case (method)
       case (interpolate_triangle)
          ! Use the Delaunay branch of triinterp2, without legacy raster detection.
-         old_jagetwf = jagetwf
-         jagetwf = 0
          use_kdtree = 1
          call TRIINTfast(xs, ys, zs, ns, 1, x, y, interpolated, nt, jdla, use_kdtree, jsferic, npl, jins, &
-                         missing, jasfer3d, xpl, ypl, zpl, coefficients, mask)
-         jagetwf = old_jagetwf
+                         missing, jasfer3d, xpl, ypl, zpl, coefficients, save_weights=.false., kc=mask)
       case (interpolate_averaging)
          if (.not. (present(polygon_x) .and. present(polygon_y) .and. present(vertex_counts))) then
             call set_ec_message('XYZ sample averaging requires target footprints.')
@@ -1468,31 +1465,11 @@ contains
             return
          end if
 
-         old_iav = iav
-         old_nummin = nummin
-         old_rcel = rcel
-         old_percentile = percentileminmax
-         if (comparereal(coefficients(4), missing) /= 0) then
-            iav = int(coefficients(4))
-         end if
-         if (comparereal(coefficients(5), missing) /= 0) then
-            rcel = coefficients(5)
-         end if
-         if (comparereal(coefficients(7), missing) /= 0) then
-            percentileminmax = coefficients(7)
-         end if
-         if (comparereal(coefficients(8), missing) /= 0) then
-            nummin = int(coefficients(8))
-         end if
-
          allocate (sample_order(ns)) ! Not used in k-d tree mode.
          call averaging2(1, ns, xs, ys, zs, sample_order, x, y, interpolated, nt, polygon_x, polygon_y, &
-                         size(polygon_x, 1), vertex_counts, 1, missing, jsferic, jasfer3d, jins, npl, xpl, ypl, zpl, error_info, mask)
+                         size(polygon_x, 1), vertex_counts, 1, missing, jsferic, jasfer3d, jins, npl, xpl, ypl, zpl, &
+                         error_info, averaging_options, mask)
          call delete_kdtree2(treeglob)
-         iav = old_iav
-         nummin = old_nummin
-         rcel = old_rcel
-         percentileminmax = old_percentile
          if (allocated(error_info%message)) then
             if (error_info%success) then
                call mess(LEVEL_WARN, error_info%message)

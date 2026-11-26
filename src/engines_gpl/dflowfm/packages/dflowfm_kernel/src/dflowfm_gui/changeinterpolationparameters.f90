@@ -37,7 +37,7 @@ module m_changeinterpolationparameters
 contains
 
    subroutine CHANGEINTERPOLATIONPARAMETERS()
-      use m_ec_interpolationsettings, only: interpolationtype, jtekinterpolationprocess, iav, nummin, rcel, interpolate_to, percentileminmax
+      use m_ec_interpolationsettings, only: interpolationtype, jtekinterpolationprocess, interpolate_to, averaging_settings
       use unstruc_colors, only: hlpfor, hlpbck, iws, ihs, lblfor, lblbck
       use unstruc_display_data, only: npos
       use m_helpnow, only: nlevel, wrdkey
@@ -157,11 +157,11 @@ contains
 
       call IFormPutINTEGER(2 * 1, INTERPOLATIONTYPE)
       call IFORMPUTinteger(2 * 2, JTEKINTERPOLATIONPROCESS)
-      call IFormPutINTEGER(2 * 3, IAV)
-      call IFormPutINTEGER(2 * 4, NUMMIN)
-      call IFormPutDouble(2 * 5, RCEL, '(F8.3)')
+      call IFormPutINTEGER(2 * 3, averaging_settings%method)
+      call IFormPutINTEGER(2 * 4, averaging_settings%min_samples)
+      call IFormPutDouble(2 * 5, averaging_settings%relative_size, '(F8.3)')
       call IFormPutINTEGER(2 * 6, Interpolate_to)
-      call IFormPutDouble(2 * 7, percentileminmax, '(F8.3)')
+      call IFormPutDouble(2 * 7, averaging_settings%percentile, '(F8.3)')
       call IFormPutINTEGER(2 * 8, Mxsam)
 
       !  Display the form with numeric fields left justified
@@ -202,11 +202,11 @@ contains
          if (KEY == 22) then
             call IFormGEtINTEGER(2 * 1, INTERPOLATIONTYPE)
             call IFORMGETinteger(2 * 2, JTEKINTERPOLATIONPROCESS)
-            call IFormGEtINTEGER(2 * 3, IAV)
-            call IFormGEtINTEGER(2 * 4, NUMMIN)
-            call IFormGEtDouble(2 * 5, RCEL)
+            call IFormGEtINTEGER(2 * 3, averaging_settings%method)
+            call IFormGEtINTEGER(2 * 4, averaging_settings%min_samples)
+            call IFormGEtDouble(2 * 5, averaging_settings%relative_size)
             call IFormGEtINTEGER(2 * 6, Interpolate_to)
-            call IFormGEtDouble(2 * 7, Percentileminmax)
+            call IFormGEtDouble(2 * 7, averaging_settings%percentile)
             call IFormGEtinteger(2 * 8, Mxsam)
             if (mxsam == 0) then
                mca = 0

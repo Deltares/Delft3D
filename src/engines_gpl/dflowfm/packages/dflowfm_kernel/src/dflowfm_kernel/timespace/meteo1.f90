@@ -3239,11 +3239,10 @@ contains
       use m_ec_provider, only: ecInterpolateSampleFile
       use m_ec_parameters, only: interpolate_triangle, interpolate_averaging
       use m_ec_message, only: set_ec_message
-      use m_ec_interpolationsettings, only: rcel
+      use m_ec_interpolationsettings, only: t_averaging_options
       use m_missing, only: dmiss, jins
       use m_polygon, only: npl, xpl, ypl, zpl
       use m_sferic, only: jsferic, jasfer3d
-      use precision_basics, only: comparereal
 
       character(len=*), intent(in) :: filename !< ASCII XYZ sample file.
       integer, intent(in) :: method !< FM interpolation method.
@@ -3255,7 +3254,7 @@ contains
       logical :: success
 
       integer :: ec_method
-      real(dp) :: relative_size
+      type(t_averaging_options) :: averaging_options
       real(dp), dimension(:, :), allocatable :: polygon_x, polygon_y
       integer, dimension(:), allocatable :: vertex_counts, target_mask
       real(dp), dimension(:), allocatable :: selection_x, selection_y, selection_z
@@ -3276,11 +3275,9 @@ contains
          ec_method = interpolate_triangle
       case (METHOD_AVERAGING)
          ec_method = interpolate_averaging
-         relative_size = rcel
-         if (comparereal(coefficients(5), dmiss) /= 0) then
-            relative_size = coefficients(5)
-         end if
-         if (.not. get_sample_averaging_footprints(location, size(values), relative_size, polygon_x, polygon_y, vertex_counts, target_mask)) then
+         averaging_options = sample_averaging_options(coefficients)
+         if (.not. get_sample_averaging_footprints(location, size(values), averaging_options%relative_size, &
+                                                    polygon_x, polygon_y, vertex_counts, target_mask)) then
             call set_ec_message('XYZ sample averaging requires cell, link, or node geometry.')
             return
          end if
@@ -3290,8 +3287,32 @@ contains
       end select
       success = ecInterpolateSampleFile(filename, ec_method, x, y, values, dmiss, jsferic, jasfer3d, &
                                         npl, jins, selection_x, selection_y, selection_z, coefficients, &
-                                        target_mask, polygon_x, polygon_y, vertex_counts)
+                                        averaging_options, target_mask, polygon_x, polygon_y, vertex_counts)
    end function interpolate_fm_sample_file
+
+   !> Translate the legacy coefficients, inheriting any unspecified settings.
+   function sample_averaging_options(coefficients) result(options)
+      use m_ec_interpolationsettings, only: t_averaging_options, averaging_settings
+      use m_missing, only: dmiss
+      use precision_basics, only: comparereal
+
+      real(dp), dimension(:), intent(in) :: coefficients !< Legacy interpolation settings.
+      type(t_averaging_options) :: options
+
+      options = averaging_settings
+      if (comparereal(coefficients(4), dmiss) /= 0) then
+         options%method = int(coefficients(4))
+      end if
+      if (comparereal(coefficients(5), dmiss) /= 0) then
+         options%relative_size = coefficients(5)
+      end if
+      if (comparereal(coefficients(7), dmiss) /= 0) then
+         options%percentile = coefficients(7)
+      end if
+      if (comparereal(coefficients(8), dmiss) /= 0) then
+         options%min_samples = int(coefficients(8))
+      end if
+   end function sample_averaging_options
 
    !> Build averaging footprints at the FM target locations.
    function get_sample_averaging_footprints(location, num_points, relative_size, polygon_x, polygon_y, vertex_counts, mask) result(success)
@@ -3411,14 +3432,12 @@ contains
       integer :: minp0, inside, k, jdla, mout
       integer :: n6, L, Lk, n, n1, n2, i
       integer :: ierror, jakc
-      integer :: iav_store, nummin_store
       integer :: jakdtree
       integer :: local_method
       integer, dimension(:), allocatable :: nnn
       integer, dimension(:), allocatable :: LnnL, Lorg
       real(kind=dp) :: zz
-      real(kind=dp) :: rcel_store
-      real(kind=dp) :: percentileminmax_store
+      type(t_averaging_options) :: averaging_options
       real(kind=dp), dimension(:), allocatable :: zh
       real(kind=dp), dimension(:), allocatable :: xxx, yyy
       real(kind=dp), dimension(:, :), allocatable :: xx, yy
@@ -3566,27 +3585,7 @@ contains
 
          case (METHOD_AVERAGING)
 
-            ! store settings
-            iav_store = iav
-            rcel_store = rcel
-            percentileminmax_store = percentileminmax
-            nummin_store = nummin
-
-            if (transformcoef(4) /= DMISS) then
-               iav = int(transformcoef(4))
-            end if
-
-            if (transformcoef(5) /= DMISS) then
-               rcel = transformcoef(5)
-            end if
-
-            if (transformcoef(7) /= DMISS) then
-               percentileminmax = transformcoef(7)
-            end if
-
-            if (transformcoef(8) /= DMISS) then
-               nummin = int(transformcoef(8))
-            end if
+            averaging_options = sample_averaging_options(transformcoef)
 
             if (iprimpos == UNC_LOC_U) then ! primitime position = velocitypoint, cellfacemid
                n6 = 4
@@ -3614,7 +3613,7 @@ contains
                allocate (LnnL(n6), Lorg(n6))
 
                do n = 1, nx
-                  call get_cellpolygon(n, n6, nnn(n), rcel, xx(1, n), yy(1, n), LnnL, Lorg, zz)
+                  call get_cellpolygon(n, n6, nnn(n), averaging_options%relative_size, xx(1, n), yy(1, n), LnnL, Lorg, zz)
                end do
 
                deallocate (LnnL, Lorg)
@@ -3630,7 +3629,7 @@ contains
                   end if
 
                   ! get the cell list
-                  call make_dual_cell(k, n6, rcel, xxx, yyy, nnn(k), Wu1Duni)
+                  call make_dual_cell(k, n6, averaging_options%relative_size, xxx, yyy, nnn(k), Wu1Duni)
 
                   do i = 1, nnn(k)
                      xx(i, k) = xxx(i)
@@ -3652,7 +3651,7 @@ contains
             end if
 
             call averaging2(1, ns, xs, ys, zs, ipsam, xu, yu, zh, nx, xx, yy, n6, nnn, jakdtree, &
-                            dmiss, jsferic, jasfer3D, JINS, NPL, xpl, ypl, zpl, errorInfo, kcc)
+                            dmiss, jsferic, jasfer3D, JINS, NPL, xpl, ypl, zpl, errorInfo, averaging_options, kcc)
             deallocate (xx, yy, nnn)
 
             if (errorInfo%cntNoSamples > 0) then
@@ -3664,12 +3663,6 @@ contains
                msgbuf = errorInfo%message
                call warn_flush()
             end if
-
-            ! restore settings
-            iav = iav_store
-            rcel = rcel_store
-            percentileminmax = percentileminmax_store
-            nummin = nummin_store
 
             if (jakdtree == 1) then
                call delete_kdtree2(treeglob)

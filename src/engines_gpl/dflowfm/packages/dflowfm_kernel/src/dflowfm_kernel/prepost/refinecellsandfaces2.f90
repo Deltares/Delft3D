@@ -87,7 +87,7 @@ contains
       integer :: numL_old
       integer :: numrefine ! number of cells to be refined
       integer :: nump_virtual
-      integer :: interpolationtype_old, IAV_old, jacancelled
+      integer :: interpolationtype_old, averaging_method_old, jacancelled
       integer :: jakdtree = 1 ! use kdtree (1) or not (0)
 
       integer :: ilevel ! refinement level
@@ -102,7 +102,7 @@ contains
 
 !  store original interpolation settings
       interpolationtype_old = interpolationtype
-      IAV_old = IAV
+      averaging_method_old = averaging_settings%method
 
       jaCourantnetwork = 0
 
@@ -386,7 +386,7 @@ contains
 
 !  restore original interpolation settings
       interpolationtype = interpolationtype_old
-      IAV = IAV_old
+      averaging_settings%method = averaging_method_old
 
 !  deallocate kdtree if it was created
       if (Ns >= 1 .and. treeglob%itreestat /= ITREE_EMPTY) then
@@ -685,6 +685,7 @@ contains
          real(kind=dp), dimension(6) :: transformcoef = 0
          integer :: mxsam, mysam, m
          type(TerrorInfo) :: errorInfo
+         type(t_averaging_options) :: averaging_options
 !      real(kind=dp), parameter                       :: dtol = 1d-8
 
          jarefine = 0
@@ -692,6 +693,7 @@ contains
          landsea = 0
 
          nnn(1) = N
+         averaging_options = averaging_settings
 
 !     compute cell center
          !call comp_masscenter(N, x, y, xc(1), yc(1), area, jacounterclockwise, jsferic, jasfer3D, dmiss) ! try cheap alternative below
@@ -725,15 +727,12 @@ contains
 !         ridge detection
 !------------------------------------------------------------------------
 
-            if (interpolationtype /= INTP_AVG .or. IAV /= AVGTP_MAX) then
-               !         call qnerror('Interpolation type is set to averaging and averaging type to maximum', ' ', ' ')
-               interpolationtype = INTP_AVG
-               IAV = AVGTP_MAX
-            end if
+            interpolationtype = INTP_AVG
+            averaging_options%method = AVGTP_MAX
 
             zc = DMISS
             call averaging2(NDIM, NS, xs, ys, zss, ipsam, xc, yc, zc, 1, x, y, N, nnn, jakdtree, &
-                            dmiss, jsferic, jasfer3D, JINS, NPL, xpl, ypl, zpl, errorInfo)
+                            dmiss, jsferic, jasfer3D, JINS, NPL, xpl, ypl, zpl, errorInfo, averaging_options)
 
             do ivar = 1, 3
                if (zc(ivar) == DMISS) then
@@ -765,12 +764,6 @@ contains
 !        wave Courant number
 !------------------------------------------------------------------------
 
-            if (interpolationtype /= INTP_AVG .or. IAV /= 6) then
-               !         call qnerror('Interpolation type is set to averaging and averaging type to minabs', ' ', ' ')
-               !interpolationtype = 2
-               IAV = AVGTP_MINABS ! minabs
-            end if
-
 !        only interpolate samples if necessary
             if (Dt_maxcour > 0.0_dp .or. irefinetype == ITYPE_MESHWIDTH) then
                zc = DMISS
@@ -787,8 +780,9 @@ contains
                   call triinterp2(Xc, Yc, zc, 1, JDLA, & !attemp to allow for smooth refinement used to be ok through jdla, does not work anymore icw kdtree
                                   XS, YS, ZS, NS, dmiss, jsferic, jins, jasfer3D, NPL, MXSAM, MYSAM, XPL, YPL, ZPL, transformcoef)
                else if (interpolationtype == 2) then
+                  averaging_options%method = AVGTP_MINABS
                   call averaging2(1, NS, xs, ys, zs, ipsam, xc, yc, zc, 1, x, y, N, nnn, jakdtree, &
-                                  dmiss, jsferic, jasfer3D, JINS, NPL, xpl, ypl, zpl, errorInfo)
+                                  dmiss, jsferic, jasfer3D, JINS, NPL, xpl, ypl, zpl, errorInfo, averaging_options)
                else if (interpolationtype == 4) then
                   !landsea = 0
 

@@ -42,7 +42,7 @@ contains
       use M_FLOWGEOM
       use m_flow
       use m_samples
-      use m_ec_interpolationsettings, only: interpolationtype, rcel
+      use m_ec_interpolationsettings, only: interpolationtype, averaging_settings
       use m_grid, only: mmax, nmax
       use kdtree2Factory
       use m_ec_basic_interpolation, only: triinterp2, averaging2, TerrorInfo
@@ -105,12 +105,12 @@ contains
                do N = 1, NDX
                   NNN(N) = NETCELL(N)%N
                   do NN = 1, NNN(N) ! make search cells based on net cell contour + RCEL search radius factor
-                     XX(NN, N) = xzw(N) + RCEL * (XK(NETCELL(N)%NOD(NN)) - xzw(N))
-                     YY(NN, N) = yzw(N) + RCEL * (YK(NETCELL(N)%NOD(NN)) - yzw(N))
+                     XX(NN, N) = xzw(N) + averaging_settings%relative_size * (XK(NETCELL(N)%NOD(NN)) - xzw(N))
+                     YY(NN, N) = yzw(N) + averaging_settings%relative_size * (YK(NETCELL(N)%NOD(NN)) - yzw(N))
                   end do
                end do
                call averaging2(1, NS, XS, YS, ZS, IPSAM, XZ, YZ, BL, NDX, XX, YY, N6, NNN, jakdtree, &
-                               dmiss, jsferic, jasfer3D, JINS, NPL, xpl, ypl, zpl, errorInfo)
+                               dmiss, jsferic, jasfer3D, JINS, NPL, xpl, ypl, zpl, errorInfo, averaging_settings)
                deallocate (XX, YY, NNN)
                call checkErrorInfo(errorInfo)
             end if
@@ -134,7 +134,7 @@ contains
                end do
                nnn = 4 ! array nnn
                call averaging2(1, NS, XS, YS, ZS, IPSAM, Xu, Yu, BLu, lnx, XX, YY, N6, NNN, jakdtree, &
-                               dmiss, jsferic, jasfer3D, JINS, NPL, xpl, ypl, zpl, errorInfo) ! interpdivers
+                               dmiss, jsferic, jasfer3D, JINS, NPL, xpl, ypl, zpl, errorInfo, averaging_settings)
                deallocate (XX, YY, NNN)
                call checkErrorInfo(errorInfo)
             end if
@@ -150,14 +150,14 @@ contains
             allocate (XX(N6, NUMK), YY(N6, NUMK), NNN(NUMK), xxx(N6), yyy(N6))
             do K = 1, NUMK
 !         get the celllist
-               call make_dual_cell(k, n6, rcel, xxx, yyy, nnn(k), Wu1Duni)
+               call make_dual_cell(k, n6, averaging_settings%relative_size, xxx, yyy, nnn(k), Wu1Duni)
                do i = 1, nnn(k)
                   xx(i, k) = xxx(i)
                   yy(i, k) = yyy(i)
                end do
             end do
             call averaging2(1, NS, XS, YS, ZS, IPSAM, XK, YK, ZK, NUMK, XX, YY, N6, NNN, jakdtree, &
-                            dmiss, jsferic, jasfer3D, JINS, NPL, xpl, ypl, zpl, errorInfo)
+                            dmiss, jsferic, jasfer3D, JINS, NPL, xpl, ypl, zpl, errorInfo, averaging_settings)
             deallocate (XX, YY, xxx, yyy, NNN)
             call checkErrorInfo(errorInfo)
          else if (INTERPOLATIONTYPE == 3) then
@@ -173,12 +173,12 @@ contains
             allocate (XX(N6, Ndx), YY(N6, Ndx), NNN(Ndx))
             do K = 1, Ndx
                NN = nd(k)%lnx
-               XX(1:nn, K) = xzw(k) + RCEL * (nd(k)%x - xzw(k))
-               yy(1:nn, K) = yzw(k) + RCEL * (nd(k)%y - yzw(k))
+               XX(1:nn, K) = xzw(k) + averaging_settings%relative_size * (nd(k)%x - xzw(k))
+               yy(1:nn, K) = yzw(k) + averaging_settings%relative_size * (nd(k)%y - yzw(k))
                nnn(K) = NN ! array nnn
             end do
             call averaging2(1, NS, XS, YS, ZS, IPSAM, Xz, Yz, s1, Ndx, XX, YY, N6, NNN, jakdtree, &
-                            dmiss, jsferic, jasfer3D, JINS, NPL, xpl, ypl, zpl, errorInfo)
+                            dmiss, jsferic, jasfer3D, JINS, NPL, xpl, ypl, zpl, errorInfo, averaging_settings)
             deallocate (XX, YY, NNN)
             call checkErrorInfo(errorInfo)
          end if

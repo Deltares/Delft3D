@@ -53,6 +53,7 @@ contains
       use m_missing, only: dmiss, jins
       use m_polygon
       use m_ec_basic_interpolation, only: triintfast, bilin_interp_loc
+      use m_ec_triangle, only: jagetwf
       use fm_external_forcings_data, only: transformcoef
       use m_sferic, only: jsferic, jasfer3D
       use m_qnerror
@@ -136,7 +137,7 @@ contains
       jakdtree = 1
 
       call TRIINTfast(xc, yc, xietac, mmax * nmax, 2, xs, ys, xietas, NS, jadl, jakdtree, &
-                      jsferic, NPL, jins, dmiss, jasfer3D, XPL, YPL, ZPL, transformcoef) ! will alter grid
+                      jsferic, NPL, jins, dmiss, jasfer3D, XPL, YPL, ZPL, transformcoef, save_weights=jagetwf == 1) ! will alter grid
 
       do i = 1, NS
 !     apply inside-curvigrid mask
@@ -171,7 +172,7 @@ contains
       end if
 
       call TRIINTfast(xc, yc, xietac, mmax * nmax, 2, xk, yk, xietak, numk, jadl, jakdtree, &
-                      jsferic, NPL, jins, dmiss, jasfer3D, XPL, YPL, ZPL, transformcoef)
+                      jsferic, NPL, jins, dmiss, jasfer3D, XPL, YPL, ZPL, transformcoef, save_weights=jagetwf == 1)
 
       if (NPL > 0) then
          call restoregrd()
@@ -250,7 +251,7 @@ contains
       jadl = 0
       jakdtree = 1 ! todo :
       call triintfast(xis, etas, zs, NS, 1, xik, etak, zk, numk, jadl, jakdtree, &
-                      jsferic, NPL, jins, dmiss, jasfer3D, XPL, YPL, ZPL, transformcoef)
+                      jsferic, NPL, jins, dmiss, jasfer3D, XPL, YPL, ZPL, transformcoef, save_weights=jagetwf == 1)
 
       ierror = 0
 

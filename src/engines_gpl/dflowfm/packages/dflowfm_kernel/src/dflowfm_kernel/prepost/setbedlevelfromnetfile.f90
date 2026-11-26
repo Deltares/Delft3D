@@ -128,7 +128,7 @@ contains
                ! NOTE: associate cell bl's from file with our model's flowgeom cells via nearest neighbour matching.
                NS = nflownode
                INTERPOLATIONTYPE = INTP_AVG
-               IAV = AVGTP_NEARESTNB
+               averaging_settings%method = AVGTP_NEARESTNB
                call interpdivers(1)
 
             end do ! nummesh
