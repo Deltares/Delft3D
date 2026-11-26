@@ -6,7 +6,7 @@
 preC-SUMO is the coupling-side adapter between D-FlowFM and C-SUMO in a preCICE setup.
 
 Current core responsibilities are:
-- read and validate C-SUMO settings,
+- read the C-SUMO settings used by the adapter,
 - register preCICE meshes and data channels,
 - receive far-field data from preCICE and write FF2NF input files,
 - wait for and read NF2FF output files,
