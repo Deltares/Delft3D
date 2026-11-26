@@ -44,6 +44,7 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'SecchiDepth2', DEPRECATED, 'Use SecchiDepthNonPenetrative instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'SecchiDepth2Fraction', DEPRECATED, 'Use SecchiDepthNonPenetrativeFraction instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'umodLin', DEPRECATED, 'It is no longer supported, the provided value is ignored.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'iniWithNudge', DEPRECATED, 'It is no longer supported. 3D initial salinity and temperature fields can now be set using the external forcings file.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'thetaVertical', DEPRECATED, 'Use VerticalAdvectionType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'dtMassBalance', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Lateral', 'type', DEPRECATED, 'Use [Lateral] locationType instead.')
