@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cctype>
 #include <format>
+#include <locale>
 #include <sstream>
 #include <stdexcept>
 #include <unordered_map>
@@ -82,6 +83,7 @@ namespace ini::conversion
         {
             T result{};
             std::istringstream iss(value);
+            iss.imbue(std::locale::classic());
             char remaining;
             if (!(iss >> result) || (iss >> remaining))
             {
@@ -145,9 +147,7 @@ namespace ini::conversion
 
     std::string ToString(int value)
     {
-        std::ostringstream oss;
-        oss << value;
-        return oss.str();
+        return std::format("{}", value);
     }
 
     std::string ToString(float value, FloatFormat format) { return FormatFloatingPoint(value, format); }
