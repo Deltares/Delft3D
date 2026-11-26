@@ -40,7 +40,7 @@ module timespace_parameters
    integer, parameter :: ARCINFO = 4 ! 1 veld per tijdstap 2 dim array        bilin/direct
    integer, parameter :: SPIDERWEB = 5 ! 3 veld per tijdstap 3 dim array        bilin/spw
    integer, parameter :: CURVI = 6 ! 1 veld per tijdstap 2 dim array        bilin/findnm
-   integer, parameter :: TRIANGULATION = 7 ! 1 veld per tijdstap                    triang
+   integer, parameter :: SAMPLES = 7 !< ASCII spatial samples (legacy FILETYPE=7).
    integer, parameter :: TRIANGULATIONMAGDIR = 8 ! 2 velden u,v per tijdstap 3 dim array  triang, vectormax = 2
    ! op basis van windreeksen op stations mag/dir
    integer, parameter :: POLY_TIM = 9 ! for line oriented bnd conditions, refs to uniform, fourier or harmonic
@@ -182,7 +182,7 @@ contains
       case ('polygon')
          file_type = INSIDE_POLYGON
       case ('sample')
-         file_type = TRIANGULATION
+         file_type = SAMPLES
       case ('spiderweb')
          file_type = SPIDERWEB
       case ('uniform')

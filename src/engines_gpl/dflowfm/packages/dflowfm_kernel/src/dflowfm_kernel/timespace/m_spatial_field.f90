@@ -468,7 +468,7 @@ contains
    !> Determines whether a method is accepted for a static forcing file type.
    function is_valid_static_field_method_filetype(method, filetype) result(is_valid)
       use timespace_parameters, only: METHOD_CONSTANT, METHOD_TRIANGULATION, METHOD_AVERAGING, METHOD_BILINEAR, &
-                                      INSIDE_POLYGON, TRIANGULATION, ARCINFO, GEOTIFF, NCFLOW, FIELD1D, JUSTUPDATE, DATAVALUE
+                                      INSIDE_POLYGON, SAMPLES, ARCINFO, GEOTIFF, NCFLOW, FIELD1D, JUSTUPDATE, DATAVALUE
 
       integer, intent(in) :: method !< Method, result of select_spatial_field_method.
       integer, intent(in) :: filetype !< FM forcing file type , result of convert_file_type_string_to_integer.
@@ -477,7 +477,7 @@ contains
       select case (filetype)
       case (INSIDE_POLYGON)
          is_valid = method == METHOD_CONSTANT
-      case (TRIANGULATION, NCFLOW)
+      case (SAMPLES, NCFLOW)
          is_valid = any(method == [METHOD_TRIANGULATION, METHOD_AVERAGING])
       case (ARCINFO, GEOTIFF)
          is_valid = any(method == [METHOD_TRIANGULATION, METHOD_AVERAGING, METHOD_BILINEAR])
@@ -491,7 +491,7 @@ contains
    !> Determines whether a method is accepted for an EC-backed forcing file type.
    !! Method and file type are FM enumeration values derived from the input strings.
    function is_valid_ec_method_filetype(method, filetype) result(is_valid)
-      use timespace_parameters, only: FILE_TYPE_UNKNOWN, UNIFORM, UNIMAGDIR, ARCINFO, SPIDERWEB, CURVI, NCGRID, BCASCII, DATAVALUE, TRIANGULATION, &
+      use timespace_parameters, only: FILE_TYPE_UNKNOWN, UNIFORM, UNIMAGDIR, ARCINFO, SPIDERWEB, CURVI, NCGRID, BCASCII, DATAVALUE, SAMPLES, &
                                       METHOD_CONSTANT, SPACEANDTIME, WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, &
                                       NEAREST_NEIGHBOUR, METHOD_TRIANGULATION, METHOD_AVERAGING
 
@@ -516,7 +516,7 @@ contains
          is_valid = any(method == [WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, NEAREST_NEIGHBOUR])
       case (DATAVALUE)
          is_valid = method == METHOD_CONSTANT
-      case (TRIANGULATION)
+      case (SAMPLES)
          is_valid = any(method == [METHOD_TRIANGULATION, METHOD_AVERAGING])
       end select
    end function is_valid_ec_method_filetype
@@ -526,7 +526,7 @@ contains
       use m_string_utils, only: join_strings
       use string_module, only: str_tolower
       use timespace_parameters, only: FIELD1D, ARCINFO, BCASCII, CURVI, GEOTIFF, NCGRID, INSIDE_POLYGON, &
-                                      SAMPLE => TRIANGULATION, SPIDERWEB, UNIFORM, UNIMAGDIR, NCFLOW
+                                      SAMPLES, SPIDERWEB, UNIFORM, UNIMAGDIR, NCFLOW
       character(len=*), intent(in) :: forcing_file !< Name of the forcing file to validate.
       integer, intent(in) :: file_type !< File type enum returned by convert_file_type_string_to_integer.
       character(len=:), allocatable, intent(out) :: valid_extensions !< Comma-separated extensions accepted for file_type.
@@ -560,7 +560,7 @@ contains
          valid_extensions_array = [character(len=16) :: '.nc']
       case (INSIDE_POLYGON)
          valid_extensions_array = [character(len=16) :: '.pol', '.pli', '.pliz']
-      case (SAMPLE)
+      case (SAMPLES)
          valid_extensions_array = [character(len=16) :: '.xyz', '.xyb']
       case (SPIDERWEB)
          valid_extensions_array = [character(len=16) :: '.spw']

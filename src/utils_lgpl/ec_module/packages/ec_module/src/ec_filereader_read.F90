@@ -1539,7 +1539,8 @@ contains
 
    !> Reads a sample file (*.xyz) given an already opened logical unit number, into allocatable arrays.
    function ecSampleReadAll_from_lun(msam, filename, xs, ys, zs, nSamples, kx) result(success)
-      use ieee_arithmetic, only: ieee_is_nan
+      use, intrinsic :: ieee_arithmetic, only: ieee_is_finite, ieee_quiet_nan, ieee_value
+      use, intrinsic :: iso_fortran_env, only: iostat_end
 
       logical :: success !< function status
       integer, intent(inout) :: msam !< logical unit number (to already opened file)
@@ -1551,60 +1552,70 @@ contains
       integer, intent(out) :: kx !< number of vector components in each sample value (1 for scalars)
 
       real(dp) :: xx, yy, zz
-      real(dp) :: dmiss_dflt = -999_dp ! Use default missing value for this 'old' sample file type
-      real(dp) :: xymis_dflt = -999_dp !
+      real(dp), parameter :: XYZ_MISSING = -999.0_dp
       character(len=:), allocatable :: rec
       character(len=MAXIMUM_EC_MESSAGE_LENGTH) :: tex
-      integer :: istat
+      integer :: istat, line_number, capacity
+      real(dp) :: unset_value
 
-      success = .true.
-
+      success = .false.
       nSamples = 0
-
-      rewind (msam)
-11    read (msam, *, end=31)
-      nSamples = nSamples + 1
-      goto 11
-31    continue
-      kx = 1 ! TODO: AvD: scan and support vector_max > 1
-      call realloc(xs, nSamples, keepExisting=.false.)
-      call realloc(ys, nSamples, keepExisting=.false.)
-      call realloc(zs, (/kx, nSamples/), keepExisting=.false.)
-
-      rewind (msam)
-! TODO: this reader does not yet have all functionality that reasam() in dflowfm kernel has (comments *, PHAROS filetype, ...)
-      nSamples = 0
-10    continue
-      call GetLine(msam, rec, istat)
-      if (istat /= 0) goto 30
-      read (rec, *, end=40, err=40) xx, yy, zz
-
-      if (xx /= xymis_dflt .and. yy /= xymis_dflt .and. &
-          zz /= dmiss_dflt .and. zz /= 999.999_dp .and. &
-          .not. (ieee_is_nan(xx) .or. ieee_is_nan(yy) .or. ieee_is_nan(zz))) then
+      line_number = 0
+      capacity = 0
+      kx = 1
+      unset_value = ieee_value(0.0_dp, ieee_quiet_nan)
+      rewind (msam, iostat=istat)
+      if (istat /= 0) then
+         call set_ec_message("Could not rewind sample file '"//trim(filename)//"'.")
+         return
+      end if
+      do
+         call GetLine(msam, rec, istat)
+         if (istat == iostat_end) then
+            call realloc(xs, nSamples)
+            call realloc(ys, nSamples)
+            call realloc(zs, [kx, nSamples])
+            success = .true.
+            return
+         end if
+         line_number = line_number + 1
+         if (istat /= 0) then
+            exit
+         end if
+         istat = verify(rec, ' '//achar(9))
+         if (istat == 0) then
+            cycle
+         end if
+         if (scan(rec(istat:istat), '*#!') /= 0) then
+            cycle
+         end if
+         xx = unset_value
+         yy = unset_value
+         zz = unset_value
+         read (rec, *, iostat=istat) xx, yy, zz
+         if (istat /= 0) then
+            exit
+         end if
+         if (.not. all(ieee_is_finite([xx, yy, zz]))) then
+            cycle
+         end if
+         if (any([comparereal(xx, XYZ_MISSING), comparereal(yy, XYZ_MISSING), &
+                  comparereal(zz, XYZ_MISSING), comparereal(zz, 999.999_dp)] == 0)) then
+            cycle
+         end if
+         if (nSamples == capacity) then
+            capacity = max(256, 2 * capacity)
+            call realloc(xs, capacity)
+            call realloc(ys, capacity)
+            call realloc(zs, [kx, capacity])
+         end if
          nSamples = nSamples + 1
          xs(nSamples) = xx
          ys(nSamples) = yy
-         zs(kx, nSamples) = zz
-      end if
-      goto 10
-
-40    continue
-      success = .false.
-      write (tex, '(a,a,a,i0,a)') "ERROR: ec_filereader_read::ecSampleReadAll: read error in file '", trim(filename), "' on line ", nSamples + 1, "."
+         zs(1, nSamples) = zz
+      end do
+      write (tex, '(3a,i0,a)') "Invalid XYZ sample record in '", trim(filename), "' at line ", line_number, "."
       call set_ec_message(trim(tex))
-      return
-
-30    continue
-!        ! TODO: Sample cleaning below not necessary in EC module?
-!        write(tex,'(i10)') ns
-!        call readyy('sorting '//trim(tex)//' samples points',0d0)
-!        if (ns .gt. 1) then
-!           call tidysamples(xs,ys,zs,ipsam,ns,mxsam,mysam)
-!           call get_samples_boundingbox()
-!           ipstat = ipstat_ok
-!        end if
-      return
    end function ecSampleReadAll_from_lun
 
 !!==============================================================================

@@ -3234,11 +3234,129 @@ contains
       end if
    end subroutine operate
 
+   !> Supply FM geometry for EC interpolation of a scalar XYZ field.
+   function interpolate_fm_sample_file(filename, method, x, y, values, location, coefficients, mask) result(success)
+      use m_ec_provider, only: ecInterpolateSampleFile
+      use m_ec_parameters, only: interpolate_triangle, interpolate_averaging
+      use m_ec_message, only: set_ec_message
+      use m_ec_interpolationsettings, only: rcel
+      use m_missing, only: dmiss, jins
+      use m_polygon, only: npl, xpl, ypl, zpl
+      use m_sferic, only: jsferic, jasfer3d
+      use precision_basics, only: comparereal
+
+      character(len=*), intent(in) :: filename !< ASCII XYZ sample file.
+      integer, intent(in) :: method !< FM interpolation method.
+      real(dp), dimension(:), intent(in) :: x, y !< Target coordinates.
+      real(dp), dimension(:), intent(out) :: values !< Interpolated values or dmiss.
+      integer, intent(in) :: location !< FM target location type.
+      real(dp), dimension(:), intent(in) :: coefficients !< Legacy interpolation settings.
+      integer, dimension(:), optional, intent(in) :: mask !< Target inclusion mask.
+      logical :: success
+
+      integer :: ec_method
+      real(dp) :: relative_size
+      real(dp), dimension(:, :), allocatable :: polygon_x, polygon_y
+      integer, dimension(:), allocatable :: vertex_counts, target_mask
+      real(dp), dimension(:), allocatable :: selection_x, selection_y, selection_z
+
+      success = .false.
+      values = dmiss
+      if (present(mask)) then
+         target_mask = merge(1, 0, mask /= 0)
+      end if
+      allocate (selection_x(npl), selection_y(npl), selection_z(npl))
+      if (npl > 0) then
+         selection_x = xpl(1:npl)
+         selection_y = ypl(1:npl)
+         selection_z = zpl(1:npl)
+      end if
+      select case (method)
+      case (METHOD_TRIANGULATION)
+         ec_method = interpolate_triangle
+      case (METHOD_AVERAGING)
+         ec_method = interpolate_averaging
+         relative_size = rcel
+         if (comparereal(coefficients(5), dmiss) /= 0) then
+            relative_size = coefficients(5)
+         end if
+         if (.not. get_sample_averaging_footprints(location, size(values), relative_size, polygon_x, polygon_y, vertex_counts, target_mask)) then
+            call set_ec_message('XYZ sample averaging requires cell, link, or node geometry.')
+            return
+         end if
+      case default
+         call set_ec_message('XYZ samples support triangulation and averaging.')
+         return
+      end select
+      success = ecInterpolateSampleFile(filename, ec_method, x, y, values, dmiss, jsferic, jasfer3d, &
+                                        npl, jins, selection_x, selection_y, selection_z, coefficients, &
+                                        target_mask, polygon_x, polygon_y, vertex_counts)
+   end function interpolate_fm_sample_file
+
+   !> Build averaging footprints at the FM target locations.
+   function get_sample_averaging_footprints(location, num_points, relative_size, polygon_x, polygon_y, vertex_counts, mask) result(success)
+      use fm_location_types, only: UNC_LOC_U, UNC_LOC_S, UNC_LOC_CN
+      use gridoperations, only: get_cellpolygon, make_dual_cell
+      use m_flowgeom, only: ln2lne, ln, Wu1Duni
+      use m_netw, only: xzw, yzw, xk, yk, kn, netcell, nmk
+      use m_sferic, only: jsferic
+
+      integer, intent(in) :: location, num_points
+      real(dp), intent(in) :: relative_size
+      real(dp), dimension(:, :), allocatable, intent(out) :: polygon_x, polygon_y
+      integer, dimension(:), allocatable, intent(out) :: vertex_counts
+      integer, dimension(:), optional, intent(in) :: mask
+      logical :: success
+
+      integer :: max_vertices, i, link
+      integer, dimension(:), allocatable :: link_counts, original_links
+      real(dp) :: elevation
+
+      success = .false.
+      select case (location)
+      case (UNC_LOC_U)
+         allocate (polygon_x(4, num_points), polygon_y(4, num_points), vertex_counts(num_points))
+         vertex_counts = 4
+         do i = 1, num_points
+            link = ln2lne(i)
+            polygon_x(:, i) = [xzw(ln(1, i)), xk(kn(1, link)), xzw(ln(2, i)), xk(kn(2, link))]
+            polygon_y(:, i) = [yzw(ln(1, i)), yk(kn(1, link)), yzw(ln(2, i)), yk(kn(2, link))]
+         end do
+      case (UNC_LOC_S)
+         max_vertices = maxval(netcell%n)
+         if (jsferic == 1) then
+            max_vertices = max_vertices + 2
+         end if
+         allocate (polygon_x(max_vertices, num_points), polygon_y(max_vertices, num_points), vertex_counts(num_points))
+         allocate (link_counts(max_vertices), original_links(max_vertices))
+         do i = 1, num_points
+            call get_cellpolygon(i, max_vertices, vertex_counts(i), relative_size, polygon_x(:, i), polygon_y(:, i), &
+                                 link_counts, original_links, elevation)
+         end do
+      case (UNC_LOC_CN)
+         max_vertices = 3 * maxval(nmk)
+         allocate (polygon_x(max_vertices, num_points), polygon_y(max_vertices, num_points), vertex_counts(num_points))
+         vertex_counts = 0
+         do i = 1, num_points
+            if (present(mask)) then
+               if (mask(i) /= 1) then
+                  cycle
+               end if
+            end if
+            call make_dual_cell(i, max_vertices, relative_size, polygon_x(:, i), polygon_y(:, i), vertex_counts(i), Wu1Duni)
+         end do
+      case default
+         return
+      end select
+      success = .true.
+   end function get_sample_averaging_footprints
+
    function timespaceinitialfield(xu, yu, zu, nx, filename, filetype, method, operand, transformcoef, iprimpos, kcc) result(success) !
       use kdtree2Factory
       use m_samples
       use m_netw
-      use m_flowgeom, only: ln2lne, Ln, Lnx, Wu1Duni
+      use m_flowgeom, only: ln2lne, ln, lnx, Wu1Duni
+      use m_netw
       use m_partitioninfo
       use unstruc_netcdf
       use fm_external_forcings_data, only: qid
@@ -3261,6 +3379,8 @@ contains
       use m_read_samples_from_geotiff, only: read_samples_from_geotiff
       use m_bilinear_interpolation, only: raster_data
       use m_filez, only: oldfil, doclose, newfil
+      use m_ec_message, only: dump_ec_message_stack
+      use precision_basics, only: comparereal
 
       ! Arguments
 
@@ -3325,6 +3445,20 @@ contains
       allocate (zh(nx), stat=ierr)
       call aerr('zh(nx)', ierr, nx)
       zh = dmiss_default
+
+      interpolate_field: block
+      if (filetype == SAMPLES .and. method /= METHOD_CONSTANT) then
+         success = interpolate_fm_sample_file(filename, method, xu, yu, zh, iprimpos, transformcoef, kcc)
+         do k = 1, nx
+            if (comparereal(zh(k), dmiss) /= 0) then
+               call operate(zu(k), zh(k), operand)
+               zh(k) = zu(k)
+            else
+               zh(k) = dmiss_default
+            end if
+         end do
+         exit interpolate_field
+      end if
 
       if (filetype /= ncflow .and. filetype /= arcinfo .and. filetype /= geotiff) then
          call oldfil(minp0, filename)
@@ -3568,8 +3702,9 @@ contains
 
       end select
 
-      success = .true.
       call doclose(minp0)
+      end block interpolate_field
+      success = .true.
 
       if (jawriteDFMinterpretedvalues > 0) then
          n1 = index(trim(filename), FILESEP, .true.)
@@ -3653,7 +3788,7 @@ contains
          call restorepol()
 
       else if (filetype == arcinfo) then ! arcinfo bilinear todo
-      else if (filetype == triangulation) then ! triangulation    todo
+      else if (filetype == SAMPLES) then ! samples, not yet supported for integer targets
       end if
       success = .true.
    end function timespaceinitialfield_int
@@ -4044,7 +4179,7 @@ contains
          ec_filetype = provFile_spiderweb
       case (CURVI) ! 6
          ec_filetype = provFile_curvi
-      case (TRIANGULATION) ! 7
+      case (SAMPLES) ! 7
          ec_filetype = provFile_samples
       case (TRIANGULATIONMAGDIR) ! 8
          ec_filetype = provFile_triangulationmagdir

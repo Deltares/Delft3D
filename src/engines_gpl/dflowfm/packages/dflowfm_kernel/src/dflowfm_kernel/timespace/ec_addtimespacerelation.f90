@@ -58,7 +58,7 @@ contains
       use timespace
       use fm_external_forcings_utils, only: get_tracername, get_sedfracname, get_constituent_name
       use m_transportdata, only: NAMLEN
-      use timespace_read, only: maxnamelen, dmiss_default
+      use timespace_read, only: maxnamelen
       use precision, only: dp
       use unstruc_messages, only: callback_msg
       use m_waveconst
@@ -238,7 +238,7 @@ contains
          end select
 
          ! Interpolate once using the same mesh geometry and settings as for a static sample field.
-         sample_coefficients = dmiss_default
+         sample_coefficients = dmiss
          if (present(sample_transformcoef)) then
             if (size(sample_transformcoef) /= NTRANSFORMCOEF) then
                call set_ec_message('Invalid number of spatial interpolation coefficients for sample forcing.')
@@ -251,15 +251,14 @@ contains
             goto 1234
          end if
          sample_field => ecSupportFindField(ecInstancePtr, sample_field_id)
-         sample_field%arr1d = dmiss_default
-         success = timespaceinitialfield(x, y, sample_field%arr1d, ndx, filename, filetype, method, OPERAND_OVERRIDE, &
-                                         sample_coefficients, sample_target_location, mask)
+         success = interpolate_fm_sample_file(filename, method, x, y, sample_field%arr1d, sample_target_location, &
+                                              sample_coefficients, mask)
          if (.not. success) then
             goto 1234
          end if
          sample_mask = mask
          do i = 1, ndx
-            if (comparereal(sample_field%arr1d(i), dmiss_default) == 0) then
+            if (comparereal(sample_field%arr1d(i), dmiss) == 0) then
                sample_mask(i) = 0
             end if
          end do

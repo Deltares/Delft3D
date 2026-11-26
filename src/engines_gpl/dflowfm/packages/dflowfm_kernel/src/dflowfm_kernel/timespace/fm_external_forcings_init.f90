@@ -1143,7 +1143,7 @@ contains
       use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, fm_ext_force_name_to_ec_item, ec_addtimespacerelation
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
       use m_ec_parameters, only: ec_undef_int
-      use timespace_parameters, only: WEIGHTFACTORS, FIELD1D, DATAVALUE, NCGRID, TRIANGULATION
+      use timespace_parameters, only: WEIGHTFACTORS, FIELD1D, DATAVALUE, NCGRID, SAMPLES
       use properties, only: prop_get
       use m_alloc, only: realloc, reallocP
       use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input, &
@@ -1363,7 +1363,7 @@ contains
                mapped_item1 = ec_undef_int
             end if
          else
-            if (filetype == TRIANGULATION .and. target_location_type /= UNC_LOC_S3D) then
+            if (filetype == SAMPLES .and. target_location_type /= UNC_LOC_S3D) then
                block
                   real(dp), dimension(NTRANSFORMCOEF) :: sample_coefficients
 

@@ -64,6 +64,7 @@ module m_ec_provider
    public :: ecProviderCreateInitializeBCFileReader
    public :: ecProviderCreateUniformItems
    public :: ecProviderCreateQhtableItems
+   public :: ecInterpolateSampleFile
    public :: ecProviderCreateTimeInterpolatedItem
    public :: ecProviderInitializeTimeFrame
    public :: ecProviderSearchStdOrVarnames
@@ -1394,6 +1395,121 @@ contains
    end function ecProviderCreateCurviItems
 
    ! =======================================================================
+
+   !> Read an XYZ sample file and interpolate onto the supplied target points.
+   !! Averaging additionally requires the caller's mesh footprints.
+   function ecInterpolateSampleFile(filename, method, x, y, values, missing, jsferic, jasfer3d, &
+                                    npl, jins, xpl, ypl, zpl, coefficients, mask, polygon_x, polygon_y, vertex_counts) result(success)
+      use kdtree2Factory
+      use m_ec_basic_interpolation, only: TRIINTfast, averaging2, TerrorInfo
+      use m_ec_interpolationsettings, only: iav, rcel, percentileminmax, nummin
+      use m_ec_triangle, only: jagetwf
+      use messageHandling, only: mess, LEVEL_WARN
+
+      character(len=*), intent(in) :: filename !< ASCII XYZ sample file.
+      integer, intent(in) :: method !< EC spatial interpolation method.
+      real(dp), dimension(:), intent(in) :: x, y !< Target coordinates.
+      real(dp), dimension(:), intent(out) :: values !< Interpolated values, or missing where not covered.
+      real(dp), intent(in) :: missing !< Missing value sentinel.
+      integer, intent(in) :: jsferic, jasfer3d !< Spherical coordinate settings.
+      integer, intent(in) :: npl, jins !< Number of selection polygon vertices and inside/outside setting.
+      real(dp), dimension(:), intent(in) :: xpl, ypl, zpl !< Selection polygon coordinates.
+      real(dp), dimension(:), intent(in) :: coefficients !< Legacy interpolation settings.
+      integer, dimension(:), intent(in), optional :: mask !< Target points to interpolate (1) or skip (0).
+      real(dp), dimension(:, :), intent(in), optional :: polygon_x, polygon_y !< Averaging footprints.
+      integer, dimension(:), intent(in), optional :: vertex_counts !< Number of vertices per averaging footprint.
+      logical :: success
+
+      real(dp), dimension(:), allocatable :: xs, ys
+      real(dp), dimension(:, :), allocatable :: zs, interpolated
+      integer, dimension(:), allocatable :: sample_order
+      integer :: lun, stat, ns, kx, nt, jdla, use_kdtree, old_iav, old_nummin, old_jagetwf
+      real(dp) :: old_rcel, old_percentile
+      type(TerrorInfo) :: error_info
+
+      success = .false.
+      values = missing
+      open (newunit=lun, file=filename, status='old', action='read', iostat=stat)
+      if (stat /= 0) then
+         call set_ec_message("Could not open XYZ sample file '"//trim(filename)//"'.")
+         return
+      end if
+      success = ecSampleReadAll(lun, filename, xs, ys, zs, ns, kx)
+      close (lun)
+      if (.not. success) then
+         return
+      end if
+
+      nt = size(values)
+      if (ns == 0 .or. nt == 0) then
+         return
+      end if
+      allocate (interpolated(1, nt))
+      interpolated = missing
+      success = .false.
+      select case (method)
+      case (interpolate_triangle)
+         ! Use the Delaunay branch of triinterp2, without legacy raster detection.
+         old_jagetwf = jagetwf
+         jagetwf = 0
+         use_kdtree = 1
+         call TRIINTfast(xs, ys, zs, ns, 1, x, y, interpolated, nt, jdla, use_kdtree, jsferic, npl, jins, &
+                         missing, jasfer3d, xpl, ypl, zpl, coefficients, mask)
+         jagetwf = old_jagetwf
+      case (interpolate_averaging)
+         if (.not. (present(polygon_x) .and. present(polygon_y) .and. present(vertex_counts))) then
+            call set_ec_message('XYZ sample averaging requires target footprints.')
+            return
+         end if
+         call build_kdtree(treeglob, ns, xs, ys, stat, jsferic, missing)
+         if (stat /= 0) then
+            call delete_kdtree2(treeglob)
+            call set_ec_message("Could not build the averaging search tree for '"//trim(filename)//"'.")
+            return
+         end if
+
+         old_iav = iav
+         old_nummin = nummin
+         old_rcel = rcel
+         old_percentile = percentileminmax
+         if (comparereal(coefficients(4), missing) /= 0) then
+            iav = int(coefficients(4))
+         end if
+         if (comparereal(coefficients(5), missing) /= 0) then
+            rcel = coefficients(5)
+         end if
+         if (comparereal(coefficients(7), missing) /= 0) then
+            percentileminmax = coefficients(7)
+         end if
+         if (comparereal(coefficients(8), missing) /= 0) then
+            nummin = int(coefficients(8))
+         end if
+
+         allocate (sample_order(ns)) ! Not used in k-d tree mode.
+         call averaging2(1, ns, xs, ys, zs, sample_order, x, y, interpolated, nt, polygon_x, polygon_y, &
+                         size(polygon_x, 1), vertex_counts, 1, missing, jsferic, jasfer3d, jins, npl, xpl, ypl, zpl, error_info, mask)
+         call delete_kdtree2(treeglob)
+         iav = old_iav
+         nummin = old_nummin
+         rcel = old_rcel
+         percentileminmax = old_percentile
+         if (allocated(error_info%message)) then
+            if (error_info%success) then
+               call mess(LEVEL_WARN, error_info%message)
+            else
+               call set_ec_message(error_info%message)
+            end if
+         end if
+         if (.not. error_info%success) then
+            return
+         end if
+      case default
+         call set_ec_message('XYZ samples support triangulation and averaging.')
+         return
+      end select
+      values = interpolated(1, :)
+      success = .true.
+   end function ecInterpolateSampleFile
 
    !> Create source Items and their contained types, based on the 'sample' file format.
    function ecProviderCreateSampleItems(instancePtr, fileReaderPtr) result(success)
