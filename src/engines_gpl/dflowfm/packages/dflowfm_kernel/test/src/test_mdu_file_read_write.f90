@@ -43,6 +43,7 @@ contains
       character(len=1024) :: tm_md_obsfile
       character(len=1024) :: tm_md_crsfile
       character(len=256) :: output_file
+      integer :: ierr
 
       jampi = 0
 
@@ -74,6 +75,7 @@ contains
       end if
 
       call resetFullFlowModel()
+      call readMDUFile('test_output.mdu', ierr)
       if (.not. f90_assert_eq(ierr, DFM_NOERR, 'Error when re-reading MDU file.')) then
          call f90_expect_true(CHANGEDIRQQ('..'), 'Cannot restore working directory')
          return
