@@ -85,15 +85,15 @@ Epshu             = 0.0001
 SetHorizontalBobsFor1d2d= 1
 
 [physics]
-uniformFrictionCoefficient2D     = 0.023
-uniformFrictiontype     = 1
-uniformFrictionCoefficient1D   = 0.023
-uniformFrictionCoefficientLinear  = 0
+UnifFrictCoef     = 0.023
+UnifFrictType     = 1
+unifFrictCoef1D   = 0.023
+unifFrictCoefLin  = 0
 Umodlin           = 0
-uniformHorizontalEddyViscosity            = 1
-uniformHorizontalEddyDiffusivity = 1
-backgroundVerticalEddyViscosity            = 5E-05
-backgroundVerticalEddyDiffusivity            = 5E-05
+vicouv            = 1
+dicouv = 1
+vicoww            = 5E-05
+dicoww            = 5E-05
 Vicwminb          = 0
 Smagorinsky       = 0
 Elder             = 0
