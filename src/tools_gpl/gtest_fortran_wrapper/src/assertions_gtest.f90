@@ -1,7 +1,7 @@
 !> GoogleTest checks and status-returning assertions for explicit Fortran control flow.
 module assertions_gtest
    use, intrinsic :: iso_c_binding, only: gtest_wrapper_bool_t => c_int8_t, c_int32_t, c_float, c_double, c_bool, &
-                                         c_char, c_size_t, c_null_char
+                                                                             c_char, c_size_t, c_null_char
    implicit none(type, external)
    private
 
@@ -97,6 +97,13 @@ module assertions_gtest
       module procedure expect_near_f64_rank1
       module procedure expect_near_f64_rank2
    end interface f90_expect_near
+
+   !> Check a symmetric relative tolerance scaled by the mean magnitude of the operands.
+   public :: f90_expect_relative_near
+   interface f90_expect_relative_near
+      module procedure expect_relative_near_f64_rank0
+      module procedure expect_relative_near_f64_rank1
+   end interface f90_expect_relative_near
 
    !> GoogleTest EXPECT_TRUE, with an optional Fortran message.
    public :: f90_expect_true
@@ -474,7 +481,7 @@ contains
       character(len=:), allocatable :: text
       text = format_error_message(message)
       call gtest_wrapper_eq_int32(val1, val2, 0_gtest_wrapper_bool_t, &
-                      text, len(text, kind=c_size_t))
+                                  text, len(text, kind=c_size_t))
    end subroutine expect_eq_i32_rank0
 
    subroutine expect_eq_f32_rank0(val1, val2, message)
@@ -483,7 +490,7 @@ contains
       character(len=:), allocatable :: text
       text = format_error_message(message)
       call gtest_wrapper_eq_float(val1, val2, &
-                      text, len(text, kind=c_size_t))
+                                  text, len(text, kind=c_size_t))
    end subroutine expect_eq_f32_rank0
 
    subroutine expect_eq_f64_rank0(val1, val2, message)
@@ -492,7 +499,7 @@ contains
       character(len=:), allocatable :: text
       text = format_error_message(message)
       call gtest_wrapper_eq_double(val1, val2, &
-                      text, len(text, kind=c_size_t))
+                                   text, len(text, kind=c_size_t))
    end subroutine expect_eq_f64_rank0
 
    subroutine expect_eq_logical_rank0(val1, val2, message)
@@ -502,7 +509,7 @@ contains
       text = format_error_message(message)
       call gtest_wrapper_eq_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, val1), &
                                  merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, val2), &
-                       text, len(text, kind=c_size_t))
+                                 text, len(text, kind=c_size_t))
    end subroutine expect_eq_logical_rank0
 
    subroutine expect_eq_bool_rank0(val1, val2, message)
@@ -512,7 +519,7 @@ contains
       text = format_error_message(message)
       call gtest_wrapper_eq_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, val1), &
                                  merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, val2), &
-                       text, len(text, kind=c_size_t))
+                                 text, len(text, kind=c_size_t))
    end subroutine expect_eq_bool_rank0
 
    subroutine expect_ne_i32_rank0(val1, val2, message)
@@ -521,7 +528,7 @@ contains
       character(len=:), allocatable :: text
       text = format_error_message(message)
       call gtest_wrapper_ne_int32(val1, val2, &
-                      text, len(text, kind=c_size_t))
+                                  text, len(text, kind=c_size_t))
    end subroutine expect_ne_i32_rank0
 
    subroutine expect_ne_f32_rank0(val1, val2, message)
@@ -530,7 +537,7 @@ contains
       character(len=:), allocatable :: text
       text = format_error_message(message)
       call gtest_wrapper_ne_float(val1, val2, &
-                      text, len(text, kind=c_size_t))
+                                  text, len(text, kind=c_size_t))
    end subroutine expect_ne_f32_rank0
 
    subroutine expect_ne_f64_rank0(val1, val2, message)
@@ -539,7 +546,7 @@ contains
       character(len=:), allocatable :: text
       text = format_error_message(message)
       call gtest_wrapper_ne_double(val1, val2, &
-                      text, len(text, kind=c_size_t))
+                                   text, len(text, kind=c_size_t))
    end subroutine expect_ne_f64_rank0
 
    subroutine expect_ne_logical_rank0(val1, val2, message)
@@ -549,7 +556,7 @@ contains
       text = format_error_message(message)
       call gtest_wrapper_ne_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, val1), &
                                  merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, val2), &
-                       text, len(text, kind=c_size_t))
+                                 text, len(text, kind=c_size_t))
    end subroutine expect_ne_logical_rank0
 
    subroutine expect_ne_bool_rank0(val1, val2, message)
@@ -559,7 +566,7 @@ contains
       text = format_error_message(message)
       call gtest_wrapper_ne_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, val1), &
                                  merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, val2), &
-                       text, len(text, kind=c_size_t))
+                                 text, len(text, kind=c_size_t))
    end subroutine expect_ne_bool_rank0
 
    subroutine expect_lt_i32_rank0(val1, val2, message)
@@ -568,7 +575,7 @@ contains
       character(len=:), allocatable :: text
       text = format_error_message(message)
       call gtest_wrapper_lt_int32(val1, val2, &
-                      text, len(text, kind=c_size_t))
+                                  text, len(text, kind=c_size_t))
    end subroutine expect_lt_i32_rank0
 
    subroutine expect_lt_f32_rank0(val1, val2, message)
@@ -577,7 +584,7 @@ contains
       character(len=:), allocatable :: text
       text = format_error_message(message)
       call gtest_wrapper_lt_float(val1, val2, &
-                      text, len(text, kind=c_size_t))
+                                  text, len(text, kind=c_size_t))
    end subroutine expect_lt_f32_rank0
 
    subroutine expect_lt_f64_rank0(val1, val2, message)
@@ -586,7 +593,7 @@ contains
       character(len=:), allocatable :: text
       text = format_error_message(message)
       call gtest_wrapper_lt_double(val1, val2, &
-                      text, len(text, kind=c_size_t))
+                                   text, len(text, kind=c_size_t))
    end subroutine expect_lt_f64_rank0
 
    subroutine expect_le_i32_rank0(val1, val2, message)
@@ -595,7 +602,7 @@ contains
       character(len=:), allocatable :: text
       text = format_error_message(message)
       call gtest_wrapper_le_int32(val1, val2, &
-                      text, len(text, kind=c_size_t))
+                                  text, len(text, kind=c_size_t))
    end subroutine expect_le_i32_rank0
 
    subroutine expect_le_f32_rank0(val1, val2, message)
@@ -604,7 +611,7 @@ contains
       character(len=:), allocatable :: text
       text = format_error_message(message)
       call gtest_wrapper_le_float(val1, val2, &
-                      text, len(text, kind=c_size_t))
+                                  text, len(text, kind=c_size_t))
    end subroutine expect_le_f32_rank0
 
    subroutine expect_le_f64_rank0(val1, val2, message)
@@ -613,7 +620,7 @@ contains
       character(len=:), allocatable :: text
       text = format_error_message(message)
       call gtest_wrapper_le_double(val1, val2, &
-                      text, len(text, kind=c_size_t))
+                                   text, len(text, kind=c_size_t))
    end subroutine expect_le_f64_rank0
 
    subroutine expect_gt_i32_rank0(val1, val2, message)
@@ -622,7 +629,7 @@ contains
       character(len=:), allocatable :: text
       text = format_error_message(message)
       call gtest_wrapper_gt_int32(val1, val2, &
-                      text, len(text, kind=c_size_t))
+                                  text, len(text, kind=c_size_t))
    end subroutine expect_gt_i32_rank0
 
    subroutine expect_gt_f32_rank0(val1, val2, message)
@@ -631,7 +638,7 @@ contains
       character(len=:), allocatable :: text
       text = format_error_message(message)
       call gtest_wrapper_gt_float(val1, val2, &
-                      text, len(text, kind=c_size_t))
+                                  text, len(text, kind=c_size_t))
    end subroutine expect_gt_f32_rank0
 
    subroutine expect_gt_f64_rank0(val1, val2, message)
@@ -640,7 +647,7 @@ contains
       character(len=:), allocatable :: text
       text = format_error_message(message)
       call gtest_wrapper_gt_double(val1, val2, &
-                      text, len(text, kind=c_size_t))
+                                   text, len(text, kind=c_size_t))
    end subroutine expect_gt_f64_rank0
 
    subroutine expect_ge_i32_rank0(val1, val2, message)
@@ -649,7 +656,7 @@ contains
       character(len=:), allocatable :: text
       text = format_error_message(message)
       call gtest_wrapper_ge_int32(val1, val2, &
-                      text, len(text, kind=c_size_t))
+                                  text, len(text, kind=c_size_t))
    end subroutine expect_ge_i32_rank0
 
    subroutine expect_ge_f32_rank0(val1, val2, message)
@@ -658,7 +665,7 @@ contains
       character(len=:), allocatable :: text
       text = format_error_message(message)
       call gtest_wrapper_ge_float(val1, val2, &
-                      text, len(text, kind=c_size_t))
+                                  text, len(text, kind=c_size_t))
    end subroutine expect_ge_f32_rank0
 
    subroutine expect_ge_f64_rank0(val1, val2, message)
@@ -667,7 +674,7 @@ contains
       character(len=:), allocatable :: text
       text = format_error_message(message)
       call gtest_wrapper_ge_double(val1, val2, &
-                      text, len(text, kind=c_size_t))
+                                   text, len(text, kind=c_size_t))
    end subroutine expect_ge_f64_rank0
 
    subroutine expect_float_eq_f32_rank0(val1, val2, message)
@@ -676,7 +683,7 @@ contains
       character(len=:), allocatable :: text
       text = format_error_message(message)
       call gtest_wrapper_float_eq_float(val1, val2, &
-                            text, len(text, kind=c_size_t))
+                                        text, len(text, kind=c_size_t))
    end subroutine expect_float_eq_f32_rank0
 
    subroutine expect_float_eq_f32_rank1(val1, val2, message)
@@ -692,7 +699,7 @@ contains
       do i = 1, size(val1, 1)
          text = format_error_message(message, i)
          call gtest_wrapper_float_eq_float(val1(i), val2(i), &
-                               text, len(text, kind=c_size_t))
+                                           text, len(text, kind=c_size_t))
       end do
    end subroutine expect_float_eq_f32_rank1
 
@@ -710,7 +717,7 @@ contains
          do j = 1, size(val1, 2)
             text = format_error_message(message, i, j)
             call gtest_wrapper_float_eq_float(val1(i, j), val2(i, j), &
-                                  text, len(text, kind=c_size_t))
+                                              text, len(text, kind=c_size_t))
          end do
       end do
    end subroutine expect_float_eq_f32_rank2
@@ -721,7 +728,7 @@ contains
       character(len=:), allocatable :: text
       text = format_error_message(message)
       call gtest_wrapper_double_eq_double(val1, val2, &
-                             text, len(text, kind=c_size_t))
+                                          text, len(text, kind=c_size_t))
    end subroutine expect_double_eq_f64_rank0
 
    subroutine expect_double_eq_f64_rank1(val1, val2, message)
@@ -737,7 +744,7 @@ contains
       do i = 1, size(val1, 1)
          text = format_error_message(message, i)
          call gtest_wrapper_double_eq_double(val1(i), val2(i), &
-                                text, len(text, kind=c_size_t))
+                                             text, len(text, kind=c_size_t))
       end do
    end subroutine expect_double_eq_f64_rank1
 
@@ -755,7 +762,7 @@ contains
          do j = 1, size(val1, 2)
             text = format_error_message(message, i, j)
             call gtest_wrapper_double_eq_double(val1(i, j), val2(i, j), &
-                                   text, len(text, kind=c_size_t))
+                                                text, len(text, kind=c_size_t))
          end do
       end do
    end subroutine expect_double_eq_f64_rank2
@@ -767,7 +774,7 @@ contains
       character(len=:), allocatable :: text
       text = format_error_message(message)
       call gtest_wrapper_near_float(val1, val2, abs_error, &
-                        text, len(text, kind=c_size_t))
+                                    text, len(text, kind=c_size_t))
    end subroutine expect_near_f32_rank0
 
    subroutine expect_near_f32_rank1(val1, val2, abs_error, message)
@@ -784,7 +791,7 @@ contains
       do i = 1, size(val1, 1)
          text = format_error_message(message, i)
          call gtest_wrapper_near_float(val1(i), val2(i), abs_error, &
-                           text, len(text, kind=c_size_t))
+                                       text, len(text, kind=c_size_t))
       end do
    end subroutine expect_near_f32_rank1
 
@@ -803,7 +810,7 @@ contains
          do j = 1, size(val1, 2)
             text = format_error_message(message, i, j)
             call gtest_wrapper_near_float(val1(i, j), val2(i, j), abs_error, &
-                              text, len(text, kind=c_size_t))
+                                          text, len(text, kind=c_size_t))
          end do
       end do
    end subroutine expect_near_f32_rank2
@@ -815,7 +822,7 @@ contains
       character(len=:), allocatable :: text
       text = format_error_message(message)
       call gtest_wrapper_near_double(val1, val2, abs_error, &
-                        text, len(text, kind=c_size_t))
+                                     text, len(text, kind=c_size_t))
    end subroutine expect_near_f64_rank0
 
    subroutine expect_near_f64_rank1(val1, val2, abs_error, message)
@@ -832,7 +839,7 @@ contains
       do i = 1, size(val1, 1)
          text = format_error_message(message, i)
          call gtest_wrapper_near_double(val1(i), val2(i), abs_error, &
-                           text, len(text, kind=c_size_t))
+                                        text, len(text, kind=c_size_t))
       end do
    end subroutine expect_near_f64_rank1
 
@@ -851,10 +858,35 @@ contains
          do j = 1, size(val1, 2)
             text = format_error_message(message, i, j)
             call gtest_wrapper_near_double(val1(i, j), val2(i, j), abs_error, &
-                              text, len(text, kind=c_size_t))
+                                           text, len(text, kind=c_size_t))
          end do
       end do
    end subroutine expect_near_f64_rank2
+
+   subroutine expect_relative_near_f64_rank0(actual, expected, relative_tolerance, message)
+      real(c_double), intent(in) :: actual, expected, relative_tolerance
+      character(len=*), optional, intent(in) :: message
+
+      call expect_near_f64_rank0(actual, expected, 0.5_c_double * relative_tolerance * (abs(actual) + abs(expected)), message)
+   end subroutine expect_relative_near_f64_rank0
+
+   subroutine expect_relative_near_f64_rank1(actual, expected, relative_tolerance, message)
+      real(c_double), dimension(:), intent(in) :: actual, expected
+      real(c_double), intent(in) :: relative_tolerance
+      character(len=*), optional, intent(in) :: message
+      character(len=:), allocatable :: text
+      integer :: element_index
+
+      if (size(actual) /= size(expected)) then
+         text = format_error_message(message)//' : arrays of different shape'
+         call gtest_wrapper_failure(text, len(text, kind=c_size_t))
+         return
+      end if
+      do element_index = 1, size(actual)
+         call expect_relative_near_f64_rank0(actual(element_index), expected(element_index), relative_tolerance, &
+                                             format_error_message(message, element_index))
+      end do
+   end subroutine expect_relative_near_f64_rank1
 
    subroutine expect_true_i32_rank0(condition, message)
       integer(c_int32_t), intent(in) :: condition
@@ -862,7 +894,7 @@ contains
       character(len=:), allocatable :: text
       text = format_error_message(message)
       call gtest_wrapper_true_int32(condition, 0_gtest_wrapper_bool_t, &
-                        text, len(text, kind=c_size_t))
+                                    text, len(text, kind=c_size_t))
    end subroutine expect_true_i32_rank0
 
    subroutine expect_true_i32_rank1(condition, message)
@@ -873,7 +905,7 @@ contains
       do i = 1, size(condition, 1)
          text = format_error_message(message, i)
          call gtest_wrapper_true_int32(condition(i), 0_gtest_wrapper_bool_t, &
-                           text, len(text, kind=c_size_t))
+                                       text, len(text, kind=c_size_t))
       end do
    end subroutine expect_true_i32_rank1
 
@@ -886,7 +918,7 @@ contains
          do j = 1, size(condition, 2)
             text = format_error_message(message, i, j)
             call gtest_wrapper_true_int32(condition(i, j), 0_gtest_wrapper_bool_t, &
-                              text, len(text, kind=c_size_t))
+                                          text, len(text, kind=c_size_t))
          end do
       end do
    end subroutine expect_true_i32_rank2
@@ -897,7 +929,7 @@ contains
       character(len=:), allocatable :: text
       text = format_error_message(message)
       call gtest_wrapper_true_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, condition), 0_gtest_wrapper_bool_t, &
-                         text, len(text, kind=c_size_t))
+                                   text, len(text, kind=c_size_t))
    end subroutine expect_true_logical_rank0
 
    subroutine expect_true_logical_rank1(condition, message)
@@ -908,7 +940,7 @@ contains
       do i = 1, size(condition, 1)
          text = format_error_message(message, i)
          call gtest_wrapper_true_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, condition(i)), 0_gtest_wrapper_bool_t, &
-                            text, len(text, kind=c_size_t))
+                                      text, len(text, kind=c_size_t))
       end do
    end subroutine expect_true_logical_rank1
 
@@ -922,7 +954,7 @@ contains
             text = format_error_message(message, i, j)
             call gtest_wrapper_true_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, condition(i, j)), &
                                          0_gtest_wrapper_bool_t, &
-                               text, len(text, kind=c_size_t))
+                                         text, len(text, kind=c_size_t))
          end do
       end do
    end subroutine expect_true_logical_rank2
@@ -933,7 +965,7 @@ contains
       character(len=:), allocatable :: text
       text = format_error_message(message)
       call gtest_wrapper_true_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, condition), 0_gtest_wrapper_bool_t, &
-                         text, len(text, kind=c_size_t))
+                                   text, len(text, kind=c_size_t))
    end subroutine expect_true_bool_rank0
 
    subroutine expect_true_bool_rank1(condition, message)
@@ -944,7 +976,7 @@ contains
       do i = 1, size(condition, 1)
          text = format_error_message(message, i)
          call gtest_wrapper_true_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, condition(i)), 0_gtest_wrapper_bool_t, &
-                            text, len(text, kind=c_size_t))
+                                      text, len(text, kind=c_size_t))
       end do
    end subroutine expect_true_bool_rank1
 
@@ -958,7 +990,7 @@ contains
             text = format_error_message(message, i, j)
             call gtest_wrapper_true_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, condition(i, j)), &
                                          0_gtest_wrapper_bool_t, &
-                               text, len(text, kind=c_size_t))
+                                         text, len(text, kind=c_size_t))
          end do
       end do
    end subroutine expect_true_bool_rank2
@@ -969,7 +1001,7 @@ contains
       character(len=:), allocatable :: text
       text = format_error_message(message)
       call gtest_wrapper_false_int32(condition, &
-                         text, len(text, kind=c_size_t))
+                                     text, len(text, kind=c_size_t))
    end subroutine expect_false_i32_rank0
 
    subroutine expect_false_i32_rank1(condition, message)
@@ -980,7 +1012,7 @@ contains
       do i = 1, size(condition, 1)
          text = format_error_message(message, i)
          call gtest_wrapper_false_int32(condition(i), &
-                            text, len(text, kind=c_size_t))
+                                        text, len(text, kind=c_size_t))
       end do
    end subroutine expect_false_i32_rank1
 
@@ -993,7 +1025,7 @@ contains
          do j = 1, size(condition, 2)
             text = format_error_message(message, i, j)
             call gtest_wrapper_false_int32(condition(i, j), &
-                               text, len(text, kind=c_size_t))
+                                           text, len(text, kind=c_size_t))
          end do
       end do
    end subroutine expect_false_i32_rank2
@@ -1004,7 +1036,7 @@ contains
       character(len=:), allocatable :: text
       text = format_error_message(message)
       call gtest_wrapper_false_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, condition), &
-                          text, len(text, kind=c_size_t))
+                                    text, len(text, kind=c_size_t))
    end subroutine expect_false_logical_rank0
 
    subroutine expect_false_logical_rank1(condition, message)
@@ -1015,7 +1047,7 @@ contains
       do i = 1, size(condition, 1)
          text = format_error_message(message, i)
          call gtest_wrapper_false_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, condition(i)), &
-                             text, len(text, kind=c_size_t))
+                                       text, len(text, kind=c_size_t))
       end do
    end subroutine expect_false_logical_rank1
 
@@ -1028,7 +1060,7 @@ contains
          do j = 1, size(condition, 2)
             text = format_error_message(message, i, j)
             call gtest_wrapper_false_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, condition(i, j)), &
-                                text, len(text, kind=c_size_t))
+                                          text, len(text, kind=c_size_t))
          end do
       end do
    end subroutine expect_false_logical_rank2
@@ -1039,7 +1071,7 @@ contains
       character(len=:), allocatable :: text
       text = format_error_message(message)
       call gtest_wrapper_false_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, condition), &
-                          text, len(text, kind=c_size_t))
+                                    text, len(text, kind=c_size_t))
    end subroutine expect_false_bool_rank0
 
    subroutine expect_false_bool_rank1(condition, message)
@@ -1050,7 +1082,7 @@ contains
       do i = 1, size(condition, 1)
          text = format_error_message(message, i)
          call gtest_wrapper_false_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, condition(i)), &
-                             text, len(text, kind=c_size_t))
+                                       text, len(text, kind=c_size_t))
       end do
    end subroutine expect_false_bool_rank1
 
@@ -1063,7 +1095,7 @@ contains
          do j = 1, size(condition, 2)
             text = format_error_message(message, i, j)
             call gtest_wrapper_false_bool(merge(1_gtest_wrapper_bool_t, 0_gtest_wrapper_bool_t, condition(i, j)), &
-                                text, len(text, kind=c_size_t))
+                                          text, len(text, kind=c_size_t))
          end do
       end do
    end subroutine expect_false_bool_rank2
@@ -1077,7 +1109,7 @@ contains
       left = truncate_at_c_null(str1)
       right = truncate_at_c_null(str2)
       call gtest_wrapper_streq_string(left, len(left, kind=c_size_t), right, len(right, kind=c_size_t), &
-                            text, len(text, kind=c_size_t))
+                                      text, len(text, kind=c_size_t))
    end subroutine expect_streq_string_rank0
 
    subroutine expect_strne_string_rank0(str1, str2, message)
@@ -1089,7 +1121,7 @@ contains
       left = truncate_at_c_null(str1)
       right = truncate_at_c_null(str2)
       call gtest_wrapper_strne_string(left, len(left, kind=c_size_t), right, len(right, kind=c_size_t), &
-                            text, len(text, kind=c_size_t))
+                                      text, len(text, kind=c_size_t))
    end subroutine expect_strne_string_rank0
 
    subroutine expect_strcaseeq_string_rank0(str1, str2, message)
@@ -1101,7 +1133,7 @@ contains
       left = truncate_at_c_null(str1)
       right = truncate_at_c_null(str2)
       call gtest_wrapper_strcaseeq_string(left, len(left, kind=c_size_t), right, len(right, kind=c_size_t), &
-                                text, len(text, kind=c_size_t))
+                                          text, len(text, kind=c_size_t))
    end subroutine expect_strcaseeq_string_rank0
 
    subroutine expect_strcasene_string_rank0(str1, str2, message)
@@ -1113,7 +1145,7 @@ contains
       left = truncate_at_c_null(str1)
       right = truncate_at_c_null(str2)
       call gtest_wrapper_strcasene_string(left, len(left, kind=c_size_t), right, len(right, kind=c_size_t), &
-                                text, len(text, kind=c_size_t))
+                                          text, len(text, kind=c_size_t))
    end subroutine expect_strcasene_string_rank0
 
 end module assertions_gtest

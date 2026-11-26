@@ -88,7 +88,7 @@ contains
       call INCREASEGRID(2, 2)
       write (*, *) 'increased grid'
 
-      call increasespl(maxspl, maxsplen)
+      call resize_spline_capacity(spline_capacity, points_per_spline_capacity)
       write (*, *) 'increased spl'
 
       call increaseCrossSections(maxcrs)
