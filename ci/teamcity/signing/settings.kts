@@ -5,21 +5,15 @@ import Sign
 version = "2026.2"
 
 project {
-
     description = "contact: BlackOps (black-ops@deltares.nl)"
 
     cleanup {
         baseRule {
             artifacts(builds = 5, artifactPatterns = "+:**/*")
-            // Count days from the last successful build; protect the artifacts of the latest five successes.
+            // Expire old build records but retain their chart statistics, such that storage is freed.
             history(days = 90, builds = 5)
+            // preventDependencyCleanup does not affect teamcity logs apparently, only artifacts.
             preventDependencyCleanup = false
-        }
-        // Preserve history and statistics after the logs and artifacts expire.
-        keepRule {
-            id = "KeepHistoryAndStatistics"
-            keepAtLeast = allBuilds()
-            dataToKeep = historyAndStatistics()
         }
         keepRule {
             id = "KeepMainAndReleaseLogs"
@@ -34,5 +28,4 @@ project {
     }
 
     buildType(Sign)
-
 }
