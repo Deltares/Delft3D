@@ -229,11 +229,6 @@ contains
          k = max(kobs(i), 1)
          link_id_nearest = lobs(i)
          if (kobs(i) > 0 .and. (intobs(i) == 0 .or. neighbour_nodes_obs(1, i) == 0)) then
-!            Message already displayed in m_obs_on_flowgeom 
-!            if (intobs(i) /= 0 .and. neighbour_nodes_obs(1, i) == 0 .and. time0 == tstart_user) then   
-!               write (msgbuf, '(a, a, a, f0.10, a, f0.10, a)') "Unable to interpolate ", trim(namobs(i)), " (", xobs(i), ", ", yobs(i), ").  It is probably located near the grid boundary and therefore snapped."
-!               call mess(LEVEL_WARN, msgbuf)
-!           end if
             ! Treat snapped stations as interpolated ones!
             neighbour_nodes_obs(1, i) = k
             neighbour_nodes_obs(2, i) = k

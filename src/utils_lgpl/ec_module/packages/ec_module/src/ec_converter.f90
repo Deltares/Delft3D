@@ -1838,8 +1838,8 @@ contains
             wL = connection%converterPtr%indexWeight%weightFactors(1, i)
             wR = connection%converterPtr%indexWeight%weightFactors(2, i)
 
-            ! TK_Temp: Deal with one sided interpolation, set kL or kR to 0 if arr1D does not contain valid values
-            ! TK_Temp: Left side
+            ! Deal with one sided interpolation, set kL or kR to 0 if arr1D does not contain valid values
+            ! Left side
             if (kL > 0) then
                kbeginL = vectormax * maxlay_src * (kL - 1) + 1 ! refers to source right column
                kendL = kbeginL + vectormax * maxlay_src - 1
@@ -1847,7 +1847,7 @@ contains
                   kL = 0
                end if
             end if
-            ! TK_Temp: Right side
+            ! Right side
             if (kR > 0) then
                kbeginR = vectormax * maxlay_src * (kR - 1) + 1 ! refers to source right column
                kendR = kbeginR + vectormax * maxlay_src - 1
@@ -2043,10 +2043,6 @@ contains
                            call set_ec_message("ERROR: ec_converter::ecConverterPolytim: Unsupported vertical interpolation type requested.")
                            return
                         end select
-                        !
-!                        if (vectormax == 1 .and. kbeginr == 14 .and. wr >= 0.95 .and. k == 5) then
-!                            write (*,*) val(1:vectormax), connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1Dptr(26)
-!                        end if       
                         !
                         call check_undefined_values_for_operand( &
                            connection%converterPtr%operandType, &

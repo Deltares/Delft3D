@@ -298,16 +298,12 @@ contains
             
       call triinterp2(xobs, yobs,dumout, numobs + nummovobs, jdla   ,xz(1:ndx2d), yz(1:ndx2d), dummyZ, ndx2d, dmiss, jsferic, 1   , &
                                 jasfer3D, NPL, 0, 0, XPL, YPL, ZPL, transformcoef)
-      
-      ! TK, triangulation over all points, including boundary points, hopefully resolves partitioning problem, discuss with Arthur !!
-      ! call triinterp2(xobs, yobs,dumout, numobs + nummovobs, jdla   ,xz(1:ndx), yz(1:ndx), dummyZ, ndx2d, dmiss, jsferic, 1   , &
-      !                           jasfer3D, NPL, 0, 0, XPL, YPL, ZPL, transformcoef)
-      !
-       do i = n_start, n_end
+   
+      do i = n_start, n_end
          neighbour_nodes_obs  (:, i) = indxx(:, i)
          neighbour_weights_obs(:, i) = wfxx (:, i)
          
-         ! TK avoid interpolatirom from other partion!
+         ! avoid interpolatirom from other partion!
          if (kobs(i) <= 0) neighbour_nodes_obs(:,i) = 0
          
          ! No interpolation possible

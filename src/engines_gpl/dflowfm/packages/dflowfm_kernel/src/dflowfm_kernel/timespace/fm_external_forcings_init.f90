@@ -619,7 +619,7 @@ contains
                else
                   is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=filetype, method=method, &
                                                                   operand=operand, forcing_file=forcing_file)
-                  ! TK_temp: Determine sign needed for discharge boundaries from history file
+                  ! Determine sign needed for discharge boundaries from history file
                   if (quantity == 'dischargebnd') then
                      facdis = 1
                      if (index(trim(forcing_file)//'|', '_his.nc|') > 0 ) then

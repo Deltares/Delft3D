@@ -2035,7 +2035,7 @@ contains
             has_label = .true.
          end if
 
-         ! TK_Temp: if it is a discharge from the history file, remove the pli point number
+         ! if it is a discharge from the history file, remove the pli point number
          if (strcmpi(quantityname,'CROSS_SECTION_DISCHARGE') ) then
               plipointlbl = plipointlbl (1:len(plipointlbl) - 5)
          end if                         
