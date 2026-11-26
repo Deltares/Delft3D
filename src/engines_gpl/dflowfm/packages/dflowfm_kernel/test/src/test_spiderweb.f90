@@ -4,7 +4,7 @@ module test_spiderweb
    use m_file_helpers, only: create_file
    use m_flowtimes, only: refdate_mjd, tunit, tzone
    use m_meteo, only: ecInstancePtr, ec_gettimespacevalue
-   use m_teardown, only: t_teardown
+   use m_teardown_helpers, only: t_teardown
    use precision, only: dp
    implicit none(type, external)
    private

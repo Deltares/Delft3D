@@ -1,4 +1,4 @@
-module m_teardown
+module m_teardown_helpers
    implicit none(type, external)
    private
 
@@ -24,4 +24,4 @@ contains
       end if
    end subroutine run_teardown
 
-end module m_teardown
+end module m_teardown_helpers
