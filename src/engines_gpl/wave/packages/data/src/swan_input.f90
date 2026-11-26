@@ -2662,6 +2662,8 @@ contains
       type(c_ptr) :: context
       integer(c_int) :: status
       integer(c_int) :: error_length
+      integer :: ibound
+      integer :: isect
       character(256) :: tm_text
       character(kind=c_char), dimension(512) :: error_text
       real(hp) :: run_end
