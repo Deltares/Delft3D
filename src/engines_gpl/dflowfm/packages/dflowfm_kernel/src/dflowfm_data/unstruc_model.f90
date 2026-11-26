@@ -1182,6 +1182,10 @@ contains
       if (kmx > 0) then
          call notify_default_change('numerics', 'barocPOnBnd', '2026.01', 1, jaBarocponbnd, success)
       end if
+      if (jabarocponbnd == 1 .and. jadiagnostictransport == 1) then
+         call mess(LEVEL_WARN, 'barocPOnBnd = 1 and diagnosticTransport = 1 could lead to incorrect baroclinic gradients at the open boundaries. '// &
+                   'Either set [numerics] barocPOnBnd to 0 or prescribe boundary conditions for salinity and temperature at the open boundaries.')
+      end if
       call prop_get(md_ptr, 'numerics', 'maxitpresdens', max_iterations_pressure_density)
       call prop_get(md_ptr, 'numerics', 'Rhointerfaces', rhointerfaces)
 

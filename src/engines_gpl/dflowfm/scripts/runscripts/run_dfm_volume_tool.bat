@@ -39,8 +39,8 @@ set sharedir=%D3D_HOME%\share
 
     rem Run
 set PATH=%sharedir%
-echo executing: "%exedir%\dfm_volume_tool.exe"  %1 %2 %3 %4 %5 %6 %7 %8 %9
-"%exedir%\dfm_volume_tool.exe" %1 %2 %3 %4 %5 %6 %7 %8 %9
+echo executing: "%exedir%\dfm_volume_tool.exe" %*
+"%exedir%\dfm_volume_tool.exe" %*
 
 goto end
 
