@@ -2455,9 +2455,7 @@ contains
 
    end function ecConverterArcinfo
 
-   !> Perform the configured conversion, if supported, for a samples FileReader.
-   !! Supports linear triangle interpolation in space, no time, no weights.
-   !! meteo1 : timespaceinitialfield
+   !> Apply the pre-interpolated sample field to each target at the requested time.
    function ecConverterSamples(connection, timesteps) result(success)
       ! Arguments
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
@@ -2465,49 +2463,31 @@ contains
       logical :: success !< function status
 
       ! Local variables
-      real(dp) :: x01, y01 !< uniform grid parameters
-      real(dp) :: rr !< target u, v or p at timesteps=t
-      type(tEcField), pointer :: sourceT0Field !< helper pointer
-      type(tEcField), pointer :: sourceT1Field !< helper pointer
-      integer :: nSamples
+      type(tEcField), pointer :: target_field
+      integer :: i, num_points, operand
 
       success = .false.
-      sourceT0Field => null()
-      sourceT1Field => null()
-
-      ! ===== interpolation =====
-      select case (connection%converterPtr%interpolationType)
-
-      case (interpolate_triangle)
-
-         x01 = connection%sourceItemsPtr(1)%ptr%elementSetPtr%x(1)
-         y01 = connection%sourceItemsPtr(1)%ptr%elementSetPtr%y(1)
-
-         nSamples = connection%sourceItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-         sourceT1Field => connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr
-
-         call set_ec_message('ERROR: ec_converter::ecConverterSamples: triangle interpolation is work in progress.')
+      if (.not. allocated(connection%converterPtr%sample_values)) then
+         call set_ec_message('ERROR: ec_converter::ecConverterSamples: Sample field has not been interpolated onto the targets.')
          return
+      end if
 
-         rr = 0.0_dp ! TODO: AvD: WIP
-         !select case(connection%converterPtr%operandType)
-         !   case(EC_OPERAND_REPLACE)
-         !      connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) = rr
-         !      connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
-         !   case(EC_OPERAND_ADD)
-         !      connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) = connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) + rr
-         !      connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
-         !   case default
-         !      call set_ec_message("ERROR: ec_converter::ecConverterSamples: Unsupported operand type requested.")
-         !      return
-         !end select
-
-      case default
-
-         call set_ec_message("ERROR: ec_converter::ecConverterSamples: Unsupported interpolation type requested.")
-         return
-
-      end select
+      num_points = size(connection%converterPtr%sample_values)
+      operand = connection%converterPtr%operandType
+      do i = 1, connection%nTargetItems
+         target_field => connection%targetItemsPtr(i)%ptr%targetFieldPtr
+         call check_undefined_values_for_operand(operand, target_field%arr1dPtr(1:num_points), success, connection%targetMask)
+         if (.not. success) then
+            return
+         end if
+         if (allocated(connection%targetMask)) then
+            call apply_operand_masked_array(operand, target_field%arr1dPtr(1:num_points), &
+                                            connection%converterPtr%sample_values, connection%targetMask)
+         else
+            call apply_operand(operand, target_field%arr1dPtr(1:num_points), connection%converterPtr%sample_values)
+         end if
+         target_field%timesteps = timesteps
+      end do
 
       success = .true.
 

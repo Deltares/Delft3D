@@ -39,20 +39,25 @@ contains
                                                    dtnodal, quiet, varname, varname2, data_value, targetMaskSelect, &
                                                    tgt_data1, tgt_data2, tgt_data3, tgt_data4, &
                                                    tgt_item1, tgt_item2, tgt_item3, tgt_item4, &
-                                                   multuni1, multuni2, multuni3, multuni4)
+                                                   multuni1, multuni2, multuni3, multuni4, sample_location, sample_transformcoef)
       use m_fm_wq_processes_sub, only: get_waqinputname
       use m_ec_module, only: ecFindFileReader, ec_filetype_to_conv_type ! TODO: Refactor this private data access (UNST-703).
+      use m_ec_support, only: ecSupportFindConverter
+      use m_ec_typedefs, only: tEcConverter
       use m_ec_filereader_read, only: ecParseARCinfoMask
       use m_flowparameters, only: jawave
       use m_sferic, only: jsferic
       use m_missing, only: dmiss
+      use fm_external_forcings_data, only: NTRANSFORMCOEF
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN
+      use precision_basics, only: comparereal
       use m_flowtimes, only: refdate_mjd
       use string_module, only: str_upper, str_tolower, strcmpi
       use timespace_parameters
       use timespace
       use fm_external_forcings_utils, only: get_tracername, get_sedfracname, get_constituent_name
       use m_transportdata, only: NAMLEN
-      use timespace_read, only: maxnamelen
+      use timespace_read, only: maxnamelen, dmiss_default
       use precision, only: dp
       use unstruc_messages, only: callback_msg
       use m_waveconst
@@ -94,6 +99,8 @@ contains
       integer, optional, intent(inout), target :: multuni2 !< multiple uni item ID 2
       integer, optional, intent(inout), target :: multuni3 !< item ID 3
       integer, optional, intent(inout), target :: multuni4 !< item ID 4
+      integer, optional, intent(in) :: sample_location !< Mesh location type for sample averaging.
+      real(kind=dp), dimension(:), optional, intent(in) :: sample_transformcoef !< Spatial interpolation settings for samples.
       !
       integer :: ec_filetype !< EC-module's enumeration.
       integer :: ec_convtype !< EC-module's convType_ enumeration.
@@ -127,6 +134,12 @@ contains
       real(kind=dp), dimension(:), pointer :: dataPtr3 => null() !< Pointer to FM's optional third 1D data array (e.g. in case of spiderweb)
       real(kind=dp), dimension(:), pointer :: dataPtr4 => null() !< Pointer to FM's optional fourth 1D data array (e.g. in case of hacs)
       type(tEcFileReader), pointer :: fileReaderPtr => null() !<
+      type(tEcConverter), pointer :: sample_converter
+      real(dp), dimension(:), allocatable :: sample_values
+      real(dp), dimension(NTRANSFORMCOEF) :: sample_coefficients
+      integer, dimension(:), allocatable :: sample_mask
+      integer :: sample_target_location, i
+      integer, dimension(4) :: sample_target_items
 
       logical :: success
       logical :: quiet_
@@ -168,6 +181,9 @@ contains
          return
       end if
       call method_fm_to_ec(method, ec_method)
+      if (ec_filetype == provFile_samples .and. method == METHOD_AVERAGING) then
+         ec_method = interpolate_averaging
+      end if
       if (ec_method == interpolate_unknown) then
          write (msgbuf, '(a,i0,a)') 'm_meteo::ec_addtimespacerelation: Unsupported method ''', method, &
             ''' for quantity '''//trim(name)//''' and file '''//trim(filename)//'''.'
@@ -196,10 +212,54 @@ contains
       call clear_ec_message()
 
       ! ============================================================
-      ! If BC-Type file, create filereader and source items here
+      ! Prepare the sample field or create the file reader and source items.
       ! ============================================================
       location = filename
-      if (ec_filetype == provFile_bc) then
+      if (ec_filetype == provFile_samples) then
+         if (vectormax /= 1 .or. present(z) .or. present(targetIndex)) then
+            call set_ec_message('Sample forcing requires a single scalar value per horizontal target point.')
+            goto 1234
+         end if
+         sample_target_location = UNC_LOC_S
+         if (present(sample_location)) then
+            sample_target_location = sample_location
+         end if
+         select case (ec_method)
+         case (interpolate_triangle)
+         case (interpolate_averaging)
+            if (.not. present(sample_location) .or. &
+                .not. any(sample_target_location == [UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN])) then
+               call set_ec_message('Sample averaging requires cell, link, or node geometry.')
+               goto 1234
+            end if
+         case default
+            call set_ec_message('Sample forcing supports only triangulation and averaging.')
+            goto 1234
+         end select
+
+         ! Interpolate once using the same mesh geometry and settings as for a static sample field.
+         sample_coefficients = dmiss_default
+         if (present(sample_transformcoef)) then
+            if (size(sample_transformcoef) /= NTRANSFORMCOEF) then
+               call set_ec_message('Invalid number of spatial interpolation coefficients for sample forcing.')
+               goto 1234
+            end if
+            sample_coefficients = sample_transformcoef
+         end if
+         allocate (sample_values(ndx))
+         sample_values = dmiss_default
+         success = timespaceinitialfield(x, y, sample_values, ndx, filename, filetype, method, OPERAND_OVERRIDE, &
+                                         sample_coefficients, sample_target_location, mask)
+         if (.not. success) then
+            goto 1234
+         end if
+         sample_mask = mask
+         do i = 1, ndx
+            if (comparereal(sample_values(i), dmiss_default) == 0) then
+               sample_mask(i) = 0
+            end if
+         end do
+      else if (ec_filetype == provFile_bc) then
          ! NOTE: In .bc files, the quantity name must include a tracer/sedfrac/waq function/constituent name, so use original name:
          if (.not. ecCreateInitializeBCFileReader(ecInstancePtr, forcingfile, location, name, &
                                                   refdate_mjd, tzone, ec_second, fileReaderId)) then
@@ -664,12 +724,53 @@ contains
       ! ================================================================
       connectionId = ecCreateConnection(ecInstancePtr)
 
-      if (.not. ecSetConnectionTargetMask(ecInstancePtr, connectionId, mask)) then
-         goto 1234
+      if (ec_filetype == provFile_samples) then
+         if (.not. ecSetConnectionTargetMask(ecInstancePtr, connectionId, sample_mask)) then
+            goto 1234
+         end if
+      else
+         if (.not. ecSetConnectionTargetMask(ecInstancePtr, connectionId, mask)) then
+            goto 1234
+         end if
       end if
 
       if (.not. ecSetConnectionConverter(ecInstancePtr, connectionId, converterId)) then
          goto 1234
+      end if
+
+      if (ec_filetype == provFile_samples) then
+         ! With the sample field cached in the converter, no file reader or source update is needed.
+         sample_converter => ecSupportFindConverter(ecInstancePtr, converterId)
+         call move_alloc(sample_values, sample_converter%sample_values)
+         sample_target_items = ec_undef_int
+         if (associated(targetItemPtr1)) then
+            sample_target_items(1) = targetItemPtr1
+         end if
+         if (associated(targetItemPtr2)) then
+            sample_target_items(2) = targetItemPtr2
+         end if
+         if (associated(targetItemPtr3)) then
+            sample_target_items(3) = targetItemPtr3
+         end if
+         if (associated(targetItemPtr4)) then
+            sample_target_items(4) = targetItemPtr4
+         end if
+         do i = 1, size(sample_target_items)
+            if (sample_target_items(i) == ec_undef_int) then
+               cycle
+            end if
+            if (.not. ecAddConnectionTargetItem(ecInstancePtr, connectionId, sample_target_items(i))) then
+               goto 1234
+            end if
+            if (.not. ecAddItemConnection(ecInstancePtr, sample_target_items(i), connectionId)) then
+               goto 1234
+            end if
+         end do
+         if (present(tgt_item1) .and. associated(targetItemPtr1)) then
+            tgt_item1 = targetItemPtr1
+         end if
+         ec_addtimespacerelation = .true.
+         return
       end if
 
       ! determine the source item's name

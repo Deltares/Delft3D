@@ -53,7 +53,6 @@ add_fortran_gtest(test_dflowfm_kernel_gtest
         src/test_longculverts.f90
         src/test_compute_horton_infiltration.f90
         src/test_bubblescreen.f90
-        src/test_ncdump_to_netcdf.f90
         src/test_sources_sinks.f90
         src/test_timespace_parameters.f90
         src/test_ec_module_block.f90

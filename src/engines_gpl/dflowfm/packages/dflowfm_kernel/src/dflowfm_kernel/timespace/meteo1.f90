@@ -3833,7 +3833,7 @@ module m_meteo
                                                       dtnodal, quiet, varname, varname2, data_value, targetMaskSelect, &
                                                       tgt_data1, tgt_data2, tgt_data3, tgt_data4, &
                                                       tgt_item1, tgt_item2, tgt_item3, tgt_item4, &
-                                                      multuni1, multuni2, multuni3, multuni4)
+                                                      multuni1, multuni2, multuni3, multuni4, sample_location, sample_transformcoef)
          character(len=*), intent(in) :: name !< Name for the target Quantity, possibly compounded with a tracer name.
          real(hp), dimension(:), intent(in) :: x !< Array of x-coordinates for the target ElementSet.
          real(hp), dimension(:), intent(in) :: y !< Array of y-coordinates for the target ElementSet.
@@ -3870,6 +3870,8 @@ module m_meteo
          integer, optional, intent(inout), target :: multuni2 !< multiple uni item ID 2
          integer, optional, intent(inout), target :: multuni3 !< item ID 3
          integer, optional, intent(inout), target :: multuni4 !< item ID 4
+         integer, optional, intent(in) :: sample_location !< Mesh location type for sample averaging.
+         real(hp), dimension(:), optional, intent(in) :: sample_transformcoef !< Spatial interpolation settings for samples.
       end function ec_addtimespacerelation
    end interface
 

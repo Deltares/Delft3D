@@ -13,7 +13,7 @@ module test_init_spatial_fields_integration
    use tree_data_types, only: tree_data
    use tree_structures, only: tree_create, tree_destroy
    use properties, only: prop_file
-   use m_alloc, only: realloc
+   use m_alloc, only: realloc, deallocate_if_allocated
 
    implicit none(type, external)
 
@@ -42,23 +42,17 @@ contains
    !> Set up a minimal 1-cell s-point grid so that get_location_target_properties
    !! and construct_mask do not dereference unallocated arrays.
    subroutine setup_minimal_grid()
-      ndx = 1
-      ndxi = 1
-      if (.not. allocated(xz)) allocate (xz(ndx))
-      if (.not. allocated(yz)) allocate (yz(ndx))
-      if (.not. allocated(kcs)) allocate (kcs(ndx))
-      xz = [0.0_dp]
-      yz = [0.0_dp]
-      kcs = [1]
+      call setup_minimal_grid_with_points(1)
    end subroutine setup_minimal_grid
 
    subroutine teardown_minimal_grid()
       ndx = 0
-      if (allocated(xz)) deallocate (xz)
-      if (allocated(yz)) deallocate (yz)
-      if (allocated(kcs)) deallocate (kcs)
-      if (allocated(rain)) deallocate (rain)
-      if (allocated(air_pressure)) deallocate (air_pressure)
+      ndxi = 0
+      call deallocate_if_allocated(xz)
+      call deallocate_if_allocated(yz)
+      call deallocate_if_allocated(kcs)
+      call deallocate_if_allocated(rain)
+      call deallocate_if_allocated(air_pressure)
    end subroutine teardown_minimal_grid
 
    !> Parse a mini ext-file containing a single [Spatial] block and return
@@ -79,13 +73,9 @@ contains
 
       ndx = npoints
       ndxi = npoints
-      if (allocated(xz)) deallocate (xz)
-      if (allocated(yz)) deallocate (yz)
-      if (allocated(kcs)) deallocate (kcs)
-      allocate (xz(npoints), yz(npoints), kcs(npoints))
-      xz = 0.0_dp
-      yz = 0.0_dp
-      kcs = 1
+      call realloc(xz, npoints, fill=0.0_dp, keepExisting=.false.)
+      call realloc(yz, npoints, fill=0.0_dp, keepExisting=.false.)
+      call realloc(kcs, npoints, fill=1, keepExisting=.false.)
    end subroutine setup_minimal_grid_with_points
 
    subroutine create_scalar_netcdf(file_name)
@@ -1034,6 +1024,60 @@ contains
    end subroutine test_solarradiation_scalar_netcdf_broadcast
 
    !$gtest
+   subroutine test_solarradiation_netcdf_and_sample() bind(C)
+      use dfm_error, only: DFM_NOERR
+      use fm_external_forcings, only: init_new
+      use m_meteo, only: ecInstancePtr, ec_gettimespacevalue_by_itemID, initialize_ec_module, item_solar_radiation
+      use m_sferic, only: jsferic
+      use m_wind, only: solar_radiation, solar_radiation_available
+      use m_flowtimes, only: irefdate, tunit, tzone, tstart_user
+      use m_unstruc_model_data, only: extfile_new_list
+
+      type(t_abort_threshold_guard) :: abort_threshold
+      character(len=*), parameter :: NC_FILE = 'test_solarradiation_with_sample.nc'
+      character(len=*), parameter :: EXT_FILE = 'test_solarradiation_with_sample.ext'
+      character(len=*), parameter :: SAMPLE_FILE = 'test_solarradiation_factor.xyz'
+      integer :: iresult
+      logical :: success
+
+      call create_scalar_netcdf(NC_FILE)
+      call create_file(SAMPLE_FILE, [character(len=32) :: '-1 -1 0.5', '1 -1 0.5', '0 1 0.5'])
+      call create_file(EXT_FILE, [ &
+                       '[Spatial]', &
+                       '    quantity        = solarradiation', &
+                       '    forcingFile     = '//NC_FILE, &
+                       '    forcingFileType = netcdf', &
+                       '    operand         = override', &
+                       '[Spatial]', &
+                       '    quantity        = solarradiation', &
+                       '    forcingFile     = '//SAMPLE_FILE, &
+                       '    forcingFileType = sample', &
+                       '    operand         = multiply'])
+
+      call setup_minimal_grid()
+      solar_radiation_available = .false.
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      jsferic = 0
+      call abort_threshold%set(LEVEL_FATAL)
+      call initialize_ec_module()
+      extfile_new_list = [EXT_FILE]
+
+      iresult = DFM_NOERR
+      call init_new(iresult)
+      call f90_expect_eq(iresult, DFM_NOERR, 'solar radiation NetCDF and sample inputs should initialize')
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_solar_radiation, irefdate, tzone, tunit, 50.0_dp)
+      call f90_expect_true(success, 'solar radiation update should succeed')
+      if (allocated(solar_radiation)) then
+         call f90_expect_near(solar_radiation(1), 100.0_dp, 1.0e-6_dp, 'scalar target should receive the sample factor')
+      end if
+      call deallocate_if_allocated(solar_radiation)
+      solar_radiation_available = .false.
+      call teardown_minimal_grid()
+   end subroutine test_solarradiation_netcdf_and_sample
+
+   !$gtest
    subroutine test_located_timeseries_netcdf_is_not_scalar() bind(C)
       use m_meteo, only: initialize_ec_module
       use m_sferic, only: jsferic
@@ -1076,22 +1120,43 @@ contains
 
    !$gtest
    subroutine test_windxy_scalar_netcdf_override_and_multiply() bind(C)
+      call check_windxy_netcdf_factor('datavalue')
+   end subroutine test_windxy_scalar_netcdf_override_and_multiply
+
+   !$gtest
+   subroutine test_windxy_netcdf_and_sample_triangulation() bind(C)
+      call check_windxy_netcdf_factor('triangulation')
+   end subroutine test_windxy_netcdf_and_sample_triangulation
+
+   !$gtest
+   subroutine test_windxy_netcdf_and_sample_averaging() bind(C)
+      call check_windxy_netcdf_factor('averaging')
+   end subroutine test_windxy_netcdf_and_sample_averaging
+
+   subroutine check_windxy_netcdf_factor(factor_type)
       use dfm_error, only: DFM_NOERR
       use fm_external_forcings, only: init_new
       use m_meteo, only: ecInstancePtr, ec_gettimespacevalue_by_itemID, initialize_ec_module, item_windxy_x
       use m_sferic, only: jsferic
       use m_wind, only: jawind, wx, wy
       use m_flow, only: wdsu, wdsu_x, wdsu_y
-      use m_flowgeom, only: lnx, xu, yu
+      use m_flowgeom, only: lnx, xu, yu, ln, ln2lne
+      use m_netw, only: xzw, yzw, xk, yk, kn
       use m_flowtimes, only: irefdate, tunit, tzone, tstart_user
       use m_unstruc_model_data, only: extfile_new_list
 
+      character(len=*), intent(in) :: factor_type !< datavalue, or the sample interpolation method.
       type(t_abort_threshold_guard) :: abort_threshold
-      character(len=*), parameter :: NC_FILE = 'test_windxy_uniform.nc'
-      character(len=*), parameter :: EXT_FILE = 'test_windxy_uniform.ext'
-      character(len=*), parameter :: FACTOR_EXT_FILE = 'test_windxy_factor.ext'
+      character(len=*), parameter :: PREFIX = 'test_windxy_factor_'
+      character(len=:), allocatable :: nc_file, ext_file, factor_ext_file, sample_file
       logical :: success
-      integer :: iresult
+      integer :: iresult, i
+      real(dp), dimension(3) :: factors
+
+      nc_file = PREFIX//factor_type//'.nc'
+      ext_file = PREFIX//factor_type//'.ext'
+      factor_ext_file = PREFIX//factor_type//'_multiply.ext'
+      sample_file = PREFIX//factor_type//'.xyz'
 
       call create_windxy_netcdf(NC_FILE)
       call create_file(EXT_FILE, [ &
@@ -1100,25 +1165,57 @@ contains
                        '    forcingFile     = '//NC_FILE, &
                        '    forcingFileType = netcdf', &
                        '    operand         = override'])
-      call create_file(FACTOR_EXT_FILE, [ &
+      if (factor_type == 'datavalue') then
+         factors = 0.5_dp
+         call create_file(FACTOR_EXT_FILE, [ &
                        '[Spatial]', &
                        '    quantity        = windxy', &
                        '    forcingFileType = datavalue', &
                        '    dataValue       = 0.5', &
                        '    operand         = multiply'])
+      else
+         factors = [0.5_dp, 0.75_dp, 1.0_dp]
+         call create_file(sample_file, [character(len=32) :: &
+                          '0 0 0.5', '-0.25 -0.5 0.5', '0.25 -0.5 0.5', '0 0.5 0.5', &
+                          '10 0 0.75', '9.75 -0.5 0.75', '10.25 -0.5 0.75', '10 0.5 0.75'])
+         call create_file(FACTOR_EXT_FILE, [character(len=128) :: &
+                          '[Spatial]', &
+                          '    quantity            = windxy', &
+                          '    forcingFileType     = sample', &
+                          '    forcingFile         = '//sample_file, &
+                          '    interpolationMethod = '//factor_type, &
+                          '    averagingNumMin     = 1', &
+                          '    operand             = multiply'])
+      end if
 
-      if (allocated(wx)) deallocate (wx)
-      if (allocated(wy)) deallocate (wy)
-      if (allocated(wdsu)) deallocate (wdsu)
-      if (allocated(wdsu_x)) deallocate (wdsu_x)
-      if (allocated(wdsu_y)) deallocate (wdsu_y)
+      call deallocate_if_allocated(wx)
+      call deallocate_if_allocated(wy)
+      call deallocate_if_allocated(wdsu)
+      call deallocate_if_allocated(wdsu_x)
+      call deallocate_if_allocated(wdsu_y)
       call setup_minimal_grid_with_points(2)
-      lnx = 2
-      if (allocated(xu)) deallocate (xu)
-      if (allocated(yu)) deallocate (yu)
-      allocate (xu(lnx), yu(lnx))
-      xu = [0.0_dp, 10.0_dp]
-      yu = 0.0_dp
+      lnx = 3
+      call realloc(xu, lnx, keepExisting=.false.)
+      call realloc(yu, lnx, fill=0.0_dp, keepExisting=.false.)
+      xu = [0.0_dp, 10.0_dp, 20.0_dp]
+      if (factor_type == 'averaging') then
+         ! Each flow link has a diamond averaging stencil, with its adjacent cell centres to the left and right.
+         call realloc(ln, [2, lnx], keepExisting=.false.)
+         call realloc(ln2lne, lnx, keepExisting=.false.)
+         call realloc(kn, [3, lnx], keepExisting=.false.)
+         call realloc(xzw, 2 * lnx, keepExisting=.false.)
+         call realloc(yzw, 2 * lnx, fill=0.0_dp, keepExisting=.false.)
+         call realloc(xk, 2 * lnx, keepExisting=.false.)
+         call realloc(yk, 2 * lnx, keepExisting=.false.)
+         do i = 1, lnx
+            ln(:, i) = [2 * i - 1, 2 * i]
+            ln2lne(i) = i
+            kn(:, i) = [2 * i - 1, 2 * i, 2]
+            xzw(2*i-1:2*i) = xu(i) + [-2.0_dp, 2.0_dp]
+            xk(2*i-1:2*i) = xu(i)
+            yk(2*i-1:2*i) = [-2.0_dp, 2.0_dp]
+         end do
+      end if
       irefdate = 20000101
       tzone = 0.0_dp
       tstart_user = 0.0_dp
@@ -1129,35 +1226,45 @@ contains
 
       iresult = DFM_NOERR
       call init_new(iresult)
-      call f90_expect_eq(iresult, DFM_NOERR, 'windxy NetCDF and dataValue inputs should initialize')
+      call f90_expect_eq(iresult, DFM_NOERR, 'windxy NetCDF and factor inputs should initialize')
 
       success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_windxy_x, &
                                                irefdate, tzone, tunit, 0.0_dp)
       call f90_expect_true(success, 'windxy update at t=0 should succeed')
-      call f90_expect_near(wx(1), 1.0_dp, 1.0e-6_dp, 'first x target should be overridden and multiplied at t=0')
-      call f90_expect_near(wx(2), 1.0_dp, 1.0e-6_dp, 'second x target should be overridden and multiplied at t=0')
-      call f90_expect_near(wy(1), -2.0_dp, 1.0e-6_dp, 'first y target should be overridden and multiplied at t=0')
-      call f90_expect_near(wy(2), -2.0_dp, 1.0e-6_dp, 'second y target should be overridden and multiplied at t=0')
+      do i = 1, lnx
+         call f90_expect_near(wx(i), 2.0_dp * factors(i), 1.0e-6_dp, 'wind x should use the local factor at t=0')
+         call f90_expect_near(wy(i), -4.0_dp * factors(i), 1.0e-6_dp, 'wind y should use the local factor at t=0')
+      end do
 
       success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_windxy_x, &
                                                irefdate, tzone, tunit, 50.0_dp)
       call f90_expect_true(success, 'windxy update at t=50 should succeed')
-      call f90_expect_near(wx(1), 2.0_dp, 1.0e-6_dp, 'first x target should be interpolated and multiplied at t=50')
-      call f90_expect_near(wx(2), 2.0_dp, 1.0e-6_dp, 'second x target should be interpolated and multiplied at t=50')
-      call f90_expect_near(wy(1), -2.0_dp, 1.0e-6_dp, 'first y target should use the available time level at t=50')
-      call f90_expect_near(wy(2), -2.0_dp, 1.0e-6_dp, 'second y target should use the available time level at t=50')
+      do i = 1, lnx
+         call f90_expect_near(wx(i), 4.0_dp * factors(i), 1.0e-6_dp, 'wind x should use the local factor at t=50')
+         call f90_expect_near(wy(i), -4.0_dp * factors(i), 1.0e-6_dp, 'wind y should use the local factor at t=50')
+      end do
+
+      if (factor_type == 'averaging') then
+         call deallocate_if_allocated(ln)
+         call deallocate_if_allocated(ln2lne)
+         call deallocate_if_allocated(kn)
+         call deallocate_if_allocated(xzw)
+         call deallocate_if_allocated(yzw)
+         call deallocate_if_allocated(xk)
+         call deallocate_if_allocated(yk)
+      end if
 
       jawind = 0
       lnx = 0
-      if (allocated(xu)) deallocate (xu)
-      if (allocated(yu)) deallocate (yu)
-      if (allocated(wx)) deallocate (wx)
-      if (allocated(wy)) deallocate (wy)
-      if (allocated(wdsu)) deallocate (wdsu)
-      if (allocated(wdsu_x)) deallocate (wdsu_x)
-      if (allocated(wdsu_y)) deallocate (wdsu_y)
+      call deallocate_if_allocated(xu)
+      call deallocate_if_allocated(yu)
+      call deallocate_if_allocated(wx)
+      call deallocate_if_allocated(wy)
+      call deallocate_if_allocated(wdsu)
+      call deallocate_if_allocated(wdsu_x)
+      call deallocate_if_allocated(wdsu_y)
       call teardown_minimal_grid()
-   end subroutine test_windxy_scalar_netcdf_override_and_multiply
+   end subroutine check_windxy_netcdf_factor
 
    !$gtest
    subroutine test_scalar_netcdf_target_index_updates_complete_coordinate() bind(C)

@@ -276,7 +276,7 @@ contains
                                  is_static_spatial_input, allocate_time_dependent_spatial_quantities, &
                                  register_time_dependent_spatial_quantity
       use precision_basics, only: comparereal
-      use string_module, only: str_tolower
+      use string_module, only: strcmpi, str_tolower
       use tree_data_types, only: tree_data, tree_data_ptr
       use tree_structures, only: tree_get_name, tree_num_nodes
       use timespace_parameters, only: METHOD_UNKNOWN
@@ -312,7 +312,8 @@ contains
                cycle
             end select
 
-            if (comparereal(input%data_value, dmiss) /= 0) then
+            ! Neither constant values nor samples can make another spatial input time-dependent.
+            if (comparereal(input%data_value, dmiss) /= 0 .or. strcmpi(input%forcing_file_type, 'sample')) then
                cycle
             end if
             input%quantity = quantity_name_config_file_to_internal_name(input%quantity)
@@ -1139,10 +1140,10 @@ contains
       use tree_data_types, only: tree_data
       use fm_location_types, only: parse_spatial_location_type, UNC_LOC_S, UNC_LOC_U, UNC_LOC_3DV, UNC_LOC_S3D, &
                        SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL, TARGET_LAYER_ALL_3D
-      use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, fm_ext_force_name_to_ec_item
+      use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, fm_ext_force_name_to_ec_item, ec_addtimespacerelation
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
       use m_ec_parameters, only: ec_undef_int
-      use timespace_parameters, only: WEIGHTFACTORS, FIELD1D, DATAVALUE, NCGRID
+      use timespace_parameters, only: WEIGHTFACTORS, FIELD1D, DATAVALUE, NCGRID, TRIANGULATION
       use properties, only: prop_get
       use m_alloc, only: realloc, reallocP
       use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input, &
@@ -1362,7 +1363,17 @@ contains
                mapped_item1 = ec_undef_int
             end if
          else
-            if (target_location_type == UNC_LOC_S3D) then
+            if (filetype == TRIANGULATION .and. target_location_type /= UNC_LOC_S3D) then
+               block
+                  real(dp), dimension(NTRANSFORMCOEF) :: sample_coefficients
+
+                  sample_coefficients = dmiss
+                  call averaging_params_to_transformcoef(input%averaging_input, sample_coefficients)
+                  res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, &
+                                                tgt_item1=ec_item, tgt_data1=target_data, sample_location=target_location_type, &
+                                                sample_transformcoef=sample_coefficients)
+               end block
+            else if (target_location_type == UNC_LOC_S3D) then
                res = add_timespace_3D_field_relation(quantity, target_x, target_y, mask, kx, forcing_file, &
                                                      filetype, method, oper, variable_name, ec_item)
             else

@@ -262,6 +262,7 @@ module m_ec_typedefs
       integer :: interpolationType !< interpolation type, using the interpolateType enumeration
       integer :: targetIndex = ec_undef_int !< Write to the target Item's Field's array element number targetIndex (vectormax (here called n_data) should already be accounted for, that offset is *not* recomputed in the converter).
       type(tEcIndexWeight), pointer :: indexWeight => null() !<
+      real(hp), dimension(:), allocatable :: sample_values !< Time-independent samples interpolated onto the target coordinates.
       type(tEcMask) :: srcmask !< Array with mask info on selection of gridpoints
       logical :: extrapolated = .false. !< indexWeight is updated as a result of extrapolation
       real(hp), pointer :: inputptr !< pointer to an optional input argument (e.g.for qh lookup tables)

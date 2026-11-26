@@ -116,7 +116,7 @@ module m_ec_parameters
    integer, parameter :: interpolate_spacetimeSaveWeightFactors = 6 !< interpolate in space, save the space weight factors, then interpolate in time
    integer, parameter :: interpolate_time_extrapolation_ok = 7 !< interpolate in time
    integer, parameter :: interpolate_triangle = 8 !< interpolate in space by Delauney triangulation and linear interpolation.
-   integer, parameter :: interpolate_averaging = 9  !< Not yet supported: only spatial, averaging
+   integer, parameter :: interpolate_averaging = 9  !< Spatial averaging for pre-interpolated sample fields
    integer, parameter :: interpolate_triangleindex = 10 !< Not yet supported: only spatial, index triangulation
    integer, parameter :: interpolate_smoothing = 11 !< Not yet supported: only spatial, smoothing
    integer, parameter :: interpolate_intdiffusion = 12 !< Not yet supported: only spatial, internal diffusion

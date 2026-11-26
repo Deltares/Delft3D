@@ -208,6 +208,7 @@ contains
    !! Quantity ids starting with 'initial' are always deemed static, regardless of method or file type.
    !! (This allows using NetCDF files with or without time-dimension as initial fields.)
    !! For all other quantities, the (non-)static nature is detected from the file type and possibly the method.
+   !! A sample or data value follows the forcing loop only if the same quantity also has a time-dependent input.
    function is_static_spatial_input(forcing_file_type, method, quantity) result(is_static)
       use string_module, only: istarts_with, str_tolower
       use fm_external_forcings_utils, only: split_qid
@@ -241,9 +242,9 @@ contains
       end if
 
       select case (str_tolower(trim(forcing_file_type)))
-      case ('sample', 'geotiff', 'polygon', '1dfield', 'map')
+      case ('geotiff', 'polygon', '1dfield', 'map')
          is_static = .true.
-      case ('datavalue')
+      case ('datavalue', 'sample')
          is_static = .not. quantity_has_time_dependent_input(quantity)
       case ('arcinfo') ! TODO: change this approach once more file types can be both time-varying and static
          is_static = .not. any(method == [SPACEANDTIME, SPACEFIRST, WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, JUSTUPDATE])
@@ -490,9 +491,9 @@ contains
    !> Determines whether a method is accepted for an EC-backed forcing file type.
    !! Method and file type are FM enumeration values derived from the input strings.
    function is_valid_ec_method_filetype(method, filetype) result(is_valid)
-      use timespace_parameters, only: FILE_TYPE_UNKNOWN, UNIFORM, UNIMAGDIR, ARCINFO, SPIDERWEB, CURVI, NCGRID, BCASCII, DATAVALUE, &
+      use timespace_parameters, only: FILE_TYPE_UNKNOWN, UNIFORM, UNIMAGDIR, ARCINFO, SPIDERWEB, CURVI, NCGRID, BCASCII, DATAVALUE, TRIANGULATION, &
                                       METHOD_CONSTANT, SPACEANDTIME, WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, &
-                                      NEAREST_NEIGHBOUR
+                                      NEAREST_NEIGHBOUR, METHOD_TRIANGULATION, METHOD_AVERAGING
 
       integer, intent(in) :: method !< Method, result of select_spatial_field_method.
       integer, intent(in) :: filetype !< FM forcing file type , result of convert_file_type_string_to_integer.
@@ -515,6 +516,8 @@ contains
          is_valid = any(method == [WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, NEAREST_NEIGHBOUR])
       case (DATAVALUE)
          is_valid = method == METHOD_CONSTANT
+      case (TRIANGULATION)
+         is_valid = any(method == [METHOD_TRIANGULATION, METHOD_AVERAGING])
       end select
    end function is_valid_ec_method_filetype
 
