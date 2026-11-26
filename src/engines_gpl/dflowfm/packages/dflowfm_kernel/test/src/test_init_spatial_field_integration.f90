@@ -3425,6 +3425,7 @@ contains
       use m_flowtimes, only: irefdate, tzone, tstart_user
       use m_vegetation, only: stemdiam, stemdens, stemheight
       use m_polygon, only: m_polygon_destructor
+      type(t_abort_threshold_guard) :: abort_threshold
 
       character(len=*), parameter :: EXT_FILE = 'test_static_vegetation_masks.ext'
       character(len=*), parameter :: POL_FILE = 'test_static_vegetation_masks.pol'
@@ -3441,7 +3442,7 @@ contains
       irefdate = 20000101
       tzone = 0.0_dp
       tstart_user = 0.0_dp
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call initialize_ec_module()
       ierr = m_polygon_destructor()
       call create_file(POL_FILE, ['vegetation', '5 2', '-1.0 -1.0', '1.0 -1.0', '1.0 1.0', '-1.0 1.0', '-1.0 -1.0'])
@@ -3494,6 +3495,7 @@ contains
       logical :: success
       integer :: i
       real(dp), dimension(4) :: expected
+      type(t_abort_threshold_guard) :: abort_threshold
 
       call setup_minimal_grid_with_points(4)
       ndxi = 2
@@ -3501,7 +3503,7 @@ contains
       irefdate = 20000101
       tzone = 0.0_dp
       tstart_user = 0.0_dp
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call initialize_ec_module()
       call create_scalar_meteo_bc(BC_A, 'airpressure', 10.0_dp)
       call create_scalar_meteo_bc(BC_B, 'airpressure', 20.0_dp)

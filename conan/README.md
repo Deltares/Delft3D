@@ -145,10 +145,6 @@ or let `build.py` do the install, configure, build and install in one go:
 python build.py --config FM-SUITE --build-type Release
 ```
 
-The Delft3D recipe enables the NetCDF utilities for the D-Flow FM kernel tests.
-Run those tests through CTest to pick up the packaged `ncgen` and its shared
-libraries without adding them to your global `PATH`.
-
 ### 8. Wire the package into CMake
 
 Add a `find_package` next to the other Conan packages in

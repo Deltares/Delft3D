@@ -23,29 +23,6 @@ contains
       close (file_lun)
    end subroutine create_file
 
-   !> Write a CDL fixture and convert it to NetCDF using ncgen from PATH.
-   subroutine create_netcdf_from_cdl(nc_file, lines, cmdstat, exitstat, cmdmsg)
-      ! Arguments
-      character(len=*), intent(in) :: nc_file !< Path to the NetCDF file to generate.
-      character(len=*), dimension(:), intent(in) :: lines !< CDL file contents.
-      integer, intent(out) :: cmdstat !< Command execution status.
-      integer, intent(out) :: exitstat !< ncgen exit status, or -1 if the command could not execute.
-      character(len=*), intent(out) :: cmdmsg !< Diagnostic message if command execution fails.
-
-      ! Local variables
-      character(len=512) :: cdl_file !< Path to the CDL file to write.
-
-      cdl_file = trim(nc_file)//".cdl"
-
-      call create_file(cdl_file, lines)
-      cmdmsg = ""
-      call execute_command_line('ncgen -o "'//trim(nc_file)//'" "'//trim(cdl_file)//'"', &
-                                wait=.true., cmdstat=cmdstat, cmdmsg=cmdmsg, exitstat=exitstat)
-      if (cmdstat /= 0) then
-         exitstat = -1
-      end if
-   end subroutine create_netcdf_from_cdl
-
    !> Create a dummy file with the specified content.
    subroutine create_scratch_file(lines, unit, iostat)
       character(len=*), intent(in) :: lines(:) !< Lines to write to the dummy file
