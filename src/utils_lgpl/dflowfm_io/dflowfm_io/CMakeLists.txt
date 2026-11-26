@@ -23,14 +23,15 @@ add_library(dflowfm_io STATIC
     include/dflowfm_io/MduDocument.h
     include/dflowfm_io/MduSchema.h
     ${MDU_SCHEMA_GENERATED}
-    include/dflowfm_io/StringUtils.h
 
-    # Internal headers that expose dflowfm_ini_parser types; not part of the public API.
+    # Internal headers; not part of the public API.
     src/private_headers/MduConversion.h
     src/private_headers/MduValidation.h
+    src/private_headers/StringUtils.h
 
     src/IssueReport.cpp
     src/MduConversion.cpp
+    src/MduData.cpp
     src/MduDocument.cpp
     src/MduSchema.cpp
     src/MduValidation.cpp

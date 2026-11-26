@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 
-#include <dflowfm_io/StringUtils.h>
+#include <dflowfm_io/MduSchema.h>
+
+#include "StringUtils.h"
 
 namespace dflowfm_io::test
 {

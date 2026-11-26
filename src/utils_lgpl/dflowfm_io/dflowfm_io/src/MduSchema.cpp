@@ -1,6 +1,6 @@
 #include <dflowfm_io/MduSchema.h>
 #include <dflowfm_io/MduSchemaGenerated.h>
-#include <dflowfm_io/StringUtils.h>
+#include "StringUtils.h"
 
 #include "MduConversion.h"
 
@@ -9,6 +9,11 @@
 
 namespace dflowfm_io
 {
+    std::string FormatKey(const std::string& section, const std::string& property)
+    {
+        return tolower(section + "." + property);
+    }
+
     MduSchema::MduSchema(std::string description, std::vector<SectionSchema> sections)
         : description(std::move(description)), sections(std::move(sections))
     {

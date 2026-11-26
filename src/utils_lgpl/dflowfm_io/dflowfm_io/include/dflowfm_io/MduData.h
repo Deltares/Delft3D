@@ -6,11 +6,9 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
-#include <stdexcept>
 #include <utility>
 
 #include <dflowfm_io/MduSchema.h>
-#include <dflowfm_io/StringUtils.h>
 
 namespace dflowfm_io
 {
@@ -29,41 +27,26 @@ namespace dflowfm_io
         {
             for (const auto& [key, value] : entries)
             {
-                const auto [it, inserted] = data_entries.try_emplace(dflowfm_io::tolower(key), value);
-                if (!inserted)
-                {
-                    throw std::runtime_error("duplicate key: " + it->first);
-                }
+                addEntry(key, value);
             }
         }
 
         /// @brief Returns the number of stored key-value pairs.
         /// @return The number of entries in the storage.
-        std::size_t size() const { return data_entries.size(); }
+        std::size_t size() const;
 
         /// @brief Checks whether the storage contains no key-value pairs.
         /// @return True if the storage is empty; otherwise, false.
-        bool empty() const { return data_entries.empty(); }
+        bool empty() const;
 
         /// @brief Returns true if a value is stored for the given key.
         /// @param key Fully qualified property key in the form "section.property" (case-insensitive).
-        bool hasValue(std::string_view key) const
-        { 
-            return data_entries.contains(dflowfm_io::tolower(key));
-        }
+        bool hasValue(std::string_view key) const;
 
         /// @brief Returns a const reference to the value stored for the given key.
         /// @param key Fully qualified property key in the form "section.property" (case-insensitive).
         /// @throws std::runtime_error if the key is not present.
-        const Value& getValue(std::string_view key) const
-        {
-            auto it = data_entries.find(dflowfm_io::tolower(key));
-            if (it == data_entries.end())
-            {
-                throw std::runtime_error("can't get value, key not found: " + std::string(key));
-            }
-            return it->second;
-        }
+        const Value& getValue(std::string_view key) const;
 
         /// @brief Returns a const reference to the value stored for the given key,
         ///        interpreted as type @p T.
@@ -94,20 +77,7 @@ namespace dflowfm_io
         /// @param value The new value to store.
         /// @throws std::runtime_error if the key is not present.
         /// @throws std::runtime_error if the value type doesn't match the stored type.
-        void setValue(std::string_view key, Value value)
-        {
-            auto it = data_entries.find(dflowfm_io::tolower(key));
-            if (it == data_entries.end())
-            {
-                throw std::runtime_error("can't set value, key not found: " + std::string(key));
-            }
-            if (it->second.index() != value.index())
-            {
-                throw std::runtime_error("can't set value, provided type doesn't match stored type for key: " +
-                                         std::string(key));
-            }
-            it->second = std::move(value);
-        }
+        void setValue(std::string_view key, Value value);
 
         /// @brief Overwrites the value stored for the given key.
         /// @tparam T The type of the new value (must be one of the @ref Value variant alternatives).
@@ -124,15 +94,11 @@ namespace dflowfm_io
         /// @brief Calls the given function for each key-value pair in the storage.
         /// @param func A function that takes a key and a const reference to the corresponding value.
         ///             as parameters. The key is provided in lowercase.
-        void visitKeyValuePairs(std::function<void(std::string_view, const Value&)> func) const
-        {
-            for (auto& [key, value] : data_entries)
-            {
-                func(key, value);
-            }
-        }
+        void visitKeyValuePairs(std::function<void(std::string_view, const Value&)> func) const;
 
     private:
+        void addEntry(std::string_view key, const Value& value);
+
         /// @brief The underlying storage mapping lowercase fully qualified keys to their @ref Value.
         std::unordered_map<std::string, Value> data_entries;
     };

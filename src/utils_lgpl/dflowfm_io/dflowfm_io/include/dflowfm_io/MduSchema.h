@@ -176,6 +176,12 @@ namespace dflowfm_io
         std::unordered_map<std::string, const PropertySchema*> property_map;
     };
 
+    /// @brief Formats a fully qualified property key from a section name and property key.
+    /// @param section The section name.
+    /// @param property The property key.
+    /// @return A lowercase dot-separated string in the form "sectionname.propertykey".
+    std::string FormatKey(const std::string& section, const std::string& property);
+
     /// @brief Returns the global MDU schema instance, generated from mdu.json.
     const MduSchema& GetMduSchema();
 

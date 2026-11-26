@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 
 #include <dflowfm_io/MduSchema.h>
-#include <dflowfm_io/StringUtils.h>
 
 #include "MduConversion.h"
 #include "MduTestData.h"
