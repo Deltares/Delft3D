@@ -31,7 +31,7 @@ contains
       logical :: success
 
       allocate (air_pressure(1), ec_pwxwy_x(1), ec_pwxwy_y(1))
-      teardown = t_teardown(teardown_evaluate_pressure_at_eye)
+      call teardown%install(teardown_evaluate_pressure_at_eye)
       call create_spiderweb_file( &
          SPW_FILE, N_ROWS, N_COLS, radius=100000.0_dp, &
          t0=0.0_dp, t1=24.0_dp, &
@@ -87,7 +87,7 @@ contains
       logical :: success
 
       allocate (wx(1), wy(1))
-      teardown = t_teardown(teardown_evaluate_wind_north_of_eye)
+      call teardown%install(teardown_evaluate_wind_north_of_eye)
       ! Spiderweb differs in speed at T0 and T1, but are otherwise fully uniform.
       call create_spiderweb_file( &
          SPW_FILE, N_ROWS, N_COLS, radius=METRES_PER_DEGREE, &
