@@ -158,7 +158,7 @@ namespace dflowfm_io::conversion
                 {
                     const std::string expected = GetExpectedValueDescription(propertySchema);
                     report.Add<Severity::Error>(iniProperty->GetLineNumber(), "Property [{}].{} contains invalid value: \"{}\". {}.",
-                                    sectionSchema.name, propertySchema.key, iniProperty->GetValue(), expected);
+                                                sectionSchema.name, propertySchema.key, iniProperty->GetValue(), expected);
                 }
             }
         }

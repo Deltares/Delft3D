@@ -41,25 +41,23 @@ namespace ini::test
     static_assert(!CanFormatTimePointList<const std::vector<time_point>&>);
     static_assert(CanFormatTimePointList<const std::vector<time_point>&, TimePointFormat>);
     static_assert(std::same_as<decltype(conversion::FromString<int>("")), int>);
-    static_assert(std::same_as<decltype(static_cast<std::string (*)(int)>(&conversion::ToString)),
-                               std::string (*)(int)>);
+    static_assert(
+        std::same_as<decltype(static_cast<std::string (*)(int)>(&conversion::ToString)), std::string (*)(int)>);
     static_assert(std::same_as<decltype(conversion::FromMultiValueString<int>("")), std::vector<int>>);
     static_assert(std::same_as<decltype(conversion::FromString<double>("")), double>);
     static_assert(std::same_as<decltype(conversion::FromMultiValueString<double>("")), std::vector<double>>);
     static_assert(std::same_as<decltype(static_cast<std::string (*)(double, FloatFormat)>(&conversion::ToString)),
                                std::string (*)(double, FloatFormat)>);
-    static_assert(std::same_as<
-                  decltype(static_cast<std::string (*)(const std::vector<double>&, FloatFormat, char)>(
-                      &conversion::ToMultiValueString)),
-                  std::string (*)(const std::vector<double>&, FloatFormat, char)>);
+    static_assert(std::same_as<decltype(static_cast<std::string (*)(const std::vector<double>&, FloatFormat, char)>(
+                                   &conversion::ToMultiValueString)),
+                               std::string (*)(const std::vector<double>&, FloatFormat, char)>);
 
     TEST(IniValueConversionTest, NamedIntegerConverters_RoundTripScalarAndListValues)
     {
         const int value = 42;
         EXPECT_EQ(conversion::FromString<int>(conversion::ToString(value)), value);
         const std::vector<int> values{1, value};
-        EXPECT_EQ(conversion::FromMultiValueString<int>(
-                      conversion::ToMultiValueString(values, ';'), ';'), values);
+        EXPECT_EQ(conversion::FromMultiValueString<int>(conversion::ToMultiValueString(values, ';'), ';'), values);
         EXPECT_EQ(conversion::FromString<int>(" 42 \r\n"), value);
         EXPECT_THROW(conversion::FromString<int>("42x"), std::invalid_argument);
     }
@@ -92,8 +90,7 @@ namespace ini::test
     TEST(IniValueConversionTest, NamedDoubleConverters_RoundTripValuesAndParseFortranNotation)
     {
         const double value = 1.5;
-        EXPECT_EQ(conversion::FromString<double>(
-                      conversion::ToString(value)), value);
+        EXPECT_EQ(conversion::FromString<double>(conversion::ToString(value)), value);
         EXPECT_EQ(conversion::FromString<double>(" 1.5D+0 \r\n"), value);
         const std::vector<double> values{value, 2.5};
         EXPECT_EQ(conversion::FromMultiValueString<double>(
@@ -197,8 +194,7 @@ namespace ini::test
     {
     };
 
-    TEST_P(IniValueConversionToStringFloatExplicitFormatTest,
-           ToString_FloatValue_ExplicitFormat_ReturnsFormattedString)
+    TEST_P(IniValueConversionToStringFloatExplicitFormatTest, ToString_FloatValue_ExplicitFormat_ReturnsFormattedString)
     {
         auto [format, expected] = GetParam();
         EXPECT_EQ(conversion::ToString(3.14f, format), expected);
@@ -394,24 +390,16 @@ namespace ini::test
 
     INSTANTIATE_TEST_SUITE_P(
         IniValueConversionTest, IniValueConversionFromStringTimePointExplicitFormatTest,
-        ::testing::Values(std::make_tuple("2023-08-14 12:10:01", TimePointFormat::IsoDateTime,
-                                          MakeTimePoint(2023, 8, 14, 12, 10, 1)),
-                          std::make_tuple("2022-12-31", TimePointFormat::IsoDate,
-                                          MakeTimePoint(2022, 12, 31, 0, 0, 0)),
-                          std::make_tuple("20200130120000", TimePointFormat::CompactDateTime,
-                                          MakeTimePoint(2020, 1, 30, 12, 0, 0)),
-                          std::make_tuple("20200130", TimePointFormat::CompactDateOnly,
-                                          MakeTimePoint(2020, 1, 30, 0, 0, 0)),
-                          std::make_tuple("2020/01/01 00:00:00", TimePointFormat::SlashDateTime,
-                                          MakeTimePoint(2020, 1, 1, 0, 0, 0)),
-                          std::make_tuple("2020/01/01", TimePointFormat::SlashDate,
-                                          MakeTimePoint(2020, 1, 1, 0, 0, 0)),
-                          std::make_tuple("20010101", TimePointFormat::CompactDateOnly,
-                                          MakeTimePoint(2001, 1, 1, 0, 0, 0)),
-                          std::make_tuple("20231231235959", TimePointFormat::CompactDateTime,
-                                          MakeTimePoint(2023, 12, 31, 23, 59, 59)),
-                          std::make_tuple(" 2022-12-31 \r\n", TimePointFormat::IsoDate,
-                                          MakeTimePoint(2022, 12, 31, 0, 0, 0))));
+        ::testing::Values(
+            std::make_tuple("2023-08-14 12:10:01", TimePointFormat::IsoDateTime, MakeTimePoint(2023, 8, 14, 12, 10, 1)),
+            std::make_tuple("2022-12-31", TimePointFormat::IsoDate, MakeTimePoint(2022, 12, 31, 0, 0, 0)),
+            std::make_tuple("20200130120000", TimePointFormat::CompactDateTime, MakeTimePoint(2020, 1, 30, 12, 0, 0)),
+            std::make_tuple("20200130", TimePointFormat::CompactDateOnly, MakeTimePoint(2020, 1, 30, 0, 0, 0)),
+            std::make_tuple("2020/01/01 00:00:00", TimePointFormat::SlashDateTime, MakeTimePoint(2020, 1, 1, 0, 0, 0)),
+            std::make_tuple("2020/01/01", TimePointFormat::SlashDate, MakeTimePoint(2020, 1, 1, 0, 0, 0)),
+            std::make_tuple("20010101", TimePointFormat::CompactDateOnly, MakeTimePoint(2001, 1, 1, 0, 0, 0)),
+            std::make_tuple("20231231235959", TimePointFormat::CompactDateTime, MakeTimePoint(2023, 12, 31, 23, 59, 59)),
+            std::make_tuple(" 2022-12-31 \r\n", TimePointFormat::IsoDate, MakeTimePoint(2022, 12, 31, 0, 0, 0))));
 
     class IniValueConversionFromStringTimePointMismatchedFormatTest
         : public ::testing::TestWithParam<std::pair<std::string, TimePointFormat>>
@@ -425,16 +413,15 @@ namespace ini::test
         EXPECT_THROW(conversion::FromString(value, format), std::invalid_argument);
     }
 
-    INSTANTIATE_TEST_SUITE_P(
-        IniValueConversionTest, IniValueConversionFromStringTimePointMismatchedFormatTest,
-        ::testing::Values(std::make_pair("20200130120000", TimePointFormat::CompactDateOnly),
-                          std::make_pair("2022-12-31", TimePointFormat::IsoDateTime),
-                          std::make_pair("2022-12-31", TimePointFormat::SlashDate),
-                          std::make_pair("2020/01/01", TimePointFormat::IsoDate),
-                          std::make_pair("20200130", TimePointFormat::CompactDateTime),
-                          std::make_pair("2020-01-01 12:00:00", TimePointFormat::SlashDateTime),
-                          std::make_pair("2020/01/01 12:00:00", TimePointFormat::CompactDateTime),
-                          std::make_pair("not-a-date", TimePointFormat::IsoDateTime)));
+    INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionFromStringTimePointMismatchedFormatTest,
+                             ::testing::Values(std::make_pair("20200130120000", TimePointFormat::CompactDateOnly),
+                                               std::make_pair("2022-12-31", TimePointFormat::IsoDateTime),
+                                               std::make_pair("2022-12-31", TimePointFormat::SlashDate),
+                                               std::make_pair("2020/01/01", TimePointFormat::IsoDate),
+                                               std::make_pair("20200130", TimePointFormat::CompactDateTime),
+                                               std::make_pair("2020-01-01 12:00:00", TimePointFormat::SlashDateTime),
+                                               std::make_pair("2020/01/01 12:00:00", TimePointFormat::CompactDateTime),
+                                               std::make_pair("not-a-date", TimePointFormat::IsoDateTime)));
 
     TEST(IniValueConversionTest, FromString_EmptyTimePointValue_ExplicitFormat_ThrowsInvalidArgument)
     {
@@ -491,8 +478,7 @@ namespace ini::test
     {
     };
 
-    TEST_P(IniValueConversionFromStringInvalidFloatTest,
-           FromString_InvalidFloatFormattedString_ThrowsInvalidArgument)
+    TEST_P(IniValueConversionFromStringInvalidFloatTest, FromString_InvalidFloatFormattedString_ThrowsInvalidArgument)
     {
         EXPECT_THROW(conversion::FromString<float>(GetParam()), std::invalid_argument);
     }
@@ -520,13 +506,11 @@ namespace ini::test
                                                std::make_pair("1234.567890", 1234.56789f),
                                                std::make_pair("-1.2e+02", -120.0f)));
 
-    class IniValueConversionFromStringFortranFloatTest
-        : public ::testing::TestWithParam<std::pair<std::string, float>>
+    class IniValueConversionFromStringFortranFloatTest : public ::testing::TestWithParam<std::pair<std::string, float>>
     {
     };
 
-    TEST_P(IniValueConversionFromStringFortranFloatTest,
-           FromString_FortranFormattedFloatString_ReturnsFloatValue)
+    TEST_P(IniValueConversionFromStringFortranFloatTest, FromString_FortranFormattedFloatString_ReturnsFloatValue)
     {
         auto [value, expected] = GetParam();
         EXPECT_FLOAT_EQ(conversion::FromString<float>(value), expected);
@@ -643,15 +627,14 @@ namespace ini::test
     }
 
     INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionFromStringInvalidTimePointTest,
-                             ::testing::Values(
-                                 std::make_pair("abcdefgh", TimePointFormat::IsoDate),
-                                 std::make_pair("23.0", TimePointFormat::CompactDateOnly),
-                                 std::make_pair("true", TimePointFormat::SlashDate),
-                                 std::make_pair("20010101x", TimePointFormat::CompactDateOnly),
-                                 std::make_pair("20200130120000x", TimePointFormat::CompactDateTime),
-                                 std::make_pair("2020-01-30x", TimePointFormat::IsoDate),
-                                 std::make_pair("200201011", TimePointFormat::CompactDateOnly),
-                                 std::make_pair("20200130 12:00:00", TimePointFormat::CompactDateTime)));
+                             ::testing::Values(std::make_pair("abcdefgh", TimePointFormat::IsoDate),
+                                               std::make_pair("23.0", TimePointFormat::CompactDateOnly),
+                                               std::make_pair("true", TimePointFormat::SlashDate),
+                                               std::make_pair("20010101x", TimePointFormat::CompactDateOnly),
+                                               std::make_pair("20200130120000x", TimePointFormat::CompactDateTime),
+                                               std::make_pair("2020-01-30x", TimePointFormat::IsoDate),
+                                               std::make_pair("200201011", TimePointFormat::CompactDateOnly),
+                                               std::make_pair("20200130 12:00:00", TimePointFormat::CompactDateTime)));
 
     // -------------------------------------------------------------------------
     // FromString - path
@@ -743,8 +726,7 @@ namespace ini::test
     {
     };
 
-    TEST_P(IniValueConversionToMultiValueStringFloatTest,
-           ToMultiValueString_FloatValues_ReturnsFormattedString)
+    TEST_P(IniValueConversionToMultiValueStringFloatTest, ToMultiValueString_FloatValues_ReturnsFormattedString)
     {
         auto [values, expected] = GetParam();
         EXPECT_EQ(conversion::ToMultiValueString(values), expected);
@@ -795,7 +777,8 @@ namespace ini::test
         EXPECT_EQ(conversion::ToMultiValueString(values), expected);
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionToMultiValueStringDoubleTest,
+    INSTANTIATE_TEST_SUITE_P(
+        IniValueConversionTest, IniValueConversionToMultiValueStringDoubleTest,
         ::testing::Values(std::make_pair(std::vector<double>{1.218281, 2.22358, -7.7412}, "1.218281 2.22358 -7.7412"),
                           std::make_pair(std::vector<double>{0.0, 3.14, 2.71828}, "0.0 3.14 2.71828"),
                           std::make_pair(std::vector<double>{42.0}, "42.0")));
@@ -817,11 +800,12 @@ namespace ini::test
         EXPECT_EQ(conversion::ToMultiValueString(values, format, separator), expected);
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionToMultiValueStringDoubleExplicitFormatTest,
-                             ::testing::Values(std::make_tuple(FloatFormat::General, ' ', "3.14 -1.5"),
-                                               std::make_tuple(FloatFormat::Fixed, ';', "3.140000;-1.500000"),
-                                               std::make_tuple(FloatFormat::Scientific, ' ', "3.140000e+00 -1.500000e+00"),
-                                               std::make_tuple(FloatFormat::Scientific, ';',  "3.140000e+00;-1.500000e+00")));
+    INSTANTIATE_TEST_SUITE_P(
+        IniValueConversionTest, IniValueConversionToMultiValueStringDoubleExplicitFormatTest,
+        ::testing::Values(std::make_tuple(FloatFormat::General, ' ', "3.14 -1.5"),
+                          std::make_tuple(FloatFormat::Fixed, ';', "3.140000;-1.500000"),
+                          std::make_tuple(FloatFormat::Scientific, ' ', "3.140000e+00 -1.500000e+00"),
+                          std::make_tuple(FloatFormat::Scientific, ';', "3.140000e+00;-1.500000e+00")));
 
     // -------------------------------------------------------------------------
     // ToMultiValueString - time_point
@@ -1051,9 +1035,9 @@ namespace ini::test
     }
 
     INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionFromMultiValueStringInvalidFloatTest,
-                             ::testing::Values("invalid float", "1.0 2.0 invalid", "true false",
-                                               "3.14 invalid 2.71", "  invalid  ", "3.0 -4.5 text",
-                                               "float NaN", "2.5 3.5 4.5 invalid text"));
+                             ::testing::Values("invalid float", "1.0 2.0 invalid", "true false", "3.14 invalid 2.71",
+                                               "  invalid  ", "3.0 -4.5 text", "float NaN",
+                                               "2.5 3.5 4.5 invalid text"));
 
     class IniValueConversionFromMultiValueStringFloatTest
         : public ::testing::TestWithParam<std::pair<std::string, std::vector<float>>>
@@ -1081,8 +1065,7 @@ namespace ini::test
                           std::make_pair("1234.567890 -1.2e+02", std::vector<float>{1234.56789f, -120.0f}),
                           std::make_pair("3.0 -4.5 5.0 2.1", std::vector<float>{3.0f, -4.5f, 5.0f, 2.1f}),
                           std::make_pair("1.0\n2.0\n3.0\n4.0", std::vector<float>{1.0f, 2.0f, 3.0f, 4.0f}),
-                          std::make_pair("0.1 0.2 0.3 0.4 0.5",
-                                         std::vector<float>{0.1f, 0.2f, 0.3f, 0.4f, 0.5f})));
+                          std::make_pair("0.1 0.2 0.3 0.4 0.5", std::vector<float>{0.1f, 0.2f, 0.3f, 0.4f, 0.5f})));
 
     class IniValueConversionFromMultiValueStringFortranFloatTest
         : public ::testing::TestWithParam<std::pair<std::string, std::vector<float>>>
@@ -1127,10 +1110,9 @@ namespace ini::test
     }
 
     INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionFromMultiValueStringInvalidDoubleTest,
-                             ::testing::Values("true", "invalid", "123abc", "12.34.56", "1.6 2.12 x",
-                                               "invalid float", "1.0 2.0 invalid", "true false", "3.14 invalid 2.71",
-                                               "  invalid  ", "3.0 -4.5 text", "float NaN",
-                                               "2.5 3.5 4.5 invalid text"));
+                             ::testing::Values("true", "invalid", "123abc", "12.34.56", "1.6 2.12 x", "invalid float",
+                                               "1.0 2.0 invalid", "true false", "3.14 invalid 2.71", "  invalid  ",
+                                               "3.0 -4.5 text", "float NaN", "2.5 3.5 4.5 invalid text"));
 
     class IniValueConversionFromMultiValueStringDoubleTest
         : public ::testing::TestWithParam<std::pair<std::string, std::vector<double>>>
@@ -1200,8 +1182,7 @@ namespace ini::test
     TEST_P(IniValueConversionFromMultiValueStringInvalidTimePointTest,
            FromMultiValueString_InvalidTimePointFormattedString_ThrowsInvalidArgument)
     {
-        EXPECT_THROW(conversion::FromMultiValueString(GetParam(), TimePointFormat::IsoDate),
-                     std::invalid_argument);
+        EXPECT_THROW(conversion::FromMultiValueString(GetParam(), TimePointFormat::IsoDate), std::invalid_argument);
     }
 
     INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionFromMultiValueStringInvalidTimePointTest,
@@ -1233,18 +1214,19 @@ namespace ini::test
 
     INSTANTIATE_TEST_SUITE_P(
         IniValueConversionTest, IniValueConversionFromMultiValueStringTimePointTest,
-        ::testing::Values(
-            std::make_tuple("2023-08-14", TimePointFormat::IsoDate, std::vector<time_point>{
-                                MakeTimePoint(2023, 8, 14, 0, 0, 0)}),
-            std::make_tuple("2021-01-01\r\n2022-01-01", TimePointFormat::IsoDate, std::vector<time_point>{
-                                MakeTimePoint(2021, 1, 1, 0, 0, 0), MakeTimePoint(2022, 1, 1, 0, 0, 0)}),
-            std::make_tuple("2021/01/01 2020/12/31", TimePointFormat::SlashDate, std::vector<time_point>{
-                                MakeTimePoint(2021, 1, 1, 0, 0, 0), MakeTimePoint(2020, 12, 31, 0, 0, 0)})));
+        ::testing::Values(std::make_tuple("2023-08-14", TimePointFormat::IsoDate,
+                                          std::vector<time_point>{MakeTimePoint(2023, 8, 14, 0, 0, 0)}),
+                          std::make_tuple("2021-01-01\r\n2022-01-01", TimePointFormat::IsoDate,
+                                          std::vector<time_point>{MakeTimePoint(2021, 1, 1, 0, 0, 0),
+                                                                  MakeTimePoint(2022, 1, 1, 0, 0, 0)}),
+                          std::make_tuple("2021/01/01 2020/12/31", TimePointFormat::SlashDate,
+                                          std::vector<time_point>{MakeTimePoint(2021, 1, 1, 0, 0, 0),
+                                                                  MakeTimePoint(2020, 12, 31, 0, 0, 0)})));
 
     TEST(IniValueConversionTest, FromMultiValueString_TimePointsWithCustomDelimiter_ReturnsTimePointValues)
     {
-        const auto result = conversion::FromMultiValueString(
-            " ; 2023-08-14 12:10:01;;\r\n2020-01-01 00:00:00; ", TimePointFormat::IsoDateTime, ';');
+        const auto result = conversion::FromMultiValueString(" ; 2023-08-14 12:10:01;;\r\n2020-01-01 00:00:00; ",
+                                                             TimePointFormat::IsoDateTime, ';');
 
         EXPECT_EQ(result, (std::vector<time_point>{
                               MakeTimePoint(2023, 8, 14, 12, 10, 1), MakeTimePoint(2020, 1, 1, 0, 0, 0)}));
@@ -1261,8 +1243,7 @@ namespace ini::test
 
     TEST(IniValueConversionTest, FromMultiValueString_EmptyPathString_ReturnsEmptyVector)
     {
-        EXPECT_EQ(conversion::FromMultiValueString<conversion::path>(""),
-                  std::vector<std::filesystem::path>{});
+        EXPECT_EQ(conversion::FromMultiValueString<conversion::path>(""), std::vector<std::filesystem::path>{});
     }
 
     class IniValueConversionFromMultiValueStringPathTest

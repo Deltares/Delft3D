@@ -38,7 +38,7 @@ namespace dflowfm_io::validation
                             report.Add<Severity::Error>("Required property [{}].{} is missing.", sectionSchema.name, propertySchema.key);
                         else if (!propertySchema.default_value.empty())
                             report.Add<Severity::Debug>("Property [{}].{} is not provided. Default is used: \"{}\".", sectionSchema.name,
-                                            propertySchema.key, propertySchema.default_value);
+                                                        propertySchema.key, propertySchema.default_value);
                         continue;
                     }
 
@@ -47,10 +47,10 @@ namespace dflowfm_io::validation
                     {
                         if (propertySchema.required)
                             report.Add<Severity::Error>(property.GetLineNumber(), "Required property [{}].{} is specified without a value.",
-                                            sectionSchema.name, propertySchema.key);
+                                                        sectionSchema.name, propertySchema.key);
                         else if (!propertySchema.default_value.empty())
                             report.Add<Severity::Info>(property.GetLineNumber(), "Property [{}].{} is specified without a value. Default is used: \"{}\".",
-                                           sectionSchema.name, propertySchema.key, propertySchema.default_value);
+                                                       sectionSchema.name, propertySchema.key, propertySchema.default_value);
                     }
                 }
             }
@@ -64,7 +64,7 @@ namespace dflowfm_io::validation
                 if (!sectionSchema)
                 {
                     report.Add<Severity::Warning>(section.GetLineNumber(), "Section [{}] is not a supported section.",
-                                      section.GetName());
+                                                  section.GetName());
                     continue;
                 }
 
@@ -76,7 +76,7 @@ namespace dflowfm_io::validation
                     const auto* propertySchema = schema.FindProperty(section.GetName(), property.GetKey());
                     if (!propertySchema)
                         report.Add<Severity::Warning>(property.GetLineNumber(), "Property [{}].{} is not a supported property.",
-                                          section.GetName(), property.GetKey());
+                                                      section.GetName(), property.GetKey());
                 }
             }
         }
@@ -92,13 +92,13 @@ namespace dflowfm_io::validation
                 if (sectionSchema->status.type == StatusType::Obsolete)
                 {
                     report.Add<Severity::Error>(section.GetLineNumber(), "Section [{}] is obsolete since {}. {}",
-                                    section.GetName(), sectionSchema->status.since, sectionSchema->status.comment);
+                                                section.GetName(), sectionSchema->status.since, sectionSchema->status.comment);
                 }
 
                 if (sectionSchema->status.type == StatusType::Deprecated)
                 {
                     report.Add<Severity::Warning>(section.GetLineNumber(), "Section [{}] is deprecated. {}",
-                                      section.GetName(), sectionSchema->status.comment);
+                                                  section.GetName(), sectionSchema->status.comment);
                 }
 
                 for (const auto& property : section.GetProperties())
@@ -110,8 +110,8 @@ namespace dflowfm_io::validation
                     if (propertySchema->status.type == StatusType::Obsolete)
                     {
                         report.Add<Severity::Error>(property.GetLineNumber(), "Property [{}].{} is obsolete since {}. {}",
-                                        section.GetName(), property.GetKey(), propertySchema->status.since,
-                                        propertySchema->status.comment);
+                                                    section.GetName(), property.GetKey(), propertySchema->status.since,
+                                                    propertySchema->status.comment);
                         continue;
                     }
 
@@ -119,7 +119,7 @@ namespace dflowfm_io::validation
                         sectionSchema->status.type != StatusType::Obsolete)
                     {
                         report.Add<Severity::Warning>(property.GetLineNumber(), "Property [{}].{} is deprecated. {}",
-                                          section.GetName(), property.GetKey(), propertySchema->status.comment);
+                                                      section.GetName(), property.GetKey(), propertySchema->status.comment);
                     }
 
                     if (propertySchema->value_type != ValueType::StringEnum && propertySchema->value_type != ValueType::IntEnum)
@@ -135,8 +135,8 @@ namespace dflowfm_io::validation
                     if (enumValueSchema->status.type == StatusType::Obsolete)
                     {
                         report.Add<Severity::Error>(property.GetLineNumber(), "Property [{}].{}={} is obsolete since {}. {}",
-                                        section.GetName(), property.GetKey(), property.GetValue(),
-                                        enumValueSchema->status.since, enumValueSchema->status.comment);
+                                                    section.GetName(), property.GetKey(), property.GetValue(),
+                                                    enumValueSchema->status.since, enumValueSchema->status.comment);
                     }
                     else if (enumValueSchema->status.type == StatusType::Deprecated &&
                              propertySchema->status.type != StatusType::Deprecated &&
