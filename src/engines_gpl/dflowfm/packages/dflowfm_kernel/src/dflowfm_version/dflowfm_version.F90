@@ -47,4 +47,64 @@ contains
       stringout = branch
    end subroutine getbranch_dflowfm
 
+   !> Write the version, source, compiler and feature report.
+   subroutine write_dflowfm_version(unit, gui_enabled)
+      integer, intent(in) :: unit !< Open unit for formatted output.
+      logical, intent(in) :: gui_enabled !< Whether the caller enables the GUI and its OpenGL support.
+      character(len=len(dflowfm_version_id)) :: version_string
+      character(len=len(branch)) :: source_branch
+
+      call getfullversionstring_dflowfm(version_string)
+      write (unit, '(a)') trim(version_string)
+      call getbranch_dflowfm(source_branch)
+      write (unit, '(a)') 'Source: '//trim(source_branch)
+#ifdef __INTEL_LLVM_COMPILER
+      write (unit, '(a,i0,a,i0,a,i0)') 'Compiled with Intel ifx, version ', &
+         __INTEL_LLVM_COMPILER / 10000, '.', mod(__INTEL_LLVM_COMPILER / 100, 100), '.', mod(__INTEL_LLVM_COMPILER, 100)
+#endif
+      write (unit, '(a)') 'Compiled with support for:'
+      ! The CLI runs without Interacter or OpenGL even when it shares a GUI-enabled kernel.
+      write (unit, '(a)') 'IntGUI   : '//trim(merge('yes', 'no ', gui_enabled))
+#ifdef HAVE_OPENGL
+      write (unit, '(a)') 'OpenGL   : '//trim(merge('yes', 'no ', gui_enabled))
+#else
+      write (unit, '(a)') 'OpenGL   : no'
+#endif
+#ifdef _OPENMP
+      write (unit, '(a)') 'OpenMP   : yes'
+#else
+      write (unit, '(a)') 'OpenMP   : no'
+#endif
+#ifdef HAVE_MPI
+      write (unit, '(a)') 'MPI      : yes'
+#else
+      write (unit, '(a)') 'MPI      : no'
+#endif
+#ifdef HAVE_PETSC
+      write (unit, '(a)') 'PETSc    : yes'
+#else
+      write (unit, '(a)') 'PETSc    : no'
+#endif
+#ifdef HAVE_METIS
+      write (unit, '(a)') 'METIS    : yes'
+#else
+      write (unit, '(a)') 'METIS    : no'
+#endif
+#ifdef HAVE_PROJ
+      write (unit, '(a)') 'PROJ     : yes'
+#else
+      write (unit, '(a)') 'PROJ     : no'
+#endif
+#ifdef HAVE_SHAPELIB
+      write (unit, '(a)') 'Shapelib : yes'
+#else
+      write (unit, '(a)') 'Shapelib : no'
+#endif
+#ifdef HAVE_GDAL
+      write (unit, '(a)') 'GDAL     : yes'
+#else
+      write (unit, '(a)') 'GDAL     : no'
+#endif
+   end subroutine write_dflowfm_version
+
 end module dflowfm_version_module

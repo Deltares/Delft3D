@@ -9,6 +9,29 @@ module test_malloc
 contains
 
    !$gtest
+   subroutine test_deallocate_if_allocated() bind(C)
+      real(kind=dp), dimension(:), allocatable, target :: values
+      real(kind=dp), dimension(:, :), allocatable :: matrix
+      character(len=8), dimension(:), allocatable :: labels
+
+      allocate (values(2), matrix(2, 3), labels(1))
+
+      call deallocate_if_allocated(values)
+      call deallocate_if_allocated(matrix)
+      call deallocate_if_allocated(labels)
+      call f90_expect_false(allocated(values))
+      call f90_expect_false(allocated(matrix))
+      call f90_expect_false(allocated(labels))
+
+      call deallocate_if_allocated(values)
+      call deallocate_if_allocated(matrix)
+      call deallocate_if_allocated(labels)
+      call f90_expect_false(allocated(values))
+      call f90_expect_false(allocated(matrix))
+      call f90_expect_false(allocated(labels))
+   end subroutine test_deallocate_if_allocated
+
+   !$gtest
    !> Realloc on unallocated array should allocate and apply fill
    subroutine test_realloc_unallocated_with_fill() bind(C)
       real(dp), allocatable :: arr(:)

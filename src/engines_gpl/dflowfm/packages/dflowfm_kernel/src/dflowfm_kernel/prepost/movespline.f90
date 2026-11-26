@@ -43,7 +43,7 @@ contains
 
    subroutine movespline(ispline, inode, xp, yp)
       use precision, only: dp
-      use m_splines, only: nump, maxspl, xsp, ysp, maxsplen
+      use m_splines, only: nump, spline_capacity, xsp, ysp, points_per_spline_capacity
 
       integer, intent(in) :: ispline !< spline number
       integer, intent(in) :: inode !< spline control point
@@ -55,11 +55,11 @@ contains
 
       call nump(ispline, num)
 
-      if (ispline > 0 .and. ispline <= maxspl .and. inode > 0 .and. inode <= num) then
+      if (ispline > 0 .and. ispline <= spline_capacity .and. inode > 0 .and. inode <= num) then
          dx = xp - xsp(ispline, inode)
          dy = yp - ysp(ispline, inode)
-         xsp(ispline, 1:maxsplen) = xsp(ispline, 1:maxsplen) + dx
-         ysp(ispline, 1:maxsplen) = ysp(ispline, 1:maxsplen) + dy
+         xsp(ispline, 1:points_per_spline_capacity) = xsp(ispline, 1:points_per_spline_capacity) + dx
+         ysp(ispline, 1:points_per_spline_capacity) = ysp(ispline, 1:points_per_spline_capacity) + dy
       end if
       return
    end subroutine movespline

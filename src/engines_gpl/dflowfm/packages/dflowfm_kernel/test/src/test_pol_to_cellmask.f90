@@ -9,6 +9,8 @@ module test_pol_to_cellmask
 
    implicit none(external)
 
+   real(kind=dp), dimension(:), allocatable, private :: saved_xk, saved_yk
+
 contains
 
    !$gtest
@@ -1178,6 +1180,7 @@ contains
       use m_alloc, only: realloc
       integer :: i, ierr
 
+      call save_node_coordinates()
       if (allocated(netcell)) then
          deallocate (netcell)
       end if
@@ -1207,6 +1210,7 @@ contains
       use m_alloc, only: realloc
       integer :: i, ierr
 
+      call save_node_coordinates()
       if (allocated(netcell)) then
          deallocate (netcell)
       end if
@@ -1232,6 +1236,7 @@ contains
       use m_alloc, only: realloc
       integer :: ierr
 
+      call save_node_coordinates()
       ! Allocate netcell array
       if (allocated(netcell)) then
          deallocate (netcell)
@@ -1266,6 +1271,7 @@ contains
       use m_alloc, only: realloc
       integer :: ierr
 
+      call save_node_coordinates()
       if (allocated(netcell)) then
          deallocate (netcell)
       end if
@@ -1305,6 +1311,7 @@ contains
       real(kind=dp), intent(in) :: cellsize
       integer :: i, j, icell, inode, ierr
 
+      call save_node_coordinates()
       nump = nx * ny
       numk = (nx + 1) * (ny + 1)
 
@@ -1343,6 +1350,14 @@ contains
 
    end subroutine setup_grid_netcells
 
+   subroutine save_node_coordinates()
+      use network_data, only: xk, yk
+
+      ! Other mesh arrays can still refer to the coordinates from an earlier model.
+      call move_alloc(xk, saved_xk)
+      call move_alloc(yk, saved_yk)
+   end subroutine save_node_coordinates
+
    subroutine cleanup_netcells()
       use network_data, only: netcell, xk, yk
       integer :: i
@@ -1354,18 +1369,15 @@ contains
          end do
          deallocate (netcell)
       end if
-      if (allocated(xk)) then
-         deallocate (xk)
-      end if
-      if (allocated(yk)) then
-         deallocate (yk)
-      end if
+      call move_alloc(saved_xk, xk)
+      call move_alloc(saved_yk, yk)
 
    end subroutine cleanup_netcells
 
    subroutine setup_empty_netcells()
       use network_data, only: netcell, nump
 
+      call save_node_coordinates()
       nump = 0
       if (allocated(netcell)) then
          deallocate (netcell)
@@ -1378,6 +1390,7 @@ contains
       use m_alloc, only: realloc
       integer :: ierr
 
+      call save_node_coordinates()
       nump = 1
       numk = 4
 
