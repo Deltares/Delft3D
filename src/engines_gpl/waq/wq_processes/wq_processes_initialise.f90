@@ -690,9 +690,9 @@ contains
         call primpro (procesdef, num_substances_total, syname, num_dispersion_arrays_extra, num_velocity_arrays_extra, &
                 ioffx, num_substances_transported, dsto, vsto, num_dispersion_arrays_new, &
                 idpnw, num_velocity_arrays_new, ivpnw, noqtt, temp_status, mergevelocities=mergevelocities)
-        
+
         ! Check vsto: within the context of D-FlowFM, the assumption is made that each substance has only one fall velocity with
-        ! a factor of 1.0, which is currently true for the current processes library. Then we can directly 
+        ! a factor of 1.0, which is currently true for the current processes library. Then we can directly
         if(mergevelocities) then
            write(*, *) 'ERROR: More than one extra velocity array found for at least one substance,'
            write(*, *) '       or a fall velocity factor not equal to 1.0. This is currently not'
@@ -957,15 +957,20 @@ contains
         ! Determine pointer from prvnio, and promnr from pronam
         call realloc(prvpnt, num_processes_activated, keepExisting = .false., Fill = 0)
         call realloc(promnr, num_processes_activated, keepExisting = .false., Fill = 0)
-        prvpnt(1) = 1
-        do iproc = 2, num_processes_activated
-            prvpnt(iproc) = prvpnt(iproc - 1) + prvnio(iproc - 1)
-        end do
-        do iproc = 1, num_processes_activated
-            call pronrs(pronam(iproc), promnr(iproc))
-            is_always_process(iproc) = index_in_array(pronam(iproc), always_processes) > 0
-            is_ads_sed_tra_process(iproc) = index_in_array(pronam(iproc), ads_sed_tra_processes) > 0
-        end do
+
+        write(88,*) 'Realloc prvnpt', num_processes_activated, size(prvpnt); flush(88)
+
+        if ( num_processes_activated > 0 ) then
+            prvpnt(1) = 1
+            do iproc = 2, num_processes_activated
+                prvpnt(iproc) = prvpnt(iproc - 1) + prvnio(iproc - 1)
+            end do
+            do iproc = 1, num_processes_activated
+                call pronrs(pronam(iproc), promnr(iproc))
+                is_always_process(iproc) = index_in_array(pronam(iproc), always_processes) > 0
+                is_ads_sed_tra_process(iproc) = index_in_array(pronam(iproc), ads_sed_tra_processes) > 0
+            end do
+        endif
 
         if (timon) call timstop(ithndl)
 

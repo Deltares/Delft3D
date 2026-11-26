@@ -434,8 +434,12 @@ contains
       call timstrt('WAQ processes init  ', handle_extra(18)) ! waq processes init
       if (wq_processes_active) then
          if (jawaqproc == 1) then
+            write(*,*) 'Flow_modelinit: ini_proc', size(vol1)
+            write(88,*) 'Flow_modelinit: ini_proc', size(vol1); flush(88)
             call fm_wq_processes_ini_proc()
             jawaqproc = 2
+            write(*,*) 'Flow_modelinit', size(vol1)
+            write(88,*) 'Flow_modelinit', size(vol1); flush(88)
             call fm_wq_processes_step(ti_waqproc, tstart_user, vol1, WQ_RUNALL)
          end if
       end if
