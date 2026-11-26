@@ -31,7 +31,7 @@ contains
       logical :: success
 
       allocate (air_pressure(1), ec_pwxwy_x(1), ec_pwxwy_y(1))
-      call teardown%install(teardown_evaluate_pressure_at_eye)
+      call teardown%install(cleanup)
       call create_spiderweb_file( &
          SPW_FILE, N_ROWS, N_COLS, radius=100000.0_dp, &
          t0=0.0_dp, t1=24.0_dp, &
@@ -57,17 +57,17 @@ contains
       ! A quarter of the way from 1000 Pa to 3000 Pa gives a 1500 Pa drop.
       call f90_expect_near(air_pressure(1), BACKGROUND_PRESSURE - EXPECTED_PRESSURE_DROP, 1.0e-8_dp, &
                            'pressure at the eye must include the time-interpolated drop')
-   end subroutine test_spiderweb__evaluate_pressure_at_eye
 
-   !> teardown for test_spiderweb__evaluate_pressure_at_eye
-   subroutine teardown_evaluate_pressure_at_eye()
-      use m_wind, only: air_pressure, ec_pwxwy_x, ec_pwxwy_y
+   contains
 
-      if (associated(ecInstancePtr)) then
-         call f90_expect_true(ecFreeInstance(ecInstancePtr), 'EC instance cleanup should succeed')
-      end if
-      deallocate (air_pressure, ec_pwxwy_x, ec_pwxwy_y)
-   end subroutine teardown_evaluate_pressure_at_eye
+      subroutine cleanup()
+         if (associated(ecInstancePtr)) then
+            call f90_expect_true(ecFreeInstance(ecInstancePtr), 'EC instance cleanup should succeed')
+         end if
+         deallocate (air_pressure, ec_pwxwy_x, ec_pwxwy_y)
+      end subroutine cleanup
+
+   end subroutine test_spiderweb__evaluate_pressure_at_eye   
 
    !$gtest
    subroutine test_spiderweb__evaluate_wind_north_of_eye() bind(C)
@@ -87,7 +87,7 @@ contains
       logical :: success
 
       allocate (wx(1), wy(1))
-      call teardown%install(teardown_evaluate_wind_north_of_eye)
+      call teardown%install(cleanup)
       ! Spiderweb differs in speed at T0 and T1, but are otherwise fully uniform.
       call create_spiderweb_file( &
          SPW_FILE, N_ROWS, N_COLS, radius=METRES_PER_DEGREE, &
@@ -113,17 +113,18 @@ contains
       ! Wind from direction: Uniformly 30 degrees on the spiderweb. So interpolated value is also 30 degrees.
       call f90_expect_near(wx(1), -10.0_dp, TOLERANCE, 'interpolated x wind')
       call f90_expect_near(wy(1), -10.0_dp * sqrt(3.0_dp), TOLERANCE, 'interpolated y wind')
+
+   contains
+
+      subroutine cleanup()
+         if (associated(ecInstancePtr)) then
+            call f90_expect_true(ecFreeInstance(ecInstancePtr), 'EC instance cleanup should succeed')
+         end if
+         deallocate (wx, wy)
+      end subroutine cleanup
+
    end subroutine test_spiderweb__evaluate_wind_north_of_eye
 
-   !> teardown for test_spiderweb__evaluate_wind_north_of_eye
-   subroutine teardown_evaluate_wind_north_of_eye()
-      use m_wind, only: wx, wy
-
-      if (associated(ecInstancePtr)) then
-         call f90_expect_true(ecFreeInstance(ecInstancePtr), 'EC instance cleanup should succeed')
-      end if
-      deallocate (wx, wy)
-   end subroutine teardown_evaluate_wind_north_of_eye
 
    !> Write a spiderweb file with two snapshots.
    subroutine create_spiderweb_file(file_name, n_rows, n_cols, radius, t0, t1, eye_t0, eye_t1, data_t0, data_t1)
