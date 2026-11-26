@@ -53,11 +53,11 @@ module m_statistical_output_types
    !> Derived type for the statistical output items.
    type, public :: t_output_variable_item
       type(t_output_quantity_config), allocatable :: output_config !< Output configuration item.
-      integer :: operation_type !< Specifies the kind of operation to perform on the output variable.
+      integer :: operation_type = SO_NONE !< Specifies the kind of operation to perform on the output variable.
       integer :: id_var !< NetCDF variable ID, to be set and used by actual writing functions.
-      real(dp), pointer, dimension(:) :: stat_output !< Array that is to be written to the Netcdf file. In case the current values are
-                                                     !! required this variable points to the basic variable (e.g. s1).
-                                                     !! Otherwise during the simulation the intermediate results are stored.
+      real(dp), pointer, dimension(:) :: stat_output => null() !< Array that is to be written to the Netcdf file. In case the
+                                                               !! current values are required this variable points to the basic variable (e.g. s1).
+                                                               !! Otherwise during the simulation the intermediate results are stored.
       real(dp), pointer, dimension(:) :: source_input !< The (possibly transformed) data over which statistics are gathered
       logical, dimension(:), allocatable :: missing !< logical array, set to true if value in stat_output was missing at any point in the current output interval.
       procedure(process_data_interface_double), nopass, pointer :: source_input_function_pointer => null() !< Function pointer for operation that needs to be performed to produce source_input
