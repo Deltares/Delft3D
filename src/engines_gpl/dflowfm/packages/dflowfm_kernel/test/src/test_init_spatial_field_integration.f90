@@ -3431,6 +3431,7 @@ contains
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
       integer :: i, ierr
+      integer :: threshold_abort
 
       call setup_minimal_grid_with_points(4)
       ndxi = 2
@@ -3493,6 +3494,7 @@ contains
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
       integer :: i
+      integer :: threshold_abort
       real(dp), dimension(4) :: expected
 
       call setup_minimal_grid_with_points(4)
