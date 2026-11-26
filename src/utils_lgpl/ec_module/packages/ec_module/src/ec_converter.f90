@@ -2463,16 +2463,25 @@ contains
       logical :: success !< function status
 
       ! Local variables
-      type(tEcField), pointer :: target_field
+      type(tEcField), pointer :: source_field, target_field
       integer :: i, num_points, operand
 
       success = .false.
-      if (.not. allocated(connection%converterPtr%sample_values)) then
+      if (connection%nSourceItems /= 1) then
+         call set_ec_message('ERROR: ec_converter::ecConverterSamples: Expected one sample source item.')
+         return
+      end if
+      source_field => connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr
+      if (.not. associated(source_field)) then
+         call set_ec_message('ERROR: ec_converter::ecConverterSamples: Missing sample source field.')
+         return
+      end if
+      if (.not. associated(source_field%arr1dPtr)) then
          call set_ec_message('ERROR: ec_converter::ecConverterSamples: Sample field has not been interpolated onto the targets.')
          return
       end if
 
-      num_points = size(connection%converterPtr%sample_values)
+      num_points = size(source_field%arr1dPtr)
       operand = connection%converterPtr%operandType
       do i = 1, connection%nTargetItems
          target_field => connection%targetItemsPtr(i)%ptr%targetFieldPtr
@@ -2482,9 +2491,9 @@ contains
          end if
          if (allocated(connection%targetMask)) then
             call apply_operand_masked_array(operand, target_field%arr1dPtr(1:num_points), &
-                                            connection%converterPtr%sample_values, connection%targetMask)
+                                            source_field%arr1dPtr, connection%targetMask)
          else
-            call apply_operand(operand, target_field%arr1dPtr(1:num_points), connection%converterPtr%sample_values)
+            call apply_operand(operand, target_field%arr1dPtr(1:num_points), source_field%arr1dPtr)
          end if
          target_field%timesteps = timesteps
       end do

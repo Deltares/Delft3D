@@ -42,8 +42,9 @@ contains
                                                    multuni1, multuni2, multuni3, multuni4, sample_location, sample_transformcoef)
       use m_fm_wq_processes_sub, only: get_waqinputname
       use m_ec_module, only: ecFindFileReader, ec_filetype_to_conv_type ! TODO: Refactor this private data access (UNST-703).
-      use m_ec_support, only: ecSupportFindConverter
-      use m_ec_typedefs, only: tEcConverter
+      use m_ec_field, only: ecFieldCreate1dArray
+      use m_ec_quantity, only: ecQuantitySetTimeint
+      use m_ec_support, only: ecSupportFindField
       use m_ec_filereader_read, only: ecParseARCinfoMask
       use m_flowparameters, only: jawave
       use m_sferic, only: jsferic
@@ -134,11 +135,10 @@ contains
       real(kind=dp), dimension(:), pointer :: dataPtr3 => null() !< Pointer to FM's optional third 1D data array (e.g. in case of spiderweb)
       real(kind=dp), dimension(:), pointer :: dataPtr4 => null() !< Pointer to FM's optional fourth 1D data array (e.g. in case of hacs)
       type(tEcFileReader), pointer :: fileReaderPtr => null() !<
-      type(tEcConverter), pointer :: sample_converter
-      real(dp), dimension(:), allocatable :: sample_values
+      type(tEcField), pointer :: sample_field
       real(dp), dimension(NTRANSFORMCOEF) :: sample_coefficients
       integer, dimension(:), allocatable :: sample_mask
-      integer :: sample_target_location, i
+      integer :: sample_target_location, sample_field_id, sample_quantity_id, i
       integer, dimension(4) :: sample_target_items
 
       logical :: success
@@ -246,16 +246,20 @@ contains
             end if
             sample_coefficients = sample_transformcoef
          end if
-         allocate (sample_values(ndx))
-         sample_values = dmiss_default
-         success = timespaceinitialfield(x, y, sample_values, ndx, filename, filetype, method, OPERAND_OVERRIDE, &
+         sample_field_id = ecCreateField(ecInstancePtr)
+         if (.not. ecFieldCreate1dArray(ecInstancePtr, sample_field_id, ndx)) then
+            goto 1234
+         end if
+         sample_field => ecSupportFindField(ecInstancePtr, sample_field_id)
+         sample_field%arr1d = dmiss_default
+         success = timespaceinitialfield(x, y, sample_field%arr1d, ndx, filename, filetype, method, OPERAND_OVERRIDE, &
                                          sample_coefficients, sample_target_location, mask)
          if (.not. success) then
             goto 1234
          end if
          sample_mask = mask
          do i = 1, ndx
-            if (comparereal(sample_values(i), dmiss_default) == 0) then
+            if (comparereal(sample_field%arr1d(i), dmiss_default) == 0) then
                sample_mask(i) = 0
             end if
          end do
@@ -739,9 +743,33 @@ contains
       end if
 
       if (ec_filetype == provFile_samples) then
-         ! With the sample field cached in the converter, no file reader or source update is needed.
-         sample_converter => ecSupportFindConverter(ecInstancePtr, converterId)
-         call move_alloc(sample_values, sample_converter%sample_values)
+         ! Samples are already on the target grid and do not need a file reader or time interpolation.
+         sample_quantity_id = ecCreateQuantity(ecInstancePtr)
+         if (.not. ecSetQuantity(ecInstancePtr, sample_quantity_id, name='samples_item', vectormax=1)) then
+            goto 1234
+         end if
+         if (.not. ecQuantitySetTimeint(ecInstancePtr, sample_quantity_id, timeint_lin, constant=.true.)) then
+            goto 1234
+         end if
+         sourceItemId = ecCreateItem(ecInstancePtr)
+         if (.not. ecSetItemRole(ecInstancePtr, sourceItemId, itemType_source)) then
+            goto 1234
+         end if
+         if (.not. ecSetItemType(ecInstancePtr, sourceItemId, accessType_memory)) then
+            goto 1234
+         end if
+         if (.not. ecSetItemQuantity(ecInstancePtr, sourceItemId, sample_quantity_id)) then
+            goto 1234
+         end if
+         if (.not. ecSetItemElementSet(ecInstancePtr, sourceItemId, elementSetId)) then
+            goto 1234
+         end if
+         if (.not. ecSetItemSourceT0Field(ecInstancePtr, sourceItemId, sample_field_id)) then
+            goto 1234
+         end if
+         if (.not. ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)) then
+            goto 1234
+         end if
          sample_target_items = ec_undef_int
          if (associated(targetItemPtr1)) then
             sample_target_items(1) = targetItemPtr1
