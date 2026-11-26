@@ -46,6 +46,9 @@ module m_fm_bott3d
 
    private !Prevent used modules from being exported
    public :: fm_bott3d
+   public :: fm_update_dredged_bed
+   public :: fm_deposit_dried_sediment
+   public :: fm_suspended_sand_correction
 
 contains
 
@@ -61,7 +64,7 @@ contains
    !! in bottom sediment.
    !! Includes erosion of dry points and associated
    !! bathymetry changes
-   subroutine fm_bott3d()
+   subroutine fm_bott3d(bed_updated)
 
    !!
    !! Declarations
@@ -97,6 +100,8 @@ contains
       use m_bedform, only: bfmpar
       implicit none
 
+      logical, intent(out) :: bed_updated
+
    !!
    !! Local parameters
    !!
@@ -130,6 +135,8 @@ contains
       associate (&
          cmpupd => stmpar%morpar%cmpupd &
          )
+
+      bed_updated = .false.
 
       if (associated(bfmpar%dunelength)) then
          dunelength_tmp => bfmpar%dunelength
@@ -329,6 +336,7 @@ contains
       end if
       
       call fm_update_bed_level(dtmor)
+      bed_updated = stmpar%morpar%bedupd
 
       !
       call timstop(handle_extra(89))
@@ -376,9 +384,10 @@ contains
 
       integer :: ierror
       integer :: l, ll, Lx, Lf, k1, k2
-      integer :: Lb, Lt, ka, kf1, kf2, ac1, ac2
+      integer :: Lb, Lt, ka, kf1, kf2
 
-      real(kind=dp) :: cavg
+      real(kind=dp) :: ac1, ac2
+      real(kind=dp) :: integrated_concentration
       real(kind=dp) :: cavg1
       real(kind=dp) :: cavg2
       real(kind=dp) :: ceavg
@@ -538,19 +547,19 @@ contains
                               end if
                               apower = min(max(-10.0_dp, apower), 10.0_dp)
                               !
-                              ! Compute the average concentration cavg between the reference
-                              ! height a and the top of the current layer (bottom of layer above) z.
+                              ! Integrate concentration between the reference height a and
+                              ! the top of the current layer (bottom of the layer above).
                               !           /zktop                           zktop                       zktop
-                              ! cavg*dz = | c(z) dz = c_a/(-R+1)*(z/a)^(-R+1)*a | = c_a/(-R+1)*a^R*z^(-R+1) |
+                              ! integral = | c(z) dz = c_a/(-R+1)*(z/a)^(-R+1)*a | = c_a/(-R+1)*a^R*z^(-R+1) |
                               !          /a                                     a                           a
                               !
                               cavg1 = (ceavg / (apower + 1.0_dp)) * (1.0_dp / aksu)**apower
                               cavg2 = zktop**(apower + 1.0_dp) - aksu**(apower + 1.0_dp)
-                              cavg = cavg1 * cavg2 ! kg/m3/m
+                              integrated_concentration = cavg1 * cavg2 ! kg/m^2
                               !
                               ! The corresponding effective suspended load flux is
                               !
-                              cflux = u1(ka) * cavg * dz * wu_mor(Lx)
+                              cflux = u1(ka) * integrated_concentration * wu_mor(Lx)
                               !
                               ! Increment the correction by the part of the suspended load flux
                               ! that is in excess of the flux computed above, but never opposite.
@@ -989,7 +998,7 @@ contains
       use m_flowgeom, only: bai_mor, ndxi, bl, wu, wu_mor, xz, yz
       use m_flow, only: kmx, s1, vol1
       use m_fm_erosed, only: dbodsd, lsedtot, cdryb, tratyp, e_sbn, sus, neglectentrainment, duneavalan, bed, bedupd, e_scrn, iflufflyr, kmxsed, sourf, sourse, mfluff, depflxf, eroflxf
-      use m_fm_erosed, only: ndxi_mor, nd => nd_mor, sedtyp, depfac, max_mud_sedtyp, ndx => ndx_mor
+      use m_fm_erosed, only: ndxi_mor, nd => nd_mor, ndx => ndx_mor
       use m_sediment, only: avalflux, ssccum
       use m_flowtimes, only: dts, dnt
       use m_transport, only: fluxhortot, ised1, sinksetot, sinkftot
@@ -1026,6 +1035,7 @@ contains
       real(kind=dp) :: h1
       real(kind=dp) :: sumflux
       real(kind=dp) :: thick1
+      real(kind=fp) :: fluff_fraction, bed_fraction
 
    !!
    !! Execute
@@ -1121,22 +1131,11 @@ contains
                      ! 2. sand to bed layer
                      sedflx = sinksetot(j, nm) * bai_mor(nm)
                      !
-                     ! 3. in case of drying cell, assign mass to the appropriate layer (fluff/bed)
-                     if (ssccum(l, nm) > 0.0_fp) then
-                        if (sedtyp(l) <= max_mud_sedtyp) then
-                           ! if silt/clay some mass may go to fluff layer
-                           if (iflufflyr == 1 .or. mfluff(l, nm) < 0.0_fp) then
-                              ! all mass to fluff layer
-                              mfluff(l, nm) = mfluff(l, nm) + ssccum(l, nm) * dts
-                           else ! iflufflyr == 2
-                              ! part to fluff layer, part to bed layer
-                              mfluff(l, nm) = mfluff(l, nm) + (1.0_fp - depfac(l, nm)) * ssccum(l, nm) * dts
-                              sedflx = sedflx + depfac(l, nm) * ssccum(l, nm)
-                           end if
-                        else
-                           ! for sand all mass to bed layer
-                           sedflx = sedflx + ssccum(l, nm)
-                        end if
+                     ! 3. partition sediment left in drying cells between fluff and the bed
+                     if (ssccum(l, nm) > 0.0_dp) then
+                        call drying_sediment_fractions(l, nm, fluff_fraction, bed_fraction)
+                        mfluff(l, nm) = mfluff(l, nm) + fluff_fraction * ssccum(l, nm) * dts
+                        sedflx = sedflx + bed_fraction * ssccum(l, nm)
                      end if
                   end if
                   ssccum(l, nm) = 0.0_dp
@@ -1601,7 +1600,7 @@ contains
       use precision, only: dp
 
       use m_flow, only: kmx, hs
-      use m_flowgeom, only: ndx
+      use m_flowgeom, only: ndx, ndx2d, ndxi
       use m_transport, only: constituents, itra1, itran, isalt, ised1
       use m_sediment, only: stmpar
       use m_fm_erosed, only: blchg
@@ -1626,6 +1625,10 @@ contains
 
       if (kmx == 0) then
          do k = 1, ndx
+            ! Internal 1D cells use their rebuilt cross-section volumes.
+            if (k > ndx2d .and. k <= ndxi) then
+               cycle
+            end if
             hsk = hs(k)
             if (hsk <= epshs) then
                cycle
@@ -1649,6 +1652,9 @@ contains
       else !kmx>0
          do ll = 1, stmpar%lsedsus ! works for sigma only
             do k = 1, ndx
+               if (k > ndx2d .and. k <= ndxi) then
+                  cycle
+               end if
                hsk = hs(k)
                if (hsk <= epshs) then
                   cycle
@@ -1664,6 +1670,9 @@ contains
          !
          if (jasal > 0) then
             do k = 1, ndx
+               if (k > ndx2d .and. k <= ndxi) then
+                  cycle
+               end if
                hsk = hs(k)
                if (hsk <= epshs) then
                   cycle
@@ -1679,6 +1688,9 @@ contains
          if (ITRA1 > 0) then
             do itrac = ITRA1, ITRAN
                do k = 1, ndx
+                  if (k > ndx2d .and. k <= ndxi) then
+                     cycle
+                  end if
                   hsk = hs(k)
                   if (hsk <= epshs) then
                      cycle
@@ -1851,16 +1863,12 @@ contains
    !! Declarations
    !!
 
-      use Messagehandling
-      use message_module, only: writemessages, write_error
-      use m_flowgeom, only: ndx, bl_ave, bl, bl_ave0
+      use m_flowgeom, only: ndx, bl_ave, bl
       use m_fm_erosed, only: bedupd, blchg, stmpar
       use m_dad, only: dad_included
       use m_fm_update_crosssections, only: fm_update_crosssections
       use morphology_data_module, only: bedbndtype
       use fm_external_forcings_data, only: nopenbndsect
-      use m_fm_dredge, only: fm_dredge
-      use m_physcoef, only: dynamic_vegetation_roughness_enabled
 
       implicit none
 
@@ -1873,8 +1881,6 @@ contains
    !!
    !! Local variables
    !!
-
-      logical :: error
 
       integer :: nm, jb, ib
       integer :: icond
@@ -1922,35 +1928,144 @@ contains
          ! Remember erosion velocity for dilatancy
          !
          call fm_erosion_velocity(dtmor)
-         !
-         ! Dredging and Dumping
-         !
-         if (dad_included) then
-            !
-            bl_ave0 = bl_ave ! backup average bed level before dredging, needed to compute bed level change due to dredging
-            !
-            call fm_dredge(error)
-            if (error) then
-               call mess(LEVEL_FATAL, 'Error in fm_bott3d :: fm_dredge returned an error.')
-               return
-            end if
-            !
-            do nm = 1, ndx
-               blchg(nm) = bl_ave(nm) - bl_ave0(nm) ! get average bed level change
-            end do
-            !
-            if (dynamic_vegetation_roughness_enabled > 0) then
-               call determine_linkbased_cumblchg()
-            end if
-            !
-            call fm_update_crosssections(blchg) ! update 1d cross-sections after dredging (updates bl for 1D).
-            !
-            call fm_update_bl()
-            !
-         end if
       end if !bedupd
 
    end subroutine fm_update_bed_level
+
+   !> Apply dredging and dumping after rebuilding the transport-driven bed geometry.
+   subroutine fm_update_dredged_bed(geometry_changed)
+      use m_flowgeom, only: ndx, bl_ave, bl_ave0
+      use m_fm_erosed, only: blchg
+      use m_fm_dredge, only: fm_dredge
+      use messagehandling, only: mess, LEVEL_FATAL
+      use mass_balance_areas_routines, only: comp_dredging_mba
+
+      logical, intent(out) :: geometry_changed
+
+      logical :: error
+
+      geometry_changed = .false.
+      bl_ave0 = bl_ave
+      call comp_dredging_mba(before_dredging=.true.)
+      call fm_dredge(error)
+      if (error) then
+         call mess(LEVEL_FATAL, 'Error updating the dredged bed.')
+         return
+      end if
+      call comp_dredging_mba(before_dredging=.false.)
+      blchg(1:ndx) = bl_ave(1:ndx) - bl_ave0(1:ndx)
+      call fm_apply_dredged_elevation_change(geometry_changed)
+   end subroutine fm_update_dredged_bed
+
+   !> Apply the elevation change from dumping or deposition on the dried bed.
+   subroutine fm_apply_dredged_elevation_change(geometry_changed)
+      use m_flowgeom, only: ndx
+      use m_fm_erosed, only: blchg
+      use m_fm_update_crosssections, only: fm_update_crosssections
+      use m_physcoef, only: dynamic_vegetation_roughness_enabled
+
+      logical, intent(out) :: geometry_changed !< The hydraulic bed must be refreshed.
+
+      if (dynamic_vegetation_roughness_enabled > 0) then
+         call determine_linkbased_cumblchg()
+      end if
+      geometry_changed = any(blchg(1:ndx) /= 0.0_dp)
+      if (geometry_changed) then
+         call fm_update_crosssections(blchg)
+         call fm_update_bl()
+      end if
+   end subroutine fm_apply_dredged_elevation_change
+
+   !> Transfer sediment from a dried cell to its bed shortage, bed and fluff.
+   !! Leave constituents the bed cannot accept in stranded_mass for rewetting.
+   subroutine fm_deposit_dried_sediment(stranded_mass, geometry_changed)
+      use bedcomposition_module, only: repay_sediment_shortage, updmorlyr
+      use m_bedform, only: bfmpar
+      use m_fm_erosed, only: blchg, cmpupdfrac, iflufflyr, lsed, lsedtot, mfluff, morfac, morft, ndx_mor, stmpar
+      use m_flowgeom, only: bai_mor, bl_ave, ndx
+      use m_transport, only: ised1
+      use messagehandling, only: mess, LEVEL_FATAL
+      use message_module, only: writemessages
+      use unstruc_files, only: mdia
+      use m_sediment, only: mtd
+
+      real(kind=dp), dimension(:, :), intent(inout) :: stranded_mass !< Amount by constituent and cell.
+      logical, intent(out) :: geometry_changed !< Sediment deposited on the bed changed its elevation.
+
+      integer :: cell, fraction, constituent, status
+      real(kind=fp) :: areal_mass, fluff_fraction, bed_fraction
+      real(kind=fp), dimension(:, :), allocatable :: bed_change, bedload
+      real(kind=fp), dimension(:), allocatable :: bed_level_change, dune_length
+
+      geometry_changed = .false.
+      if (ised1 <= 0 .or. morfac <= 0.0_dp .or. .not. stmpar%morpar%cmpupd) then
+         return
+      end if
+      allocate (bed_change(lsedtot, ndx_mor), source=0.0_fp)
+      do cell = 1, size(stranded_mass, 2)
+         if (bai_mor(cell) <= 0.0_dp) then
+            cycle
+         end if
+         do fraction = 1, lsed
+            constituent = ised1 + fraction - 1
+            if (stranded_mass(constituent, cell) <= 0.0_dp .or. .not. cmpupdfrac(fraction)) then
+               cycle
+            end if
+            ! Use the morphological mass basis also used in the sediment balance.
+            areal_mass = real(stranded_mass(constituent, cell) * morfac * bai_mor(cell), fp)
+            call repay_sediment_shortage(areal_mass, stmpar%morlyr%state%sedshort(fraction, cell))
+            call drying_sediment_fractions(fraction, cell, fluff_fraction, bed_fraction)
+            bed_change(fraction, cell) = bed_fraction * areal_mass
+            if (iflufflyr > 0) then
+               mfluff(fraction, cell) = mfluff(fraction, cell) + fluff_fraction * areal_mass
+            end if
+            stranded_mass(constituent, cell) = 0.0_dp
+         end do
+      end do
+
+      if (any(bed_change > 0.0_fp)) then
+         allocate (bed_level_change(ndx_mor), bedload(ndx_mor, lsedtot))
+         bedload = 0.0_fp
+         allocate (dune_length(ndx_mor), source=1.0e10_fp)
+         if (associated(bfmpar%dunelength)) then
+            dune_length = bfmpar%dunelength(1:ndx_mor)
+         end if
+         status = updmorlyr(stmpar%morlyr, bed_change, bed_level_change, dune_length, bedload, 0.0_fp, morft, mtd%messages)
+         call writemessages(mtd%messages, mdia)
+         if (status /= 0) then
+            call mess(LEVEL_FATAL, 'Error depositing suspended sediment from cells dried by dredging or dumping.')
+            return
+         end if
+         blchg = 0.0_dp
+         do cell = 1, ndx
+            if (any(bed_change(:, cell) > 0.0_fp)) then
+               blchg(cell) = bed_level_change(cell)
+            end if
+         end do
+         bl_ave(1:ndx) = bl_ave(1:ndx) + blchg(1:ndx)
+         call fm_apply_dredged_elevation_change(geometry_changed)
+      end if
+   end subroutine fm_deposit_dried_sediment
+
+   !> Split sediment left in drying cells between fluff and the bed.
+   subroutine drying_sediment_fractions(fraction, cell, fluff_fraction, bed_fraction)
+      use m_fm_erosed, only: depfac, iflufflyr, max_mud_sedtyp, mfluff, sedtyp
+
+      integer, intent(in) :: fraction !< Suspended sediment fraction index.
+      integer, intent(in) :: cell !< Morphology cell index.
+      real(kind=fp), intent(out) :: fluff_fraction !< Share of the mass going to fluff.
+      real(kind=fp), intent(out) :: bed_fraction !< Share of the mass going to the bed.
+
+      bed_fraction = 1.0_fp
+      if (iflufflyr > 0 .and. sedtyp(fraction) <= max_mud_sedtyp) then
+         if (iflufflyr == 1 .or. mfluff(fraction, cell) < 0.0_fp) then
+            bed_fraction = 0.0_fp
+         else
+            bed_fraction = depfac(fraction, cell)
+         end if
+      end if
+      fluff_fraction = 1.0_fp - bed_fraction
+   end subroutine drying_sediment_fractions
 
    !> Maximize and minimize water level
    subroutine fm_correct_water_level()

@@ -106,7 +106,6 @@ subroutine bedtr1993(uuu       ,vvv       ,u2dh      ,d50       ,d90       , &
     real(fp) :: lt
     real(fp) :: phicur
     real(fp) :: phiwav
-    real(fp) :: phiwr
     real(fp) :: qbc
     real(fp) :: qbt
     real(fp) :: qbw
@@ -175,7 +174,6 @@ subroutine bedtr1993(uuu       ,vvv       ,u2dh      ,d50       ,d90       , &
        if (phicur < 0.0_fp) phicur = phicur + 360.0_fp
        if (tp > 1.0_fp) then
           phiwav = teta
-          phiwr  = (phiwav - phicur)*degrad
           phiwav = phiwav*degrad
           !
           ! Calculate Uon and Uoff, asymmetry
@@ -257,7 +255,11 @@ subroutine bedtr1993(uuu       ,vvv       ,u2dh      ,d50       ,d90       , &
              qbc = qbt
              qbw = 0.0_fp
           else
-             qbc = qbt/sqrt(1.0_fp + r*r + 2.0_fp*r*cos(phiwr))
+             ! Van Rijn (2003), Eqs. (5)-(7), partitions the 90-degree
+             ! calibrated transport before applying the actual directions.
+             ! Renormalizing by the actual vector sum is singular for equal
+             ! and opposing components and creates unbounded bedload pulses.
+             qbc = qbt/sqrt(1.0_fp + r*r)
              qbw = r*qbc
           endif
        else

@@ -50,6 +50,7 @@ contains
       use m_flowparameters, only: flow_solver, FLOW_SOLVER_SRE
       use m_CrossSections, only: t_CSType
       use m_node, only: t_node
+      use m_subsidence, only: sdu_1d_offset
 
       real(fp), dimension(:), intent(inout) :: blchg !< Bed level change (> 0 = sedimentation, < 0 = erosion)
 
@@ -205,6 +206,9 @@ contains
                !endif
                blmin = min(blmin, network%crs%cross(c)%bedLevel)
             end do
+            if (allocated(sdu_1d_offset)) then
+               blmin = blmin + sdu_1d_offset(nm)
+            end if
             blchg(nm) = blmin - bl(nm)
          end if
       end do

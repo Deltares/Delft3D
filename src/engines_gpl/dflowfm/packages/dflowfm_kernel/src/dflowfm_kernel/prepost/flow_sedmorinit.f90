@@ -145,7 +145,9 @@ contains
          ln_mor = ln
       end if
 
-      call rdstm(stmpar, griddim, md_sedfile, md_morfile, filtrn='', lundia=mdia, lsal=jasal, ltem=temperature_model, ltur=ltur_, lsec=jasecflow, lfbedfrm=bfm_included, julrefday=julrefdat, dtunit='Tunit='//md_tunit, nambnd=nambnd, error=error, ag=ag)
+      call rdstm(stmpar, griddim, md_sedfile, md_morfile, filtrn='', lundia=mdia, lsal=jasal, ltem=temperature_model, &
+                 ltur=ltur_, lsec=jasecflow, lfbedfrm=bfm_included, julrefday=julrefdat, dtunit='Tunit='//md_tunit, &
+                 nambnd=nambnd, error=error, ag=ag, track_shortage_by_default=len_trim(md_dredgefile) > 0)
       if (error) then
          call mess(LEVEL_FATAL, 'unstruc::flow_sedmorinit - Error in subroutine rdstm.')
          return

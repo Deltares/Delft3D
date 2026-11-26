@@ -35,8 +35,23 @@ module m_set_bobs
    use m_duikerstoprofs
 
    implicit none
+   private :: setbobs_impl
 contains
-   subroutine setbobs() ! and set blu, weigthed depth at u point
+   subroutine setbobs()
+      call setbobs_impl(refresh_1d_cross_sections=.false., apply_ground_displacement=.false.)
+   end subroutine setbobs
+
+   !> Rebuild geometry after a change to the morphological bed and its cross sections.
+   subroutine setbobs_after_morphology()
+      call setbobs_impl(refresh_1d_cross_sections=.true., apply_ground_displacement=.false.)
+   end subroutine setbobs_after_morphology
+
+   !> Translate the 1D link ends by their nodal ground displacements.
+   subroutine setbobs_after_subsupl()
+      call setbobs_impl(refresh_1d_cross_sections=.false., apply_ground_displacement=.true.)
+   end subroutine setbobs_after_subsupl
+
+   subroutine setbobs_impl(refresh_1d_cross_sections, apply_ground_displacement)
       use precision, only: dp
       use m_netw, only: netcell, zk, zkuni, numl, numl1d, lne, kn, nmk
       use m_flowparameters, only: ibedlevtyp, calc_bedlevel_over_inactive_links, jaconveyance2D, BEDLEV_TYPE_WATERLEVEL, &
@@ -47,15 +62,25 @@ contains
       use m_flow, only: blmeanbelow, blminabove
       use m_sediment, only: stm_included
       use m_oned_functions, only: setbobs_1d
+      use m_cross_helper, only: getbobs
+      use m_subsidence, only: sdu_blp, sdu_1d_offset
       use m_structures, only: network
       use m_longculverts, only: find1d2dculvertlinks, longculvertsToProfs
       use m_longculverts_data, only: newculverts, nlongculverts, longculverts
       use unstruc_model, only: md_convertlongculverts
       use network_data, only: LINK_1D_BOUNDARY, LINK_1D, LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF
 
+      logical, intent(in) :: refresh_1d_cross_sections !< The loaded 1D cross sections define the updated bed.
+      logical, intent(in) :: apply_ground_displacement !< Ground movement has changed the nodal elevations.
+
       integer :: L, k1, k2, n1, n2, n, k, k3, LL, kk, Ls, Lf, mis, i, numcoords, ibotL
       real(kind=dp) :: bl1, bl2, bedlevel_at_link, bln, zn1, zn2, zn3, wn, alf, skewn, xt, yt, xn, yn
+      real(kind=dp) :: link_bed_levels(2)
+      logical :: use_1d_cross_sections, shift_1d_link_levels
       ! real(kind=dp), external :: skewav
+
+      use_1d_cross_sections = refresh_1d_cross_sections .and. network%loaded
+      shift_1d_link_levels = apply_ground_displacement .and. network%loaded .and. ibedlevtyp == BEDLEV_TYPE_WATERLEVEL
 
       ! First, prepare bed levels at pressure points:
 
@@ -165,20 +190,46 @@ contains
          end if
 
       end do
-      bob0(:, lnx1d + 1:lnx) = bob(:, lnx1d + 1:lnx)
+      if (shift_1d_link_levels) then
+         do L = lnx1d + 1, lnx
+            if (kcu(L) /= LINK_1D_BOUNDARY) then
+               bob0(:, L) = bob(:, L)
+            end if
+         end do
+      else
+         bob0(:, lnx1d + 1:lnx) = bob(:, lnx1d + 1:lnx)
+      end if
 
       if (jaupdbobbl1d > 0) then
          call setbobs_1d()
-         jaupdbobbl1d = 0 ! update bobs and bl only at initialization. After initialisation bobs should only follow from bl, in particular for morphological updating. When considering nodal relations, some special treatment may be required
+         jaupdbobbl1d = 0 ! Only initialize nodal, storage and structure bed levels once.
       else
 
          do L = 1, lnx1D ! 1D
 
-            if (iadv(L) > 20 .and. iadv(L) < 30 .and. (.not. stm_included)) then
+            if (iadv(L) > 20 .and. iadv(L) < 30 .and. &
+                (use_1d_cross_sections .or. shift_1d_link_levels .or. .not. stm_included)) then
                cycle ! skip update of bobs for structures
             end if
 
             if (kcu(L) == LINK_1D) then ! 1D link
+               if (shift_1d_link_levels) then
+                  link_bed_levels = bl(ln(:, L)) - sdu_blp(ln(:, L))
+                  bob(:, L) = bob(:, L) + link_bed_levels
+                  bob0(:, L) = bob0(:, L) + link_bed_levels
+                  cycle
+               else if (use_1d_cross_sections) then
+                  ! Use the same link-end levels as at initialization. Keep existing values where no cross section is available.
+                  link_bed_levels = getbobs(network, L)
+                  if (all(link_bed_levels < 0.5_dp * huge(1.0_dp))) then
+                     if (allocated(sdu_1d_offset)) then
+                        link_bed_levels = link_bed_levels + sdu_1d_offset(ln(:, L))
+                     end if
+                     bob(:, L) = link_bed_levels
+                     bob0(:, L) = link_bed_levels
+                  end if
+                  cycle
+               end if
 
                n1 = ln(1, L)
                n2 = ln(2, L) ! flow ref
@@ -213,7 +264,9 @@ contains
                end if
             end if
          end do
-         bob0(:, 1:lnx1d) = bob(:, 1:lnx1d)
+         if (.not. use_1d_cross_sections .and. .not. shift_1d_link_levels) then
+            bob0(:, 1:lnx1d) = bob(:, 1:lnx1d)
+         end if
       end if
 
       ! 1d-2d links
@@ -305,6 +358,12 @@ contains
 
          n1 = ln(1, L)
          n2 = ln(2, L)
+         if (shift_1d_link_levels .and. kcu(L) == LINK_1D_BOUNDARY) then
+            link_bed_levels = bl(ln(:, L)) - sdu_blp(ln(:, L))
+            bob(:, L) = bob(:, L) + link_bed_levels
+            bob0(:, L) = bob0(:, L) + link_bed_levels
+            cycle
+         end if
          if (jaupdbndbl == 1) then
             !if `jadpuopt==1`, the bed level at the boundaries has been extrapolated in `setbedlevelfromextfile` and we do not want to overwrite it.
             if (jadpuopt == 1) then
@@ -410,7 +469,7 @@ contains
       end if
       jaupdbndbl = 0 ! after first run of setbobs set to 0 = no update
 
-   end subroutine setbobs
+   end subroutine setbobs_impl
    !> calculate bed level at a link based on the type of bed level definition and the input parameters.
    function get_bedlevel_at_link(n1, n2, k1, k2, blu, ibot) result(bedlevel_at_link)
 

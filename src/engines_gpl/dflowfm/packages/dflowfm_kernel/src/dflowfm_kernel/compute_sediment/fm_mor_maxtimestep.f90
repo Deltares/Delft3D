@@ -53,7 +53,8 @@ contains
 
       implicit none
 
-      integer :: k, k1, k2, kk, L, ised, ac1, ac2
+      integer :: k, k1, k2, kk, L, ised
+      real(kind=dp) :: ac1, ac2
       real(kind=dp) :: dum, sx, sy, sL, dt, dtmaxmor, kkcflmxloc, mf
 
       dtmaxmor = huge(0.0_dp)

@@ -46,6 +46,7 @@ contains
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_zlayer_indices, only: getzlayerindices
       use m_flowtimes, only: dts
+      use m_subsidence, only: jasubsupl
 
       integer, intent(in) :: jazws0 !< Whether to store zws in zws0 at initialisation
 
@@ -69,7 +70,7 @@ contains
          do n = 1, ndx
             kb = kbot(n)
 
-            if (jased > 0) then
+            if (jased > 0 .or. jasubsupl > 0) then
                zws(kb - 1) = bl(n)
             end if
             h0 = s1(n) - zws(kb - 1)
@@ -275,6 +276,7 @@ contains
    !! but including link connectivity updates when dry-to-wet transitions occur.
    !! Is a special version of the set_kbot_ktop subroutine for after s0 updates on the boundary nodes.
    subroutine update_vertical_coordinates_boundary()
+      use m_subsidence, only: jasubsupl
       use precision, only: dp
       use m_flowgeom, only: ndx, ba, bl
       use m_flow, only: kmx, zws, zws0, ktop, vol1, layertype, kbot, jased, kmxn, &
@@ -313,7 +315,7 @@ contains
 
             kb = kbot(n)
 
-            if (jased > 0) then
+            if (jased > 0 .or. jasubsupl > 0) then
                zws(kb - 1) = bl(n)
             end if
             h0 = s0(n) - zws(kb - 1)

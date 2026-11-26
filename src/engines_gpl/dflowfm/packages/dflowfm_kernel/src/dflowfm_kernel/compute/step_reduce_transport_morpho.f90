@@ -32,7 +32,7 @@
 
 module m_step_reduce_transport_morpho
 
-   use m_subsupl_update_s1, only: subsupl_update_s1
+   use m_subsupl_update_s1, only: subsupl_update_s1, subsupl_update_constituents, remap_constituents_after_bed_change
    use m_setucxucy_mor, only: setucxucy_mor
    use m_fm_flocculate, only: fm_flocculate
    use m_fm_fallve, only: fm_fallve
@@ -70,16 +70,29 @@ contains
       use unstruc_display
       use m_waves
       use m_subsidence, only: jasubsupl
+      use m_dad, only: dad_included
       use m_fm_bott3d, only: fm_bott3d
-      use m_fm_erosed, only: ti_sedtrans
+      use m_fm_erosed, only: bedupd, ti_sedtrans
       use m_curvature, only: get_curvature
       use m_xbeach_netcdf, only: xbeach_mombalance
-      use mass_balance_areas_routines, only: comp_bedload_fluxmba
+      use mass_balance_areas_routines, only: comp_bedload_fluxmba, comp_fixedbed_fluxmba, comp_bedflowmba
+      use m_mass_balance_area_data, only: jamba
       use m_set_kbot_ktop
-      use m_volsur
-      use m_set_bobs
+      use m_set_bobs, only: setbobs_after_morphology, setbobs_after_subsupl
       use m_fm_erosed_sub, only: fm_erosed
       use m_source_sink, only: source_sinks
+      use m_transport, only: numconst
+
+      logical :: morphology_active, update_morphology_geometry, bed_updated
+      real(kind=dp), dimension(:), allocatable :: previous_volume
+      integer, dimension(:), allocatable :: previous_ktop
+      real(kind=dp), dimension(:, :), allocatable :: stranded_mass
+
+      morphology_active = jased > 0 .and. stm_included
+      update_morphology_geometry = .false.
+      if (morphology_active) then
+         update_morphology_geometry = bedupd
+      end if
 
       numnodneg = 0
       if (wrwaqon) then
@@ -111,7 +124,7 @@ contains
       hs = s1 - bl
       hs = max(hs, 0.0_dp)
 
-      if (jased > 0 .and. stm_included) then
+      if (morphology_active) then
          if (time1 >= tstart_user + ti_sedtrans * tfac) then
             if (jatimer == 1) then
                call starttimer(IEROSED)
@@ -128,7 +141,6 @@ contains
             call fm_erosed() ! source/sink, bedload/total load
             call timstop(handle_extra(88))
 
-            call comp_bedload_fluxmba()
             if (jatimer == 1) then
                call stoptimer(IEROSED)
             end if
@@ -153,25 +165,153 @@ contains
          call stoptimer(ITRANSPORT)
       end if
 
-      if (jased > 0 .and. stm_included) then
-         call fm_bott3d() ! bottom update
+      if (jamba > 0 .and. (update_morphology_geometry .or. jasubsupl > 0)) then
+         call comp_bedflowmba(before_update=.true.)
+      end if
+      if (morphology_active) then
+         if (jamba > 0) then
+            call comp_fixedbed_fluxmba()
+         end if
+         if (update_morphology_geometry .and. ndxi > ndx2d .and. numconst > 0) then
+            previous_volume = vol1
+            if (kmx > 0) then
+               previous_ktop = ktop
+            end if
+         end if
+         call fm_bott3d(bed_updated)
+         ! Account for the corrected bedload used by this step's composition update.
+         call comp_bedload_fluxmba()
       end if
 
+      if (update_morphology_geometry) then
+         ! Complete the morphology volume change before saving the subsidence volumes.
+         call setbobs_after_morphology()
+         call update_bed_volumes()
+         if (allocated(previous_volume)) then
+            call remap_constituents_after_bed_change(previous_volume, previous_ktop=previous_ktop, &
+                                                      stranded_mass=stranded_mass, first_cell=ndx2d + 1)
+            call retain_dry_cell_mass(stranded_mass)
+         end if
+         if (bed_updated .and. dad_included) then
+            call update_dredged_bed()
+         end if
+      end if
       if (jasubsupl > 0) then
          call apply_subsupl()
+         call setbobs_after_subsupl()
+         call subsupl_update_s1()
+         call update_bed_volumes()
+         call subsupl_update_constituents()
       end if
+      call restore_dry_cell_mass()
 
-      if ((jased > 0 .and. stm_included) .or. (jasubsupl > 0)) then
-         call setbobs() ! adjust administration - This option only works for ibedlevtyp = 1, otherwise original bed level [bl] is overwritten to original value
-         if (jasubsupl > 0) then
-            call subsupl_update_s1()
-         end if
-         call volsur() ! update volumes 2d
-         if (kmx > 0) then
-            call set_kbot_ktop(jazws0=0) ! and 3D for cell volumes
-         end if
+      if (jamba > 0 .and. (update_morphology_geometry .or. jasubsupl > 0)) then
+         call comp_bedflowmba(before_update=.false.)
       end if
 
    end subroutine step_reduce_transport_morpho
+
+   !> Update geometry and remap transported mass for the bed change due to dredging and dumping.
+   subroutine update_dredged_bed()
+      use m_fm_bott3d, only: fm_update_dredged_bed, fm_deposit_dried_sediment
+      use m_flow, only: vol1, kmx, ktop, s0, s1
+      use m_flowgeom, only: bl
+      use m_set_bobs, only: setbobs_after_morphology
+      use m_transport, only: numconst
+
+      real(kind=dp), dimension(:), allocatable :: previous_volume
+      real(kind=dp), dimension(:, :), allocatable :: stranded_mass
+      integer, dimension(:), allocatable :: previous_ktop
+      logical :: geometry_changed
+
+      if (numconst > 0) then
+         previous_volume = vol1
+         if (kmx > 0) then
+            previous_ktop = ktop
+         end if
+      end if
+      call fm_update_dredged_bed(geometry_changed)
+      do while (geometry_changed)
+         call setbobs_after_morphology()
+         s0 = max(s0, bl)
+         s1 = max(s1, bl)
+         call update_bed_volumes()
+         geometry_changed = .false.
+         if (numconst > 0) then
+            call remap_constituents_after_bed_change(previous_volume, previous_ktop=previous_ktop, &
+                                                      stranded_mass=stranded_mass)
+            if (allocated(stranded_mass)) then
+               previous_volume = vol1
+               if (kmx > 0) then
+                  previous_ktop = ktop
+               end if
+               call fm_deposit_dried_sediment(stranded_mass, geometry_changed)
+               call retain_dry_cell_mass(stranded_mass)
+            end if
+         end if
+      end do
+   end subroutine update_dredged_bed
+
+   !> Retain transported mass until the cell rewets.
+   subroutine retain_dry_cell_mass(stranded_mass)
+      use m_flowgeom, only: ndx, ndxi
+      use m_transport, only: numconst, dry_cell_mass
+
+      real(kind=dp), dimension(:, :), allocatable, intent(in) :: stranded_mass
+
+      if (.not. allocated(stranded_mass)) then
+         return
+      end if
+      if (any(stranded_mass /= 0.0_dp)) then
+         if (.not. allocated(dry_cell_mass)) then
+            allocate (dry_cell_mass(numconst, ndx), source=0.0_dp)
+         end if
+         dry_cell_mass(:, 1:ndxi) = dry_cell_mass(:, 1:ndxi) + stranded_mass
+      end if
+   end subroutine retain_dry_cell_mass
+
+   !> Return stranded constituents to the same cell once it is wet again.
+   subroutine restore_dry_cell_mass()
+      use m_flow, only: s1, vol1
+      use m_flowgeom, only: bl, ndxi
+      use m_flowparameters, only: epshs
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_transport, only: constituents, dry_cell_mass
+
+      integer :: cell, kb, kt, layer
+      real(kind=dp) :: wet_volume
+
+      if (.not. allocated(dry_cell_mass)) then
+         return
+      end if
+      do cell = 1, ndxi
+         if (s1(cell) - bl(cell) <= epshs .or. all(dry_cell_mass(:, cell) == 0.0_dp)) then
+            cycle
+         end if
+         call getkbotktop(cell, kb, kt)
+         wet_volume = sum(vol1(kb:kt), mask=vol1(kb:kt) > 0.0_dp)
+         if (wet_volume <= 0.0_dp) then
+            cycle
+         end if
+         do layer = kb, kt
+            if (vol1(layer) > 0.0_dp) then
+               constituents(:, layer) = constituents(:, layer) + dry_cell_mass(:, cell) / wet_volume
+            end if
+         end do
+         dry_cell_mass(:, cell) = 0.0_dp
+      end do
+   end subroutine restore_dry_cell_mass
+
+   !> Rebuild cell volumes after bed movement, including all vertical layers.
+   subroutine update_bed_volumes()
+      use m_volsur, only: volsur
+      use m_set_kbot_ktop, only: set_kbot_ktop
+      use m_flow, only: kmx
+
+      call volsur()
+      if (kmx > 0) then
+         call set_kbot_ktop(jazws0=0)
+      end if
+   end subroutine update_bed_volumes
 
 end module m_step_reduce_transport_morpho

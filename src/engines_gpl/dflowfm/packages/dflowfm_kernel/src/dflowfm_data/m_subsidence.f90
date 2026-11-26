@@ -40,6 +40,8 @@ module m_subsidence
    real(kind=dp), dimension(:), allocatable :: subsupl_tp !< Previous field of 'bedrock_surface_elevation'
    real(kind=dp), dimension(:), allocatable :: subsout !< Output field of subsidence/uplift: latest field - initial field
    real(kind=dp), dimension(:), allocatable :: sdu_blp !< Previous field of bed level values at cell centres (temporary copy of bl(:))
+   real(kind=dp), allocatable :: sdu_volp(:) !< Cell and layer volumes before applying subsidence/uplift.
+   real(kind=dp), allocatable :: sdu_1d_offset(:) !< Applied vertical displacement at 1D flow nodes.
 
 contains
 
@@ -47,6 +49,12 @@ contains
       jasubsupl = 0
       sdu_first = .true.
       sdu_update_s1 = 0
+      if (allocated(sdu_volp)) then
+         deallocate (sdu_volp)
+      end if
+      if (allocated(sdu_1d_offset)) then
+         deallocate (sdu_1d_offset)
+      end if
    end subroutine
 
 end module m_subsidence

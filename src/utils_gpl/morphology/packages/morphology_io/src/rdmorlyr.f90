@@ -37,7 +37,7 @@ contains
    subroutine rdmorlyr(lundia, error, filmor, &
                      & nmaxus, nto, lfbedfrm, nambnd, version, &
                      & lsedtot, namsed, morpar, morlyr, sedpar, &
-                     & mor_ptr, griddim, ag)
+                     & mor_ptr, griddim, ag, track_shortage_by_default)
 !!--description-----------------------------------------------------------------
 !
 ! Reads attribute file for 3D morphology computation
@@ -73,6 +73,7 @@ contains
       type(griddimtype), target, intent(in) :: griddim
       type(tree_data), pointer :: mor_ptr
       real(fp), intent(in) :: ag !< gravitational acceleration (m/s^2) coming from the main program
+      logical, optional, intent(in) :: track_shortage_by_default
 !
 ! Local variables
 !
@@ -578,6 +579,9 @@ contains
       ! Numerical settings
       !
       track_shortage = iunderlyr > BED_MIXED ! default off for standard bed composition
+      if (present(track_shortage_by_default)) then
+         track_shortage = track_shortage .or. track_shortage_by_default
+      end if
       call prop_get(mor_ptr, 'Numerics', 'TrackMassShortage', track_shortage)
       if (track_shortage) then
          call prop_get(mor_ptr, 'Numerics', 'MinMassShortWarning', minmass)

@@ -55,7 +55,7 @@ contains
       use m_flow, only: kmxn, ozmidov_length_scale, rhomean, rho, ag, a1, wsf, jaimplicitfallvelocity
       use m_turbulence, only: difwws, difwws_total
       use m_flowparameters, only: epshu, testdryflood
-      use m_sediment, only: mtd, jased
+      use m_sediment, only: mtd, sedtra, jased
       use m_fm_erosed, only: tpsnumber
       use timers, only: timon, timstrt, timstop
       use m_transport, only: isalt
@@ -113,7 +113,7 @@ contains
       ! The following PRIVATE arrays have local values per OMP thread, they are kept global to prevent stack overflows.
       !$OMP PARALLEL DO                                                 &
       !$OMP PRIVATE(kk,kb,ktx,kt,lower,diagonal,upper,sol,j,column_rhs,k,n,dvol1i,dvol2i,fluxfac,normalized_upper,dtbazi,dtba, &
-      !$OMP ozmid,bruns,qw_loc,nel,  fall_velocity_local) &
+      !$OMP ozmid,bruns,qw_loc,nel,fall_velocity_local) &
       !$OMP FIRSTPRIVATE(dt_loc)
       do kk = 1, Ndxi
          if (nsubsteps > 1) then
@@ -193,7 +193,11 @@ contains
                lower(n + 1, j) = lower(n + 1, j) - fluxfac * dvol2i
 
                if (jased == 4 .and. j >= ISED1 .and. j <= ISEDN) then
-                  fall_velocity_local = mtd%ws(k, j - ISED1 + 1)
+                  ! Bed exchange already accounts for settling through the lower face of the reference cell.
+                  fall_velocity_local = 0.0_dp
+                  if (k >= sedtra%kmxsed(kk, j - ISED1 + 1)) then
+                     fall_velocity_local = mtd%ws(k, j - ISED1 + 1)
+                  end if
                else if (iconstituent_to_fall_velocity_waq(j) > 0) then
                   fall_velocity_local = fall_velocity_waq(k, iconstituent_to_fall_velocity_waq(j))
                else

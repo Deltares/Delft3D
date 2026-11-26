@@ -899,15 +899,16 @@ contains
 
 !> Load restart file (*_map.nc) assigned in the *.mdu file OR read a *.rst file
    subroutine load_restart_file(file_exist, error)
-      use m_flowparameters, only: jased, Perot_type, NOT_DEFINED
+      use m_flowparameters, only: jased, jarstignorebl, Perot_type, NOT_DEFINED
       use m_flow, only: hs, s1, ucxyq_read_rst
       use m_flowgeom, only: bl
+      use m_subsidence, only: sdu_1d_offset
       use m_sediment, only: stm_included
       use unstruc_model, only: md_restartfile
       use iso_varying_string, only: len_trim, index
       use m_setucxcuy_leastsquare, only: reconst2nd
       use dfm_error
-      use m_set_bobs
+      use m_set_bobs, only: setbobs_after_morphology
       use m_flow_obsinit
       use m_filez, only: oldfil
 
@@ -933,13 +934,12 @@ contains
             end if
          else ! Restart from *_yyyymmdd_hhmmss_rst.nc or from *_map.nc
             call read_restart_from_map(md_restartfile, error)
-            if (jased > OFF .and. stm_included) then
-               call setbobs()
-            end if
             if (error /= DFM_NOERR) then
                return
-            else
-               file_exist = .true.
+            end if
+            file_exist = .true.
+            if (jarstignorebl == 0 .and. ((jased > OFF .and. stm_included) .or. allocated(sdu_1d_offset))) then
+               call setbobs_after_morphology()
             end if
 
             hs(:) = s1(:) - bl(:)
