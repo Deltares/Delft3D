@@ -75,6 +75,7 @@ contains
       use m_fm_icecover, only: update_icecover
       use m_physcoef, only: dynamic_vegetation_roughness_enabled
       use m_update_dynveg, only: update_dynveg
+      use m_vegetation, only: jabaptist, baptist_drag_callback_enabled, vegetation_drag_callback
 
       implicit none
 
@@ -183,6 +184,24 @@ contains
       call timstop(handle_extra(44)) ! End cfuhi
 
       if (kmx == 0 .and. javeg > 0) then ! overwrite cfuhi in 2D with veg in plant areas
+         if (jazws0 == 0 .and. jabaptist == 3 .and. baptist_drag_callback_enabled) then
+            ! External drag coefficients must use the link depths prepared for this step.
+            iresult = DFM_EXTFORCERROR
+            if (.not. associated(vegetation_drag_callback)) then
+               call mess(LEVEL_WARN, 'BaptistDragCallback is enabled. Register the BMI callback before advancing the model.')
+            else if (vegetation_drag_callback() == 0) then
+               iresult = DFM_NOERR
+            else
+               call mess(LEVEL_WARN, 'The vegetation drag callback failed before applying model 3 drag.')
+            end if
+            if (iresult /= DFM_NOERR) then
+               if (jampi == 1) then
+                  call abort_all()
+               end if
+               call timstop(handle_inistep)
+               return
+            end if
+         end if
          call setbaptist()
       end if
 

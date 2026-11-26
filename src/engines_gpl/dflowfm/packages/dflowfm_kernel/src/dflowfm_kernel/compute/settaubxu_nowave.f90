@@ -42,8 +42,9 @@ contains
 
    subroutine settaubxu_nowave(use_u1)
       use precision, only: dp
-      use m_flowgeom, only: lnx
-      use m_flow, only: taubxu, u1, u0, hu, epshu, frcu, v, ifrcutp, z0urou, VON_KARMAN, sag, rhomean
+      use m_flowgeom, only: ln, lnx
+      use m_flow, only: taubxu, u1, u0, hu, epshu, frcu, v, ifrcutp, z0urou, VON_KARMAN, sag, rhomean, cfuhi, kmx
+      use m_vegetation, only: javeg, jabaptist, rnveg, densvegminbap
       use m_get_Lbot_Ltop, only: getlbotltop
       use m_get_chezy, only: get_chezy
       use m_mathconstants, only: ee
@@ -51,11 +52,14 @@ contains
 
       logical, intent(in) :: use_u1 !< Flag for using `u1` (.true.) or `u0` (.false.) in computing `taubxu` in subroutine `settaubxu_nowave`
 
-      integer :: L, Lb, Lt
+      integer :: L, Lb, Lt, k1, k2
+      logical :: use_vegetation_bed_drag, vegetation_link
+      real(kind=dp), parameter :: minimum_roughness = 1.0e-200_dp
       real(kind=dp) :: cz, cwall, rz, umod2
       real(kind=dp), pointer :: velocity_pointer(:)
 
       taubxu = 0.0_dp
+      use_vegetation_bed_drag = kmx == 0 .and. javeg == 1 .and. jabaptist > 1
 
       if (use_u1) then
          velocity_pointer => u1
@@ -65,24 +69,38 @@ contains
 
       do L = 1, lnx
          call getLbotLtop(L, Lb, Lt)
-         if (Lt < Lb) then
+         if (Lt < Lb .or. hu(L) <= epshu) then
             cycle
          end if
-         if (hu(L) > epshu) then
-            if (frcu(L) > 0.0_dp) then ! input, or result from trachytopes
-               cz = get_chezy(hu(L), frcu(L), u1(L), v(L), ifrcutp(L))
-               z0urou(L) = max(1.0e-200_dp, hu(L) * exp(-1.0_dp - VON_KARMAN * cz / sag)) ! getczz0
-               rz = max(hu(Lb), epshu) / ee / z0urou(L) ! cz/sag, jaustarint=1, compatible with getustbcfuhi
-               cz = log(rz) / VON_KARMAN
-               cwall = 1.0_dp / (cz**2)
-               umod2 = velocity_pointer(LB) * velocity_pointer(LB) + v(Lb) * v(Lb)
-               taubxu(L) = rhomean * cwall * umod2 ! Note that taubxu for 3D without waves is based on bottom layer velocity, whereas
-               ! comment HK: dit blijft een merkwaardig verhaal, zowel in 2D als in 3D
-               ! Verder wordt deze code altijd doorlopen, maar is dat zelden nodig.
-            end if
+
+         vegetation_link = .false.
+         if (use_vegetation_bed_drag) then
+            k1 = ln(1, L)
+            k2 = ln(2, L)
+            vegetation_link = 0.5_dp * (rnveg(k1) + rnveg(k2)) > densvegminbap .and. cfuhi(L) >= 0.0_dp
          end if
+
+         if (vegetation_link) then
+            ! Undo the normalization by link depth in setbaptist.
+            cwall = cfuhi(L) * hu(L)
+            z0urou(L) = minimum_roughness
+            if (cwall > 0.0_dp) then
+               z0urou(L) = max(minimum_roughness, hu(L) * exp(-1.0_dp - VON_KARMAN / sqrt(cwall)))
+            end if
+         else if (frcu(L) > 0.0_dp) then ! input friction or trachytopes
+            cz = get_chezy(hu(L), frcu(L), u1(L), v(L), ifrcutp(L))
+            z0urou(L) = max(minimum_roughness, hu(L) * exp(-1.0_dp - VON_KARMAN * cz / sag))
+            rz = max(hu(Lb), epshu) / ee / z0urou(L)
+            cz = log(rz) / VON_KARMAN
+            cwall = 1.0_dp / (cz**2)
+         else
+            cycle
+         end if
+
+         umod2 = velocity_pointer(Lb)**2 + v(Lb)**2
+         taubxu(L) = rhomean * cwall * umod2
       end do
 
-   end subroutine
+   end subroutine settaubxu_nowave
 
 end module m_settaubxu_nowave
