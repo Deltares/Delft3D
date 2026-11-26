@@ -167,7 +167,7 @@ contains
             end if
          end do
 
-         do J = 1, maxsplen
+         do J = 1, points_per_spline_capacity
             do I = 1, MCs
                if (XSP(I, J) /= DXYMIS) then
                   call MAPPRO(XSp(I, J), YSp(I, J), XG, YG, IZONE, NZONE, IHEM, ITYPE, JSFERIC, INI)
