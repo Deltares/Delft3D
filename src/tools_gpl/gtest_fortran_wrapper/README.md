@@ -60,12 +60,17 @@ nonfatal, so subsequent checks still run.
 | `float_eq` | `real(sp)` | scalar, 1, 2 |
 | `double_eq` | `real(dp)` | scalar, 1, 2 |
 | `near` | `real(sp)`, `real(dp)` | scalar, 1, 2 |
+| `relative_near` | `real(dp)` | scalar, 1 |
 | `true`, `false` | logical, integer | scalar, 1, 2 |
 | `streq`, `strne`, `strcaseeq`, `strcasene` | character strings | scalar |
 
 Integers are 32-bit; logicals support both the default kind and `c_bool`.
 Import `sp`/`dp` from `precision`, and C kinds from `iso_c_binding` when needed.
 `near` takes a scalar absolute tolerance of the same kind as its operands.
+`relative_near(actual, expected, relative_tolerance)` scales its tolerance by
+the mean magnitude of the operands: `abs(actual - expected) <=
+0.5 * relative_tolerance * (abs(actual) + abs(expected))`. The rule is symmetric
+and has no absolute tolerance floor near zero. For arrays it applies element by element.
 Array checks report failing element indices.
 
 All checks accept an optional final message. Ordinary Fortran strings need no

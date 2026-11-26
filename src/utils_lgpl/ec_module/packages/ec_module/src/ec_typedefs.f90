@@ -220,6 +220,7 @@ module m_ec_typedefs
       integer :: nSourceItems !< Number of source Items <= size(sourceItemsPtr)
       type(tEcItemPtr), dimension(:), pointer :: targetItemsPtr => null() !< target items, stored in tEcInstance%ecItemsPtr
       integer :: nTargetItems !< Number of target Items <= size(targetItemsPtr)
+      integer, dimension(:), allocatable :: targetMask !< Whether or not (1/0) target points should be updated. Unallocated means no masking. Size must match all target items.
    end type tEcConnection
 
    type tEcConnectionPtr
@@ -344,11 +345,22 @@ module m_ec_typedefs
    end type tEcFieldPtr
 
    !===========================================================================
-   !>
+   !> Fixed spatial projection of a NetCDF harmonic component for one source/target mapping.
+   type tEcHarmonicProjection
+      integer :: sourceItemId = ec_undef_int !< Source quantity whose amplitudes were projected.
+      integer :: targetItemId = ec_undef_int !< Target item receiving the projected coefficients.
+      integer :: converterId = ec_undef_int !< Converter supplying the fixed spatial mapping.
+      real(dp), dimension(:), allocatable :: cos_weight !< Interpolated amplitude times cosine of phase.
+      real(dp), dimension(:), allocatable :: sin_weight !< Interpolated amplitude times sine of phase.
+      integer, dimension(:), allocatable :: mask !< One for valid targets, zero for untouched or extrapolated targets.
+   end type tEcHarmonicProjection
+
+   !> Harmonic source metadata and cached projections, owned by the file reader.
    type tEcHarmonicsFrame
       integer :: ec_period !< Period in seconds.
       real(hp), dimension(:, :), allocatable :: phases !< Phase data in degrees.
       integer, dimension(2) :: phase_dims !< Number of phase points in each dimension.
+      type(tEcHarmonicProjection), dimension(:), allocatable :: projections !< Separate cached coefficients for each source/target mapping.
    end type
    !>
    type tEcFileReader

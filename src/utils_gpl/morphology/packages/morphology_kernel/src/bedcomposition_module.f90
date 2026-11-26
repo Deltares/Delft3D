@@ -3442,6 +3442,7 @@ end function allocmorlyr
 !> @return Status code; zero indicates success.
 function allocwork(this) result (istat)
     use precision
+    use m_alloc, only: reallocP
     type (bedcomp_data), intent(in)  :: this     !< bed composition object
     integer                          :: istat
     !
@@ -3458,38 +3459,52 @@ function allocwork(this) result (istat)
     nlyr  => this%settings%nlyr
     !
     istat = 0
-    !
-    ! Deallocate if it already exists
-    if (associated(this%work%msed2))    deallocate (this%work%msed2  , stat = istat)
-    if (associated(this%work%thlyr2))   deallocate (this%work%thlyr2 , stat = istat)
-    if (associated(this%work%svfrac2))  deallocate (this%work%svfrac2, stat = istat)
-    if (associated(this%work%preload2)) deallocate (this%work%preload2, stat = istat)
-    if (associated(this%work%depos_time2)) deallocate (this%work%depos_time2, stat = istat)
-    !
-    if (istat == 0) allocate (this%work%msed2(nfrac, nlyr), stat = istat)
-    if (istat == 0) allocate (this%work%thlyr2(nlyr)      , stat = istat)
-    if (istat == 0) allocate (this%work%svfrac2(nlyr)     , stat = istat)
-    if (istat == 0) allocate (this%work%preload2(nlyr)    , stat = istat)
-    if (istat == 0) allocate (this%work%depos_time2(nlyr) , stat = istat)
-    !
-    if (istat == 0) this%work%msed2 = dmiss
-    if (istat == 0) this%work%thlyr2 = dmiss
-    if (istat == 0) this%work%svfrac2 = dmiss
-    if (istat == 0) this%work%preload2 = dmiss
-    if (istat == 0) this%work%depos_time2 = dmiss
+    if (istat == 0) then
+       call reallocP(this%work%msed2, (/nfrac, nlyr/), stat=istat, keepExisting=.false., fill=dmiss)
+    end if
+    if (istat == 0) then
+       call reallocP(this%work%thlyr2, nlyr, stat=istat, keepExisting=.false., fill=dmiss)
+    end if
+    if (istat == 0) then
+       call reallocP(this%work%svfrac2, nlyr, stat=istat, keepExisting=.false., fill=dmiss)
+    end if
+    if (istat == 0) then
+       call reallocP(this%work%preload2, nlyr, stat=istat, keepExisting=.false., fill=dmiss)
+    end if
+    if (istat == 0) then
+       call reallocP(this%work%depos_time2, nlyr, stat=istat, keepExisting=.false., fill=dmiss)
+    end if
     ! work arrys for full Gibson model
-    if (istat == 0) allocate (this%work%dthsedlyr(nlyr-1), stat = istat)
-
-    if (istat == 0) allocate (this%work%sigmaeff(nlyr), stat = istat)
-    if (istat == 0) allocate (this%work%thsedlyr(nlyr) , stat = istat)
-    if (istat == 0) allocate (this%work%svfracsand(nlyr), stat = istat)
-    if (istat == 0) allocate (this%work%svfracmud(nlyr), stat = istat)
-
-    if (istat == 0) allocate (this%work%vs0p5(nlyr+1), stat = istat)
-    if (istat == 0) allocate (this%work%k0p5(nlyr+1) , stat = istat)
-    if (istat == 0) allocate (this%work%svfrac0p5(nlyr+1), stat = istat)
-    if (istat == 0) allocate (this%work%svfracsand0p5(nlyr+1), stat = istat)
-    if (istat == 0) allocate (this%work%svfracmud0p5(nlyr+1), stat = istat)
+    if (istat == 0) then
+       call reallocP(this%work%dthsedlyr, nlyr-1, stat=istat, keepExisting=.false.)
+    end if
+    if (istat == 0) then
+       call reallocP(this%work%sigmaeff, nlyr, stat=istat, keepExisting=.false.)
+    end if
+    if (istat == 0) then
+       call reallocP(this%work%thsedlyr, nlyr, stat=istat, keepExisting=.false.)
+    end if
+    if (istat == 0) then
+       call reallocP(this%work%svfracsand, nlyr, stat=istat, keepExisting=.false.)
+    end if
+    if (istat == 0) then
+       call reallocP(this%work%svfracmud, nlyr, stat=istat, keepExisting=.false.)
+    end if
+    if (istat == 0) then
+       call reallocP(this%work%vs0p5, nlyr+1, stat=istat, keepExisting=.false.)
+    end if
+    if (istat == 0) then
+       call reallocP(this%work%k0p5, nlyr+1, stat=istat, keepExisting=.false.)
+    end if
+    if (istat == 0) then
+       call reallocP(this%work%svfrac0p5, nlyr+1, stat=istat, keepExisting=.false.)
+    end if
+    if (istat == 0) then
+       call reallocP(this%work%svfracsand0p5, nlyr+1, stat=istat, keepExisting=.false.)
+    end if
+    if (istat == 0) then
+       call reallocP(this%work%svfracmud0p5, nlyr+1, stat=istat, keepExisting=.false.)
+    end if
 end function allocwork
 
 

@@ -61,7 +61,7 @@ class TestTestCase:
         return [
             "Start_size:10\n",
             "Runtime:0.004995584487915039\n",
-            "Output_added:out1.out\n",
             "Output_added:_tb3_char.run\n",
+            "Output_added:out1.out\n",
             "End_size:22\n",
         ]

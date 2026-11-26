@@ -1,25 +1,13 @@
-function(copy_test_resources NAME SOURCE_FOLDER TARGET_FOLDER)
-    file(GLOB_RECURSE test_resources RELATIVE "${SOURCE_FOLDER}" "${SOURCE_FOLDER}/*")
-
-    foreach(resource_file IN LISTS test_resources)
-        add_custom_command(
-            TARGET ${NAME} PRE_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${SOURCE_FOLDER}/${resource_file}"
-                "${TARGET_FOLDER}/${resource_file}"
-        )
-    endforeach()
-endfunction()
-
-set(test_target test_dflowfm_kernel_gtest)
 if(TARGET GDAL::GDAL)
     set(geotiff_test_source src/test_bilinear_geotiff.f90)
 endif()
-add_fortran_gtest(${test_target}
+set_source_files_properties(src/test_dflowfm_version.F90 PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
+add_fortran_gtest(test_dflowfm_kernel_gtest
     TEST_TEARDOWN reset_dflowfm_after_test
     SOURCES
         src/dflowfm_test_cleanup.f90
         src/test_dflowfm_kernel_example.f90
+        src/test_dflowfm_version.F90
         src/test_interpolate_on_polyline.f90
         src/test_fdster.f90
         src/test_tridag.f90
@@ -48,29 +36,51 @@ add_fortran_gtest(${test_target}
         src/test_precice_adapter.f90
         src/test_fm_external_forcings_utils.f90
         src/test_cross_section_geometry.f90
+        src/test_1d_grid.f90
+        src/test_airdensity.f90
+        src/test_cross_section.f90
+        src/test_iniField_1dField.f90
+        src/test_laterals.f90
+        src/test_observations.f90
+        src/test_observ_Cross_Sections.f90
+        src/test_read_property.f90
+        src/test_read_statistical_output.f90
+        src/test_roughness.f90
+        src/test_statistical_output.f90
+        src/test_storage_nodes.f90
+        src/test_temporal_statistics.f90
     LIBRARIES dflowfm_kernel test_helpers netCDF::netcdff
     VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
 )
 add_subdirectory(helpers)
 
-copy_test_resources("${test_target}" "${CMAKE_CURRENT_SOURCE_DIR}/resources/MDUversion" "$<TARGET_FILE_DIR:${test_target}>/MDUversion")
-
-# Copy MSVC runtime DLLs to test output directory
-foreach(runtime_lib IN LISTS CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS)
-    add_custom_command(TARGET ${test_target} PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${runtime_lib}"
-            "$<TARGET_FILE_DIR:${test_target}>"
-    )
-endforeach()
-
-# Copy pthreads runtime dependency
-add_custom_command(TARGET ${test_target} PRE_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${checkout_src_root}/third_party_open/pthreads/bin/x64/msvcr100.dll"
-        "$<TARGET_FILE_DIR:${test_target}>"
+add_custom_target(test_dflowfm_kernel_gtest_resources
+    COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+        "${CMAKE_CURRENT_SOURCE_DIR}/resources"
+        "$<TARGET_FILE_DIR:test_dflowfm_kernel_gtest>"
+    VERBATIM
 )
+set_target_properties(test_dflowfm_kernel_gtest_resources PROPERTIES FOLDER engines_gpl/dflowfm/test)
+add_dependencies(test_dflowfm_kernel_gtest test_dflowfm_kernel_gtest_resources)
 
-set_target_properties(${test_target} PROPERTIES
-    VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:${test_target}>"
+if(WIN32)
+    # Copy MSVC runtime DLLs to test output directory
+    foreach(runtime_lib IN LISTS CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS)
+        add_custom_command(TARGET test_dflowfm_kernel_gtest PRE_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${runtime_lib}"
+                "$<TARGET_FILE_DIR:test_dflowfm_kernel_gtest>"
+        )
+    endforeach()
+
+    # Copy pthreads runtime dependency
+    add_custom_command(TARGET test_dflowfm_kernel_gtest PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${checkout_src_root}/third_party_open/pthreads/bin/x64/msvcr100.dll"
+            "$<TARGET_FILE_DIR:test_dflowfm_kernel_gtest>"
+    )
+endif()
+
+set_target_properties(test_dflowfm_kernel_gtest PROPERTIES
+    VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:test_dflowfm_kernel_gtest>"
 )

@@ -92,7 +92,7 @@ contains
         call init_alloc(lunmem, lunpr)
 
         if (hyd%num_layers /= 1) then
-            write (lunpr, *) ' 3D hydrodynamics on unstructured grids is applied!'  
+            write (lunpr, *) ' 3D hydrodynamics on unstructured grids is applied!'
             write (*, *) ' 3D hydrodynamics on unstructured grids is applied!'
         endif
         !dts   = real(hyd%cnv_step_sec, 8)  !idelt in seconds taken from the hyd file (conversion timestep)
@@ -114,6 +114,8 @@ contains
         ! Read the grid information and the actual input file
         !
         call ini_part_grid(hyd)
+
+        allocate( lgrid3(0,0) ) ! Keep the debugger happy - used as actual argument only in partvs()
 
         call rdpart (lun(1), lun(2), fname(1))
 

@@ -1,5 +1,5 @@
 """
-Generates m_alloc_generated.f90 — all realloc/reallocP overloads for all dtype/attr/rank combinations.
+Generates m_alloc_generated.f90 — overloads for reallocation and guarded deallocation.
 Usage: python generate_m_alloc.py <output_file>
 """
 
@@ -193,6 +193,15 @@ def generate_subroutine(ftype: FortranType, rank: Rank, attr: Attr) -> str:
    end subroutine {proc_name}"""
 
 
+def generate_deallocation_subroutine(ftype: FortranType, rank: Rank, proc_name: str) -> str:
+    return f"""\
+   subroutine {proc_name}(arr)
+      {ftype.dtype}, dimension{rank.drank}, allocatable, intent(out) :: arr !< Array to release.
+
+      ! An allocated actual argument is deallocated on entry because of intent(out).
+   end subroutine {proc_name}"""
+
+
 def generate(output_file: Path) -> None:
     types = FortranType.all()
     ranks = [Rank(n) for n in [1, 2, 3, 4]]
@@ -200,6 +209,7 @@ def generate(output_file: Path) -> None:
 
     realloc_procs = []
     reallocP_procs = []
+    deallocation_procs = []
     subroutines = []
 
     for attr in attrs:
@@ -210,8 +220,16 @@ def generate(output_file: Path) -> None:
                 procs.append(f"      module procedure {proc_name}")
                 subroutines.append(generate_subroutine(ftype, rank, attr))
 
+    for rank in ranks:
+        for ftype in types:
+            proc_name = f"deallocate{ftype.name}{rank.n}"
+            deallocation_procs.append(proc_name)
+            subroutines.append(generate_deallocation_subroutine(ftype, rank, proc_name))
+
     realloc_interface = "\n".join(realloc_procs)
     reallocP_interface = "\n".join(reallocP_procs)
+    deallocation_interface = "\n".join(f"      module procedure {proc}" for proc in deallocation_procs)
+    deallocation_private = "\n".join(f"   private :: {proc}" for proc in deallocation_procs)
     all_bodies = "\n\n".join(subroutines)
 
     content = f"""\
@@ -228,6 +246,11 @@ module m_alloc_generated
    interface reallocP
 {reallocP_interface}
    end interface
+
+   interface deallocate_if_allocated
+{deallocation_interface}
+   end interface
+{deallocation_private}
 
 contains
 

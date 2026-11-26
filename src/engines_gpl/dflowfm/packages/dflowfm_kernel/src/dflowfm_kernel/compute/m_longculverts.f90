@@ -64,7 +64,7 @@ module m_longculverts
    interface realloc
       module procedure reallocLongCulverts
    end interface
-   
+
 contains
 
    !> Removes flow links administered by long culverts from a link list.
@@ -150,7 +150,7 @@ contains
       use m_CrossSections, only: fill_hashtable
       use m_alloc, only: realloc
       use m_read_location_info, only: read_polyline_coordinates
-      use m_physcoef, only: IFRCTYPUNI, FRCUNI1D
+      use m_physcoef, only: uniform_friction_type, uniform_friction_coefficient_1D
 
       implicit none
 
@@ -333,7 +333,7 @@ contains
 
             call prop_get(str_ptr, '', 'frictionType', typestr, success)
             if (.not. success) then
-               longculverts(nlongculverts)%friction_type = ifrctypuni
+               longculverts(nlongculverts)%friction_type = uniform_friction_type
             else
                call frictionTypeStringToInteger(typestr, longculverts(nlongculverts)%friction_type)
             end if
@@ -343,7 +343,7 @@ contains
 
             call prop_get(str_ptr, '', 'frictionValue', longculverts(nlongculverts)%friction_value, success)
             if (.not. success) then
-               longculverts(nlongculverts)%friction_value = frcuni1D
+               longculverts(nlongculverts)%friction_value = uniform_friction_coefficient_1D
             end if
 
             call prop_set(block_ptr, '', 'frictionValue', longculverts(nlongculverts)%friction_value)
@@ -426,6 +426,7 @@ contains
             call SetMessage(LEVEL_ERROR, 'Failed to open file '''//trim(structures_output)//''' for writing.')
          else
             call prop_write_inifile(mout, strs_ptr, ierr)
+            close (mout)
          end if
       end if
       call tree_destroy(strs_ptr)
@@ -502,7 +503,7 @@ contains
       use m_alloc, only: realloc
       use m_missing, only: dmiss
       use m_read_location_info, only: read_polyline_coordinates
-      use m_physcoef, only: IFRCTYPUNI, FRCUNI1D
+      use m_physcoef, only: uniform_friction_type, uniform_friction_coefficient_1D
 
       implicit none
 
@@ -657,13 +658,13 @@ contains
                end if
                call prop_get(str_ptr, '', 'frictionType', typestr, success)
                if (.not. success) then
-                  longculverts(nlongculverts)%friction_type = ifrctypuni
+                  longculverts(nlongculverts)%friction_type = uniform_friction_type
                else
                   call frictionTypeStringToInteger(typestr, longculverts(nlongculverts)%friction_type)
                end if
                call prop_get(str_ptr, '', 'frictionValue', longculverts(nlongculverts)%friction_value, success)
                if (.not. success) then
-                  longculverts(nlongculverts)%friction_value = frcuni1D
+                  longculverts(nlongculverts)%friction_value = uniform_friction_coefficient_1D
                end if
             end if
          end if

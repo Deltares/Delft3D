@@ -121,12 +121,8 @@ endif()
 
 # metis
 
-if(NOT TARGET metis)
-    add_subdirectory(${checkout_src_root}/${metis_module} metis)
-endif()
-
 if(NOT TARGET metisoptions)
-    add_subdirectory(${checkout_src_root}/${metisoptions_module} metisoptions) # Note that the metisoptions should be loaded AFTER metis is loaded, as it depends on settings set by the CMakeLists.txt of the metis library
+    add_subdirectory(${checkout_src_root}/${metisoptions_module} metisoptions)
 endif()
 
 # libsigwatch
@@ -200,10 +196,6 @@ endif()
 if(NOT WITH_INTERACTER)
     if(NOT TARGET ftnunit)
         add_subdirectory(${checkout_src_root}/${ftnunit_module} ftnunit)
-    endif()
-
-    if(NOT TARGET test_dflowfm_kernel)
-        add_subdirectory(${checkout_src_root}/${test_dflowfm_kernel} test_dflowfm_kernel)
     endif()
 
     if(NOT TARGET test_deltares_common)

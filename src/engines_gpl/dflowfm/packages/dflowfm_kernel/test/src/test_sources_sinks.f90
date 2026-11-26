@@ -3,8 +3,8 @@ module test_sources_sinks
    use fm_external_forcings, only: sourcesink_parse_coordinates
    use tree_structures, only: tree_data, tree_create, tree_create_node, tree_destroy
    use properties, only: prop_set
-   use MessageHandling, only: getLastMessage, LEVEL_ERROR, resetMessageCount_MH, LEVEL_FATAL, SetMessageHandling, LEVEL_ALL
-   use unstruc_messages, only: threshold_abort
+   use MessageHandling, only: getLastMessage, LEVEL_ERROR, LEVEL_FATAL, SetMessageHandling, LEVEL_ALL
+   use m_message_helpers, only: t_abort_threshold_guard
    use precision_basics, only: dp
    use m_missing, only: dmiss
    use m_file_helpers, only: create_file
@@ -34,20 +34,25 @@ contains
       integer :: error_level
       character(len=256) :: error_message
 
-      threshold_abort = LEVEL_FATAL
       call SetMessageHandling(useLog=.true., thresholdLevel=LEVEL_ALL, reset_counters=.true.)
 
       call tree_create("sourcesinks.ext", tree)
       call tree_create_node(tree, "sourcesink", block_ptr)
-      call prop_set(block_ptr, "", "id",           "left")
-      call prop_set(block_ptr, "", "name",         "cool_name")
+      call prop_set(block_ptr, "", "id", "left")
+      call prop_set(block_ptr, "", "name", "cool_name")
       call prop_set(block_ptr, "", "locationFile", "this_file_does_not_exist.pliz")
-      call prop_set(block_ptr, "", "zSource",      "-7.5")
-      call prop_set(block_ptr, "", "Area",         "0.0")
-      call prop_set(block_ptr, "", "discharge",    "left.bc")
-      call prop_set(block_ptr, "", "salinityDelta","left.bc")
+      call prop_set(block_ptr, "", "zSource", "-7.5")
+      call prop_set(block_ptr, "", "Area", "0.0")
+      call prop_set(block_ptr, "", "discharge", "left.bc")
+      call prop_set(block_ptr, "", "salinityDelta", "left.bc")
 
-      success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, 'sourcesink', x_coordinates, y_coordinates, z_range_source, z_range_sink)
+      block
+         type(t_abort_threshold_guard) :: abort_threshold
+
+         call abort_threshold%set(LEVEL_FATAL)
+         success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, 'sourcesink', &
+                                                x_coordinates, y_coordinates, z_range_source, z_range_sink)
+      end block
       call f90_expect_false(success)
 
       call getLastMessage(error_level, error_message)
@@ -84,17 +89,23 @@ contains
 
       call tree_create("sourcesinks.ext", tree)
       call tree_create_node(tree, "sourcesink", block_ptr)
-      call prop_set(block_ptr, "", "id",           "left")
-      call prop_set(block_ptr, "", "name",         "cool_name")
+      call prop_set(block_ptr, "", "id", "left")
+      call prop_set(block_ptr, "", "name", "cool_name")
       call prop_set(block_ptr, "", "locationFile", "my_polyline.pliz")
-      call prop_set(block_ptr, "", "zSource",      "-7.5")
-      call prop_set(block_ptr, "", "zSink",        "-11.5")
-      call prop_set(block_ptr, "", "Area",         "0.0")
-      call prop_set(block_ptr, "", "discharge",    "left.bc")
-      call prop_set(block_ptr, "", "salinityDelta","left.bc")
+      call prop_set(block_ptr, "", "zSource", "-7.5")
+      call prop_set(block_ptr, "", "zSink", "-11.5")
+      call prop_set(block_ptr, "", "Area", "0.0")
+      call prop_set(block_ptr, "", "discharge", "left.bc")
+      call prop_set(block_ptr, "", "salinityDelta", "left.bc")
 
-      call resetMessageCount_MH()
-      success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
+      call SetMessageHandling(useLog=.true., thresholdLevel=LEVEL_ALL, reset_counters=.true.)
+      block
+         type(t_abort_threshold_guard) :: abort_threshold
+
+         call abort_threshold%set(LEVEL_FATAL)
+         success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, &
+                                                x_coordinates, y_coordinates, z_range_source, z_range_sink)
+      end block
       call f90_expect_false(success)
 
       call getLastMessage(error_level, error_message)
@@ -129,14 +140,14 @@ contains
 
       call tree_create("sourcesinks.ext", tree)
       call tree_create_node(tree, "sourcesink", block_ptr)
-      call prop_set(block_ptr, "", "id",           "left")
-      call prop_set(block_ptr, "", "name",         "cool_name")
+      call prop_set(block_ptr, "", "id", "left")
+      call prop_set(block_ptr, "", "name", "cool_name")
       call prop_set(block_ptr, "", "locationFile", "my_polyline.pliz")
-      call prop_set(block_ptr, "", "zSource",      "-7.5")
-      call prop_set(block_ptr, "", "zSink",        "-11.5")
-      call prop_set(block_ptr, "", "Area",         "0.0")
-      call prop_set(block_ptr, "", "discharge",    "left.bc")
-      call prop_set(block_ptr, "", "salinityDelta","left.bc")
+      call prop_set(block_ptr, "", "zSource", "-7.5")
+      call prop_set(block_ptr, "", "zSink", "-11.5")
+      call prop_set(block_ptr, "", "Area", "0.0")
+      call prop_set(block_ptr, "", "discharge", "left.bc")
+      call prop_set(block_ptr, "", "salinityDelta", "left.bc")
 
       success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
       if (.not. f90_assert_true(success)) then
@@ -201,12 +212,12 @@ contains
 
       call tree_create("sourcesinks.ext", tree)
       call tree_create_node(tree, "sourcesink", block_ptr)
-      call prop_set(block_ptr, "", "id",           "left")
-      call prop_set(block_ptr, "", "name",         "cool_name")
+      call prop_set(block_ptr, "", "id", "left")
+      call prop_set(block_ptr, "", "name", "cool_name")
       call prop_set(block_ptr, "", "locationFile", "my_polyline.pliz")
-      call prop_set(block_ptr, "", "Area",         "0.0")
-      call prop_set(block_ptr, "", "discharge",    "left.bc")
-      call prop_set(block_ptr, "", "salinityDelta","left.bc")
+      call prop_set(block_ptr, "", "Area", "0.0")
+      call prop_set(block_ptr, "", "discharge", "left.bc")
+      call prop_set(block_ptr, "", "salinityDelta", "left.bc")
 
       success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
       if (.not. f90_assert_true(success)) then
@@ -271,12 +282,12 @@ contains
 
       call tree_create("sourcesinks.ext", tree)
       call tree_create_node(tree, "sourcesink", block_ptr)
-      call prop_set(block_ptr, "", "id",           "left")
-      call prop_set(block_ptr, "", "name",         "cool_name")
+      call prop_set(block_ptr, "", "id", "left")
+      call prop_set(block_ptr, "", "name", "cool_name")
       call prop_set(block_ptr, "", "locationFile", "my_polyline.pliz")
-      call prop_set(block_ptr, "", "Area",         "0.0")
-      call prop_set(block_ptr, "", "discharge",    "left.bc")
-      call prop_set(block_ptr, "", "salinityDelta","left.bc")
+      call prop_set(block_ptr, "", "Area", "0.0")
+      call prop_set(block_ptr, "", "discharge", "left.bc")
+      call prop_set(block_ptr, "", "salinityDelta", "left.bc")
 
       success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
       if (.not. f90_assert_true(success)) then
@@ -341,12 +352,12 @@ contains
 
       call tree_create("sourcesinks.ext", tree)
       call tree_create_node(tree, "sourcesink", block_ptr)
-      call prop_set(block_ptr, "", "id",           "left")
-      call prop_set(block_ptr, "", "name",         "cool_name")
+      call prop_set(block_ptr, "", "id", "left")
+      call prop_set(block_ptr, "", "name", "cool_name")
       call prop_set(block_ptr, "", "locationFile", "my_polyline.pliz")
-      call prop_set(block_ptr, "", "Area",         "0.0")
-      call prop_set(block_ptr, "", "discharge",    "left.bc")
-      call prop_set(block_ptr, "", "salinityDelta","left.bc")
+      call prop_set(block_ptr, "", "Area", "0.0")
+      call prop_set(block_ptr, "", "discharge", "left.bc")
+      call prop_set(block_ptr, "", "salinityDelta", "left.bc")
 
       success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
       if (.not. f90_assert_true(success)) then
@@ -404,16 +415,16 @@ contains
 
       call tree_create("sourcesinks.ext", tree)
       call tree_create_node(tree, "sourcesink", block_ptr)
-      call prop_set(block_ptr, "", "id",             "left")
-      call prop_set(block_ptr, "", "name",           "cool_name")
+      call prop_set(block_ptr, "", "id", "left")
+      call prop_set(block_ptr, "", "name", "cool_name")
       call prop_set(block_ptr, "", "numCoordinates", "2")
-      call prop_set(block_ptr, "", "xCoordinates",   "25.0 26.0")
-      call prop_set(block_ptr, "", "yCoordinates",   "5.0 6.0")
-      call prop_set(block_ptr, "", "zSource",        "-7.5")
-      call prop_set(block_ptr, "", "zSink",          "-13.5")
-      call prop_set(block_ptr, "", "Area",           "0.0")
-      call prop_set(block_ptr, "", "discharge",      "left.bc")
-      call prop_set(block_ptr, "", "salinityDelta",  "left.bc")
+      call prop_set(block_ptr, "", "xCoordinates", "25.0 26.0")
+      call prop_set(block_ptr, "", "yCoordinates", "5.0 6.0")
+      call prop_set(block_ptr, "", "zSource", "-7.5")
+      call prop_set(block_ptr, "", "zSink", "-13.5")
+      call prop_set(block_ptr, "", "Area", "0.0")
+      call prop_set(block_ptr, "", "discharge", "left.bc")
+      call prop_set(block_ptr, "", "salinityDelta", "left.bc")
 
       success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
       if (.not. f90_assert_true(success)) then
@@ -469,16 +480,16 @@ contains
 
       call tree_create("sourcesinks.ext", tree)
       call tree_create_node(tree, "sourcesink", block_ptr)
-      call prop_set(block_ptr, "", "id",             "left")
-      call prop_set(block_ptr, "", "name",           "cool_name")
+      call prop_set(block_ptr, "", "id", "left")
+      call prop_set(block_ptr, "", "name", "cool_name")
       call prop_set(block_ptr, "", "numCoordinates", "2")
-      call prop_set(block_ptr, "", "xCoordinates",   "25.0 26.0")
-      call prop_set(block_ptr, "", "yCoordinates",   "5.0 6.0")
-      call prop_set(block_ptr, "", "zSource",        "-7.5 -3.0")
-      call prop_set(block_ptr, "", "zSink",          "-10.0 -6.0")
-      call prop_set(block_ptr, "", "Area",           "0.0")
-      call prop_set(block_ptr, "", "discharge",      "left.bc")
-      call prop_set(block_ptr, "", "salinityDelta",  "left.bc")
+      call prop_set(block_ptr, "", "xCoordinates", "25.0 26.0")
+      call prop_set(block_ptr, "", "yCoordinates", "5.0 6.0")
+      call prop_set(block_ptr, "", "zSource", "-7.5 -3.0")
+      call prop_set(block_ptr, "", "zSink", "-10.0 -6.0")
+      call prop_set(block_ptr, "", "Area", "0.0")
+      call prop_set(block_ptr, "", "discharge", "left.bc")
+      call prop_set(block_ptr, "", "salinityDelta", "left.bc")
 
       success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
       if (.not. f90_assert_true(success)) then
@@ -515,5 +526,122 @@ contains
 
       call tree_destroy(tree)
    end subroutine test_xy_in_ext_file_z_ranges
+
+!$gtest
+   subroutine test_nearfield_discharge_layer_selection() bind(C)
+      call check_nearfield_discharge(-6.0_dp, -6.0_dp, 10.0_dp, [0.0_dp, 10.0_dp, 0.0_dp])
+      call check_nearfield_discharge(-12.0_dp, -11.0_dp, 10.0_dp, [10.0_dp, 0.0_dp, 0.0_dp])
+      call check_nearfield_discharge(-12.0_dp, -6.0_dp, 10.0_dp, [4.0_dp, 6.0_dp, 0.0_dp])
+      call check_nearfield_discharge(1.0_dp, 2.0_dp, 10.0_dp, [0.0_dp, 0.0_dp, 10.0_dp])
+      call check_nearfield_discharge(-8.0_dp, -8.0_dp, 10.0_dp, [0.0_dp, 10.0_dp, 0.0_dp])
+      call check_nearfield_discharge(dmiss, dmiss, 10.0_dp, [2.0_dp, 3.0_dp, 5.0_dp])
+      call check_nearfield_discharge(-6.0_dp, dmiss, 10.0_dp, [0.0_dp, 10.0_dp, 0.0_dp])
+   end subroutine test_nearfield_discharge_layer_selection
+
+!$gtest
+   subroutine test_nearfield_discharge_reversed_and_limited() bind(C)
+      call check_nearfield_discharge(-12.0_dp, -6.0_dp, -10.0_dp, [-4.0_dp, -6.0_dp, 0.0_dp])
+      call check_nearfield_discharge(-12.0_dp, -6.0_dp, 2000.0_dp, [400.0_dp, 600.0_dp, 0.0_dp])
+      call check_nearfield_discharge(-12.0_dp, -6.0_dp, -2000.0_dp, [-400.0_dp, -600.0_dp, 0.0_dp])
+   end subroutine test_nearfield_discharge_reversed_and_limited
+
+!$gtest
+   subroutine test_nearfield_discharge_2d_and_inactive() bind(C)
+      use m_source_sink, only: SourceSinks, FLOWCELL_SINK, FLOWCELL_SOURCE
+      use m_flow, only: kmx
+
+      type(SourceSinks) :: sources
+      real(kind=dp), dimension(2) :: discharge
+
+      kmx = 0
+      sources%num_total = 2
+      sources%num_nearfield = 2
+      allocate (sources%indices(2, 6), sources%discharge(2))
+      sources%indices(1, :) = [1, 1, 1, 2, 2, 2]
+      sources%indices(2, :) = [0, 0, 0, 2, 2, 2]
+      sources%discharge = [10.0_dp, 4.0_dp]
+      call sources%get_nearfield_discharge(discharge)
+      call f90_expect_near(discharge, [-10.0_dp, 14.0_dp], 1.0e-12_dp)
+
+      sources%indices(1, FLOWCELL_SINK) = -1
+      sources%indices(:, FLOWCELL_SOURCE) = -1
+      call sources%get_nearfield_discharge(discharge)
+      call f90_expect_near(discharge, [0.0_dp, 0.0_dp], 1.0e-12_dp, "nonlocal sides must be skipped")
+
+      sources%indices = 0
+      sources%indices(1, FLOWCELL_SINK) = 1
+      call sources%get_nearfield_discharge(discharge)
+      call f90_expect_near(discharge, [0.0_dp, 0.0_dp], 1.0e-12_dp, "no layer discharge before initialization")
+   end subroutine test_nearfield_discharge_2d_and_inactive
+
+!$gtest
+   subroutine test_nearfield_discharge_collapsed_layers() bind(C)
+      use m_source_sink, only: SourceSinks
+      use m_flow, only: kmx, zws
+      use m_alloc, only: realloc
+
+      type(SourceSinks) :: sources
+      real(kind=dp), dimension(4) :: discharge
+
+      kmx = 3
+      call realloc(zws, 4, keepExisting=.false., fill=-10.0_dp)
+      sources%num_total = 1
+      sources%num_nearfield = 1
+      allocate (sources%indices(1, 6), sources%discharge(1))
+      sources%indices(1, :) = [0, 0, 0, 1, 2, 4]
+      sources%discharge = 6.0_dp
+      call sources%get_nearfield_discharge(discharge)
+      call f90_expect_near(discharge, [0.0_dp, 2.0_dp, 2.0_dp, 2.0_dp], 1.0e-12_dp)
+   end subroutine test_nearfield_discharge_collapsed_layers
+
+   subroutine check_nearfield_discharge(z_bottom, z_top, prescribed_discharge, expected)
+      use m_source_sink, only: source_sinks, source_sink_all_discharges, FLOWCELL_SINK, FLOWCELL_SOURCE
+      use m_flow, only: kmx, kbot, ktop, zws, vol1, qin
+      use m_flowtimes, only: dts
+      use m_partitioninfo, only: jampi
+      use m_transport, only: numconst
+      use m_alloc, only: realloc
+
+      real(kind=dp), intent(in) :: z_bottom, z_top, prescribed_discharge
+      real(kind=dp), dimension(3), intent(in) :: expected
+
+      real(kind=dp), dimension(9) :: discharge
+      real(kind=dp), parameter :: tolerance = 1.0e-12_dp
+
+      call source_sinks%reset()
+      numconst = 0
+      call source_sinks%initialize(2)
+      source_sinks%num_total = 2
+      source_sinks%num_nearfield = 1
+      source_sinks%indices(1, FLOWCELL_SOURCE) = 2 ! Normal sources must not appear in nearfield output.
+      source_sink_all_discharges(1, 1) = 100.0_dp
+      source_sinks%indices(2, FLOWCELL_SINK) = 1
+      source_sinks%indices(2, FLOWCELL_SOURCE) = 2
+      source_sinks%z_bottom(2, :) = z_bottom
+      source_sinks%z_top(2, :) = z_top
+      source_sink_all_discharges(1, 2) = prescribed_discharge
+
+      kmx = 3
+      jampi = 0
+      dts = 1.0_dp
+      call realloc(kbot, 2, keepExisting=.false., fill=0)
+      call realloc(ktop, 2, keepExisting=.false., fill=0)
+      call realloc(zws, 9, keepExisting=.false., fill=0.0_dp)
+      call realloc(vol1, 9, keepExisting=.false., fill=1000.0_dp)
+      call realloc(qin, 9, keepExisting=.false., fill=0.0_dp)
+      kbot = [3, 7]
+      ktop = [5, 9]
+      zws = [0.0_dp, -10.0_dp, -8.0_dp, -5.0_dp, 0.0_dp, -10.0_dp, -8.0_dp, -5.0_dp, 0.0_dp]
+
+      call source_sinks%update_discharges()
+      call source_sinks%get_nearfield_discharge(discharge)
+
+      call f90_expect_near(discharge(3:5), -expected, tolerance, "sink discharge in the solver's selected layers")
+      call f90_expect_near(discharge(7:9), expected, tolerance, "source discharge in the solver's selected layers")
+      call f90_expect_near(discharge([1, 2, 6]), [0.0_dp, 0.0_dp, 0.0_dp], tolerance)
+      call f90_expect_near(discharge(3:5), qin(3:5), tolerance, "map sink discharge must match continuity")
+      call f90_expect_near(discharge(7:9), qin(7:9) - 100.0_dp*[0.2_dp, 0.3_dp, 0.5_dp], tolerance, &
+                           "map source discharge must exclude normal sources")
+   end subroutine check_nearfield_discharge
 
 end module test_sources_sinks

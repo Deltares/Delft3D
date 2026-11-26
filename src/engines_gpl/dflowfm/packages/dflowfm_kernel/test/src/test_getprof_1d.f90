@@ -166,8 +166,8 @@ contains
       profiles1D(1)%frccf = friction_value_
       profiles1D(1)%zmin = 0.0_dp
 
-      call realloc(frcu, lnx, fill=DMISS)
-      call realloc(ifrcutp, lnx, fill=0)
+      call realloc(frcu, lnx, fill=DMISS, keepExisting=.false.)
+      call realloc(ifrcutp, lnx, fill=0, keepExisting=.false.)
    end subroutine setup_prof1d_rectangular_cross_section_with_profile
 
    subroutine setup_prof1d_rectangular_cross_section_without_profile(width, height, friction_type, friction_value)
@@ -209,8 +209,8 @@ contains
       prof1D(3, 1) = -2.0_dp ! Profile type: -2 = closed rectangular
       ! Negative means "closed" profile
 
-      call realloc(frcu, lnx, fill=friction_value_)
-      call realloc(ifrcutp, lnx, fill=friction_type_)
+      call realloc(frcu, lnx, fill=friction_value_, keepExisting=.false.)
+      call realloc(ifrcutp, lnx, fill=friction_type_, keepExisting=.false.)
    end subroutine setup_prof1d_rectangular_cross_section_without_profile
 
    subroutine place_2d2d_link(p, q, new_link, error_code)
@@ -289,7 +289,7 @@ contains
    !$gtest
    subroutine test_getprof_1d__network1d__friction() bind(C)
       use network_data, only: numl
-      use m_flow, only: u1, q1, hu, cfuhi, frcu, frcu_mor, u_to_umain, q1_main
+      use m_flow, only: u1, q1, hu, cfuhi, frcu, frcu_mor, u_to_umain, q1_main, q1_floodplain1, q1_floodplain2
       use m_flowgeom, only: lnx
       use m_flow_geominit, only: flow_geominit
       use m_network, only: initialize_1dadmin, deallocnetwork
@@ -327,6 +327,8 @@ contains
       call realloc(frcu, lnx)
       call realloc(frcu_mor, lnx)
       call realloc(q1_main, lnx)
+      call realloc(q1_floodplain1, lnx)
+      call realloc(q1_floodplain2, lnx)
 
       call default_channel_flow()
       call initialize_1dadmin(network, network%numl, numl)
@@ -491,10 +493,10 @@ contains
          width=2.0_dp, height=1.5_dp, friction_type=R_MANNING, friction_value=0.013_dp)
       network%loaded = .false. ! Skip the channel_flow branch
 
-      call realloc(u1, lnx, fill=1.0_dp)
-      call realloc(v, lnx, fill=1.0_dp)
-      call realloc(frcu, lnx, fill=0.013_dp)
-      call realloc(ifrcutp, lnx, fill=R_MANNING)
+      call realloc(u1, lnx, fill=1.0_dp, keepExisting=.false.)
+      call realloc(v, lnx, fill=1.0_dp, keepExisting=.false.)
+      call realloc(frcu, lnx, fill=0.013_dp, keepExisting=.false.)
+      call realloc(ifrcutp, lnx, fill=R_MANNING, keepExisting=.false.)
       call realloc(cfuhi, lnx)
 
       ! Act
@@ -547,7 +549,7 @@ contains
       ! Initialize `prof1d` without `profiles1D`
       call setup_prof1d_rectangular_cross_section_without_profile(width=2.0_dp, height=1.5_dp)
       if (associated(network%adm%line2cross)) then
-         deallocate(network%adm%line2cross)
+         deallocate (network%adm%line2cross)
       end if
       newculverts = .true. ! The perimiter calculation in `rectan` is different if this global is set to true
 
@@ -684,7 +686,7 @@ contains
       call flow_geominit(0)
       call setup_prof1d_rectangular_cross_section_with_profile(width=2.0_dp, height=1.5_dp)
       if (associated(network%adm%line2cross)) then
-         deallocate(network%adm%line2cross)
+         deallocate (network%adm%line2cross)
       end if
       newculverts = .true. ! The perimiter calculation in `rectan` is different if this global is set to true
 
