@@ -122,12 +122,16 @@ contains
       node_x(nodes_per_row + 1:) = node_x(1:nodes_per_row)
       node_y(1:nodes_per_row) = 0.0_dp
       node_y(nodes_per_row + 1:) = 1.0_dp
+      ! Assign endpoints individually to avoid an ifx bounds-check fault on column assignments.
       do column = 1, num_cells
-         links(:, column) = [column, column + 1]
-         links(:, num_cells + column) = nodes_per_row + links(:, column)
+         links(1, column) = column
+         links(2, column) = column + 1
+         links(1, num_cells + column) = nodes_per_row + links(1, column)
+         links(2, num_cells + column) = nodes_per_row + links(2, column)
       end do
       do column = 1, nodes_per_row
-         links(:, 2 * num_cells + column) = [column, nodes_per_row + column]
+         links(1, 2 * num_cells + column) = column
+         links(2, 2 * num_cells + column) = nodes_per_row + column
       end do
 
       call check_netcdf(nf90_create('bedload_net.nc', NF90_CLOBBER, ncid))
