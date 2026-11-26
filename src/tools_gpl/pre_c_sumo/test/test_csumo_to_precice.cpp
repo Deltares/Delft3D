@@ -80,7 +80,7 @@ TEST(CSumoToPreciceTest, ConvertsNearFieldRecordsWithoutAnXmlReaderOrParticipant
     EXPECT_EQ(data.source_z_bottom_vector, (std::vector<double>{-5.0, -6.0}));
     EXPECT_EQ(data.source_z_top_vector, (std::vector<double>{-5.0, -6.0}));
     EXPECT_EQ(data.discharge_vector, (std::vector<double>{2.5, 7.5}));
-    EXPECT_EQ(data.momentum_magnitude_weighted_vector, (std::vector<double>{0.25, 2.25}));
+    EXPECT_EQ(data.momentum_magnitude_weighted_vector, (std::vector<double>{4.0, 4.0}));
     EXPECT_EQ(data.momentum_direction_vector, (std::vector<double>{90.0, 180.0}));
     EXPECT_EQ(data.constituents_vectors[0], (std::vector<double>{15.0, 15.0}));
     EXPECT_EQ(data.constituents_vectors[1], (std::vector<double>{2.0, 2.0}));
@@ -218,7 +218,11 @@ TEST(CSumoToPreciceTest, ExpandsSingleSourceBeforeConversion)
 {
     const pre_c_sumo::c_sumo::NF2FFData result{
         .source_flow_rate = 10.0,
-        .sources = {{.x_coordinate = 100.0, .y_coordinate = 200.0, .half_plume_width = 10.0}},
+        .sources = {{.x_coordinate = 100.0,
+                     .y_coordinate = 200.0,
+                     .half_plume_width = 10.0,
+                     .u_magnitude = 4.0,
+                     .has_u = true}},
         .sinks = {{.x_coordinate = 97.0, .y_coordinate = 196.0}},
     };
 
@@ -230,6 +234,7 @@ TEST(CSumoToPreciceTest, ExpandsSingleSourceBeforeConversion)
     EXPECT_NEAR(converted->data().source_x_vector.back(), 108.0, 1e-10);
     EXPECT_NEAR(converted->get_discharge_value().front(), 0.01, 1e-12);
     EXPECT_NEAR(converted->get_discharge_value().back(), 0.01, 1e-12);
+    EXPECT_EQ(converted->data().momentum_magnitude_weighted_vector, std::vector<double>(1000, 4.0));
 }
 
 TEST(CSumoToPreciceTest, ClampsSourceAndIntakeWeightSumsBelowOne)

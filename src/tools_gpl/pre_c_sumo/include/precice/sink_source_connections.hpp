@@ -62,7 +62,7 @@ namespace pre_c_sumo::precice
          * @param source_z_bottom Lower z-boundary of the source [m].
          * @param source_z_top Upper z-boundary of the source [m].
          * @param discharge Discharge value [m³/s].
-         * @param momentum_magnitude_weighted Effective source speed [m/s], used by FM to reconstruct source area.
+         * @param momentum_magnitude_weighted Unweighted source speed [m/s], used by FM to reconstruct source area.
          * @param momentum_direction Source direction [degrees clockwise from north, pointing towards].
          * @param constituents Constituent values, up to the supported maximum; missing entries are zero-filled.
          */

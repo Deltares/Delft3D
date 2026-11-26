@@ -319,23 +319,8 @@ namespace pre_c_sumo
                 }
             }
 
-            // Match nearfield dischargeToSrc behavior: add explicit source discharge
-            // terms independent of entrainment sink deltas.
-            //
-            // momentum_magnitude must be scaled by weight_fraction^2 to match the behavior of the original
-            // DIMR-exchange:
-            // - In the FM adapter: source_sinks%area = sources_sinks_discharge / sources_momentum_magnitude_weighted
-            // - Comment copied from nearfield.f90::dischargeToSrc, line 828:
-            //       Area of this fraction is total area divided by the weight factor:
-            //       Qtot**2/Atot must be conserved when dividing it over multiple cells (where we can choose a1, a2,
-            //       ...):
-            //                  Qtot**2/Atot                         = (Qtot*w1)**2/a1 + (Qtot*w2)**2/a2 + ...
-            //       Since w1+w2+...=1.0, we can write this as:
-            //               w1*Qtot**2/Atot + w2*Qtot**2/Atot + ... = (Qtot*w1)**2/a1 + (Qtot*w2)**2/a2 + ...
-            //       =>
-            //               wi*Qtot**2/Atot  = (Qtot*wi)**2/ai
-            //       =>
-            //               ai = Atot / wi
+            // Add explicit source discharges independently of entrainment. Weight only the discharge:
+            // FM computes each source area as discharge / speed, so the momentum flux is discharge * speed.
             if (!sources.empty())
             {
                 const double source_flow_rate = diffuser.source_flow_rate;
@@ -348,12 +333,11 @@ namespace pre_c_sumo
                         single_nf2ff_source ? (-source.z_coordinate + source.half_plume_height) : -source.z_coordinate;
                     double source_z_bottom =
                         single_nf2ff_source ? (-source.z_coordinate - source.half_plume_height) : -source.z_coordinate;
-                    double source_moment_magnitude_weighted =
-                        source.has_u ? source.u_magnitude * (weight_fraction * weight_fraction) : 0.0;
+                    double source_speed = source.has_u ? source.u_magnitude : 0.0;
                     double source_moment_direction = source.has_u ? source.u_direction : 0.0;
                     sink_source_connections.add_entry(
                         0.0, 0.0, 0.0, 0.0, source.x_coordinate, source.y_coordinate, source_z_bottom, source_z_top,
-                        discharge, source_moment_magnitude_weighted, source_moment_direction, constituents);
+                        discharge, source_speed, source_moment_direction, constituents);
                 }
             }
 

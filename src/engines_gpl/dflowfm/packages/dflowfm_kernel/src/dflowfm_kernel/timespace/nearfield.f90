@@ -62,7 +62,7 @@ module m_nearfield
    integer, parameter :: NF_IS = 4 !< Column 4 in COSUMO data          : S-factor: if S changes along the sink traject, then entrainment appears
    integer, parameter :: NF_IH = 5 !< Column 5 in COSUMO data          : half the plume height
    integer, parameter :: NF_IW = 6 !< Column 6 in COSUMO data          : half the plume width
-   integer, parameter :: NF_IUMAG = 7 !< Column 7 in COSUMO data, OPTIONAL: source velocity magnitude [m/s]
+   integer, parameter :: NF_IUMAG = 7 !< Column 7 in COSUMO data, OPTIONAL: momentum magnitude
    integer, parameter :: NF_IUDIR = 8 !< Column 8 in COSUMO data, OPTIONAL: momentum direction: 0: to North, 90: to East
    integer, parameter :: NUM_TRACK = 1000 !< If there is only one source point, a track is created perpendicular to "last sink -> source",
    !< using NF_IW. NUM_TRACK points are defined on this track to detect all cells containing source points.
@@ -729,7 +729,7 @@ contains
       integer :: isour
       integer :: iconst_operator
       integer :: sourId
-      real(kind=dp) :: area
+      real(kind=dp) :: source_speed
       real(kind=dp), dimension(:), allocatable :: intake_avg_consts !< If CONST_OPERATOR = EXCESS: Constituent values, averaged over all intake points
       !
       ! Body
@@ -807,27 +807,17 @@ contains
          ! Do not use "D0" nor "SIGMA0" from Cosumo input file.
          ! Use columns 7 (UMAG) and 8 (UDIR) from each source line
          !
-         ! Area: Atot = Q_TOT / UMAG
-         if (nf_sour(idif, sourId, NF_IUMAG) < EPS_DP) then
-            area = 0.0_dp
+         ! With qi = wi * Q_TOT, use ai = qi / UMAG to keep the specified speed.
+         ! For a common UMAG, the fluxes qi**2 / ai = qi * UMAG sum to Q_TOT * UMAG.
+         source_speed = nf_sour(idif, sourId, NF_IUMAG)
+         if (source_speed < EPS_DP) then
+            source_sinks%area(source_sinks%num_total) = 0.0_dp
          else
-            area = nf_q_source(idif) / nf_sour(idif, sourId, NF_IUMAG)
+            source_sinks%area(source_sinks%num_total) = source_sink_all_discharges(1, source_sinks%num_total) / source_speed
          end if
-         !
-         ! Area of this fraction is total area divided by the weight factor:
-         ! Qtot**2/Atot must be conserved when dividing it over multiple cells (where we can choose a1, a2, ...):
-         !            Qtot**2/Atot                         = (Qtot*w1)**2/a1 + (Qtot*w2)**2/a2 + ...
-         ! Since w1+w2+...=1.0, we can write this as:
-         !         w1*Qtot**2/Atot + w2*Qtot**2/Atot + ... = (Qtot*w1)**2/a1 + (Qtot*w2)**2/a2 + ...
-         ! =>
-         !         wi*Qtot**2/Atot  = (Qtot*wi)**2/ai
-         ! =>
-         !         ai = Atot / wi
-         !
-         source_sinks%area(source_sinks%num_total) = area * nf_sour_wght_sum(idif) / nf_sour_wght(idif, isour)
          ! Direction:
-         ! NF2FF UDIR is consumed as a clockwise bearing towards 0=north, 90=east, as in Delft3D4.
-         ! Convert the bearing to the Cartesian angle for x/y components.
+         ! nf_sour(:,:,NF_IUDIR)                           : 0=east , 90=north
+         ! To be consistent with Delft3D4, change this into: 0=north, 90=east
          source_sinks%discharge_cosine(source_sinks%num_total, SOURCE_SIDE) = cos(degrad * (90.0_dp - nf_sour(idif, sourId, NF_IUDIR)))
          source_sinks%discharge_sine(source_sinks%num_total, SOURCE_SIDE) = sin(degrad * (90.0_dp - nf_sour(idif, sourId, NF_IUDIR)))
       end do
