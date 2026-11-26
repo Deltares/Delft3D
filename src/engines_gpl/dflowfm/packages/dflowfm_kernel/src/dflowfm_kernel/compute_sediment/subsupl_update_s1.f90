@@ -89,7 +89,7 @@ contains
    end subroutine subsupl_update_constituents
 
    !> Conserve each transported constituent across a change in wet cell or layer volume.
-   subroutine remap_constituents_after_bed_change(previous_volume, drying_message, previous_ktop, stranded_mass)
+   subroutine remap_constituents_after_bed_change(previous_volume, drying_message, previous_ktop, stranded_mass, first_cell)
       use precision, only: dp
       use m_flow, only: vol1
       use m_flowgeom, only: ndxi
@@ -101,15 +101,20 @@ contains
       character(len=*), intent(in), optional :: drying_message !< Fatal message if no dry-cell transfer is supplied.
       integer, dimension(:), optional, intent(in) :: previous_ktop !< Top layers before the bed change.
       real(kind=dp), dimension(:, :), allocatable, intent(out), optional :: stranded_mass !< Amount left in dry cells.
+      integer, intent(in), optional :: first_cell !< First internal cell to remap.
 
-      integer :: n, k, kb, kt, old_kt
+      integer :: n, k, kb, kt, old_kt, start_cell
       integer :: k_receiver !< cell receiving the constituent mass
       real(dp) :: displaced_mass(numconst)
 
       if (numconst == 0) then
          return
       end if
-      do n = 1, ndxi
+      start_cell = 1
+      if (present(first_cell)) then
+         start_cell = first_cell
+      end if
+      do n = start_cell, ndxi
          call getkbotktop(n, kb, kt)
          old_kt = kt
          if (present(previous_ktop)) then

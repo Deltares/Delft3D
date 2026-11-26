@@ -81,8 +81,12 @@ contains
       use m_set_bobs, only: setbobs_after_morphology, setbobs_after_subsupl
       use m_fm_erosed_sub, only: fm_erosed
       use m_source_sink, only: source_sinks
+      use m_transport, only: numconst
 
       logical :: morphology_active, update_morphology_geometry, bed_updated
+      real(kind=dp), dimension(:), allocatable :: previous_volume
+      integer, dimension(:), allocatable :: previous_ktop
+      real(kind=dp), dimension(:, :), allocatable :: stranded_mass
 
       morphology_active = jased > 0 .and. stm_included
       update_morphology_geometry = .false.
@@ -168,6 +172,12 @@ contains
          if (jamba > 0) then
             call comp_fixedbed_fluxmba()
          end if
+         if (update_morphology_geometry .and. ndxi > ndx2d .and. numconst > 0) then
+            previous_volume = vol1
+            if (kmx > 0) then
+               previous_ktop = ktop
+            end if
+         end if
          call fm_bott3d(bed_updated)
          ! Account for the corrected bedload used by this step's composition update.
          call comp_bedload_fluxmba()
@@ -177,6 +187,11 @@ contains
          ! Complete the morphology volume change before saving the subsidence volumes.
          call setbobs_after_morphology()
          call update_bed_volumes()
+         if (allocated(previous_volume)) then
+            call remap_constituents_after_bed_change(previous_volume, previous_ktop=previous_ktop, &
+                                                      stranded_mass=stranded_mass, first_cell=ndx2d + 1)
+            call retain_dry_cell_mass(stranded_mass)
+         end if
          if (bed_updated .and. dad_included) then
             call update_dredged_bed()
          end if
@@ -200,9 +215,9 @@ contains
    subroutine update_dredged_bed()
       use m_fm_bott3d, only: fm_update_dredged_bed, fm_deposit_dried_sediment
       use m_flow, only: vol1, kmx, ktop, s0, s1
-      use m_flowgeom, only: ndx, ndxi, bl
+      use m_flowgeom, only: bl
       use m_set_bobs, only: setbobs_after_morphology
-      use m_transport, only: numconst, dry_cell_mass
+      use m_transport, only: numconst
 
       real(kind=dp), dimension(:), allocatable :: previous_volume
       real(kind=dp), dimension(:, :), allocatable :: stranded_mass
@@ -231,16 +246,29 @@ contains
                   previous_ktop = ktop
                end if
                call fm_deposit_dried_sediment(stranded_mass, geometry_changed)
-               if (any(stranded_mass /= 0.0_dp)) then
-                  if (.not. allocated(dry_cell_mass)) then
-                     allocate (dry_cell_mass(numconst, ndx), source=0.0_dp)
-                  end if
-                  dry_cell_mass(:, 1:ndxi) = dry_cell_mass(:, 1:ndxi) + stranded_mass
-               end if
+               call retain_dry_cell_mass(stranded_mass)
             end if
          end if
       end do
    end subroutine update_dredged_bed
+
+   !> Retain transported mass until the cell rewets.
+   subroutine retain_dry_cell_mass(stranded_mass)
+      use m_flowgeom, only: ndx, ndxi
+      use m_transport, only: numconst, dry_cell_mass
+
+      real(kind=dp), dimension(:, :), allocatable, intent(in) :: stranded_mass
+
+      if (.not. allocated(stranded_mass)) then
+         return
+      end if
+      if (any(stranded_mass /= 0.0_dp)) then
+         if (.not. allocated(dry_cell_mass)) then
+            allocate (dry_cell_mass(numconst, ndx), source=0.0_dp)
+         end if
+         dry_cell_mass(:, 1:ndxi) = dry_cell_mass(:, 1:ndxi) + stranded_mass
+      end if
+   end subroutine retain_dry_cell_mass
 
    !> Return stranded constituents to the same cell once it is wet again.
    subroutine restore_dry_cell_mass()

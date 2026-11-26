@@ -1600,7 +1600,7 @@ contains
       use precision, only: dp
 
       use m_flow, only: kmx, hs
-      use m_flowgeom, only: ndx
+      use m_flowgeom, only: ndx, ndx2d, ndxi
       use m_transport, only: constituents, itra1, itran, isalt, ised1
       use m_sediment, only: stmpar
       use m_fm_erosed, only: blchg
@@ -1625,6 +1625,10 @@ contains
 
       if (kmx == 0) then
          do k = 1, ndx
+            ! Internal 1D cells use their rebuilt cross-section volumes.
+            if (k > ndx2d .and. k <= ndxi) then
+               cycle
+            end if
             hsk = hs(k)
             if (hsk <= epshs) then
                cycle
@@ -1648,6 +1652,9 @@ contains
       else !kmx>0
          do ll = 1, stmpar%lsedsus ! works for sigma only
             do k = 1, ndx
+               if (k > ndx2d .and. k <= ndxi) then
+                  cycle
+               end if
                hsk = hs(k)
                if (hsk <= epshs) then
                   cycle
@@ -1663,6 +1670,9 @@ contains
          !
          if (jasal > 0) then
             do k = 1, ndx
+               if (k > ndx2d .and. k <= ndxi) then
+                  cycle
+               end if
                hsk = hs(k)
                if (hsk <= epshs) then
                   cycle
@@ -1678,6 +1688,9 @@ contains
          if (ITRA1 > 0) then
             do itrac = ITRA1, ITRAN
                do k = 1, ndx
+                  if (k > ndx2d .and. k <= ndxi) then
+                     cycle
+                  end if
                   hsk = hs(k)
                   if (hsk <= epshs) then
                      cycle

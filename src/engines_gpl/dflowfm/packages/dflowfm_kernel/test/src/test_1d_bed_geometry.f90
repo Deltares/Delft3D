@@ -58,13 +58,21 @@ program test_1d_bed_geometry
    allocate (saved_mass(nombs))
 
    select case (mode)
-   case ('ground', 'seed')
+   case ('ground', 'seed', 'floodplain')
       call require(maxval(abs(bl(1:nodes) - initial_bed)) < geometry_tol, 'Incorrect initial nodal bed levels')
       do link = 1, links
          call require(maxval(abs(bob(:, link) - initial_bed(link:link + 1))) < geometry_tol, &
                       'Incorrect initial section levels at the link ends')
       end do
+      if (mode == 'floodplain') then
+         call require(any(imbs2sed(1:nombs) > 0 .and. mbamassend(1:nombs, 1) > 0.0_dp), &
+                      'The floodplain test must start with suspended sediment')
+      end if
       call check_steps()
+      if (mode == 'floodplain') then
+         call require(maxval(abs(bl(1:nodes) - initial_bed)) > 1.0e-6_dp, &
+                      'Morphology must change the bed in the floodplain test')
+      end if
       if (mode == 'seed') then
          if (scenario == 'small_change') then
             call require(maxval(abs(bl(1:nodes) - initial_bed)) > geometry_tol .and. &
@@ -161,6 +169,7 @@ contains
 
    subroutine create_model()
       character(len=32) :: start_time, end_time, s1_setting, end_displacement, bed_update, morfac
+      character(len=64) :: cross_definitions, sediment_file, initial_field, friction_file
 
       start_time = 'TStart = 0'
       end_time = 'TStop = 10'
@@ -178,11 +187,32 @@ contains
       if (scenario == 'small_change') then
          morfac = 'MorFac = 0.01'
       end if
+      cross_definitions = 'CrossDefFile = cross_definitions.ini'
+      sediment_file = 'SedFile = reach.sed'
+      initial_field = 'IniFieldFile = initial.ini'
+      friction_file = 'frictFile = roughness.ini'
+      if (mode == 'floodplain') then
+         cross_definitions = 'CrossDefFile = cross_definitions_floodplain.ini'
+         sediment_file = 'SedFile = floodplain.sed'
+         initial_field = 'IniFieldFile = floodplain_initial.ini'
+         friction_file = 'frictFile = roughness.ini;roughness_floodplain.ini'
+         call create_file('roughness_floodplain.ini', [character(len=96) :: &
+                          '[General]', 'fileVersion = 3.00', 'fileType = roughness', &
+                          '[Global]', 'frictionId = FloodPlain1', 'frictionType = Chezy', 'frictionValue = 45'])
+         call create_file('floodplain.sed', [character(len=96) :: &
+                          '[SedimentFileInformation]', 'FileVersion = 02.00', '[SedimentOverall]', 'Cref = 1e10', &
+                          '[Sediment]', 'Name = sand', 'SedTyp = sand', 'TraFrm = 1', 'RhoSol = 2600', &
+                          'SedDia = 0.00025', 'CDryB = 1600', 'IniSedThick = 0.02', 'FacDSS = 1', 'ACAL = 1.21'])
+         call create_file('floodplain_initial.ini', [character(len=96) :: &
+                          '[General]', 'fileVersion = 2.00', 'fileType = iniField', &
+                          '[Initial]', 'quantity = initialtracerDye', 'dataValue = 2', &
+                          '[Initial]', 'quantity = initialsedfracsand', 'dataValue = 0.1'])
+      end if
       call create_file('reach.mdu', [character(len=96) :: &
                        '[model]', 'Program = D-Flow FM', 'FileVersion = 1.09', &
                        '[geometry]', 'NetFile = reach_net.nc', 'CrossLocFile = cross_locations.ini', &
-                       'CrossDefFile = cross_definitions.ini', 'frictFile = roughness.ini', &
-                       'BedlevType = 1', 'Conveyance2D = 0', 'WaterDepthIni1D = 1.5', 'NonLin1D = 1', 'IniFieldFile = initial.ini', &
+                       cross_definitions, friction_file, &
+                       'BedlevType = 1', 'Conveyance2D = 0', 'WaterDepthIni1D = 1.5', 'NonLin1D = 1', initial_field, &
                        '[numerics]', s1_setting, '[time]', 'RefDate = 20000101', 'Tunit = S', &
                        start_time, end_time, 'DtUser = 1', 'DtInit = 1', 'DtMax = 1', &
                        '[output]', 'OutputDir = output', 'MapInterval = 0', 'HisInterval = 0', 'RstInterval = 0', &
@@ -203,7 +233,7 @@ contains
       end if
       if (scenario /= 'off') then
          call append_mdu([character(len=96) :: '[sediment]', 'SedimentModelNr = 4', &
-                          'SedFile = reach.sed', 'MorFile = reach.mor'])
+                          sediment_file, 'MorFile = reach.mor'])
          call create_file('reach.mor', [character(len=96) :: &
                           '[MorphologyFileInformation]', 'FileVersion = 02.00', '[Morphology]', &
                           morfac, 'MorStt = 0', bed_update, 'CmpUpd = true', 'Bed = 1', 'DensIn = false', &

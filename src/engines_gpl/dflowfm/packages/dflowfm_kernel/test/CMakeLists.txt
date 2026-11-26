@@ -195,6 +195,11 @@ function(add_1d_bed_test name case_dir)
 endfunction()
 
 set(reach_resources "${CMAKE_CURRENT_SOURCE_DIR}/resources/1d_bed_geometry")
+set(case_name "bed_geometry_1d.floodplain_sediment_balance")
+set(case_dir "${CMAKE_CURRENT_BINARY_DIR}/bed_geometry_1d_cases/${case_name}")
+file(COPY "${reach_resources}/" DESTINATION "${case_dir}")
+add_1d_bed_test(${case_name} "${case_dir}" test_1d_bed_geometry floodplain moving)
+
 foreach(morphology IN ITEMS off fixed moving)
     foreach(update_s1 IN ITEMS 0 1)
         foreach(direction IN ITEMS -1 0 1)
