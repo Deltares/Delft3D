@@ -66,14 +66,17 @@ namespace pre_c_sumo::c_sumo
         for (const auto& file : nf2ffFilepaths(csumo_settings, current_time_seconds))
         {
             std::println("Waiting for NF2FF file: {}", file.string());
-            while ((!std::filesystem::exists(file) || !is_complete_nf2ff_file(file)) &&
-                   total_delay_in_ms < timeout_in_ms)
+            while (!std::filesystem::exists(file) || !is_complete_nf2ff_file(file))
             {
+                if (total_delay_in_ms >= timeout_in_ms)
+                {
+                    return false;
+                }
                 std::this_thread::sleep_for(std::chrono::milliseconds(check_delay_in_ms));
                 total_delay_in_ms += check_delay_in_ms;
             }
         }
-        return total_delay_in_ms < timeout_in_ms;
+        return true;
     }
 
     std::expected<std::vector<NF2FFData>, utils::io_errors::ReadError> readNF2FFFiles(const Settings& csumo_settings,
