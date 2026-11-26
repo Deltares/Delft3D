@@ -565,7 +565,7 @@ subroutine updmorlyr_layered_bed_Hirano(this, dbodsd, dz, dtmor, morft, messages
     logical :: call_consolidate, track_shortage
     integer :: l, nm, k, kk, ktemp
     real(fp) :: seddep0, seddep1, thdiff, temp, thick, thickd, thicke
-    real(fp) :: preload0, svfracd, thtrlyrnew, poros, sdbodsed, td0
+    real(fp) :: preload0, svfracd, thtrlyrnew, poros, td0
     real(fp) :: totmassd, totsv, totsvd, totsve
     real(fp) :: transfer_solid_volume
     real(fp), dimension(this%settings%nfrac) :: dmi, mfrac
@@ -751,7 +751,6 @@ subroutine updmorlyr_layered_bed_Hirano(this, dbodsd, dz, dtmor, morft, messages
                ! sedimentation to underlayers
                ! determine surplus of mass per fraction
                !
-               sdbodsed = 0.0_fp
                if (this%settings%active_layer_to_substrate_flux == ACTIVE_LAYER_TO_SUBSTRATE_FLUX_UNIFORM) then
                   call compute_dmi_uniform(msed(:, 1, nm), this%settings%nfrac, thdiff, thick, dmi)
                else
@@ -761,13 +760,13 @@ subroutine updmorlyr_layered_bed_Hirano(this, dbodsd, dz, dtmor, morft, messages
                endif
                do l = 1, this%settings%nfrac
                   msed(l, 1, nm) = msed(l, 1, nm) - dmi(l)
-                  sdbodsed = sdbodsed + dbodsd(l, nm)
                enddo
                !
                ! store surplus of mass in underlayers
                !
                if (iconsolidate == CONSOL_TERZAGHI) then
-                  call lyrsedimentation(this , nm, thdiff, dmi, svfrac(1, nm), sdbodsed, depos_time(1, nm))
+                  ! the surplus keeps the load history (preload) of the transport layer it comes from
+                  call lyrsedimentation(this , nm, thdiff, dmi, svfrac(1, nm), preload(1, nm), depos_time(1, nm))
                else
                   call lyrsedimentation(this , nm, thdiff, dmi, svfrac(1, nm))
                endif
