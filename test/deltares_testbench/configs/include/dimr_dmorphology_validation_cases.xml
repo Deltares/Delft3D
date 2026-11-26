@@ -351,4 +351,90 @@
       </file>
     </checks>
   </testCase>
+
+    <testCase name="e02_f026_c06_bmi_drag_wetting" ref="vegetation_bmi_default">
+      <path version="DVC">e02_dflowfm/f026_vegetation/c06_bmi_drag_wetting</path>
+      <maxRunTime>120</maxRunTime>
+      <programs>
+        <program ref="uv" seq="1">
+          <arguments>
+            <argument>run</argument>
+            <argument>run_case.py</argument>
+            <argument>current</argument>
+          </arguments>
+        </program>
+        <program ref="uv" seq="2">
+          <arguments>
+            <argument>run</argument>
+            <argument>run_case.py</argument>
+            <argument>fr84</argument>
+          </arguments>
+        </program>
+        <program ref="uv" seq="3">
+          <arguments>
+            <argument>run</argument>
+            <argument>run_case.py</argument>
+            <argument>ru03</argument>
+          </arguments>
+        </program>
+        <program ref="uv" seq="4">
+          <arguments>
+            <argument>run</argument>
+            <argument>run_case.py</argument>
+            <argument>manual</argument>
+          </arguments>
+        </program>
+        <program ref="uv" seq="5">
+          <arguments>
+            <argument>run</argument>
+            <argument>run_case.py</argument>
+            <argument>model2</argument>
+          </arguments>
+        </program>
+      </programs>
+      <checks>
+        <file name="current/output/channel_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_waterdepth" toleranceAbsolute="0.00001"/>
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001"/>
+            <parameter name="mesh2d_taub" toleranceAbsolute="0.0005"/>
+            <parameter name="mesh2d_mor_bl" toleranceAbsolute="0.000001"/>
+          </parameters>
+        </file>
+        <file name="fr84/output/channel_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_waterdepth" toleranceAbsolute="0.00001"/>
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001"/>
+            <parameter name="mesh2d_taub" toleranceAbsolute="0.0005"/>
+            <parameter name="mesh2d_mor_bl" toleranceAbsolute="0.000001"/>
+            <parameter name="mesh2d_uorb" toleranceAbsolute="0.0001"/>
+          </parameters>
+        </file>
+        <file name="ru03/output/channel_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_waterdepth" toleranceAbsolute="0.00001"/>
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001"/>
+            <parameter name="mesh2d_taub" toleranceAbsolute="0.0005"/>
+            <parameter name="mesh2d_mor_bl" toleranceAbsolute="0.000001"/>
+            <parameter name="mesh2d_uorb" toleranceAbsolute="0.0001"/>
+          </parameters>
+        </file>
+        <file name="manual/output/channel_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_waterdepth" toleranceAbsolute="0.00001"/>
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001"/>
+            <parameter name="mesh2d_taub" toleranceAbsolute="0.0005"/>
+            <parameter name="mesh2d_mor_bl" toleranceAbsolute="0.000001"/>
+          </parameters>
+        </file>
+        <file name="model2/output/channel_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_waterdepth" toleranceAbsolute="0.00001"/>
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001"/>
+            <parameter name="mesh2d_taub" toleranceAbsolute="0.0005"/>
+            <parameter name="mesh2d_mor_bl" toleranceAbsolute="0.000001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
 </testCases>

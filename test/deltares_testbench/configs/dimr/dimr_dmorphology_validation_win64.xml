@@ -48,6 +48,14 @@
     <program name="checkhydbal" addSearchPaths="false">
       <path>thirdparty\checkhydbal\win64\checkhydbal.exe</path>
     </program>
+    <program name="uv" addSearchPaths="true" logOutputToFile="true">
+      <shell ref="command_prompt"/>
+      <path>uv</path>
+      <environments>
+        <environment name="D3D_HOME_BIN" type="path">[programpath(dimr)]</environment>
+        <environment name="OMP_NUM_THREADS" type="raw">1</environment>
+      </environments>
+    </program>
   </programs>
   <defaultTestCases>
     <testCase name="dflowfm_default">
@@ -85,6 +93,14 @@
       </location>
       
 
+    </testCase>
+    <testCase name="vegetation_bmi_default">
+      <location ref="cases" type="input">
+        <from>.</from>
+      </location>
+      <location ref="reference_results" type="reference">
+        <from>win64</from>
+      </location>
     </testCase>
   </defaultTestCases>
   <!--

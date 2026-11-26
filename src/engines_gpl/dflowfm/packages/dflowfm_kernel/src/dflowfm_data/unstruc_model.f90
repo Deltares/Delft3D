@@ -1406,7 +1406,7 @@ contains
       call prop_get(md_ptr, 'physics', 'tracerConcentrationMin', tracer_concentration_min, tracer_concentration_min_enabled)
       call prop_get(md_ptr, 'physics', 'tracerConcentrationMax', tracer_concentration_max, tracer_concentration_max_enabled)
       if (tracer_concentration_min >= tracer_concentration_max) then
-         call mess(LEVEL_ERROR, 'In [physics] tracerConcentrationMin must be greater than tracerConcentrationMax')
+         call mess(LEVEL_ERROR, 'In [physics] tracerConcentrationMin must not be greater than tracerConcentrationMax')
       end if
 
       call prop_get(md_ptr, 'physics', 'SmagorinskyCoefficient', smagorinsky_coefficient, success)
@@ -1533,7 +1533,7 @@ contains
       call prop_get(md_ptr, 'veg', 'BaptistDragCallback', baptist_drag_callback_enabled)
       if (baptist_drag_callback_enabled .and. (kmx /= 0 .or. javeg /= 3)) then
          istat = DFM_EFILEFORMAT
-         call mess(LEVEL_ERROR, 'BaptistDragCallback requires 2D Vegetationmodelnr = 3.')
+         call mess(LEVEL_ERROR, 'BaptistDragCallback requires 2D and Vegetationmodelnr = 3.')
          return
       end if
       call prop_get(md_ptr, 'veg', 'Clveg', Clveg)
