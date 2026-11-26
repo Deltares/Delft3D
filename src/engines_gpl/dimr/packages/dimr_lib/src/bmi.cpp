@@ -218,8 +218,10 @@ BMI_API int initialize(const char* configfile)
     }
     catch (Exception& ex)
     {
-        printf("#### ERROR: dimr initialize ABORT: %s\n", ex.message);
-        thisDimr->log->Write(FATAL, thisDimr->my_rank, ex.message, thisDimr->configfile);
+        if (!thisDimr->log->Write(FATAL, thisDimr->my_rank, "%s", ex.message))
+        {
+            printf("#### ERROR: dimr initialize ABORT: %s\n", ex.message);
+        }
         return ex.errorCode;
     }
     catch (...)
