@@ -87,10 +87,11 @@ contains
 
       call increasegrid(mfac * mcs, nfac * mcs)
 
-      imax = max(max(mfac, nfac) * mcs, maxsplen) ! mnmax
+      imax = max(max(mfac, nfac) * mcs, points_per_spline_capacity) ! mnmax
 
-      allocate (xspc(mcs, maxsplen), yspc(mcs, maxsplen), TIJ(mcs, maxsplen), stat=ierr)
-      call aerr('xspc(mcs, maxsplen), yspc(mcs, maxsplen), TIJ(mcs,maxsplen)', ierr, 3 * mcs * maxsplen)
+      allocate (xspc(mcs, points_per_spline_capacity), yspc(mcs, points_per_spline_capacity), &
+                TIJ(mcs, points_per_spline_capacity), stat=ierr)
+      call aerr('xspc, yspc, TIJ (mcs, points_per_spline_capacity)', ierr, 3 * mcs * points_per_spline_capacity)
       allocate (xh(mmax, nmax), yh(mmax, nmax), stat=ierr)
       call aerr('xh(mmax, nmax), yh(mmax, nmax)', ierr, 2 * mmax * nmax)
       allocate (XI1(IMAX), YI1(IMAX), TI1(IMAX), &
@@ -108,10 +109,9 @@ contains
 
       xspc = xymis
       yspc = xymis
-      xspc(1:mcs, 1:maxsplen) = xsp(1:mcs, 1:maxsplen)
-      yspc(1:mcs, 1:maxsplen) = ysp(1:mcs, 1:maxsplen)
+      xspc(1:mcs, 1:points_per_spline_capacity) = xsp(1:mcs, 1:points_per_spline_capacity)
+      yspc(1:mcs, 1:points_per_spline_capacity) = ysp(1:mcs, 1:points_per_spline_capacity)
       numspl = mcs
-      !maxsplen = 2*maxsplen
 
       call READYY('TRANSFORMING SPLINES INTO DESIGN-GRID', 0.0_dp)
       ierr = 0
@@ -121,7 +121,7 @@ contains
 
       call READYY(' ', 0.05_dp)
 
-      call SECTR(XSPc, YSPc, TIJ, mcs, maxsplen, imax, &
+      call SECTR(XSPc, YSPc, TIJ, mcs, points_per_spline_capacity, imax, &
                  ierr, NUMI, &
                  NUMSPL, NUMPX, NTYP, MN12, &
                  X1, Y1, X2, Y2)
@@ -138,10 +138,10 @@ contains
 !        vul voor alle splines de lijninterpolaties in
          do I1 = 1, NUMSPL
 !           Alle horizontaaltjes
-            call get_ij(XSPc, XI1, mcs, maxsplen, imax, I1, I1, 1, NUMPX)
-            call get_ij(YSPc, YI1, mcs, maxsplen, imax, I1, I1, 1, NUMPX)
-            call NUMPold(XSPc, mcs, maxsplen, I1, NI1)
-            call PAKTIJ(TIJ, mcs, maxsplen, TI1, imax, I1, I1, 1, NUMSPL, NTI1)
+            call get_ij(XSPc, XI1, mcs, points_per_spline_capacity, imax, I1, I1, 1, NUMPX)
+            call get_ij(YSPc, YI1, mcs, points_per_spline_capacity, imax, I1, I1, 1, NUMPX)
+            call NUMPold(XSPc, mcs, points_per_spline_capacity, I1, NI1)
+            call PAKTIJ(TIJ, mcs, points_per_spline_capacity, TI1, imax, I1, I1, 1, NUMSPL, NTI1)
             if (I1 <= NUMI) then
                call MAKESPL(TI1, XI1, YI1, imax, NI1, NTI1, MFAC, X1, Y1, L1MAX, TT, 0.0_dp)
                JJ = (MN12(I1, 1) - 1) * NFAC + 1

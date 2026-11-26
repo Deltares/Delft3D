@@ -44,6 +44,7 @@ module m_read_commandline
 contains
 
    function read_commandline() result(istat)
+      use, intrinsic :: iso_fortran_env, only: output_unit
       use m_commandline_option
       use unstruc_model
       use m_gui, only: jagui
@@ -52,7 +53,7 @@ contains
       use string_module, only: str_lower, str_tolower
       use m_samples_refine
       use m_partitioninfo
-      use dflowfm_version_module, only: getbranch_dflowfm, getfullversionstring_dflowfm
+      use dflowfm_version_module, only: write_dflowfm_version
       use dfm_error
       use unstruc_api
       use m_makenet
@@ -236,12 +237,12 @@ contains
             end do
 
          case ('precice')
-            call precicef_get_version_information(msgbuf, LEN(msgbuf))
+            call precicef_get_version_information(msgbuf, len(msgbuf))
             write (*, '(a)') 'Using preCICE: '//trim(msgbuf)
             write (*, '(a)') ' '
             write (*, '(a)') 'WARNING: Known issue:'
             write (*, '(a)') '         The D-Flow FM 3D mesh is redefined at the end of each preCICE time-window, before writing data.'
-            write (*, '(a)') '         The first remesh does not work. The data being written is correct,' 
+            write (*, '(a)') '         The first remesh does not work. The data being written is correct,'
             write (*, '(a)') '         but their vertical location might be incorrect (at the first preCICE time-window only).'
             call precice_adapter_enable()
 
@@ -270,68 +271,7 @@ contains
             ! Note: if use input was wrong here, result will be LEVEL_NONE (==silent). Desirable?
 
          case ('v', 'version')
-            call getfullversionstring_dflowfm(msgbuf)
-            write (*, '(a)') trim(msgbuf)
-            call getbranch_dflowfm(msgbuf)
-            write (*, '(a)') 'Source: '//trim(msgbuf)
-#ifdef __INTEL_COMPILER
-            write (*, '(a,f5.2)') "Compiled with Intel ifort, version ", (0.01 * __INTEL_COMPILER)
-#endif
-            write (*, '(a)') 'Compiled with support for:'
-            if (jaGUI == 1) then
-               write (*, '(a)') 'IntGUI   : yes'
-            else
-               ! Cheap trick for fast compilation of dflowfm-cli executable: it never included linking of Interacter, nor OpenGL,
-               ! but since we don't want to completely recompile the kernel with HAVE_DISPLAY=0, we simply detect it at runtime with jaGUI==0.
-               write (*, '(a)') 'IntGUI   : no'
-            end if
-#ifdef HAVE_OPENGL
-            if (jaGUI == 1) then
-               write (*, '(a)') 'OpenGL   : yes'
-            else
-               ! Cheap trick for fast compilation of dflowfm-cli executable: it never included linking of Interacter, nor OpenGL,
-               ! but since we don't want to completely recompile the kernel with HAVE_DISPLAY=0, we simply detect it at runtime with jaGUI==0.
-               write (*, '(a)') 'OpenGL   : no'
-            end if
-#else
-            write (*, '(a)') 'OpenGL   : no'
-#endif
-#ifdef _OPENMP
-            write (*, '(a)') 'OpenMP   : yes'
-#else
-            write (*, '(a)') 'OpenMP   : no'
-#endif
-#ifdef HAVE_MPI
-            write (*, '(a)') 'MPI      : yes'
-#else
-            write (*, '(a)') 'MPI      : no'
-#endif
-#ifdef HAVE_PETSC
-            write (*, '(a)') 'PETSc    : yes'
-#else
-            write (*, '(a)') 'PETSc    : no'
-#endif
-#ifdef HAVE_METIS
-            write (*, '(a)') 'METIS    : yes'
-#else
-            write (*, '(a)') 'METIS    : no'
-#endif
-#ifdef HAVE_PROJ
-            write (*, '(a)') 'PROJ     : yes'
-#else
-            write (*, '(a)') 'PROJ     : no'
-#endif
-#ifdef HAVE_SHAPELIB
-            write (*, '(a)') 'Shapelib : yes'
-#else
-            write (*, '(a)') 'Shapelib : no'
-#endif
-#ifdef HAVE_GDAL
-            write (*, '(a)') 'GDAL     : yes'
-#else
-            write (*, '(a)') 'GDAL     : no'
-#endif
-
+            call write_dflowfm_version(output_unit, jaGUI == 1)
             istat = DFM_EXIT ! Exit without any error.
             return
 
