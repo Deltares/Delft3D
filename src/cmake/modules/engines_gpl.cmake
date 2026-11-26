@@ -67,7 +67,6 @@ set(d_hydro_module "${d_hydro_module_path}/d_hydro")
 
 # Tests
 set(tests_directory src/test/engines_gpl)
-set(dflowfm_kernel_test_module ${tests_directory}/dflowfm/packages/dflowfm_kernel)
 
 # Unit tests dwaq
 set(delwaq_unit_tests_module ${unit_tests_dir}/engines_gpl/waq)
