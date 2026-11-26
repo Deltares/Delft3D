@@ -236,7 +236,7 @@ namespace pre_c_sumo::c_sumo
     {
         ASSIGN_OR_RETURN(auto doc, utils::xml_parsing::parseXmlDocument(xml));
         ASSIGN_OR_RETURN(const auto root, utils::xml_parsing::validateRoot(doc, {"NF2FF"}));
-        ASSIGN_OR_RETURN(auto file_version, parseNFFileVersion(root, csumo_file_version));
+        RETURN_IF_ERROR(parseNFFileVersion(root, csumo_file_version));
 
         // Discharge
         ASSIGN_OR_RETURN(auto discharge_node, parseDischarge(root));
@@ -284,8 +284,8 @@ namespace pre_c_sumo::c_sumo
         // End NFResult
 
         // Compose result
-        return NF2FFData{std::move(file_version), intake_flow_rate,   source_flow_rate,   constituents_operator,
-                         std::move(constituents), std::move(intakes), std::move(sources), std::move(sinks)};
+        return NF2FFData{intake_flow_rate,   source_flow_rate,   constituents_operator, std::move(constituents),
+                         std::move(intakes), std::move(sources), std::move(sinks)};
     }
 
 } // namespace pre_c_sumo::c_sumo

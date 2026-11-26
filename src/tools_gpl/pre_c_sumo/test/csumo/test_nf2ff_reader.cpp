@@ -430,11 +430,10 @@ TEST(CSumoNF2FFReaderTest, ReturnsErrorOnWrongRootElement)
     EXPECT_TRUE(result.error().message.contains("Root element must be <NF2FF>, got: <notvalid>"));
 }
 
-TEST(CSumoNF2FFReaderTest, ParsesFileVersion)
+TEST(CSumoNF2FFReaderTest, AcceptsSupportedFileVersion)
 {
     const auto result = pre_c_sumo::c_sumo::NF2FFReader::fromString(valid_xml);
     ASSERT_TRUE(result.has_value());
-    EXPECT_EQ(result->file_version, "0.3");
 }
 
 TEST(CSumoNF2FFReaderTest, ReturnsErrorOnMissingFileVersion)

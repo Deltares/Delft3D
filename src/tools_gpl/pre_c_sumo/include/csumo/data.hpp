@@ -28,34 +28,16 @@ namespace pre_c_sumo::c_sumo
     };
 
     /**
-     * @brief Discharge rate and constituent specification for a diffuser.
-     */
-    struct Discharge
-    {
-        double flow_rate{};                           ///< Volume flow rate [m3/s].
-        ConstituentsOperator constituents_operator{}; ///< How @ref constituents values are interpreted.
-        std::vector<double> constituents;             ///< Constituent values, in the associated constituent order.
-    };
-
-    /**
      * @brief Settings for one C-SUMO diffuser, including its locations and FF2NF exchange paths.
      */
     struct DiffuserSettings
     {
-        std::optional<std::string> id{};              ///< Optional diffuser identifier from the settings file.
-        std::optional<std::string> sub_grid_model{};  ///< Optional name of the sub-grid model to use.
-        std::optional<std::string> far_field_model{}; ///< Optional name of the far-field model to use.
-        Point2D position{};                           ///< Diffuser discharge location.
-        std::vector<Point2D> ambient_positions{};     ///< Locations sampled to describe ambient conditions.
-        std::optional<Point2D> intake{};              ///< Optional water intake location.
-        Discharge discharge{};                        ///< Discharge rate and constituent data.
-        double nozzle_diameter{};                     ///< Nozzle diameter [m].
-        double nozzle_elevation{};                    ///< Height above the bed [m].
-        double vertical_angle{};                      ///< Discharge angle [degrees].
-        double horizontal_angle{};                    ///< Discharge angle, 0=east, 90=north [degrees].
-        std::filesystem::path ff2nf_dir{};            ///< Directory for FF2NF exchange files.
-        std::filesystem::path ff_run_dir{};           ///< Far-field model run directory.
-        std::string settings_xml{};                   ///< Serialized diffuser settings element passed through to FF2NF.
+        Point2D position{};                       ///< Diffuser discharge location.
+        std::vector<Point2D> ambient_positions{}; ///< Locations sampled to describe ambient conditions.
+        std::optional<Point2D> intake{};          ///< Optional water intake location.
+        std::filesystem::path ff2nf_dir{};        ///< Directory for FF2NF exchange files.
+        std::filesystem::path ff_run_dir{};       ///< Far-field model run directory.
+        std::string settings_xml{};               ///< Serialized diffuser settings element passed through to FF2NF.
     };
 
     /**
@@ -146,7 +128,6 @@ namespace pre_c_sumo::c_sumo
      */
     struct NF2FFData
     {
-        std::string file_version{};                   ///< Version read from the NF2FF file.
         double intake_flow_rate{};                    ///< Intake volume flow rate [m3/s], zero when not provided.
         double source_flow_rate{};                    ///< Source volume flow rate [m3/s].
         ConstituentsOperator constituents_operator{}; ///< Interpretation of @ref constituents values.
