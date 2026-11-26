@@ -28,7 +28,7 @@
 !-------------------------------------------------------------------------------
 
 module m_vertical_profile_u0
-   use m_tridag, only: tridag
+   use m_tridag, only: tridag_two_rhs
 
    implicit none
 
@@ -283,9 +283,7 @@ contains
          rhs(1:kxL) = cu
          call pentadiag(second_lower, lower, diagonal, upper, second_upper, rhs, Fu(Lb:), kxL)
       else
-         call tridag(lower, diagonal, upper, rhs, normalized_upper, Ru(Lb:), kxL)
-         rhs(1:kxL) = cu
-         call tridag(lower, diagonal, upper, rhs, normalized_upper, Fu(Lb:), kxL)
+         call tridag_two_rhs(lower, diagonal, upper, rhs, cu, normalized_upper, Ru(Lb:), Fu(Lb:), kxL)
       end if
 
    end subroutine vertical_profile_u0

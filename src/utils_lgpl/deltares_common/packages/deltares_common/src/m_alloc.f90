@@ -26,12 +26,16 @@
 !-------------------------------------------------------------------------------
 !
 !
-!> Utility routines for memory (re)allocation.
+!> Utility routines for memory allocation, reallocation and deallocation.
 module m_alloc
-   use m_alloc_generated, only: realloc, reallocP
+   use m_alloc_generated, only: realloc, reallocP, deallocate_if_allocated
    use m_alloc_handwritten, only: realloc, reallocP, aerr, allocSize, reserve_sufficient_space
    implicit none
    private
 
    public realloc, reallocP, aerr, allocSize, reserve_sufficient_space
+
+   !> Release an allocatable array if allocated; otherwise leave it unallocated.
+   !! Supports ranks 1-4 for the element types of the generated realloc overloads.
+   public :: deallocate_if_allocated
 end module m_alloc

@@ -88,7 +88,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
    !
    ! check to see if a wave map should be written
    !
-   if (wavedata%mode == stand_alone) then
+   if (wavedata%wave_flow_mode%online == ONLINE_NONE) then
       call setwrite_wavm(wavedata%output, .true.)
    else
       if (wavedata%time%timsec >= wavedata%output%nexttim) then
@@ -110,7 +110,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
       if (wavedata%output%write_wavm) then
          call setoutputcount(wavedata%output, wavedata%output%count + 1)
       end if
-      if (wavedata%time%calccount == 1 .and. swan_run%modsim == 3 .and. swan_run%inputtemplatefile == '') then
+      if (wavedata%time%calccount == 1 .and. swan_run%modsim == 3 .and. swan_run%inputtemplatefile == ' ') then
          !
          ! SWANFile is going to contain two datasets: from tstart and tend
          ! Output from tend will always be written
@@ -124,7 +124,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
       !
       ! Set time in case of standalone run
       !
-      if (wavedata%mode == stand_alone) call settimmin(wavedata%time, real(swan_run%timwav(itide), hp), swan_run%modsim, swan_run%nonstat_interval)
+      if (wavedata%wave_flow_mode%online == ONLINE_NONE) call settimmin(wavedata%time, real(swan_run%timwav(itide), hp), swan_run%modsim, swan_run%nonstat_interval)
       !
       ! Update wave and wind conditions
       !
@@ -138,7 +138,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
          dom => swan_run%dom(i_swan)
 
          write (*, '(a)') '  Allocate input fields'
-         call alloc_input_fields(swan_grids(i_swan), swan_input_fields, wavedata%mode, dom%ice)
+         call alloc_input_fields(swan_grids(i_swan), swan_input_fields, swan_run%mudfile_deprecated, dom%ice)
          call init_input_fields(swan_input_fields, swan_run, itide)
 
          if (dom%curvibot == 1) then
@@ -148,7 +148,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
          !
          ! Vegetation map
          if (.not.dom%veg_from_flow) then
-            if (dom%vegfil /= '') then
+            if (dom%vegfil /= ' ') then
                write (*, '(a)') '  Allocate and read vegetation map'
                call get_vegi_map(swan_input_fields, dom%vegfil)
             else
@@ -285,7 +285,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
                                 & 'WNDNOW', extr_var1, extr_var2, &
                                 & sumvars)
          end if
-         if (wavedata%mode == flow_mud_online) then
+         if (swan_run%mudfile_deprecated /= ' ') then
             !
             ! Write SWAN mud file
             ! Never extend!
@@ -303,7 +303,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
                                 & sumvars, 0.0)
          end if
          mult = 1.0
-         if (dom%veg_from_flow .or. (dom%vegetation >= 1 .and. dom%vegfil /= '')) then
+         if (dom%veg_from_flow .or. (dom%vegetation >= 1 .and. dom%vegfil /= ' ')) then
             !
             ! Write Vegetation map file
             !
@@ -369,7 +369,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
          !
          write (*, '(a)') '  Read SWAN output'
          offset = 0
-         if (wavedata%time%calccount == 1 .and. swan_run%modsim == 3 .and. swan_run%inputtemplatefile == '') then
+         if (wavedata%time%calccount == 1 .and. swan_run%modsim == 3 .and. swan_run%inputtemplatefile == ' ') then
             ! SWANFile contains two datasets: from tstart and tend
             ! First read the first dataset
             ! This must be placed in output%count-1
@@ -450,7 +450,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
                                & wavedata, swan_run%nautical_convention)
          end if
 
-         call dealloc_input_fields(swan_input_fields, wavedata%mode)
+         call dealloc_input_fields(swan_input_fields, swan_run%mudfile_deprecated)
          call dealloc_output_fields(swan_output_fields)
          !
          if (deletehotfile(wavedata)) then
@@ -486,7 +486,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
          end if
 
          write (*, '(a)') '  Deallocate input fields'
-         call dealloc_input_fields(swan_input_fields, wavedata%mode, dom%ice)
+         call dealloc_input_fields(swan_input_fields, swan_run%mudfile_deprecated, dom%ice)
       end do ! nested swan grids
       !
       ! After all hotfiles are handled correctly for each i_swan:
@@ -498,7 +498,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
       !
       if (swan_run%swwav) then
          do i_flow = 1, n_flow_grids
-            if (swan_run%flowgridfile == ' ') then
+            if (wavedata%wave_flow_mode%online == ONLINE_DELFTIO) then
                !
                ! Convert vector fields to curvilinear directions
                !
@@ -517,7 +517,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
             itidewrite = itide
             if (swan_run%append_com) itidewrite = -1
             call put_wave_fields(flow_grids(i_flow), flow_output_fields(i_flow), itidewrite, &
-                                & wavedata, swan_run%swflux, swan_run%flowgridfile, &
+                                & wavedata, swan_run%swflux, &
                                 & swan_run%netcdf_sp)
          end do
          ! Initially comcount = 0

@@ -30,6 +30,8 @@ module write_swan_datafile
 !!--module description----------------------------------------------------------
 !
 !!--module declarations---------------------------------------------------------
+implicit none
+
 public write_swan_file
 
     interface write_swan_file
@@ -43,7 +45,6 @@ subroutine extrapolate(mmax, nmax, covered, var1, var2)
 !!--description-----------------------------------------------------------------
 ! NONE
 !!--declarations----------------------------------------------------------------
-    implicit none
 !
 ! Local parameters
 !
@@ -221,7 +222,6 @@ subroutine write_swan_file1 (var1  ,mmax   , nmax, covered, &
 !!--description-----------------------------------------------------------------
 ! NONE
 !!--declarations----------------------------------------------------------------
-    implicit none
 !
 ! Global variables
 !
@@ -268,7 +268,6 @@ subroutine write_swan_file2 (var1  , var2       , mmax   , nmax, covered, &
 !!--description-----------------------------------------------------------------
 ! NONE
 !!--declarations----------------------------------------------------------------
-    implicit none
 !
 ! Global variables
 !

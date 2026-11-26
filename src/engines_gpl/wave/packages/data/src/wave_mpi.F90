@@ -42,6 +42,7 @@ module wave_mpi
 use mpi
 #endif
 use check_mpi_env
+implicit none
 !
 ! Module parameters
 !

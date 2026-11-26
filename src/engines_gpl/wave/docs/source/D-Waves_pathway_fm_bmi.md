@@ -13,7 +13,7 @@ directions.
 
 | Channel | Sender/writer | Receiver/reader | Contents |
 |---|---|---|---|
-| BMI calls | DIMR | D-Flow FM and D-Waves components (loaded as libraries) | Initialize, update and finalize; D-Waves mode (`mode` variable) and communicator setup. |
+| BMI calls | DIMR | D-Flow FM and D-Waves components (loaded as libraries) | Initialize, update and finalize; the legacy D-Waves BMI `mode` value is translated internally to DIMR online / NetCDF, plus communicator setup. |
 | NetCDF com-files | D-Flow FM | D-Waves | D-Flow FM geometry and selected hydrodynamic fields. D-Waves reads them directly with the NetCDF library, not through the EC module. |
 | (same) NetCDF com-files | D-Waves, with `WriteCOM` | D-Flow FM | Wave fields mapped onto the D-Flow FM grid; D-Flow FM reads them through its external-forcing/EC module path. |
 | D-Waves/SWAN staged files | D-Waves / SWAN | SWAN / D-Waves | Solver inputs, nesting boundaries and results, including in library mode. |
@@ -62,12 +62,13 @@ input for the ESMF weight generation.
 1. In the normal D-Flow FM-master configuration, DIMR initializes D-Flow FM
    first. Its initial external output writes the geometry and initial fields
    that D-Waves needs.
-2. DIMR sets D-Waves to mode 1 and initializes it. When D-Waves is a `<start>`
+2. DIMR sets the D-Waves BMI `mode` to `"online with DflowFM"` and initializes
+   it. The BMI wrapper maps that legacy value to internal `online=dimr` and
+   `com_file=netcdf`. When D-Waves is a `<start>`
    inside a `<startGroup>` within a `<parallel>` block (the usual D-Flow FM
-   coupling layout), DIMR writes 1 to D-Waves' BMI `mode` variable before
-   `initialize`. A non-blank MDW `[General] FlowFile` also forces mode 1.
-   D-Waves then checks the communication files, reads both grids and prepares
-   the maps for each D-Flow FM partition/SWAN grid pair.
+   coupling layout), DIMR writes this value to D-Waves' BMI `mode` variable
+   before `initialize`. D-Waves then checks the communication files, reads
+   both grids and prepares the maps for each D-Flow FM partition/SWAN grid pair.
 3. DIMR advances the components according to its configured schedule.
    D-Flow FM uses its own internal numerical time steps and writes com-file
    fields at its output times. D-Waves' scheduled `update(dt)` advances its
@@ -116,9 +117,10 @@ scheduling block should not be confused with the spatial MPI decomposition of
 either engine.
 
 Standalone reading of existing D-Flow FM com-files uses the same mapping
-machinery without advancing D-Flow FM; see the
-[standalone model](./D-Waves_pathway_standalone.md). Mode-2 fluid mud remains a
-[Delft3D4-only extension](./D-Waves_pathway_delft3d4.md).
+machinery without advancing D-Flow FM; select standalone with
+`--online=none` (the default) and see the
+[standalone model](./D-Waves_pathway_standalone.md). Legacy mode-2 fluid mud
+remains a [Delft3D4-only extension](./D-Waves_pathway_delft3d4.md).
 
 ## Implementation links
 

@@ -1,6 +1,7 @@
 # Standalone D-Waves communication model
 
-In standalone mode, D-Waves runs without a live Delft3D4 or D-Flow FM engine.
+In standalone mode (`--online=none`, the default), D-Waves runs without a live
+Delft3D4 or D-Flow FM engine.
 It can read saved Delft3D4 or D-Flow FM fields, write wave fields onto the
 Delft3D4 or D-Flow FM grid, or do both.
 
@@ -37,11 +38,11 @@ an offline file operation.
    `WriteCOM` is enabled; the configured D-Waves outputs are also produced.
 4. Continue with the next selected time, then finalize.
 
-The two routes below are both standalone input routes. The MDW keyword
-`[Output] COMFile` selects the route (blank: Delft3D4 NEFIS com-files; set:
-D-Flow FM NetCDF com-file), and with it the format of the existing com-files
-that D-Waves reads. The route also affects how the calculation times are chosen
-(see `wave_master_step`,
+The two routes below are both standalone input routes. The selected MDW
+com-file and its file type determine whether D-Waves reads Delft3D4 NEFIS or
+D-Flow FM NetCDF files. `wave_flow_mode_type` represents this as
+`online=none` plus `com_file=nefis`, `netcdf` or `none`; it also affects how
+the calculation times are chosen (see `wave_master_step`,
 [wave_main.f90](../../packages/manager/src/wave_main.f90#L405)).
 
 In the text below, "step size" is the `stepsize` argument of `wave_main_step`
@@ -50,8 +51,8 @@ and `wave_master_step`, not an MDW keyword. The MDW `[General] TimeStep` and
 `SimMode = non-stationary` and are written into the SWAN input
 ([swan_input.f90](../../packages/data/src/swan_input.f90#L901)).
 
-- **Existing Delft3D4 NEFIS com-files** (`[General] FlowFile` blank; existing
-  runids supplied by `[General] ComFile`, or the D-Waves runid):
+- **Existing Delft3D4 NEFIS com-files** (existing runids supplied by
+  `[General] ComFile`, or the D-Waves runid):
   `wave_master_step` calls `swan_tot` once
   ([wave_main.f90](../../packages/manager/src/wave_main.f90#L489)), and
   `swan_tot` loops over all `[Timepoint]` values in the MDW
@@ -85,7 +86,7 @@ verified by running the executable.
 
 | Saved-data route | Configuration | Runtime remapping |
 |---|---|---|
-| Delft3D4 NEFIS com-files | Mode 0; leave `[General] FlowFile` blank. `[General] ComFile` identifies runids, or the D-Waves runid is used. | `grmap` applies internal interpolation tables in both directions. |
+| Delft3D4 NEFIS com-files | `--online=none` (default); `[General] ComFile` identifies runids, or the D-Waves runid is used. | `grmap` applies internal interpolation tables in both directions. |
 | D-Flow FM NetCDF com-files | `[Output] COMFile` identifies the existing communication file and partition variants. An arbitrary D-Flow FM map file is not a substitute. | D-Flow FM→SWAN uses `grmap_esmf`; SWAN→D-Flow FM uses `grmap`. |
 
 Weights are prepared once per grid pair per initialization and reused. Both

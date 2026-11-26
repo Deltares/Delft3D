@@ -910,27 +910,28 @@ contains
 
       integer number_nodes, number_links, number_netcells
 
-      number_nodes = size(bottom_area)
-      number_links = size(lnn)
-      number_netcells = size(netcell)
-
       success = .false.
       if (cache_success) then
          if (.not. allocated(cached_netcell_dry)) then
             return
          end if
-         if (size(bottom_area) == size(cached_bottom_area_dry)) then
+         number_nodes = size(cached_bottom_area_dry)
+         number_links = size(cached_lnn_dry)
+         number_netcells = size(cached_netcell_dry)
+         if (number_nodes <= min(size(bottom_area), size(xz), size(yz), size(xzw), size(yzw)) .and. &
+             number_links == size(lnn) .and. number_links <= size(lne, 2) .and. &
+             number_netcells <= size(netcell)) then
             success = .true.
             nump = cached_nump_dry
             nump1d2d = cached_nump1d2d_dry
-            lne = cached_lne_dry(1:2, 1:number_links)
-            lnn = cached_lnn_dry(1:number_links)
-            xzw = cached_xzw_dry(1:number_nodes)
-            yzw = cached_yzw_dry(1:number_nodes)
-            bottom_area = cached_bottom_area_dry(1:number_nodes)
-            xz = cached_xz_dry(1:number_nodes)
-            yz = cached_yz_dry(1:number_nodes)
-            netcell = cached_netcell_dry(1:number_netcells)
+            lne(1:2, 1:number_links) = cached_lne_dry
+            lnn(1:number_links) = cached_lnn_dry
+            xzw(1:number_nodes) = cached_xzw_dry
+            yzw(1:number_nodes) = cached_yzw_dry
+            bottom_area(1:number_nodes) = cached_bottom_area_dry
+            xz(1:number_nodes) = cached_xz_dry
+            yz(1:number_nodes) = cached_yz_dry
+            netcell(1:number_netcells) = cached_netcell_dry
          end if
       end if
    end subroutine copy_cached_netgeom_without_dry_points_and_areas
@@ -969,7 +970,7 @@ contains
 
       cached_nump_dry = nump
       cached_nump1d2d_dry = nump1d2d
-      number_nodes = size(bottom_area)
+      number_nodes = nump1d2d
       number_links = size(lnn)
       number_netcells = size(netcell)
       cached_lne_dry = lne(1:2, 1:number_links)
