@@ -185,6 +185,7 @@ contains
       use m_flowgeom, only: lnx
       use m_resetfullflowmodel, only: resetFullFlowModel
       use dfm_error, only: DFM_NOERR, DFM_GENERICERROR
+      type(t_abort_threshold_guard) :: abort_threshold
 
       integer :: ierr
 
@@ -206,7 +207,7 @@ contains
       call f90_expect_eq(qa(1), 6.0_dp)
       call f90_expect_eq(u1(1), 3.0_dp)
 
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       au(1) = 0.0_dp
       call update_frozen_1d2d_velocity(ierr)
       call f90_expect_eq(ierr, DFM_GENERICERROR)
