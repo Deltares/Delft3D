@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <format>
 #include <sstream>
+#include <string_view>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -63,16 +64,16 @@ namespace ini
             void ParsePropertyLine();
             void ParseMultiLineValueLine();
 
-            void ValidateSectionName(const std::string& name);
-            void ValidatePropertyKey(const std::string& key);
-            void ValidatePropertyValue(const std::string& value);
+            void ValidateSectionName(std::string_view name);
+            void ValidatePropertyKey(std::string_view key);
+            void ValidatePropertyValue(std::string_view value);
 
-            void AddNewSection(const std::string& name);
-            void AddNewProperty(const std::string& key, const std::string& value, const std::string& comment = {});
-            void AddValueAndComment(const std::string& value, const std::string& comment);
+            void AddNewSection(std::string name);
+            void AddNewProperty(std::string key, std::string value, std::string comment = {});
+            void AddValueAndComment(std::string value, std::string comment);
             void FinalizeCurrentProperty();
 
-            bool HasMultiLineContinuation(const std::string& value) const;
+            bool HasMultiLineContinuation(std::string_view value) const;
             std::string CleanupMultiLineValue(std::string value) const;
         };
 
@@ -188,9 +189,9 @@ namespace ini
             }
 
             const std::size_t commentIndex = currentLine.find(scheme.commentDelimiter);
-            const std::string comment = trim(currentLine.substr(commentIndex + 1));
+            std::string comment = trim(currentLine.substr(commentIndex + 1));
 
-            blockComments.push_back(comment);
+            blockComments.push_back(std::move(comment));
         }
 
         void ParsingContext::ParseSectionLine()
@@ -209,13 +210,13 @@ namespace ini
                 HandleInvalidLineFormat();
             }
 
-            const std::string sectionName = trim(sectionPart.substr(1, endIndex - 1));
+            std::string sectionName = trim(sectionPart.substr(1, endIndex - 1));
 
             ValidateSectionName(sectionName);
-            AddNewSection(sectionName);
+            AddNewSection(std::move(sectionName));
         }
 
-        void ParsingContext::ValidateSectionName(const std::string& name)
+        void ParsingContext::ValidateSectionName(std::string_view name)
         {
             if (name.empty())
             {
@@ -234,9 +235,9 @@ namespace ini
             }
         }
 
-        void ParsingContext::AddNewSection(const std::string& name)
+        void ParsingContext::AddNewSection(std::string name)
         {
-            IniSection& section = iniData.AddSection(name);
+            IniSection& section = iniData.AddSection(std::move(name));
 
             section.SetLineNumber(lineNumber);
             section.AddComments(blockComments);
@@ -255,7 +256,7 @@ namespace ini
             }
 
             const std::size_t assignmentIndex = currentLine.find(scheme.propertyAssignmentDelimiter);
-            const std::string key = trim(currentLine.substr(0, assignmentIndex));
+            std::string key = trim(currentLine.substr(0, assignmentIndex));
             ValidatePropertyKey(key);
 
             const std::size_t valueStartIndex = assignmentIndex + 1;
@@ -268,21 +269,21 @@ namespace ini
             multiLineContinuation = HasMultiLineContinuation(value);
             value = CleanupMultiLineValue(std::move(value));
 
-            const std::string comment = (commentIndex != std::string::npos && options.parseComments)
-                                            ? trim(currentLine.substr(commentIndex + 1))
-                                            : std::string{};
+            std::string comment = (commentIndex != std::string::npos && options.parseComments)
+                                      ? trim(currentLine.substr(commentIndex + 1))
+                                      : std::string{};
 
-            AddNewProperty(key, value, comment);
+            AddNewProperty(std::move(key), std::move(value), std::move(comment));
         }
 
-        void ParsingContext::ValidatePropertyKey(const std::string& key)
+        void ParsingContext::ValidatePropertyKey(std::string_view key)
         {
             if (key.empty())
             {
                 throw std::format_error(std::format("Error on line {}: property key cannot be empty.", lineNumber));
             }
 
-            if (!options.allowPropertyKeysWithSpaces && key.find(' ') != std::string::npos)
+            if (!options.allowPropertyKeysWithSpaces && key.find(' ') != std::string_view::npos)
             {
                 throw std::format_error(
                     std::format("Error on line {}: property key cannot contain spaces.", lineNumber));
@@ -295,7 +296,7 @@ namespace ini
             }
         }
 
-        void ParsingContext::ValidatePropertyValue(const std::string& value)
+        void ParsingContext::ValidatePropertyValue(std::string_view value)
         {
             if (!options.allowMultiLineValues && scheme.multiLineValueDelimiter.has_value() && !value.empty() &&
                 value.back() == *scheme.multiLineValueDelimiter)
@@ -305,15 +306,14 @@ namespace ini
             }
         }
 
-        void ParsingContext::AddNewProperty(const std::string& key, const std::string& value,
-                                            const std::string& comment)
+        void ParsingContext::AddNewProperty(std::string key, std::string value, std::string comment)
         {
-            IniProperty& property = currentSection->AddProperty(IniProperty{key});
+            IniProperty& property = currentSection->AddProperty(IniProperty{std::move(key)});
             property.SetLineNumber(lineNumber);
             currentProperty = &property;
 
-            values.push_back(value);
-            inlineComments.push_back(comment);
+            values.push_back(std::move(value));
+            inlineComments.push_back(std::move(comment));
             blockComments.clear();
         }
 
@@ -326,17 +326,17 @@ namespace ini
             multiLineContinuation = HasMultiLineContinuation(value);
             value = CleanupMultiLineValue(std::move(value));
 
-            const std::string comment = (commentIndex != std::string::npos && options.parseComments)
-                                            ? trim(currentLine.substr(commentIndex + 1))
-                                            : std::string{};
+            std::string comment = (commentIndex != std::string::npos && options.parseComments)
+                                      ? trim(currentLine.substr(commentIndex + 1))
+                                      : std::string{};
 
-            AddValueAndComment(value, comment);
+            AddValueAndComment(std::move(value), std::move(comment));
         }
 
-        void ParsingContext::AddValueAndComment(const std::string& value, const std::string& comment)
+        void ParsingContext::AddValueAndComment(std::string value, std::string comment)
         {
-            values.push_back(value);
-            inlineComments.push_back(comment);
+            values.push_back(std::move(value));
+            inlineComments.push_back(std::move(comment));
             blockComments.clear();
         }
 
@@ -376,7 +376,7 @@ namespace ini
             currentProperty = nullptr;
         }
 
-        bool ParsingContext::HasMultiLineContinuation(const std::string& value) const
+        bool ParsingContext::HasMultiLineContinuation(std::string_view value) const
         {
             return options.allowMultiLineValues &&
                    (!scheme.multiLineValueDelimiter.has_value() ||
@@ -393,9 +393,9 @@ namespace ini
 
     } // namespace
 
-    IniData Parse(const std::string& ini, IniScheme scheme, IniParserOptions options)
+    IniData Parse(std::string_view ini, IniScheme scheme, IniParserOptions options)
     {
-        std::istringstream stream(ini);
+        std::istringstream stream{std::string(ini)};
         return Parse(stream, std::move(scheme), std::move(options));
     }
 

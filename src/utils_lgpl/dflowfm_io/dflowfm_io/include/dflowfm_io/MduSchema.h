@@ -6,6 +6,7 @@
 #include <map>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <variant>
 #include <vector>
@@ -136,32 +137,32 @@ namespace dflowfm_io
         /// @brief Finds a section schema by name (case-insensitive).
         /// @param name The section name to look up.
         /// @return The matching @ref SectionSchema, or nullptr if not found.
-        const SectionSchema* FindSection(const std::string& name) const;
+        const SectionSchema* FindSection(std::string_view name) const;
 
         /// @brief Finds a property schema by its fully qualified key (case-insensitive).
         /// @param key Fully qualified property key in the form "section.property".
         /// @return The matching @ref PropertySchema, or nullptr if not found.
-        const PropertySchema* FindProperty(const std::string& key) const;
+        const PropertySchema* FindProperty(std::string_view key) const;
 
         /// @brief Finds a property schema by section name and property key (case-insensitive).
         /// @param section The section name to look up.
         /// @param property The property key to look up.
         /// @return The matching @ref PropertySchema, or nullptr if not found.
-        const PropertySchema* FindProperty(const std::string& section, const std::string& property) const;
+        const PropertySchema* FindProperty(std::string_view section, std::string_view property) const;
 
         /// @brief Finds the enum value schema within @p propertySchema whose value/label matches @p rawValue.
         /// @param propertySchema The schema of the property (must be of type StringEnum or IntEnum).
         /// @param rawValue The raw string value as it appears in the MDU file.
         /// @return The matching @ref EnumValueSchema, or nullptr if no match is found
         ///         or the property is not an StringEnum/IntEnum.
-        const EnumValueSchema* FindEnumValue(const PropertySchema& propertySchema, const std::string& rawValue) const;
+        const EnumValueSchema* FindEnumValue(const PropertySchema& propertySchema, std::string_view rawValue) const;
 
         /// @brief Determines whether @p rawValue is obsolete for @p propertySchema, either because the
         /// property itself is obsolete, or because @p rawValue matches an obsolete enum value.
         /// @param propertySchema The schema of the property.
         /// @param rawValue The raw string value as it appears in the MDU file.
         /// @return True if the property or the matching enum value is obsolete.
-        bool IsObsolete(const PropertySchema& propertySchema, const std::string& rawValue) const;
+        bool IsObsolete(const PropertySchema& propertySchema, std::string_view rawValue) const;
 
         /// @brief Builds the default key-value data for this schema.
         /// @return A mapping of fully qualified property keys to their default @ref Value.
@@ -180,7 +181,7 @@ namespace dflowfm_io
     /// @param section The section name.
     /// @param property The property key.
     /// @return A lowercase dot-separated string in the form "sectionname.propertykey".
-    std::string FormatKey(const std::string& section, const std::string& property);
+    std::string FormatKey(std::string_view section, std::string_view property);
 
     /// @brief Returns the global MDU schema instance, generated from mdu.json.
     const MduSchema& GetMduSchema();

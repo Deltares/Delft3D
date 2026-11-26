@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <sstream>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ini
@@ -114,67 +115,67 @@ namespace ini
 
         /// @brief Parses a string as the requested supported type.
         template <typename T>
-        T FromString(const std::string& value);
+        T FromString(std::string_view value);
 
         /// @brief Parses true/false, yes/no or 1/0, case-insensitively.
         template <>
-        bool FromString<bool>(const std::string& value);
+        bool FromString<bool>(std::string_view value);
 
         /// @brief Parses an int, requiring the entire trimmed string to be consumed.
         template <>
-        int FromString<int>(const std::string& value);
+        int FromString<int>(std::string_view value);
 
         /// @brief Parses a double, including Fortran D/d exponents.
         template <>
-        double FromString<double>(const std::string& value);
+        double FromString<double>(std::string_view value);
 
         /// @brief Parses a float, including Fortran D/d exponents.
         template <>
-        float FromString<float>(const std::string& value);
+        float FromString<float>(std::string_view value);
 
         /// @brief Parses a time point using the required date/time format.
-        time_point FromString(const std::string& value, TimePointFormat format);
+        time_point FromString(std::string_view value, TimePointFormat format);
 
         /// @brief Creates a path from the trimmed string.
         template <>
-        path FromString<path>(const std::string& value);
+        path FromString<path>(std::string_view value);
 
         /// @brief Returns the trimmed string.
         template <>
-        std::string FromString<std::string>(const std::string& value);
+        std::string FromString<std::string>(std::string_view value);
 
         /// @brief Parses a delimited string as a list of the requested supported type.
         template <typename T>
-        std::vector<T> FromMultiValueString(const std::string& value, char delimiter = ' ');
+        std::vector<T> FromMultiValueString(std::string_view value, char delimiter = ' ');
 
         /// @brief Parses a delimited list of booleans.
         template <>
-        std::vector<bool> FromMultiValueString<bool>(const std::string& value, char delimiter);
+        std::vector<bool> FromMultiValueString<bool>(std::string_view value, char delimiter);
 
         /// @brief Parses a delimited list of int values.
         template <>
-        std::vector<int> FromMultiValueString<int>(const std::string& value, char delimiter);
+        std::vector<int> FromMultiValueString<int>(std::string_view value, char delimiter);
 
         /// @brief Parses a delimited list of double values.
         template <>
-        std::vector<double> FromMultiValueString<double>(const std::string& value, char delimiter);
+        std::vector<double> FromMultiValueString<double>(std::string_view value, char delimiter);
 
         /// @brief Parses a delimited list of float values.
         template <>
-        std::vector<float> FromMultiValueString<float>(const std::string& value, char delimiter);
+        std::vector<float> FromMultiValueString<float>(std::string_view value, char delimiter);
 
         /// @brief Parses a delimited list of time points using the required date/time format.
         /// @remarks Use a non-space delimiter when the date/time format itself contains spaces.
-        std::vector<time_point> FromMultiValueString(const std::string& value, TimePointFormat format,
+        std::vector<time_point> FromMultiValueString(std::string_view value, TimePointFormat format,
                                                      char delimiter = ' ');
 
         /// @brief Parses a delimited list of paths.
         template <>
-        std::vector<path> FromMultiValueString<path>(const std::string& value, char delimiter);
+        std::vector<path> FromMultiValueString<path>(std::string_view value, char delimiter);
 
         /// @brief Splits a delimited string into trimmed, non-empty strings.
         template <>
-        std::vector<std::string> FromMultiValueString<std::string>(const std::string& value, char delimiter);
+        std::vector<std::string> FromMultiValueString<std::string>(std::string_view value, char delimiter);
     } // namespace conversion
 
 } // namespace ini

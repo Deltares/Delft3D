@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <sstream>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -15,7 +16,7 @@ namespace ini
     {
         void WriteNewLine(std::ostream& stream) { stream << '\n'; }
 
-        void WriteComment(const std::string& comment, std::ostream& stream, const IniScheme& scheme,
+        void WriteComment(std::string_view comment, std::ostream& stream, const IniScheme& scheme,
                           const IniFormatterOptions& options)
         {
             if (comment.empty()) return;

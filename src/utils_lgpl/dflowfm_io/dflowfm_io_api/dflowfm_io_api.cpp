@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <functional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #define ENSURE_ARGUMENT_NOT_NULL(arg) \
@@ -153,7 +154,7 @@ dflowfm_io_result_t mdu_load_from_string(mdu_handle_t* handle, const char* data,
 
     return exceptionToResult([&]()
     {
-        handle->lastIssueReport = handle->mduDocument.LoadFromString(std::string(data, size));
+        handle->lastIssueReport = handle->mduDocument.LoadFromString(std::string_view(data, size));
     });
 }
 

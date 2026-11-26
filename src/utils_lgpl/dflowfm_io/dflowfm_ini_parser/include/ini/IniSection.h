@@ -6,6 +6,8 @@
 #include <optional>
 #include <span>
 #include <string>
+#include <string_view>
+#include <utility>
 #include <vector>
 
 namespace ini
@@ -62,7 +64,7 @@ namespace ini
         /// @param value The value of the property. Defaults to an empty string.
         /// @return A reference to the added property.
         /// @throws std::invalid_argument When @p key is empty.
-        IniProperty& AddProperty(const std::string& key, const std::string& value = {});
+        IniProperty& AddProperty(std::string key, std::string value = {});
 
         /// @brief Adds a new property with the specified key and value to the section.
         /// @tparam T The type of the value.
@@ -71,9 +73,9 @@ namespace ini
         /// @return A reference to the added property.
         /// @throws std::invalid_argument When @p key is empty.
         template <typename T>
-        IniProperty& AddProperty(const std::string& key, const T& value)
+        IniProperty& AddProperty(std::string key, const T& value)
         {
-            return AddProperty(IniProperty::Create(key, value));
+            return AddProperty(IniProperty::Create(std::move(key), value));
         }
 
         /// @brief Adds a property to the section.
@@ -89,9 +91,9 @@ namespace ini
         /// @return A reference to the added property.
         /// @throws std::invalid_argument When @p key is empty.
         template <typename T>
-        IniProperty& AddProperty(const std::string& key, const std::vector<T>& values, char separator = ' ')
+        IniProperty& AddProperty(std::string key, const std::vector<T>& values, char separator = ' ')
         {
-            return AddProperty(IniProperty::Create(key, values, separator));
+            return AddProperty(IniProperty::Create(std::move(key), values, separator));
         }
 
         /// @brief Adds multiple properties with the same key to the section, each with a different value.
@@ -100,7 +102,7 @@ namespace ini
         /// @param values The collection of values for the properties to add.
         /// @throws std::invalid_argument When @p key is empty.
         template <typename T>
-        void AddProperties(const std::string& key, const std::vector<T>& values)
+        void AddProperties(std::string key, const std::vector<T>& values)
         {
             for (const auto& value : values)
             {
@@ -116,26 +118,26 @@ namespace ini
         /// @param key The key to search for (case-insensitive).
         /// @return @c true if a matching property was found; otherwise @c false.
         /// @throws std::invalid_argument When @p key is empty.
-        bool HasProperty(const std::string& key) const;
+        bool HasProperty(std::string_view key) const;
 
         /// @brief Returns the first property with the specified key.
         /// @param key The key to search for (case-insensitive).
         /// @return A reference to the first matching property.
         /// @throws std::invalid_argument When @p key is empty.
         /// @throws std::out_of_range When no property with @p key was found.
-        IniProperty& GetProperty(const std::string& key);
+        IniProperty& GetProperty(std::string_view key);
 
-        /// @copydoc IniSection::GetProperty(const std::string&)
-        const IniProperty& GetProperty(const std::string& key) const;
+        /// @copydoc IniSection::GetProperty(std::string_view)
+        const IniProperty& GetProperty(std::string_view key) const;
 
         /// @brief Finds the first property with the specified key.
         /// @param key The key to search for (case-insensitive).
         /// @return A pointer to the first matching property, or @c nullptr when none is found.
         /// @throws std::invalid_argument When @p key is empty.
-        IniProperty* FindProperty(const std::string& key);
+        IniProperty* FindProperty(std::string_view key);
 
-        /// @copydoc IniSection::FindProperty(const std::string&)
-        const IniProperty* FindProperty(const std::string& key) const;
+        /// @copydoc IniSection::FindProperty(std::string_view)
+        const IniProperty* FindProperty(std::string_view key) const;
 
         /// @brief Gets the value of the first property with the specified key, or a default value
         ///        if the property is not found.
@@ -143,7 +145,7 @@ namespace ini
         /// @param defaultValue The value to return if the property is not found.
         /// @return The value of the first matching property, or @p defaultValue if not found.
         /// @throws std::invalid_argument When @p key is empty.
-        std::string GetPropertyValue(const std::string& key, const std::string& defaultValue = {}) const;
+        std::string GetPropertyValue(std::string_view key, const std::string& defaultValue = {}) const;
 
         /// @brief Gets the converted value of the first property with the specified key, or a
         ///        default value if the property is not found or conversion fails.
@@ -153,7 +155,7 @@ namespace ini
         /// @return The converted value of the first matching property, or @p defaultValue.
         /// @throws std::invalid_argument When @p key is empty.
         template <typename T>
-        T GetPropertyValue(const std::string& key, const T& defaultValue = {}) const
+        T GetPropertyValue(std::string_view key, const T& defaultValue = {}) const
         {
             const IniProperty* property = FindProperty(key);
             if (property == nullptr)
@@ -169,7 +171,7 @@ namespace ini
         /// @param key The key to search for (case-insensitive).
         /// @return The values of all matching properties that have a non-empty value.
         /// @throws std::invalid_argument When @p key is empty.
-        std::vector<std::string> GetAllPropertyValues(const std::string& key) const;
+        std::vector<std::string> GetAllPropertyValues(std::string_view key) const;
 
         /// @brief Gets the converted values of all properties with the specified key.
         /// @tparam T The target type to convert the property values to.
@@ -177,7 +179,7 @@ namespace ini
         /// @return The successfully converted values of all matching properties.
         /// @throws std::invalid_argument When @p key is empty.
         template <typename T>
-        std::vector<T> GetAllPropertyValues(const std::string& key) const
+        std::vector<T> GetAllPropertyValues(std::string_view key) const
         {
             std::vector<T> result;
             for (const auto& property : properties)
@@ -203,7 +205,7 @@ namespace ini
         /// @return The converted values, or an empty collection if the property was not found.
         /// @throws std::invalid_argument When @p key is empty.
         template <typename T>
-        std::vector<T> GetPropertyValues(const std::string& key, char delimiter = ' ') const
+        std::vector<T> GetPropertyValues(std::string_view key, char delimiter = ' ') const
         {
             const IniProperty* property = FindProperty(key);
             if (property == nullptr)
@@ -221,7 +223,7 @@ namespace ini
         /// @param value The value to set.
         /// @return A reference to the added or updated property.
         /// @throws std::invalid_argument When @p key is empty.
-        IniProperty& SetPropertyValue(const std::string& key, const std::string& value);
+        IniProperty& SetPropertyValue(std::string_view key, std::string value);
 
         /// @brief Sets the value of the first property with the specified key, or adds a new
         ///        property if none is found.
@@ -231,12 +233,12 @@ namespace ini
         /// @return A reference to the added or updated property.
         /// @throws std::invalid_argument When @p key is empty.
         template <typename T>
-        IniProperty& SetPropertyValue(const std::string& key, const T& value)
+        IniProperty& SetPropertyValue(std::string_view key, const T& value)
         {
             IniProperty* property = FindProperty(key);
             if (property == nullptr)
             {
-                return AddProperty(key, value);
+                return AddProperty(std::string(key), value);
             }
 
             property->SetValue(value);
@@ -252,12 +254,12 @@ namespace ini
         /// @return A reference to the added or updated property.
         /// @throws std::invalid_argument When @p key is empty.
         template <typename T>
-        IniProperty& SetPropertyValues(const std::string& key, const std::vector<T>& values, char separator = ' ')
+        IniProperty& SetPropertyValues(std::string_view key, const std::vector<T>& values, char separator = ' ')
         {
             IniProperty* property = FindProperty(key);
             if (property == nullptr)
             {
-                return AddProperty(key, values, separator);
+                return AddProperty(std::string(key), values, separator);
             }
 
             property->SetValues(values, separator);
@@ -273,7 +275,7 @@ namespace ini
         /// @param key The key of the properties to remove (case-insensitive).
         /// @details Returns silently if no property with the specified key was found.
         /// @throws std::invalid_argument When @p key is empty.
-        void RemoveAllProperties(const std::string& key);
+        void RemoveAllProperties(std::string key);
 
         /// @brief Removes all properties matching the specified predicate from the section.
         /// @param predicate A function that defines the conditions of the properties to remove.
@@ -288,7 +290,7 @@ namespace ini
         /// @param newKey The new key to assign.
         /// @details Returns silently if no property with @p oldKey was found.
         /// @throws std::invalid_argument When @p oldKey or @p newKey is empty.
-        void RenameProperties(const std::string& oldKey, const std::string& newKey);
+        void RenameProperties(std::string oldKey, std::string newKey);
 
         /// @brief Adds a comment to the section.
         /// @param comment The comment to add.
@@ -302,7 +304,7 @@ namespace ini
         /// @param comment The comment to remove.
         /// @details Returns silently if the comment was not found.
         /// @throws std::invalid_argument When @p comment is empty.
-        void RemoveComment(const std::string& comment);
+        void RemoveComment(std::string_view comment);
 
         /// @brief Removes all comments from the section.
         void ClearComments();
@@ -310,7 +312,7 @@ namespace ini
         /// @brief Returns whether the name of this section equals @p other (case-insensitive).
         /// @param other The name to compare against.
         /// @throws std::invalid_argument When @p other is empty.
-        bool IsNameEqualTo(const std::string& other) const;
+        bool IsNameEqualTo(std::string_view other) const;
 
         /// @brief Returns whether this section is equal to @p other.
         /// @details Two sections are equal when their names, properties and comments are equal.

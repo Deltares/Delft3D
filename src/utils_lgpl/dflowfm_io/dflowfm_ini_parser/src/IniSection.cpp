@@ -3,6 +3,7 @@
 #include "ini/StringUtils.h"
 
 #include <algorithm>
+#include <format>
 #include <stdexcept>
 #include <utility>
 
@@ -29,9 +30,9 @@ namespace ini
         }
     }
 
-    IniProperty& IniSection::AddProperty(const std::string& key, const std::string& value)
+    IniProperty& IniSection::AddProperty(std::string key, std::string value)
     {
-        return properties.emplace_back(key, value);
+        return properties.emplace_back(std::move(key), std::move(value));
     }
 
     IniProperty& IniSection::AddProperty(IniProperty property) { return properties.emplace_back(std::move(property)); }
@@ -41,25 +42,25 @@ namespace ini
         properties.insert(properties.end(), propertiesToAdd.begin(), propertiesToAdd.end());
     }
 
-    bool IniSection::HasProperty(const std::string& key) const { return FindProperty(key) != nullptr; }
+    bool IniSection::HasProperty(std::string_view key) const { return FindProperty(key) != nullptr; }
 
-    IniProperty& IniSection::GetProperty(const std::string& key)
+    IniProperty& IniSection::GetProperty(std::string_view key)
     {
         return const_cast<IniProperty&>(std::as_const(*this).GetProperty(key));
     }
 
-    const IniProperty& IniSection::GetProperty(const std::string& key) const
+    const IniProperty& IniSection::GetProperty(std::string_view key) const
     {
         const IniProperty* property = FindProperty(key);
         if (property == nullptr)
         {
-            throw std::out_of_range("No property with key '" + key + "' was found.");
+            throw std::out_of_range(std::format("No property with key '{}' was found.", key));
         }
 
         return *property;
     }
 
-    const IniProperty* IniSection::FindProperty(const std::string& key) const
+    const IniProperty* IniSection::FindProperty(std::string_view key) const
     {
         if (key.empty())
         {
@@ -72,12 +73,12 @@ namespace ini
         return it == properties.cend() ? nullptr : &*it;
     }
 
-    IniProperty* IniSection::FindProperty(const std::string& key)
+    IniProperty* IniSection::FindProperty(std::string_view key)
     {
         return const_cast<IniProperty*>(std::as_const(*this).FindProperty(key));
     }
 
-    std::string IniSection::GetPropertyValue(const std::string& key, const std::string& defaultValue) const
+    std::string IniSection::GetPropertyValue(std::string_view key, const std::string& defaultValue) const
     {
         const IniProperty* property = FindProperty(key);
         if (property == nullptr)
@@ -88,7 +89,7 @@ namespace ini
         return property->HasValue() ? property->GetValue() : defaultValue;
     }
 
-    std::vector<std::string> IniSection::GetAllPropertyValues(const std::string& key) const
+    std::vector<std::string> IniSection::GetAllPropertyValues(std::string_view key) const
     {
         if (key.empty())
         {
@@ -107,15 +108,15 @@ namespace ini
         return result;
     }
 
-    IniProperty& IniSection::SetPropertyValue(const std::string& key, const std::string& value)
+    IniProperty& IniSection::SetPropertyValue(std::string_view key, std::string value)
     {
         IniProperty* property = FindProperty(key);
         if (property == nullptr)
         {
-            return AddProperty(key, value);
+            return AddProperty(std::string(key), std::move(value));
         }
 
-        property->SetValue(value);
+        property->SetValue(std::move(value));
         return *property;
     }
 
@@ -129,7 +130,7 @@ namespace ini
         }
     }
 
-    void IniSection::RemoveAllProperties(const std::string& key)
+    void IniSection::RemoveAllProperties(std::string key)
     {
         if (key.empty())
         {
@@ -146,7 +147,7 @@ namespace ini
 
     void IniSection::ClearProperties() { properties.clear(); }
 
-    void IniSection::RenameProperties(const std::string& oldKey, const std::string& newKey)
+    void IniSection::RenameProperties(std::string oldKey, std::string newKey)
     {
         if (oldKey.empty())
         {
@@ -174,14 +175,15 @@ namespace ini
         comments.insert(comments.end(), commentsToAdd.begin(), commentsToAdd.end());
     }
 
-    void IniSection::RemoveComment(const std::string& comment)
+    void IniSection::RemoveComment(std::string_view comment)
     {
         if (comment.empty())
         {
             throw std::invalid_argument("Comment cannot be empty.");
         }
 
-        const auto it = std::find(comments.begin(), comments.end(), comment);
+        const auto it = std::find_if(comments.begin(), comments.end(),
+                                     [comment](const std::string& value) { return std::string_view(value) == comment; });
         if (it != comments.end())
         {
             comments.erase(it);
@@ -190,7 +192,7 @@ namespace ini
 
     void IniSection::ClearComments() { comments.clear(); }
 
-    bool IniSection::IsNameEqualTo(const std::string& other) const
+    bool IniSection::IsNameEqualTo(std::string_view other) const
     {
         if (other.empty())
         {

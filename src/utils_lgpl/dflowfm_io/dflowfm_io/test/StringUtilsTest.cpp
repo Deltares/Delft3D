@@ -1,7 +1,5 @@
 #include <gtest/gtest.h>
 
-#include <dflowfm_io/MduSchema.h>
-
 #include "StringUtils.h"
 
 namespace dflowfm_io::test
@@ -113,20 +111,6 @@ namespace dflowfm_io::test
         const std::string result2 = tolower("HELLO");
 
         EXPECT_EQ(result1, result2);
-    }
-
-    // -------------------------------------------------------------------------
-    // FormatKey
-    // -------------------------------------------------------------------------
-
-    TEST(MduSchemaTest, FormatKey_ProducesLowercaseDotSeparatedKey)
-    {
-        EXPECT_EQ(FormatKey("General", "FileType"), "general.filetype");
-    }
-
-    TEST(MduSchemaTest, FormatKey_AlreadyLowerCase_Unchanged)
-    {
-        EXPECT_EQ(FormatKey("general", "filetype"), "general.filetype");
     }
 
 } // namespace dflowfm_io::test

@@ -70,7 +70,7 @@ namespace dflowfm_io::conversion
                        : ini::TimePointFormat::CompactDateTime;
         }
 
-        Value DateTimeFromString(const PropertySchema& schema, const std::string& raw)
+        Value DateTimeFromString(const PropertySchema& schema, std::string_view raw)
         {
             if (raw.empty())
                 return std::optional<std::chrono::system_clock::time_point>{};
@@ -79,20 +79,20 @@ namespace dflowfm_io::conversion
                 ini::conversion::FromString(raw, GetTimePointFormat(schema))};
         }
 
-        [[noreturn]] void ThrowInvalidEnumValue(const PropertySchema& schema, const std::string& raw)
+        [[noreturn]] void ThrowInvalidEnumValue(const PropertySchema& schema, std::string_view raw)
         {
             throw std::invalid_argument(
                 std::format("Enum value '{}' is not a valid value for property '{}'.", raw, schema.key));
         }
 
-        Value StringEnumFromString(const PropertySchema& schema, const std::string& raw)
+        Value StringEnumFromString(const PropertySchema& schema, std::string_view raw)
         {
             for (const auto& ev : schema.enum_values)
                 if (iequals(ev.value, raw)) return StringEnumValue{ev.value};
             ThrowInvalidEnumValue(schema, raw);
         }
 
-        Value IntEnumFromString(const PropertySchema& schema, const std::string& raw)
+        Value IntEnumFromString(const PropertySchema& schema, std::string_view raw)
         {
             for (const auto& ev : schema.enum_values)
                 if (iequals(ev.value, raw))
@@ -192,7 +192,7 @@ namespace dflowfm_io::conversion
         return std::move(iniData);
     }
 
-    Value ValueFromString(const PropertySchema& schema, const std::string& raw)
+    Value ValueFromString(const PropertySchema& schema, std::string_view raw)
     {
         switch (schema.value_type)
         {

@@ -32,7 +32,7 @@ namespace ini
 
     bool IniProperty::HasComment() const { return !comment.empty(); }
 
-    bool IniProperty::IsKeyEqualTo(const std::string& other) const
+    bool IniProperty::IsKeyEqualTo(std::string_view other) const
     {
         if (other.empty())
         {

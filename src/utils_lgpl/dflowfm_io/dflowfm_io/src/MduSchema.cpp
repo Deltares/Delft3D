@@ -9,11 +9,6 @@
 
 namespace dflowfm_io
 {
-    std::string FormatKey(const std::string& section, const std::string& property)
-    {
-        return tolower(section + "." + property);
-    }
-
     MduSchema::MduSchema(std::string description, std::vector<SectionSchema> sections)
         : description(std::move(description)), sections(std::move(sections))
     {
@@ -25,24 +20,25 @@ namespace dflowfm_io
         }
     }
 
-    const SectionSchema* MduSchema::FindSection(const std::string& name) const
+    const SectionSchema* MduSchema::FindSection(std::string_view name) const
     {
         auto it = section_map.find(tolower(name));
         return it != section_map.end() ? it->second : nullptr;
     }
 
-    const PropertySchema* MduSchema::FindProperty(const std::string& key) const
+    const PropertySchema* MduSchema::FindProperty(std::string_view key) const
     {
         auto it = property_map.find(tolower(key));
         return it != property_map.end() ? it->second : nullptr;
     }
 
-    const PropertySchema* MduSchema::FindProperty(const std::string& section, const std::string& property) const
+    const PropertySchema* MduSchema::FindProperty(std::string_view section, std::string_view property) const
     {
-        return FindProperty(FormatKey(section, property));
+        auto it = property_map.find(FormatKey(section, property));
+        return it != property_map.end() ? it->second : nullptr;
     }
 
-    const EnumValueSchema* MduSchema::FindEnumValue(const PropertySchema& propertySchema, const std::string& rawValue) const
+    const EnumValueSchema* MduSchema::FindEnumValue(const PropertySchema& propertySchema, std::string_view rawValue) const
     {
         if (propertySchema.value_type != ValueType::StringEnum && propertySchema.value_type != ValueType::IntEnum)
             return nullptr;
@@ -54,7 +50,7 @@ namespace dflowfm_io
         return nullptr;
     }
 
-    bool MduSchema::IsObsolete(const PropertySchema& propertySchema, const std::string& rawValue) const
+    bool MduSchema::IsObsolete(const PropertySchema& propertySchema, std::string_view rawValue) const
     {
         if (propertySchema.status.type == StatusType::Obsolete) return true;
 
@@ -81,6 +77,11 @@ namespace dflowfm_io
         }
 
         return entries;
+    }
+
+    std::string FormatKey(std::string_view section, std::string_view property)
+    {
+        return tolower(std::format("{}.{}", section, property));
     }
 
     const MduSchema& GetMduSchema()

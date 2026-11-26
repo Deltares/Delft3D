@@ -344,6 +344,20 @@ namespace dflowfm_io::test
     }
 
     // -------------------------------------------------------------------------
+    // FormatKey
+    // -------------------------------------------------------------------------
+
+    TEST(MduSchemaTest, FormatKey_ProducesLowercaseDotSeparatedKey)
+    {
+        EXPECT_EQ(FormatKey("General", "FileType"), "general.filetype");
+    }
+
+    TEST(MduSchemaTest, FormatKey_AlreadyLowerCase_Unchanged)
+    {
+        EXPECT_EQ(FormatKey("general", "filetype"), "general.filetype");
+    }
+
+    // -------------------------------------------------------------------------
     // MDU_SCHEMA sanity checks
     // -------------------------------------------------------------------------
 

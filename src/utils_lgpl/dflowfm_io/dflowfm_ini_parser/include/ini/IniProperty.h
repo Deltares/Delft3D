@@ -4,12 +4,12 @@
 
 #include <optional>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
 namespace ini
 {
-
     /// @brief Represents a property with a key-value pair in an INI file.
     ///
     /// @details This class encapsulates a key-value pair in an INI section. The value can either
@@ -56,6 +56,15 @@ namespace ini
         /// @brief Sets the line number where the property is located in the INI file.
         /// @param value The new line number.
         void SetLineNumber(int value) { lineNumber = value; }
+
+        /// @brief Creates a new @ref IniProperty with the specified key and string value.
+        /// @param key The key of the property.
+        /// @param value The value to store.
+        /// @throws std::invalid_argument When @p key is empty.
+        static IniProperty Create(std::string key, std::string value)
+        {
+            return IniProperty(std::move(key), std::move(value));
+        }
 
         /// @brief Creates a new @ref IniProperty with the specified key and a string
         ///        representation of @p value.
@@ -156,7 +165,7 @@ namespace ini
         /// @brief Returns whether the key of this property equals @p other (case-insensitive).
         /// @param other The key to compare against.
         /// @throws std::invalid_argument When @p other is empty.
-        bool IsKeyEqualTo(const std::string& other) const;
+        bool IsKeyEqualTo(std::string_view other) const;
 
         /// @brief Returns whether this property is equal to @p other.
         /// @details Two properties are equal when their keys, values and comments are equal.

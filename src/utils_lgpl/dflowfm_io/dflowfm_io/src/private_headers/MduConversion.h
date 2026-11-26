@@ -6,6 +6,7 @@
 #include <ini/IniData.h>
 
 #include <string>
+#include <string_view>
 #include <utility>
 
 namespace dflowfm_io
@@ -39,7 +40,7 @@ namespace dflowfm_io
         /// @return The converted @ref Value.
         /// @throws std::invalid_argument if @p raw is not a valid representation for the
         ///         property's @ref schema.
-        Value ValueFromString(const PropertySchema& schema, const std::string& raw);
+        Value ValueFromString(const PropertySchema& schema, std::string_view raw);
 
         /// @brief Converts a typed @ref Value into its raw MDU string representation.
         /// @param schema The schema of the property whose value is being converted.

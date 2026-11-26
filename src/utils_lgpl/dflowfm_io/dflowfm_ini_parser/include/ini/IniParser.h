@@ -4,7 +4,7 @@
 #include "ini/IniOptions.h"
 
 #include <istream>
-#include <string>
+#include <string_view>
 
 namespace ini
 {
@@ -15,7 +15,7 @@ namespace ini
     /// @param options The options controlling parsing.
     /// @return An IniData object containing the parsed INI data.
     /// @throws std::format_error When the INI text has an invalid format.
-    IniData Parse(const std::string& ini, IniScheme scheme = {}, IniParserOptions options = {});
+    IniData Parse(std::string_view ini, IniScheme scheme = {}, IniParserOptions options = {});
 
     /// @brief Parses INI-formatted text from the specified stream to an INI data object.
     /// @param stream The stream from which to read the INI-formatted text.

@@ -6,6 +6,7 @@
 
 #include <filesystem>
 #include <string>
+#include <string_view>
 #include <utility>
 
 namespace dflowfm_io
@@ -29,7 +30,7 @@ namespace dflowfm_io
         /// @param text The MDU-formatted text to load.
         /// @return The issues found during loading.
         /// @throws std::format_error if the text violates the INI parsing rules.
-        IssueReport LoadFromString(const std::string& text);
+        IssueReport LoadFromString(std::string_view text);
 
         /// @brief Loads and validates MDU data from a file.
         /// @param path The path of the file to load.
@@ -59,7 +60,7 @@ namespace dflowfm_io
         /// @return Const reference to the stored value.
         /// @throws std::invalid_argument if @p key is not defined in the MDU schema.
         template <typename T>
-        const T& GetValue(const std::string& key) const
+        const T& GetValue(std::string_view key) const
         {
             EnsureKeyInSchema(key);
             return mduData.getValueAs<T>(key);
@@ -72,7 +73,7 @@ namespace dflowfm_io
         /// @throws std::invalid_argument if @p key is not defined in the MDU schema.
         /// @throws std::out_of_range if @p value is outside the allowed range for the property.
         template <typename T>
-        void SetValue(const std::string& key, T value)
+        void SetValue(std::string_view key, T value)
         {
             SetValue(key, Value(std::move(value)));
         }
@@ -82,7 +83,7 @@ namespace dflowfm_io
         /// @param value The value to store.
         /// @throws std::invalid_argument if @p key is not defined in the MDU schema.
         /// @throws std::out_of_range if @p value is outside the allowed range for the property.
-        void SetValue(const std::string& key, Value value)
+        void SetValue(std::string_view key, Value value)
         {
             EnsureKeyInSchema(key);
             EnsureValueInRange(key, value);
@@ -93,8 +94,8 @@ namespace dflowfm_io
         const MduSchema& schema;
         MduData mduData;
 
-        void EnsureKeyInSchema(const std::string& key) const;
-        void EnsureValueInRange(const std::string& key, const Value& value) const;
+        void EnsureKeyInSchema(std::string_view key) const;
+        void EnsureValueInRange(std::string_view key, const Value& value) const;
     };
 
 } // namespace dflowfm_io

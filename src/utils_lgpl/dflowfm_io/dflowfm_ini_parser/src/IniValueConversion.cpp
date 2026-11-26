@@ -52,16 +52,16 @@ namespace ini::conversion
         }
 
         template <typename T, typename Converter>
-        std::vector<T> SplitValues(const std::string& value, char delimiter, Converter&& converter)
+        std::vector<T> SplitValues(std::string_view value, char delimiter, Converter&& converter)
         {
             const std::string delimiters = {delimiter, '\r', '\n'};
             std::vector<T> result;
             std::size_t start = 0;
             std::size_t end;
 
-            while ((end = value.find_first_of(delimiters, start)) != std::string::npos)
+            while ((end = value.find_first_of(delimiters, start)) != std::string_view::npos)
             {
-                const std::string trimmed = trim(value.substr(start, end - start));
+                const std::string trimmed = trim(std::string(value.substr(start, end - start)));
                 if (!trimmed.empty())
                 {
                     result.push_back(converter(trimmed));
@@ -69,7 +69,7 @@ namespace ini::conversion
                 start = end + 1;
             }
 
-            const std::string trimmed = trim(value.substr(start));
+            const std::string trimmed = trim(std::string(value.substr(start)));
             if (!trimmed.empty())
             {
                 result.push_back(converter(trimmed));
@@ -94,9 +94,9 @@ namespace ini::conversion
         }
 
         template <typename T>
-        T ParseFloatingPoint(const std::string& value)
+        T ParseFloatingPoint(std::string_view value)
         {
-            std::string normalized = trim(value);
+            std::string normalized = trim(std::string(value));
             const std::size_t pos = normalized.find_first_of("dD");
             if (pos != std::string::npos)
             {
@@ -203,13 +203,13 @@ namespace ini::conversion
     }
 
     template <>
-    bool FromString<bool>(const std::string& value)
+    bool FromString<bool>(std::string_view value)
     {
         static const std::unordered_map<std::string, bool> mappings = {
             {"true", true}, {"false", false}, {"yes", true}, {"no", false}, {"1", true}, {"0", false},
         };
 
-        std::string lower = trim(value);
+        std::string lower = trim(std::string(value));
         std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
 
         const auto it = mappings.find(lower);
@@ -218,31 +218,31 @@ namespace ini::conversion
             return it->second;
         }
 
-        throw std::invalid_argument("String '" + value + "' was not recognized as a valid boolean.");
+        throw std::invalid_argument(std::format("String '{}' was not recognized as a valid boolean.", value));
     }
 
     template <>
-    int FromString<int>(const std::string& value)
+    int FromString<int>(std::string_view value)
     {
-        return ParseNumber<int>(trim(value));
+        return ParseNumber<int>(trim(std::string(value)));
     }
 
     template <>
-    double FromString<double>(const std::string& value)
+    double FromString<double>(std::string_view value)
     {
         return ParseFloatingPoint<double>(value);
     }
 
     template <>
-    float FromString<float>(const std::string& value)
+    float FromString<float>(std::string_view value)
     {
         return ParseFloatingPoint<float>(value);
     }
 
-    time_point FromString(const std::string& value, TimePointFormat format)
+    time_point FromString(std::string_view value, TimePointFormat format)
     {
         time_point result;
-        std::istringstream iss(trim(value));
+        std::istringstream iss(trim(std::string(value)));
         if (iss >> std::chrono::parse(GetTimePointFormatString(format), result))
         {
             // Ensure the entire string was consumed (no trailing characters)
@@ -253,35 +253,35 @@ namespace ini::conversion
             }
         }
 
-        throw std::invalid_argument("String '" + value + "' was not recognized as a valid date/time.");
+        throw std::invalid_argument(std::format("String '{}' was not recognized as a valid date/time.", value));
     }
 
     template <>
-    path FromString<path>(const std::string& value)
+    path FromString<path>(std::string_view value)
     {
-        return path(trim(value));
+        return path(trim(std::string(value)));
     }
 
     template <>
-    std::string FromString<std::string>(const std::string& value)
+    std::string FromString<std::string>(std::string_view value)
     {
-        return trim(value);
+        return trim(std::string(value));
     }
 
     template <>
-    std::vector<bool> FromMultiValueString<bool>(const std::string& value, char delimiter)
+    std::vector<bool> FromMultiValueString<bool>(std::string_view value, char delimiter)
     {
         return SplitValues<bool>(value, delimiter, [](const std::string& item) { return FromString<bool>(item); });
     }
 
     template <>
-    std::vector<int> FromMultiValueString<int>(const std::string& value, char delimiter)
+    std::vector<int> FromMultiValueString<int>(std::string_view value, char delimiter)
     {
         return SplitValues<int>(value, delimiter, [](const std::string& item) { return FromString<int>(item); });
     }
 
     template <>
-    std::vector<double> FromMultiValueString<double>(const std::string& value, char delimiter)
+    std::vector<double> FromMultiValueString<double>(std::string_view value, char delimiter)
     {
         return SplitValues<double>(value, delimiter, [](const std::string& item) {
             return FromString<double>(item);
@@ -289,14 +289,14 @@ namespace ini::conversion
     }
 
     template <>
-    std::vector<float> FromMultiValueString<float>(const std::string& value, char delimiter)
+    std::vector<float> FromMultiValueString<float>(std::string_view value, char delimiter)
     {
         return SplitValues<float>(value, delimiter, [](const std::string& item) {
             return FromString<float>(item);
         });
     }
 
-    std::vector<time_point> FromMultiValueString(const std::string& value, TimePointFormat format,
+    std::vector<time_point> FromMultiValueString(std::string_view value, TimePointFormat format,
                                                  char delimiter)
     {
         return SplitValues<time_point>(value, delimiter, [format](const std::string& item) {
@@ -305,13 +305,13 @@ namespace ini::conversion
     }
 
     template <>
-    std::vector<path> FromMultiValueString<path>(const std::string& value, char delimiter)
+    std::vector<path> FromMultiValueString<path>(std::string_view value, char delimiter)
     {
         return SplitValues<path>(value, delimiter, [](const std::string& item) { return FromString<path>(item); });
     }
 
     template <>
-    std::vector<std::string> FromMultiValueString<std::string>(const std::string& value, char delimiter)
+    std::vector<std::string> FromMultiValueString<std::string>(std::string_view value, char delimiter)
     {
         return SplitValues<std::string>(value, delimiter, [](const std::string& item) {
             return FromString<std::string>(item);

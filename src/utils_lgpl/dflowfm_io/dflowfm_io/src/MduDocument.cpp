@@ -30,7 +30,7 @@ namespace dflowfm_io
                 },
         };
 
-        void EnsureEnumInRange(const MduSchema& schema, const std::string& key, const IntEnumValue& value)
+        void EnsureEnumInRange(const MduSchema& schema, std::string_view key, const IntEnumValue& value)
         {
             const auto* ps = schema.FindProperty(key);
             if (ps && !schema.FindEnumValue(*ps, std::to_string(value.value)))
@@ -38,7 +38,7 @@ namespace dflowfm_io
                     std::format("Enum value '{}' is out of range for '{}'.", value.value, key));
         }
 
-        void EnsureEnumInRange(const MduSchema& schema, const std::string& key, const StringEnumValue& value)
+        void EnsureEnumInRange(const MduSchema& schema, std::string_view key, const StringEnumValue& value)
         {
             const auto* ps = schema.FindProperty(key);
             if (ps && !schema.FindEnumValue(*ps, value.value))
@@ -50,7 +50,7 @@ namespace dflowfm_io
     MduDocument::MduDocument(const MduSchema& schema)
         : schema(schema), mduData(schema.CreateDefaultValues()) {}
 
-    IssueReport MduDocument::LoadFromString(const std::string& text)
+    IssueReport MduDocument::LoadFromString(std::string_view text)
     {
         const ini::IniData iniData = ini::Parse(text, mduIniOptions.scheme, mduIniOptions.parserOptions);
         std::pair<MduData, IssueReport> result = conversion::ToMduData(iniData, schema);
@@ -78,14 +78,14 @@ namespace dflowfm_io
         ini::Save(path, iniData, mduIniOptions);
     }
 
-    void MduDocument::EnsureKeyInSchema(const std::string& key) const
+    void MduDocument::EnsureKeyInSchema(std::string_view key) const
     {
         if (!schema.FindProperty(key))
             throw std::invalid_argument(
                 std::format("Unknown MDU property: '{}'.", key));
     }
 
-    void MduDocument::EnsureValueInRange(const std::string& key, const Value& value) const
+    void MduDocument::EnsureValueInRange(std::string_view key, const Value& value) const
     {
         if (const auto* intEnum = std::get_if<IntEnumValue>(&value))
             EnsureEnumInRange(schema, key, *intEnum);

@@ -5,6 +5,7 @@
 #include <functional>
 #include <span>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ini
@@ -45,33 +46,33 @@ namespace ini
         /// @param name The name of the section to locate (case-insensitive).
         /// @return @c true if a section with the specified name is found; otherwise @c false.
         /// @throws std::invalid_argument When @p name is empty.
-        bool HasSection(const std::string& name) const;
+        bool HasSection(std::string_view name) const;
 
         /// @brief Returns the first section with the specified name.
         /// @param name The name to search for (case-insensitive).
         /// @return A reference to the first matching section.
         /// @throws std::invalid_argument When @p name is empty.
         /// @throws std::out_of_range When no section with @p name was found.
-        IniSection& GetSection(const std::string& name);
+        IniSection& GetSection(std::string_view name);
 
-        /// @copydoc IniData::GetSection(const std::string&)
-        const IniSection& GetSection(const std::string& name) const;
+        /// @copydoc IniData::GetSection(std::string_view)
+        const IniSection& GetSection(std::string_view name) const;
 
         /// @brief Finds the first section with the specified name.
         /// @param name The name to search for (case-insensitive).
         /// @return The first matching section, or @c nullptr when none is found.
         /// @throws std::invalid_argument When @p name is empty.
-        IniSection* FindSection(const std::string& name);
+        IniSection* FindSection(std::string_view name);
 
-        /// @copydoc IniData::FindSection(const std::string&)
-        const IniSection* FindSection(const std::string& name) const;
+        /// @copydoc IniData::FindSection(std::string_view)
+        const IniSection* FindSection(std::string_view name) const;
 
         /// @brief Returns whether the first section with the specified name contains a property with the specified key.
         /// @param sectionName The section name to search for (case-insensitive).
         /// @param key The property key to search for (case-insensitive).
         /// @return @c true if the property is found; otherwise @c false.
         /// @throws std::invalid_argument When @p sectionName or @p key is empty.
-        bool HasProperty(const std::string& sectionName, const std::string& key) const;
+        bool HasProperty(std::string_view sectionName, std::string_view key) const;
 
         /// @brief Returns the property with the specified key from the first section with the specified name.
         /// @param sectionName The section name to search for (case-insensitive).
@@ -79,20 +80,20 @@ namespace ini
         /// @return A reference to the matching property.
         /// @throws std::invalid_argument When @p sectionName or @p key is empty.
         /// @throws std::out_of_range When no matching section or property is found.
-        IniProperty& GetProperty(const std::string& sectionName, const std::string& key);
+        IniProperty& GetProperty(std::string_view sectionName, std::string_view key);
 
-        /// @copydoc IniData::GetProperty(const std::string&, const std::string&)
-        const IniProperty& GetProperty(const std::string& sectionName, const std::string& key) const;
+        /// @copydoc IniData::GetProperty(std::string_view, std::string_view)
+        const IniProperty& GetProperty(std::string_view sectionName, std::string_view key) const;
 
         /// @brief Finds a property in the first section with the specified name.
         /// @param sectionName The section name to search for (case-insensitive).
         /// @param key The property key to search for (case-insensitive).
         /// @return A pointer to the matching property, or @c nullptr when the section or property is not found.
         /// @throws std::invalid_argument When @p sectionName or @p key is empty.
-        IniProperty* FindProperty(const std::string& sectionName, const std::string& key);
+        IniProperty* FindProperty(std::string_view sectionName, std::string_view key);
 
-        /// @copydoc IniData::FindProperty(const std::string&, const std::string&)
-        const IniProperty* FindProperty(const std::string& sectionName, const std::string& key) const;
+        /// @copydoc IniData::FindProperty(std::string_view, std::string_view)
+        const IniProperty* FindProperty(std::string_view sectionName, std::string_view key) const;
 
         /// @brief Removes the specified section from the INI data.
         /// @param section The section to remove.
@@ -103,7 +104,7 @@ namespace ini
         /// @param name The name of the sections to remove (case-insensitive).
         /// @details Returns silently if no section with the specified name was found.
         /// @throws std::invalid_argument When @p name is empty.
-        void RemoveAllSections(const std::string& name);
+        void RemoveAllSections(std::string name);
 
         /// @brief Removes all sections matching the specified predicate from the INI data.
         /// @param predicate A function that defines the conditions of the sections to remove.
@@ -118,7 +119,7 @@ namespace ini
         /// @param newName The new name to assign.
         /// @details Returns silently if no section with @p oldName was found.
         /// @throws std::invalid_argument When @p oldName or @p newName is empty.
-        void RenameSections(const std::string& oldName, const std::string& newName);
+        void RenameSections(std::string oldName, std::string newName);
 
         /// @brief Returns whether this INI data is equal to @p other.
         /// @details Two INI data objects are equal when their sections are equal and in the same order.
