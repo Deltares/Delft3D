@@ -9,10 +9,17 @@
 
 namespace pre_c_sumo::c_sumo
 {
-    /// Parses configuration XML into owned settings.
+    /**
+     * @brief Parses C-SUMO configuration XML into owned settings data.
+     */
     class SettingsReader
     {
     public:
+        /**
+         * @brief Parses one C-SUMO settings XML document.
+         * @param xml Complete C-SUMO settings XML document.
+         * @return Parsed settings, or a ParseError if the document is invalid.
+         */
         [[nodiscard]] static std::expected<Settings, utils::io_errors::ParseError> fromString(std::string_view xml);
     };
 } // namespace pre_c_sumo::c_sumo

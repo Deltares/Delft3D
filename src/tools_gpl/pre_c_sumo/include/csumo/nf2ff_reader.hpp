@@ -9,10 +9,17 @@
 
 namespace pre_c_sumo::c_sumo
 {
-    /// Parses NF2FF XML into standalone data without filesystem access.
+    /**
+     * @brief Parses NF2FF XML into standalone data without filesystem access.
+     */
     class NF2FFReader
     {
     public:
+        /**
+         * @brief Parses one NF2FF XML document.
+         * @param xml Complete NF2FF XML document.
+         * @return Parsed near-field data, or a ParseError if the document is invalid.
+         */
         [[nodiscard]] static std::expected<NF2FFData, utils::io_errors::ParseError> fromString(std::string_view xml);
     };
 } // namespace pre_c_sumo::c_sumo

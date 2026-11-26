@@ -11,15 +11,29 @@
 
 namespace pre_c_sumo::c_sumo
 {
-    /// Validates and serializes FF2NF data, and optionally writes it to a file.
+    /**
+     * @brief Validates and serializes FF2NF data, and optionally writes it to a file.
+     */
     class FF2NFWriter
     {
     public:
+        /**
+         * @brief Creates a writer for the supplied FF2NF configuration.
+         * @param config Data to validate and serialize.
+         */
         explicit FF2NFWriter(FF2NFConfig config);
+
+        /**
+         * @brief Validates the configuration and generates the FF2NF XML document.
+         * @return Serialized XML, or a WriteError if validation or serialization fails.
+         */
         [[nodiscard]] std::expected<std::string, utils::io_errors::WriteError> generate() const;
 
         /// @anchor pre_c_sumo_write_ff2nf
-        /// Generate and write the FF2NF file without overwriting an existing file.
+        /**
+         * @brief Generates and writes the FF2NF file without overwriting an existing file.
+         * @return Success, or a WriteError if validation, serialization, or file writing fails.
+         */
         [[nodiscard]] std::expected<void, utils::io_errors::WriteError> write() const;
 
     private:

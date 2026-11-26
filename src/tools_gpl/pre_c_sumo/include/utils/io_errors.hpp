@@ -5,19 +5,22 @@
 
 namespace pre_c_sumo::utils::io_errors
 {
+    /// Error returned when input text or XML cannot be parsed.
     struct ParseError
     {
-        std::string message;
+        std::string message; ///< Error message.
     };
 
+    /// Error returned when a file cannot be read or its contents cannot be loaded.
     struct ReadError
     {
-        std::string message;
+        std::string message; ///< Error message.
     };
 
+    /// Error returned when serialized output cannot be generated or written.
     struct WriteError
     {
-        std::string message;
+        std::string message; ///< Error message.
     };
 } // namespace pre_c_sumo::utils::io_errors
 

@@ -10,26 +10,35 @@
 
 namespace pre_c_sumo::precice
 {
+    /**
+     * @brief Describes a failure while preparing or writing sink/source data.
+     */
     struct SinkSourceConnectionsError
     {
-        std::string message;
+        std::string message; ///< Error message.
     };
 
-    /// Attribute-wise sink/source buffers in the preCICE wire format.
+    /**
+     * @brief Attribute-wise sink/source buffers in the preCICE wire format.
+     *
+     * All vectors are aligned by connection index. The constituent array has one vector
+     * for each supported constituent quantity.
+     */
     struct SinkSourceConnectionBuffers
     {
-        std::vector<double> sink_x_vector;
-        std::vector<double> sink_y_vector;
-        std::vector<double> sink_z_bottom_vector;
-        std::vector<double> sink_z_top_vector;
-        std::vector<double> source_x_vector;
-        std::vector<double> source_y_vector;
-        std::vector<double> source_z_bottom_vector;
-        std::vector<double> source_z_top_vector;
-        std::vector<double> discharge_vector;
-        std::vector<double> momentum_magnitude_weighted_vector;
-        std::vector<double> momentum_direction_vector;
-        std::array<std::vector<double>, max_number_of_constituents> constituents_vectors;
+        std::vector<double> sink_x_vector;                      ///< Sink x coordinates.
+        std::vector<double> sink_y_vector;                      ///< Sink y coordinates.
+        std::vector<double> sink_z_bottom_vector;               ///< Lower z-boundaries of sinks.
+        std::vector<double> sink_z_top_vector;                  ///< Upper z-boundaries of sinks.
+        std::vector<double> source_x_vector;                    ///< Source x coordinates.
+        std::vector<double> source_y_vector;                    ///< Source y coordinates.
+        std::vector<double> source_z_bottom_vector;             ///< Lower z-boundaries of sources.
+        std::vector<double> source_z_top_vector;                ///< Upper z-boundaries of sources.
+        std::vector<double> discharge_vector;                   ///< Discharge values [m3/s].
+        std::vector<double> momentum_magnitude_weighted_vector; ///< Effective source speeds [m/s].
+        std::vector<double> momentum_direction_vector;          ///< Towards bearings, clockwise from north [degrees].
+        std::array<std::vector<double>, max_number_of_constituents>
+            constituents_vectors; ///< Constituent values, one vector per constituent ID.
     };
 
     /**
@@ -44,18 +53,18 @@ namespace pre_c_sumo::precice
         /**
          * @anchor pre_c_sumo_sink_source_connections_add_entry
          * @brief Adds one connected sink/source entry to the instance.
-         * @param sink_x Sink x-coordinate.
-         * @param sink_y Sink y-coordinate.
-         * @param sink_z_bottom Lower z-boundary of the sink.
-         * @param sink_z_top Upper z-boundary of the sink.
-         * @param source_x Source x-coordinate.
-         * @param source_y Source y-coordinate.
-         * @param source_z_bottom Lower z-boundary of the source.
-         * @param source_z_top Upper z-boundary of the source.
+         * @param sink_x Sink x-coordinate [m].
+         * @param sink_y Sink y-coordinate [m].
+         * @param sink_z_bottom Lower z-boundary of the sink [m].
+         * @param sink_z_top Upper z-boundary of the sink [m].
+         * @param source_x Source x-coordinate [m].
+         * @param source_y Source y-coordinate [m].
+         * @param source_z_bottom Lower z-boundary of the source [m].
+         * @param source_z_top Upper z-boundary of the source [m].
          * @param discharge Discharge value [m³/s].
          * @param momentum_magnitude_weighted Effective source speed [m/s], used by FM to reconstruct source area.
          * @param momentum_direction Source direction [degrees clockwise from north, pointing towards].
-         * @param constituents Constituents (maximum 10)
+         * @param constituents Constituent values, up to the supported maximum; missing entries are zero-filled.
          */
         void add_entry(double sink_x, double sink_y, double sink_z_bottom, double sink_z_top, double source_x,
                        double source_y, double source_z_bottom, double source_z_top, double discharge,
@@ -80,6 +89,11 @@ namespace pre_c_sumo::precice
          * @return Discharge values in the aligned vector.
          */
         const std::vector<double>& get_discharge_value() const;
+
+        /**
+         * @brief Returns all aligned sink/source buffers in read-only form.
+         * @return The attribute-wise buffers owned by this instance.
+         */
         const SinkSourceConnectionBuffers& data() const;
 
     private:

@@ -5,6 +5,7 @@
 
 namespace pre_c_sumo::c_sumo
 {
+    /// Version string written to generated FF2NF files.
     inline constexpr std::string_view csumo_file_version = "0.3";
 } // namespace pre_c_sumo::c_sumo
 
