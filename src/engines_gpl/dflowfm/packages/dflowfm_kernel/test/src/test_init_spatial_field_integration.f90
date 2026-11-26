@@ -1,4 +1,5 @@
 module test_init_spatial_fields_integration
+   use m_message_helpers, only: t_abort_threshold_guard
    use assertions_gtest
    use iso_c_utils, only: cstr
    use fm_external_forcings, only: init_spatial_fields
@@ -8,7 +9,6 @@ module test_init_spatial_fields_integration
    use m_flowgeom, only: kcs, ndxi
    use m_file_helpers, only: create_file
    use precision_basics, only: dp
-   use unstruc_messages, only: threshold_abort
    use messagehandling, only: LEVEL_FATAL
    use tree_data_types, only: tree_data
    use tree_structures, only: tree_create, tree_destroy
@@ -573,6 +573,7 @@ contains
    subroutine test_rainfall_bcascii_registers_ec_connection() bind(C)
       use m_meteo, only: initialize_ec_module, jarain, ecInstancePtr
       use m_wind, only: rain, jaqin
+      type(t_abort_threshold_guard) :: abort_threshold
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
       ! ARRANGE: Create a bcascii forcing file for rainfall and an ext file that references it.
@@ -600,7 +601,7 @@ contains
 
       jarain = 0
       jaqin = 0
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call setup_minimal_grid()
       call initialize_ec_module()
       ! ACT: Parse the block and initialize the spatial fields, which should set up the EC connection and activate jarain.
@@ -622,6 +623,7 @@ contains
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
       use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, item_airpressure
 
+      type(t_abort_threshold_guard) :: abort_threshold
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
       real(dp) :: value_at_t0, value_at_t50
@@ -653,7 +655,7 @@ contains
       irefdate = 20000101
       tzone = 0.0_dp
       tstart_user = 0.0_dp
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call setup_minimal_grid()
       call initialize_ec_module()
 
@@ -681,6 +683,7 @@ contains
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
       use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, item_airpressure
 
+      type(t_abort_threshold_guard) :: abort_threshold
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
       real(dp) :: value_at_t0, value_at_t50
@@ -712,7 +715,7 @@ contains
       irefdate = 20000101
       tzone = 0.0_dp
       tstart_user = 0.0_dp
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call setup_minimal_grid()
       call initialize_ec_module()
 
@@ -739,6 +742,7 @@ contains
    !! init_spatial_fields to return .false.. The 'default' branch in
    !! init_spatial_fields emits an error and returns .false..
    subroutine test_unknown_quantity_returns_error() bind(C)
+      type(t_abort_threshold_guard) :: abort_threshold
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
       ! ARRANGE: Create an ext file with a spatial block that references a quantity that init_spatial_fields does not recognize.
@@ -747,7 +751,7 @@ contains
                        "    quantity    = this_quantity_does_not_exist", &
                        "    forcingFile = dummy.nc"])
 
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call setup_minimal_grid()
       call initialize_ec_module()
 
@@ -768,6 +772,7 @@ contains
    !! after a successful EC connection, so integration tests never exercise it.
    subroutine test_solarradiation_conflicts_with_netsolarradiation() bind(C)
       use m_wind, only: net_solar_radiation_available, solar_radiation_available
+      type(t_abort_threshold_guard) :: abort_threshold
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
       character(len=*), parameter :: SOLAR_BC = "test_solar.bc"
@@ -796,7 +801,7 @@ contains
                        "    forcingFile     = "//SOLAR_BC, &
                        "    forcingFileType = bcascii"])
 
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call setup_minimal_grid()
       call initialize_ec_module()
       net_solar_radiation_available = .true.
@@ -822,6 +827,7 @@ contains
       use m_wind, only: qext, jaQext
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
       use m_polygon, only: m_polygon_destructor
+      type(t_abort_threshold_guard) :: abort_threshold
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
       character(len=*), parameter :: SAMPLE_FILE = "test_qext.xyz"
@@ -844,7 +850,7 @@ contains
       irefdate = 20000101
       tzone = 0.0_dp
       tstart_user = 0.0_dp
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call setup_minimal_grid()
       call initialize_ec_module()
       ierr = m_polygon_destructor()
@@ -889,6 +895,7 @@ contains
       use m_meteo, only: ecInstancePtr, ec_gettimespacevalue_by_itemID
       use m_ec_typedefs, only: tEcItemPtr
 
+      type(t_abort_threshold_guard) :: abort_threshold
       type(tEcItemPtr), dimension(:), pointer :: ecItemsPtr => null()
       integer :: ec_item
       type(tree_data), pointer :: bnd_ptr, block_ptr
@@ -923,7 +930,7 @@ contains
       irefdate = 20000101
       tzone = 0.0_dp
       tstart_user = 0.0_dp
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call setup_minimal_grid()
       call initialize_ec_module()
 
@@ -979,6 +986,7 @@ contains
       use m_wind, only: solar_radiation, solar_radiation_available
       use m_flowtimes, only: irefdate, tunit, tzone, tstart_user
 
+      type(t_abort_threshold_guard) :: abort_threshold
       character(len=*), parameter :: NC_FILE = 'test_solarradiation_uniform.nc'
       character(len=*), parameter :: EXT_FILE = 'test_solarradiation_uniform.ext'
       type(tree_data), pointer :: bnd_ptr, block_ptr
@@ -998,7 +1006,7 @@ contains
       tzone = 0.0_dp
       tstart_user = 0.0_dp
       jsferic = 0
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call initialize_ec_module()
 
       call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
@@ -1032,6 +1040,7 @@ contains
       use m_wind, only: solar_radiation, solar_radiation_available
       use m_flowtimes, only: irefdate, tzone, tstart_user
 
+      type(t_abort_threshold_guard) :: abort_threshold
       character(len=*), parameter :: NC_FILE = 'test_located_timeseries.nc'
       character(len=*), parameter :: EXT_FILE = 'test_located_timeseries.ext'
       type(tree_data), pointer :: bnd_ptr, block_ptr
@@ -1051,7 +1060,7 @@ contains
       tzone = 0.0_dp
       tstart_user = 0.0_dp
       jsferic = 0
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call initialize_ec_module()
 
       call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
@@ -1077,6 +1086,7 @@ contains
       use m_flowtimes, only: irefdate, tunit, tzone, tstart_user
       use m_unstruc_model_data, only: extfile_new_list
 
+      type(t_abort_threshold_guard) :: abort_threshold
       character(len=*), parameter :: NC_FILE = 'test_windxy_uniform.nc'
       character(len=*), parameter :: EXT_FILE = 'test_windxy_uniform.ext'
       character(len=*), parameter :: FACTOR_EXT_FILE = 'test_windxy_factor.ext'
@@ -1113,7 +1123,7 @@ contains
       tzone = 0.0_dp
       tstart_user = 0.0_dp
       jsferic = 0
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call initialize_ec_module()
       extfile_new_list = [character(len=64) :: EXT_FILE, FACTOR_EXT_FILE]
 
@@ -1221,6 +1231,7 @@ contains
       use time_module, only: ymd2modified_jul
       use unstruc_inifields, only: register_waq_target
 
+      type(t_abort_threshold_guard) :: abort_threshold
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
       character(len=*), parameter :: WAQ_TIM = "test_waqfunction.tim"
@@ -1245,7 +1256,7 @@ contains
       end if
       tzone = 0.0_dp
       tstart_user = 0.0_dp
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       num_time_functions = 0
       if (allocated(funame)) deallocate (funame)
       if (associated(funinp)) deallocate (funinp)
@@ -1420,6 +1431,7 @@ contains
       use m_polygon, only: m_polygon_destructor
       use fm_external_forcings, only: init_spatial_fields
 
+      type(t_abort_threshold_guard) :: abort_threshold
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
       integer :: ierr
@@ -1446,7 +1458,7 @@ contains
       irefdate = 20000101
       tzone = 0.0_dp
       tstart_user = 0.0_dp
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call initialize_ec_module()
       ierr = m_polygon_destructor()
 
@@ -1499,6 +1511,7 @@ contains
       use m_polygon, only: m_polygon_destructor
       use fm_external_forcings, only: init_spatial_fields
 
+      type(t_abort_threshold_guard) :: abort_threshold
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
       integer :: ierr
@@ -1530,7 +1543,7 @@ contains
       irefdate = 20000101
       tzone = 0.0_dp
       tstart_user = 0.0_dp
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call initialize_ec_module()
       ierr = m_polygon_destructor()
 
@@ -1589,6 +1602,7 @@ contains
       use m_fm_icecover, only: ja_icecover
       use m_flowparameters, only: jatidep
 
+      type(t_abort_threshold_guard) :: abort_threshold
       character(len=*), parameter :: SAMPLE_FILE = 'test_static_datavalue_friction.xyz'
       character(len=*), parameter :: EXT_FILE = 'test_static_datavalue_friction.ext'
       integer :: ierr, iresult
@@ -1609,7 +1623,7 @@ contains
                                   '    interpolationMethod = triangulation', &
                                   '    operand             = override'])
 
-      allocate(ja_icecover)
+      allocate (ja_icecover)
       ja_icecover = 0
       jatidep = 0
       call setup_minimal_grid()
@@ -1623,7 +1637,7 @@ contains
       tzone = 0.0_dp
       tstart_user = 0.0_dp
       ja_friction_coefficient_time_dependent = 0
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call timini()
       call initialize_ec_module()
       ierr = m_polygon_destructor()
@@ -1641,7 +1655,7 @@ contains
       call set_external_forcings(0.0_dp, .false., iresult)
       call f90_expect_eq(iresult, DFM_NOERR, 'first external forcing update should succeed')
       call f90_expect_near(frcu(1), 0.02_dp, 1.0e-6_dp, &
-                  'the first update should not reapply the static datavalue')
+                           'the first update should not reapply the static datavalue')
 
       ndx2D = 0
       lnx = 0
@@ -1649,7 +1663,7 @@ contains
       if (allocated(xu)) deallocate (xu)
       if (allocated(yu)) deallocate (yu)
       if (allocated(frcu)) deallocate (frcu)
-      deallocate(ja_icecover)
+      deallocate (ja_icecover)
       call teardown_minimal_grid()
    end subroutine test_datavalue_with_static_input_is_applied_once
 
@@ -1670,6 +1684,7 @@ contains
       use m_fm_icecover, only: ja_icecover
       use m_flowparameters, only: jatidep
 
+      type(t_abort_threshold_guard) :: abort_threshold
       character(len=*), parameter :: SAMPLE_FILE = 'test_static_datavalue_airdensity.xyz'
       character(len=*), parameter :: EXT_FILE = 'test_static_datavalue_airdensity.ext'
       integer :: ierr, iresult
@@ -1690,7 +1705,7 @@ contains
                                   '    interpolationMethod = triangulation', &
                                   '    operand             = override'])
 
-      allocate(ja_icecover)
+      allocate (ja_icecover)
       ja_icecover = 0
       jatidep = 0
       call setup_minimal_grid()
@@ -1700,7 +1715,7 @@ contains
       tstart_user = 0.0_dp
       ja_airdensity = 0
       ja_computed_airdensity = 0
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call timini()
       call initialize_ec_module()
       ierr = m_polygon_destructor()
@@ -1723,7 +1738,7 @@ contains
       ja_airdensity = 0
       ndx2D = 0
       if (allocated(air_density)) deallocate (air_density)
-      deallocate(ja_icecover)
+      deallocate (ja_icecover)
       call teardown_minimal_grid()
    end subroutine test_airdensity_datavalue_with_static_input_is_applied_once
 
@@ -1733,6 +1748,7 @@ contains
       use m_wind, only: wx, wy
       use m_flow, only: wdsu, wdsu_x, wdsu_y
 
+      type(t_abort_threshold_guard) :: abort_threshold
       character(len=*), parameter :: SAMPLE_FILE = 'test_unsupported_static_windxy.xyz'
       character(len=*), parameter :: EXT_FILE = 'test_unsupported_static_windxy.ext'
       type(tree_data), pointer :: bnd_ptr, block_ptr
@@ -1748,10 +1764,9 @@ contains
 
       call setup_minimal_grid()
       lnx = 1
-      allocate (xu(lnx), yu(lnx))
-      xu = 0.0_dp
-      yu = 0.0_dp
-      threshold_abort = LEVEL_FATAL
+      call realloc(xu, lnx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(yu, lnx, fill=0.0_dp, keepExisting=.false.)
+      call abort_threshold%set(LEVEL_FATAL)
       call initialize_ec_module()
 
       call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
@@ -1786,6 +1801,7 @@ contains
       use m_fm_icecover, only: ja_icecover
       use m_flowparameters, only: jatidep
 
+      type(t_abort_threshold_guard) :: abort_threshold
       character(len=*), parameter :: BC_FILE = 'test_dynamic_friction_multiplier.bc'
       character(len=*), parameter :: EXT_FILE = 'test_static_friction_base.ext'
       integer :: ierr, iresult
@@ -1806,18 +1822,18 @@ contains
                        '    0     2.0', &
                        '    60    3.0'])
       call create_file(EXT_FILE, [character(len=80) :: &
-                       '[Spatial]', &
-                       '    quantity        = frictioncoefficient', &
-                       '    dataValue       = 1.0', &
-                       '    operand         = override', &
-                       '', &
-                       '[Spatial]', &
-                       '    quantity        = frictioncoefficient', &
-                       '    forcingFile     = '//BC_FILE, &
-                       '    forcingFileType = bcascii', &
-                       '    operand         = multiply'])
+                                  '[Spatial]', &
+                                  '    quantity        = frictioncoefficient', &
+                                  '    dataValue       = 1.0', &
+                                  '    operand         = override', &
+                                  '', &
+                                  '[Spatial]', &
+                                  '    quantity        = frictioncoefficient', &
+                                  '    forcingFile     = '//BC_FILE, &
+                                  '    forcingFileType = bcascii', &
+                                  '    operand         = multiply'])
 
-      allocate(ja_icecover)
+      allocate (ja_icecover)
       ja_icecover = 0
       jatidep = 0
       call setup_minimal_grid()
@@ -1831,7 +1847,7 @@ contains
       tzone = 0.0_dp
       tstart_user = 0.0_dp
       ja_friction_coefficient_time_dependent = 0
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call timini()
       call initialize_ec_module()
       ierr = m_polygon_destructor()
@@ -1861,7 +1877,7 @@ contains
       if (allocated(xu)) deallocate (xu)
       if (allocated(yu)) deallocate (yu)
       if (allocated(frcu)) deallocate (frcu)
-      deallocate(ja_icecover)
+      deallocate (ja_icecover)
       call teardown_minimal_grid()
    end subroutine test_static_datavalue_dynamic_multiply_resets_base
 
@@ -1876,6 +1892,7 @@ contains
       use m_flowtimes, only: irefdate, tzone, tstart_user
       use m_polygon, only: m_polygon_destructor
 
+      type(t_abort_threshold_guard) :: abort_threshold
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
       integer :: ierr
@@ -1902,7 +1919,7 @@ contains
       irefdate = 20000101
       tzone = 0.0_dp
       tstart_user = 0.0_dp
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call setup_minimal_grid()
       call initialize_ec_module()
       ierr = m_polygon_destructor()
@@ -1935,6 +1952,7 @@ contains
       use m_flowtimes, only: irefdate, tzone, tstart_user
       use m_sferic, only: jsferic
 
+      type(t_abort_threshold_guard) :: abort_threshold
       character(len=*), parameter :: NC_FILE = 'test_initial_secchi_explicit.nc'
       character(len=*), parameter :: EXT_FILE = 'test_initial_secchi_explicit.ext'
       type(tree_data), pointer :: bnd_ptr, block_ptr
@@ -1958,7 +1976,7 @@ contains
       jsferic = 0
       secchi_depth_is_spatially_varying = .false.
       secchi_depth_is_time_varying = .false.
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call initialize_ec_module()
 
       call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
@@ -1987,6 +2005,7 @@ contains
       use m_flowtimes, only: irefdate, tzone, tstart_user
       use m_sferic, only: jsferic
 
+      type(t_abort_threshold_guard) :: abort_threshold
       character(len=*), parameter :: NC_FILE = 'test_initial_waterlevel_timeless.nc'
       character(len=*), parameter :: EXT_FILE = 'test_initial_waterlevel_timeless.ext'
       type(tree_data), pointer :: bnd_ptr, block_ptr
@@ -2008,7 +2027,7 @@ contains
       tzone = 0.0_dp
       tstart_user = 1000.0_dp
       jsferic = 0
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call initialize_ec_module()
 
       call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
@@ -2033,6 +2052,7 @@ contains
       use m_flowtimes, only: irefdate, tzone, tstart_user
       use m_sferic, only: jsferic
 
+      type(t_abort_threshold_guard) :: abort_threshold
       character(len=*), parameter :: NC_FILE = 'test_initial_waterlevel_single_snapshot.nc'
       character(len=*), parameter :: EXT_FILE = 'test_initial_waterlevel_snapshot_times.ext'
       real(dp), dimension(5), parameter :: START_TIMES = [-100.0_dp, 0.0_dp, 50.0_dp, 100.0_dp, 1000.0_dp]
@@ -2058,7 +2078,7 @@ contains
          tzone = 0.0_dp
          tstart_user = START_TIMES(start_index)
          jsferic = 0
-         threshold_abort = LEVEL_FATAL
+         call abort_threshold%set(LEVEL_FATAL)
          call initialize_ec_module()
 
          call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
@@ -2087,6 +2107,7 @@ contains
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
       use m_sferic, only: jsferic
 
+      type(t_abort_threshold_guard) :: abort_threshold
       character(len=*), parameter :: NC_FILE = 'test_secchi_timeless.nc'
       character(len=*), parameter :: EXT_FILE = 'test_secchi_timeless.ext'
       type(tree_data), pointer :: bnd_ptr, block_ptr
@@ -2109,7 +2130,7 @@ contains
       jsferic = 0
       secchi_depth_is_spatially_varying = .false.
       secchi_depth_is_time_varying = .false.
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call initialize_ec_module()
 
       call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
@@ -2118,7 +2139,7 @@ contains
       call f90_expect_true(success, 'timeless source should support a dynamic target')
       if (success) then
          success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_secchi_depth, irefdate, tzone, tunit, &
-                                                -100.0_dp, spatial_secchi_depth)
+                                                  -100.0_dp, spatial_secchi_depth)
          call f90_expect_true(success, 'timeless source should evaluate before the reference date')
          if (success) then
             call f90_expect_near(spatial_secchi_depth(1), 4.0_dp, 1.0e-6_dp, 'first evaluation should interpolate spatially')
@@ -2126,7 +2147,7 @@ contains
          end if
          spatial_secchi_depth = 42.0_dp
          success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_secchi_depth, irefdate, tzone, tunit, &
-                                                1000.0_dp, spatial_secchi_depth)
+                                                  1000.0_dp, spatial_secchi_depth)
          call f90_expect_true(success, 'timeless source should evaluate at a later time without advancing records')
          if (success) then
             call f90_expect_near(spatial_secchi_depth(1), 4.0_dp, 1.0e-6_dp, 'later evaluation should restore the same source value')
@@ -2149,6 +2170,7 @@ contains
       use m_flowtimes, only: irefdate, tzone, tstart_user
       use m_sferic, only: jsferic
 
+      type(t_abort_threshold_guard) :: abort_threshold
       character(len=*), parameter :: NC_FILE = 'test_missing_time_coordinate.nc'
       character(len=*), parameter :: EXT_FILE = 'test_missing_time_coordinate.ext'
       type(tree_data), pointer :: bnd_ptr, block_ptr
@@ -2172,7 +2194,7 @@ contains
       tzone = 0.0_dp
       tstart_user = 0.0_dp
       jsferic = 0
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call initialize_ec_module()
 
       call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
@@ -2199,6 +2221,7 @@ contains
       use m_sferic, only: jsferic
       use timers, only: timini
 
+      type(t_abort_threshold_guard) :: abort_threshold
       character(len=*), parameter :: NC_FILE = 'test_initial_secchi_once.nc'
       character(len=*), parameter :: EXT_FILE = 'test_initial_secchi_once.ext'
       integer :: iresult
@@ -2228,7 +2251,7 @@ contains
       jsferic = 0
       secchi_depth_is_spatially_varying = .false.
       secchi_depth_is_time_varying = .false.
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call timini()
       call initialize_ec_module()
       extfile_new_list = [EXT_FILE]
@@ -2262,6 +2285,7 @@ contains
       use m_sferic, only: jsferic
       use m_missing, only: dmiss
 
+      type(t_abort_threshold_guard) :: abort_threshold
       character(len=*), parameter :: NC_FILE = 'test_initial_temperature.nc'
       character(len=*), parameter :: EXT_FILE = 'test_initial_temperature.ext'
       type(tree_data), pointer :: bnd_ptr, block_ptr
@@ -2291,7 +2315,7 @@ contains
       tzone = 0.0_dp
       tstart_user = 50.0_dp
       jsferic = 0
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call initialize_ec_module()
 
       call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
@@ -2322,6 +2346,7 @@ contains
       use m_missing, only: dmiss
       use m_ec_message, only: clear_ec_message
 
+      type(t_abort_threshold_guard) :: abort_threshold
       character(len=*), parameter :: NC_FILE = 'test_initial_temperature_missing_variable.nc'
       character(len=*), parameter :: EXT_FILE = 'test_initial_temperature_missing_variable.ext'
       type(tree_data), pointer :: bnd_ptr, block_ptr
@@ -2351,7 +2376,7 @@ contains
       tzone = 0.0_dp
       tstart_user = 50.0_dp
       jsferic = 0
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call initialize_ec_module()
 
       call clear_ec_message()
@@ -2379,6 +2404,7 @@ contains
       use m_sferic, only: jsferic
       use m_missing, only: dmiss
 
+      type(t_abort_threshold_guard) :: abort_threshold
       character(len=*), parameter :: NC_FILE = 'test_initial_salinity.nc'
       character(len=*), parameter :: EXT_FILE = 'test_initial_salinity.ext'
       type(tree_data), pointer :: bnd_ptr, block_ptr
@@ -2405,7 +2431,7 @@ contains
       tzone = 0.0_dp
       tstart_user = 50.0_dp
       jsferic = 0
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call initialize_ec_module()
 
       call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
@@ -2448,6 +2474,7 @@ contains
       use m_ec_message, only: clear_ec_message, dump_ec_message_stack
       use messagehandling, only: mess, LEVEL_WARN
 
+      type(t_abort_threshold_guard) :: abort_threshold
       character(len=*), intent(in) :: case_name
       logical, intent(in) :: with_time
       integer, intent(in) :: snapshot_count
@@ -2480,8 +2507,7 @@ contains
       tzone = 0.0_dp
       tstart_user = 50.0_dp
       jsferic = 0
-      threshold_abort = LEVEL_FATAL
-
+      call abort_threshold%set(LEVEL_FATAL)
       write (nc_file, '(a,a,a)') 'test_initial_3d_salinity_', trim(case_name), '.nc'
       write (ext_file, '(a,a,a)') 'test_initial_3d_salinity_', trim(case_name), '.ext'
       call initialize_ec_module()
@@ -2525,6 +2551,7 @@ contains
       use m_flowtimes, only: irefdate, tzone, tstart_user
       use m_polygon, only: m_polygon_destructor
 
+      type(t_abort_threshold_guard) :: abort_threshold
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
       integer :: ierr
@@ -2545,7 +2572,7 @@ contains
       tzone = 0.0_dp
       tstart_user = 0.0_dp
       secchi_depth_is_spatially_varying = .false.
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call setup_minimal_grid()
       call initialize_ec_module()
       ierr = m_polygon_destructor()
@@ -2560,7 +2587,7 @@ contains
       call f90_expect_true(secchi_depth_is_spatially_varying, &
                            "secchi_depth_is_spatially_varying must be .true. after init")
       if (.not. f90_assert_true(allocated(spatial_secchi_depth), &
-                               "spatial_secchi_depth must be allocated")) then
+                                "spatial_secchi_depth must be allocated")) then
          call cleanup()
          return
       end if
@@ -2598,6 +2625,7 @@ contains
       use m_polygon, only: m_polygon_destructor
       use m_alloc, only: aerr
 
+      type(t_abort_threshold_guard) :: abort_threshold
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
       integer :: ierr, expected_friction_type
@@ -2635,7 +2663,7 @@ contains
       irefdate = 20000101
       tzone = 0.0_dp
       tstart_user = 0.0_dp
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call initialize_ec_module()
       ierr = m_polygon_destructor()
 
@@ -2693,6 +2721,7 @@ contains
       use m_flowtimes, only: irefdate, tzone, tstart_user
       use m_polygon, only: m_polygon_destructor
 
+      type(t_abort_threshold_guard) :: abort_threshold
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
       integer :: ierr
@@ -2732,7 +2761,7 @@ contains
       irefdate = 20000101
       tzone = 0.0_dp
       tstart_user = 0.0_dp
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call initialize_ec_module()
 
       ! ACT
@@ -2829,7 +2858,7 @@ contains
    !> Verifies that the legacy-compatible waqmassbalancearea prefix registers a
    !! named mass-balance area and assigns its integer ID to enclosed cells.
    subroutine test_waqmassbalancearea_polygon_populated() bind(C)
-      use m_flow, only: ndkx, kmxn
+      use m_flow, only: ndkx, kmx, kmxn
       use m_flowgeom, only: ndx2D, ndxi
       use m_flowtimes, only: irefdate, ti_mba, tzone, tstart_user
       use m_mass_balance_area, only: read_and_initialize_mass_balance_area
@@ -2838,6 +2867,7 @@ contains
       use m_polygon, only: m_polygon_destructor
       use m_unstruc_model_data, only: md_mbafile
 
+      type(t_abort_threshold_guard) :: abort_threshold
       integer :: ierr
       character(len=*), parameter :: POL_FILE = "test_mba.pol"
       character(len=*), parameter :: MBA_FILE = "test_mba.ini"
@@ -2865,13 +2895,13 @@ contains
       ndxi = ndx
       ndkx = ndx
       ndx2D = 0
-      allocate (kmxn(1))
-      kmxn = 1
+      kmx = 0
+      call realloc(kmxn, ndx, fill=1, keepExisting=.false.)
       irefdate = 20000101
       tzone = 0.0_dp
       tstart_user = 0.0_dp
       ti_mba = 60.0_dp
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       nomba = 0
       if (allocated(mbaname)) deallocate (mbaname)
       if (allocated(mbadef)) deallocate (mbadef)
@@ -2925,6 +2955,7 @@ contains
       use m_flowtimes, only: irefdate, tzone, tstart_user
       use m_polygon, only: m_polygon_destructor
 
+      type(t_abort_threshold_guard) :: abort_threshold
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
       integer :: ierr
@@ -2951,14 +2982,14 @@ contains
       ISALT = 1
       jasal = 1
 
-      constituents = 0.0_dp
+      call realloc(constituents, [NUMCONST, ndkx], fill=0.0_dp, keepExisting=.false.)
       call realloc(kbot, ndx, fill=1, keepExisting=.false.)
       call realloc(ktop, ndx, fill=1, keepExisting=.false.)
       call realloc(sa1, ndx, fill=0.0_dp, keepExisting=.false.)
       irefdate = 20000101
       tzone = 0.0_dp
       tstart_user = 0.0_dp
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call initialize_ec_module()
       ierr = m_polygon_destructor()
 
@@ -2998,6 +3029,7 @@ contains
       use m_flowtimes, only: irefdate, tzone, tstart_user
       use m_polygon, only: m_polygon_destructor
 
+      type(t_abort_threshold_guard) :: abort_threshold
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
       integer :: ierr
@@ -3046,7 +3078,7 @@ contains
       irefdate = 20000101
       tzone = 0.0_dp
       tstart_user = 0.0_dp
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call initialize_ec_module()
       ierr = m_polygon_destructor()
 
@@ -3086,6 +3118,7 @@ contains
       use m_flowtimes, only: irefdate, tzone, tstart_user
       use m_polygon, only: m_polygon_destructor
 
+      type(t_abort_threshold_guard) :: abort_threshold
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
       integer :: ierr
@@ -3098,10 +3131,10 @@ contains
                        "-10.0  2.0", &
                        "  0.0  4.0"])
       call create_file(EXT_FILE, [character(len=128) :: &
-                       "[Spatial]", &
-                       "    quantity        = initialverticalsedfracprofileSediment_sand", &
-                       "    forcingFile     = "//PROFILE_FILE, &
-                       "    forcingFileType = Polygon"])
+                                  "[Spatial]", &
+                                  "    quantity        = initialverticalsedfracprofileSediment_sand", &
+                                  "    forcingFile     = "//PROFILE_FILE, &
+                                  "    forcingFileType = Polygon"])
 
       call setup_minimal_grid()
       ndxi = ndx
@@ -3125,7 +3158,7 @@ contains
       irefdate = 20000101
       tzone = 0.0_dp
       tstart_user = 0.0_dp
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call initialize_ec_module()
       ierr = m_polygon_destructor()
 
@@ -3162,6 +3195,7 @@ contains
       use m_flowtimes, only: irefdate, tzone, tstart_user
       use m_polygon, only: m_polygon_destructor
 
+      type(t_abort_threshold_guard) :: abort_threshold
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
       integer :: ierr
@@ -3174,10 +3208,10 @@ contains
                        "0.0  10.0", &
                        "1.0  20.0"])
       call create_file(EXT_FILE, [character(len=128) :: &
-                       "[Spatial]", &
-                       "    quantity        = initialverticalsigmasedfracprofileSediment_sand", &
-                       "    forcingFile     = "//PROFILE_FILE, &
-                       "    forcingFileType = Polygon"])
+                                  "[Spatial]", &
+                                  "    quantity        = initialverticalsigmasedfracprofileSediment_sand", &
+                                  "    forcingFile     = "//PROFILE_FILE, &
+                                  "    forcingFileType = Polygon"])
 
       call setup_minimal_grid()
       ndxi = ndx
@@ -3203,7 +3237,7 @@ contains
       irefdate = 20000101
       tzone = 0.0_dp
       tstart_user = 0.0_dp
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call initialize_ec_module()
       ierr = m_polygon_destructor()
 
@@ -3241,6 +3275,7 @@ contains
       use m_flowgeom, only: lnx, lnx1d
       use unstruc_inifields, only: finalize_1dfield_global_values
 
+      type(t_abort_threshold_guard) :: abort_threshold
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
       character(len=*), parameter :: FIELD1D_FILE = "test_fr1d.ini"
@@ -3266,7 +3301,7 @@ contains
       lnx = 1
       lnx1d = 1
       call realloc(frcu, lnx, fill=0.0_dp, keepExisting=.false.)
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call setup_minimal_grid()
       call initialize_ec_module()
 
@@ -3332,11 +3367,192 @@ contains
       call cleanup_scalar_meteo_state()
    end subroutine test_gridded_meteo_netcdf_matrix
 
+   !$gtest
+   subroutine test_construct_mask_boundary_domain() bind(C)
+      use m_flowgeom_mask, only: construct_mask
+      use m_flowgeom, only: ln, lnx, lnx1d, ndx2d, prof1d
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_S3D, UNC_LOC_U, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
+
+      integer, dimension(3), parameter :: SPATIAL_TYPES = [SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL]
+      integer, dimension(2), parameter :: LOCATION_TYPES = [UNC_LOC_S, UNC_LOC_S3D]
+      integer, dimension(4, 3), parameter :: EXPECTED = reshape([0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1], [4, 3])
+      integer, dimension(:), allocatable :: mask
+      integer :: i, j, ierr
+
+      call setup_minimal_grid_with_points(4)
+      ndxi = 3
+      ndx2d = 1
+      lnx1d = 1
+      lnx = 2
+      call realloc(ln, [2, lnx], keepExisting=.false., fill=0)
+      ln(:, 1) = [2, 3] ! Internal 1D link between 1D internal nodes 2 and 3
+      ln(:, 2) = [4, 1] ! 2D boundary link from 2D boundary node 4 to 2D internal node 1
+      call realloc(prof1d, [3, lnx1d], keepExisting=.false., fill=0.0_dp)
+      prof1d(1, 1) = -1.0_dp
+
+      do i = 1, size(LOCATION_TYPES)
+         do j = 1, size(SPATIAL_TYPES)
+            call construct_mask(mask, LOCATION_TYPES(i), SPATIAL_TYPES(j))
+            if (.not. f90_assert_eq(size(mask), ndx, 'the default mask must include boundary cells')) then
+               return
+            end if
+            call f90_expect_true(all(mask == EXPECTED(:, j)), 'full-domain spatial selection must be preserved')
+            call construct_mask(mask, LOCATION_TYPES(i), SPATIAL_TYPES(j), exclude_boundary_nodes=.true.)
+            if (.not. f90_assert_eq(size(mask), ndxi, 'an internal mask must exclude boundary cells')) then
+               return
+            end if
+            call f90_expect_true(all(mask == EXPECTED(1:ndxi, j)), 'link connectivity must not select excluded boundary cells')
+         end do
+      end do
+
+      call construct_mask(mask, UNC_LOC_S, SPATIAL_LOCATION_1D, exclude_boundary_nodes=.false.)
+      call f90_expect_eq(size(mask), ndx, 'explicit false must retain the full cell domain')
+      call construct_mask(mask, UNC_LOC_U, SPATIAL_LOCATION_ALL, exclude_boundary_nodes=.true.)
+      call f90_expect_eq(size(mask), lnx, 'boundary-cell exclusion must not change link masks')
+      call f90_expect_true(all(mask == 1), 'link selection must be unchanged')
+
+      kcs = [0, 1, 1, 1]
+      lnx = 0
+      lnx1d = 0
+      call construct_mask(mask, UNC_LOC_S, SPATIAL_LOCATION_ALL, target_mask_file='', ierr=ierr, exclude_boundary_nodes=.true.)
+      call f90_expect_eq(ierr, 0, 'empty polygon selection should succeed')
+      call f90_expect_true(all(mask == [0, 1, 1]), 'default cell activation must respect the internal domain')
+      call teardown_minimal_grid()
+   end subroutine test_construct_mask_boundary_domain
+
+   !$gtest
+   subroutine test_static_vegetation_masks_exclude_boundary_cells() bind(C)
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_vegetation, only: stemdiam, stemdens, stemheight
+      use m_polygon, only: m_polygon_destructor
+      type(t_abort_threshold_guard) :: abort_threshold
+
+      character(len=*), parameter :: EXT_FILE = 'test_static_vegetation_masks.ext'
+      character(len=*), parameter :: POL_FILE = 'test_static_vegetation_masks.pol'
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      integer :: i, ierr
+
+      call setup_minimal_grid_with_points(4)
+      ndxi = 2
+      xz = [0.0_dp, 2.0_dp, 0.0_dp, 2.0_dp]
+      call realloc(stemdiam, ndx, keepExisting=.false., fill=7.0_dp)
+      call realloc(stemdens, ndx, keepExisting=.false., fill=7.0_dp)
+      call realloc(stemheight, ndx, keepExisting=.false., fill=7.0_dp)
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      call abort_threshold%set(LEVEL_FATAL)
+      call initialize_ec_module()
+      ierr = m_polygon_destructor()
+      call create_file(POL_FILE, ['vegetation', '5 2', '-1.0 -1.0', '1.0 -1.0', '1.0 1.0', '-1.0 1.0', '-1.0 -1.0'])
+      call create_file(EXT_FILE, [ &
+                       '[Spatial]', &
+                       'quantity = stemdiameter', &
+                       'targetMaskFile = '//POL_FILE, &
+                       'interpolationMethod = constant', &
+                       'operand = override', &
+                       'dataValue = 0.0035', &
+                       '[Spatial]', &
+                       'quantity = stemdensity', &
+                       'targetMaskFile = '//POL_FILE, &
+                       'interpolationMethod = constant', &
+                       'operand = override', &
+                       'dataValue = 11.11', &
+                       '[Spatial]', &
+                       'quantity = stemheight', &
+                       'targetMaskFile = '//POL_FILE, &
+                       'interpolationMethod = constant', &
+                       'operand = override', &
+                       'dataValue = 0.36'])
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      do i = 1, 3
+         block_ptr => bnd_ptr%child_nodes(i)%node_ptr
+         success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+         call f90_expect_true(success, 'static vegetation masks must match the internal target coordinates')
+      end do
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_near(stemdiam(1), 0.0035_dp, 1.0e-12_dp, 'selected internal cell should receive its stem diameter')
+      call f90_expect_near(stemdens(1), 11.11_dp, 1.0e-12_dp, 'selected internal cell should receive its stem density')
+      call f90_expect_near(stemheight(1), 0.36_dp, 1.0e-12_dp, 'selected internal cell should receive its stem height')
+      call f90_expect_true(all(stemdiam(2:ndx) == 7.0_dp), 'unselected and boundary stem diameters must remain untouched')
+      call f90_expect_true(all(stemdens(2:ndx) == 7.0_dp), 'unselected and boundary stem densities must remain untouched')
+      call f90_expect_true(all(stemheight(2:ndx) == 7.0_dp), 'unselected and boundary stem heights must remain untouched')
+      ierr = m_polygon_destructor()
+      call teardown_minimal_grid()
+   end subroutine test_static_vegetation_masks_exclude_boundary_cells
+
+   !$gtest
+   subroutine test_single_quantity_multiple_target_masks() bind(C)
+      use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
+      use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, item_airpressure
+
+      character(len=*), parameter :: EXT_FILE = 'test_connection_masks.ext'
+      character(len=*), parameter :: BC_A = 'test_connection_mask_a.bc', BC_B = 'test_connection_mask_b.bc'
+      character(len=*), parameter :: POL_A = 'test_connection_mask_a.pol', POL_B = 'test_connection_mask_b.pol'
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      integer :: i
+      real(dp), dimension(4) :: expected
+      type(t_abort_threshold_guard) :: abort_threshold
+
+      call setup_minimal_grid_with_points(4)
+      ndxi = 2
+      xz = [0.0_dp, 1.0_dp, 2.0_dp, 3.0_dp]
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      call abort_threshold%set(LEVEL_FATAL)
+      call initialize_ec_module()
+      call create_scalar_meteo_bc(BC_A, 'airpressure', 10.0_dp)
+      call create_scalar_meteo_bc(BC_B, 'airpressure', 20.0_dp)
+      call create_file(POL_A, ['mask_a', '5 2', '-0.5 -1.0', '1.5 -1.0', '1.5 1.0', '-0.5 1.0', '-0.5 -1.0'])
+      call create_file(POL_B, ['mask_b', '5 2', '0.5 -1.0', '2.5 -1.0', '2.5 1.0', '0.5 1.0', '0.5 -1.0'])
+      call create_file(EXT_FILE, [ &
+                       '[Spatial]', &
+                       'quantity = airpressure', &
+                       'forcingFile = '//BC_A, &
+                       'forcingFileType = bcascii', &
+                       'targetMaskFile = '//POL_A, &
+                       'operand = override', &
+                       '[Spatial]', &
+                       'quantity = airpressure', &
+                       'forcingFile = '//BC_B, &
+                       'forcingFileType = bcascii', &
+                       'targetMaskFile = '//POL_B, &
+                       'operand = override'])
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      do i = 1, 2
+         block_ptr => bnd_ptr%child_nodes(i)%node_ptr
+         success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+         call f90_expect_true(success, 'masked spatial block should initialize')
+      end do
+      call tree_destroy(bnd_ptr)
+
+      air_pressure = 0.0_dp
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_airpressure, irefdate, tzone, tunit, 0.0_dp)
+      call f90_expect_true(success, 'masked contributions should update at t=0')
+      expected = [10.0_dp, 20.0_dp, 20.0_dp, 0.0_dp]
+      do i = 1, 4
+         call f90_expect_near(air_pressure(i), expected(i), 1.0e-6_dp, 'each block must retain its own target mask')
+      end do
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_airpressure, irefdate, tzone, tunit, 50.0_dp)
+      call f90_expect_true(success, 'masked contributions should update at t=50')
+      expected = [11.0_dp, 21.0_dp, 21.0_dp, 0.0_dp]
+      do i = 1, 4
+         call f90_expect_near(air_pressure(i), expected(i), 1.0e-6_dp, 'connection masks must survive subsequent updates')
+      end do
+
+      call teardown_minimal_grid()
+   end subroutine test_single_quantity_multiple_target_masks
+
    subroutine run_scalar_meteo_case(quantity, forcing_file, forcing_file_type, ext_file, expected_value)
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
       use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, initialize_ec_module
       use m_ec_parameters, only: ec_undef_int
 
+      type(t_abort_threshold_guard) :: abort_threshold
       character(len=*), intent(in) :: quantity
       character(len=*), intent(in) :: forcing_file
       character(len=*), intent(in) :: forcing_file_type
@@ -3357,7 +3573,7 @@ contains
       irefdate = 20000101
       tzone = 0.0_dp
       tstart_user = 0.0_dp
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call parse_spatial_block(ext_file, bnd_ptr, block_ptr)
       success = init_spatial_fields(block_ptr, BASE_DIR, ext_file, 'Spatial')
       call tree_destroy(bnd_ptr)

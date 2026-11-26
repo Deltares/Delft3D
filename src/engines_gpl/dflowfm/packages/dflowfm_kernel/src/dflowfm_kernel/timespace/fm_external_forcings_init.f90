@@ -1275,7 +1275,8 @@ contains
 
          call get_location_target_properties(target_location_type, target_num_points, target_x, target_y, is_static_field, ierr)
 
-         call construct_mask(mask, target_location_type, parse_spatial_location_type(trim(input%location_type)), target_mask_file, invert_mask, ierr)
+         call construct_mask(mask, target_location_type, parse_spatial_location_type(trim(input%location_type)), target_mask_file, invert_mask, ierr, &
+                             exclude_boundary_nodes=is_static_field)
 
          call init_spatial_extrapolation(input%max_search_radius, jsferic)
 

@@ -21,10 +21,10 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module test_mdu_file_read_write
+   use m_message_helpers, only: t_abort_threshold_guard
    use precision
    use assertions_gtest
    use messagehandling, only: LEVEL_FATAL
-   use unstruc_messages, only: threshold_abort
    implicit none
 
 contains
@@ -39,6 +39,7 @@ contains
       use ifport, only: CHANGEDIRQQ
       use m_resetfullflowmodel, only: resetFullFlowModel
 
+      type(t_abort_threshold_guard) :: abort_threshold
       character(len=1024) :: tm_md_obsfile
       character(len=1024) :: tm_md_crsfile
       character(len=256) :: output_file
@@ -54,7 +55,7 @@ contains
       if (.not. f90_assert_true(CHANGEDIRQQ('MDUversion'), 'Cannot enter MDUversion')) then
          return
       end if
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call readMDUFile('stretch_example.mdu', ierr)
       if (.not. f90_assert_eq(ierr, DFM_NOERR, 'Error when reading MDU file.')) then
          call f90_expect_true(CHANGEDIRQQ('..'), 'Cannot restore working directory')
@@ -92,6 +93,7 @@ contains
       use ifport, only: CHANGEDIRQQ
       use m_resetfullflowmodel, only: resetFullFlowModel
 
+      type(t_abort_threshold_guard) :: abort_threshold
       integer :: ierr
 
       jampi = 0
@@ -102,7 +104,7 @@ contains
          return
       end if
       ! read MDU
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call readMDUFile('old_model.mdu', ierr)
       call f90_expect_true(CHANGEDIRQQ('..'), 'Cannot restore working directory')
 
@@ -118,6 +120,7 @@ contains
       use ifport, only: CHANGEDIRQQ
       use m_resetfullflowmodel, only: resetFullFlowModel
 
+      type(t_abort_threshold_guard) :: abort_threshold
       integer :: ierr
 
       jampi = 0
@@ -128,7 +131,7 @@ contains
          return
       end if
       ! read MDU
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call readMDUFile('new_general.mdu', ierr)
       call f90_expect_true(CHANGEDIRQQ(".."), 'Cannot restore working directory')
 
@@ -146,6 +149,7 @@ contains
       use m_flow, only: laycof
       use precision, only: dp
 
+      type(t_abort_threshold_guard) :: abort_threshold
       integer :: ierr
       real(kind=hp) :: sumlaycof
 
@@ -156,7 +160,7 @@ contains
       if (.not. f90_assert_true(CHANGEDIRQQ("MDUversion"), 'Cannot enter MDUversion')) then
          return
       end if
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call readMDUFile('stretch_example.mdu', ierr)
       call f90_expect_true(CHANGEDIRQQ(".."), 'Cannot restore working directory')
 
