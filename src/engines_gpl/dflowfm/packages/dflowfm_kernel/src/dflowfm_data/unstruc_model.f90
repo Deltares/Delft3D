@@ -2714,7 +2714,7 @@ contains
             )
          if (ierror /= DFM_NOERR) then
             istat = ierror
-         end if
+         end if                              
       end if
 
       ! calculate derived coefficients taking into account data from MDU file

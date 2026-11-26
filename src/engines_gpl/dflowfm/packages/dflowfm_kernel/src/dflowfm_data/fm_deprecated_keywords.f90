@@ -40,6 +40,7 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'maxItPresDens', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'filter', DEPRECATED, 'It is no longer supported, the provided value is ignored.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'sobekdfm_relax', DEPRECATED, 'It is no longer supported, the provided value is ignored. Use [numerics] lateral_fixedweir_relax instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Jbasqbnddownwindhs', DEPRECATED, 'Implementation, and hence results (3D), has changed. After removing, the implementation will be that of jbasqbnddownwindhs = 1 (produces better results in vicinity of discharge boundary)')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'Jadelvappos', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'SecchiDepth2', DEPRECATED, 'Use SecchiDepthNonPenetrative instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'SecchiDepth2Fraction', DEPRECATED, 'Use SecchiDepthNonPenetrativeFraction instead.')
