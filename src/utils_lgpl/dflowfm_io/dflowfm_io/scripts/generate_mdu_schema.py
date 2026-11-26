@@ -48,7 +48,7 @@ namespace dflowfm_io
     inline MduSchema BuildMduSchema()
     {{
         return MduSchema {{
-            "{description}",
+            {description},
             {{
 {body}
             }}
@@ -57,6 +57,19 @@ namespace dflowfm_io
 
 }} // namespace dflowfm_io
 """
+
+
+def cpp_string_literal(value):
+    """Encode text as a C++ string literal, preserving its contents."""
+    escapes = {
+        "\\": "\\\\",
+        '"': '\\"',
+        "\n": "\\n",
+        "\r": "\\r",
+        "\t": "\\t",
+    }
+    escaped = "".join(escapes.get(char, char) for char in str(value))
+    return f'"{escaped}"'
 
 
 def default_value_str(value):
@@ -89,9 +102,9 @@ def render_status(status, indent):
 
     status_lines = [status_field(".type", f"StatusType::{status_type}")]
     if comment:
-        status_lines.append(status_field(".comment", f'"{comment}"'))
+        status_lines.append(status_field(".comment", cpp_string_literal(comment)))
     if since_release:
-        status_lines.append(status_field(".since", f'"{since_release}"'))
+        status_lines.append(status_field(".since", cpp_string_literal(since_release)))
     body = ",\n".join(status_lines)
     return f"{{\n{body}\n{' ' * indent}}}"
 
@@ -105,7 +118,7 @@ def render_enum_value(value, status, indent):
     def field(name, val):
         return f"{inner}{name.ljust(width)} = {val}"
 
-    field_blocks = [field(".value", f'"{value}"')]
+    field_blocks = [field(".value", cpp_string_literal(value))]
     if status:
         field_blocks.append(field(".status", render_status(status, indent + 4)))
 
@@ -127,11 +140,11 @@ def render_property(prop, indent, default_float_format):
     def field(name, val):
         return f"{inner}{name.ljust(width)} = {val}"
 
-    field_blocks = [field(".key", f'"{prop["key"]}"')]
+    field_blocks = [field(".key", cpp_string_literal(prop["key"]))]
     field_blocks.append(field(".value_type", f"ValueType::{value_type}"))
     if "default_value" in prop:
         dvs = default_value_str(prop["default_value"])
-        field_blocks.append(field(".default_value", f'"{dvs}"'))
+        field_blocks.append(field(".default_value", cpp_string_literal(dvs)))
 
     format_key = prop.get("format")
     if format_key is None and prop["value_type"] in ("float", "list[float]"):
@@ -140,7 +153,7 @@ def render_property(prop, indent, default_float_format):
         format_type = FORMAT_TYPE_MAP[format_key]
         field_blocks.append(field(".format", f"FormatType::{format_type}"))
         
-    field_blocks.append(field(".description", f'"{prop.get("description", "")}"'))
+    field_blocks.append(field(".description", cpp_string_literal(prop.get("description", ""))))
 
     if required:
         field_blocks.append(field(".required", "true"))
@@ -172,10 +185,10 @@ def render_section(section, indent, default_float_format):
     def field(name, value):
         return f"{inner}{name.ljust(width)} = {value}"
 
-    field_blocks = [field(".name", f'"{section["name"]}"')]
+    field_blocks = [field(".name", cpp_string_literal(section["name"]))]
     if required:
         field_blocks.append(field(".required", "true"))
-    field_blocks.append(field(".description", f'"{section.get("description", "")}"'))
+    field_blocks.append(field(".description", cpp_string_literal(section.get("description", ""))))
     if status:
         field_blocks.append(field(".status", render_status(status, indent + 4)))
 
@@ -193,7 +206,7 @@ def generate_schema_file(spec):
     default_float_format = spec.get("default_float_format", "general")
     section_blocks = [render_section(s, 16, default_float_format) for s in sections]
 
-    description = spec.get("description", "")
+    description = cpp_string_literal(spec.get("description", ""))
     body = ",\n".join(section_blocks)
 
     return CPP_TEMPLATE.format(description=description, body=body)
