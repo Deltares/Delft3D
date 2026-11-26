@@ -392,6 +392,7 @@
           </arguments>
         </program>
       </programs>
+
       <checks>
         <file name="current/output/channel_map.nc" type="netCDF">
           <parameters>
