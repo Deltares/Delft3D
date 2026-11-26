@@ -1585,6 +1585,7 @@ contains
 
    subroutine averaging2(ndim, ns, xs, ys, zss, ipsam, xc, yc, zc, grid_width, xx, yy, n6, nnn, jakdtree, &
                          dmiss, jsferic, jasfer3D, jins, npl, xpl, ypl, zpl, errorInfo, kcc) ! Werkt alleen voor cell regions, die zitten in xx en yy
+      use m_missing, only: polygon_inside_mode => jins
       use stdlib_sorting, only: radix_sort
       implicit none
       integer, intent(in) :: ndim !< sample vector dimension
@@ -1610,6 +1611,8 @@ contains
       real(kind=hp), allocatable :: xh(:), yh(:)
       real(kind=hp), dimension(ndim) :: hparr, rhp
       real(kind=hp) :: xlow, xhih, ylow, yhih, rmin2, wall, dis2, weight, xdum
+      real(kind=hp) :: x_margin
+      logical :: reject_outside_x_bounds
       integer :: n, k, nn, modin, nlowx, nhihx, numxy, ifirs, inhul
       integer :: ivar
       integer :: k_, k_start, k_end
@@ -1740,7 +1743,15 @@ contains
 
          hparr = 0
          numxy = 0
-         rmin2 = dbdistance(XHIH, yhih, xlow, ylow, jsferic, jasfer3D, dmiss)
+         if (iav == AVGTP_NEARESTNB) then
+            rmin2 = dbdistance(xhih, yhih, xlow, ylow, jsferic, jasfer3D, dmiss)
+         end if
+         ! pinpok uses the module's mode and treats polygons with at most two vertices as inside.
+         reject_outside_x_bounds = jsferic == 0 .and. polygon_inside_mode /= 0 .and. nn > 2
+         if (reject_outside_x_bounds) then
+            ! Allow for pinpok_raycast's 100-epsilon edge tolerance and intersection rounding.
+            x_margin = 128.0_hp * epsilon(xlow) * max(1.0_hp, abs(xlow), abs(xhih))
+         end if
          ifirs = 0
          wall = 0
          nin = 0
@@ -1756,6 +1767,11 @@ contains
             end do
 
             if (ys(k) >= ylow .and. ys(k) <= yhih) then
+               if (reject_outside_x_bounds) then
+                  if (xs(k) < xlow - x_margin .or. xs(k) > xhih + x_margin) then
+                     cycle sam
+                  end if
+               end if
                call pinpok(xs(k), ys(k), nn, xh, yh, inhul, jins, dmiss)
                if (inhul == 1) then
                   do ivar = 1, ndim
