@@ -1431,7 +1431,7 @@ contains
       end if
 
       call prop_get(md_ptr, 'physics', 'Nudgetimeuni', Tnudgeuni)
-      call prop_get(md_ptr, 'physics', 'IniWithNudge', jainiwithnudge)
+      call prop_get(md_ptr, 'physics', 'iniWithNudge', jainiwithnudge)
 
       call prop_get(md_ptr, 'physics', 'Jadelvappos', only_positive_evaporation_fluxes)
       if (only_positive_evaporation_fluxes /= 0) then
@@ -3570,7 +3570,7 @@ contains
 
          if (writeall .or. janudge > 0 .or. jainiwithnudge > 0) then
             call prop_set(prop_ptr, 'physics', 'Nudgetimeuni', Tnudgeuni, 'Uniform nudge relaxation time')
-            call prop_set(prop_ptr, 'physics', 'IniWithNudge', jainiwithnudge, 'Initialize salinity and temperature with nudge variables')
+            call prop_set(prop_ptr, 'physics', 'iniWithNudge', jainiwithnudge, 'Initialize salinity and temperature with nudge variables')
          end if
 
       end if
