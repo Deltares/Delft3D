@@ -8,11 +8,21 @@
 #include <functional>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 #define ENSURE_ARGUMENT_NOT_NULL(arg) \
     do { \
         if (!(arg)) \
+        { \
+            last_error = std::string(__func__) + ": invalid argument '" #arg "' is null"; \
+            return DFLOWFM_IO_RESULT_ERROR; \
+        } \
+    } while (0)
+
+#define ENSURE_ARRAY_ARGUMENT_NOT_NULL(arg, size) \
+    do { \
+        if ((size) != 0 && !(arg)) \
         { \
             last_error = std::string(__func__) + ": invalid argument '" #arg "' is null"; \
             return DFLOWFM_IO_RESULT_ERROR; \
@@ -425,12 +435,13 @@ dflowfm_io_result_t mdu_set_string_list(mdu_handle_t* handle, const char* key, c
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(key);
-    ENSURE_ARGUMENT_NOT_NULL(string_list);
+    ENSURE_ARRAY_ARGUMENT_NOT_NULL(string_list, size);
     ENSURE_ARRAY_ELEMENTS_NOT_NULL(string_list, size);
 
     return exceptionToResult([&]()
     {
-        handle->mduDocument.SetValue(key, std::vector<std::string>(string_list, string_list + size));
+        auto values = size == 0 ? std::vector<std::string>{} : std::vector<std::string>(string_list, string_list + size);
+        handle->mduDocument.SetValue(key, std::move(values));
     });
 }
 
@@ -438,7 +449,7 @@ dflowfm_io_result_t mdu_set_path_list(mdu_handle_t* handle, const char* key, con
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(key);
-    ENSURE_ARGUMENT_NOT_NULL(path_list);
+    ENSURE_ARRAY_ARGUMENT_NOT_NULL(path_list, size);
     ENSURE_ARRAY_ELEMENTS_NOT_NULL(path_list, size);
 
     return exceptionToResult([&]()
@@ -453,11 +464,12 @@ dflowfm_io_result_t mdu_set_double_list(mdu_handle_t* handle, const char* key, c
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(key);
-    ENSURE_ARGUMENT_NOT_NULL(double_list);
+    ENSURE_ARRAY_ARGUMENT_NOT_NULL(double_list, size);
 
     return exceptionToResult([&]()
     {
-        handle->mduDocument.SetValue(key, std::vector<double>(double_list, double_list + size));
+        auto values = size == 0 ? std::vector<double>{} : std::vector<double>(double_list, double_list + size);
+        handle->mduDocument.SetValue(key, std::move(values));
     });
 }
 
