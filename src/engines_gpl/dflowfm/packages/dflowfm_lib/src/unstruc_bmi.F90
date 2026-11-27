@@ -1031,26 +1031,28 @@ contains
          ! Compounds:
       case ("pumps")
          shape(1) = npumpsg
-         shape(2) = 1
+         shape(2) = 5
          return
       case ("weirs")
          shape(1) = nweirgen + network%sts%numWeirs
-         shape(2) = 2
+         shape(2) = 10
          return
       case ("orifices")
          shape(1) = network%sts%numOrifices
-         shape(2) = 2
+         shape(2) = 11
          return
       case ("gates")
          shape(1) = ngategen
-         shape(2) = 5
+         shape(2) = 9
          return
       case ("generalstructures")
          shape(1) = ngenstru
-         shape(2) = 5
+         shape(2) = 14
+         return
       case ("culverts")
          shape(1) = network%sts%numCulverts
-         shape(2) = 1
+         shape(2) = 10
+         return
       case ("sourcesinks")
          shape(1) = source_sinks%num_total
          shape(2) = 3
@@ -2025,7 +2027,12 @@ contains
       use m_monitoring_crosssections
       use m_strucs
       use m_longculverts_data, only: longculverts
-      use m_structures, only: valdambreak
+      use m_structures, only: valdambreak, valpump, valweirgen, valorifgen, valgategen, valgenstru, valculvert
+      use m_structures_indices, only: IVAL_DIS, IVAL_VEL, IVAL_AREA, IVAL_S1UP, IVAL_S1DN, IVAL_HEAD, &
+                                      IVAL_OPENH, IVAL_FORCEDIF, IVAL_S1ONCREST, IVAL_CL_OPENH, &
+                                      IVAL_CL_CRESTL, IVAL_CL_EDGEL, IVAL_GATE_FLOWH
+      use m_flowtimes, only: ti_his
+      use m_flowparameters, only: his_write_settings
       use m_1d_structures
       use m_wind
       use unstruc_channel_flow, only: network
@@ -2040,6 +2047,8 @@ contains
 
       integer :: item_index
       logical :: is_in_network
+      real(kind=dp), dimension(:, :), pointer :: history_values
+      integer :: history_row, history_column
 
       integer :: iconst
       integer :: itrac
@@ -2054,6 +2063,10 @@ contains
       item_name = char_array_to_string(c_item_name)
       field_name_original = char_array_to_string(c_field_name)
       field_name = str_tolower(field_name_original)
+      x = c_null_ptr
+      history_values => null()
+      history_row = 0
+      history_column = 0
 
       select case (var_name)
          ! PUMPS
@@ -2070,7 +2083,29 @@ contains
                x = c_loc(qpump(item_index))
             end if
             return
+         case ("discharge")
+            history_row = IVAL_DIS
+         case ("water_level_up")
+            history_row = IVAL_S1UP
+         case ("water_level_down")
+            history_row = IVAL_S1DN
+         case ("head_difference")
+            history_row = IVAL_HEAD
+         case default
+            return
          end select
+         if (ti_his > 0.0_dp .and. his_write_settings%pump > 0 .and. allocated(valpump)) then
+            history_values => valpump
+            if (is_in_network) then
+               if (allocated(pumpsWithLevels)) then
+                  if (npumpsg > 0 .and. npumpsg <= size(pumpsWithLevels)) then
+                     history_column = findloc(pumpsWithLevels(1:npumpsg), item_index, dim=1)
+                  end if
+               end if
+            else
+               history_column = item_index
+            end if
+         end if
 
          ! WEIRS
       case ("weirs")
@@ -2090,7 +2125,42 @@ contains
          case ("lat_contr_coeff")
             ! TODO: RTC: AvD: get this from weir params
             return
+         case ("discharge")
+            history_row = IVAL_DIS
+         case ("velocity")
+            history_row = IVAL_VEL
+         case ("flow_area")
+            history_row = IVAL_AREA
+         case ("water_level_up")
+            history_row = IVAL_S1UP
+         case ("water_level_down")
+            history_row = IVAL_S1DN
+         case ("head_difference")
+            history_row = IVAL_HEAD
+         case ("force_difference")
+            history_row = IVAL_FORCEDIF
+         case ("water_level_at_crest")
+            history_row = IVAL_S1ONCREST
+         case default
+            return
          end select
+         if (ti_his > 0.0_dp .and. his_write_settings%weir > 0 .and. allocated(valweirgen)) then
+            history_values => valweirgen
+            if (is_in_network) then
+               if (associated(network%sts%weirIndices)) then
+                  if (network%sts%numWeirs > 0 .and. network%sts%numWeirs <= size(network%sts%weirIndices)) then
+                     history_column = findloc(network%sts%weirIndices(1:network%sts%numWeirs), item_index, dim=1)
+                  end if
+               end if
+            else if (allocated(weir2cgen)) then
+               if (nweirgen > 0 .and. nweirgen <= size(weir2cgen)) then
+                  history_column = findloc(weir2cgen(1:nweirgen), item_index, dim=1)
+               end if
+               if (field_name == "force_difference" .or. field_name == "water_level_at_crest") then
+                  history_column = 0
+               end if
+            end if
+         end if
 
          ! ORIFICES
       case ("orifices")
@@ -2110,7 +2180,36 @@ contains
                x = get_crest_level_c_loc(network%sts%struct(item_index))
             end if
             return
+         case ("discharge")
+            history_row = IVAL_DIS
+         case ("velocity")
+            history_row = IVAL_VEL
+         case ("flow_area")
+            history_row = IVAL_AREA
+         case ("water_level_up")
+            history_row = IVAL_S1UP
+         case ("water_level_down")
+            history_row = IVAL_S1DN
+         case ("head_difference")
+            history_row = IVAL_HEAD
+         case ("opening_height")
+            history_row = IVAL_OPENH
+         case ("force_difference")
+            history_row = IVAL_FORCEDIF
+         case ("water_level_at_crest")
+            history_row = IVAL_S1ONCREST
+         case default
+            return
          end select
+         if (ti_his > 0.0_dp .and. his_write_settings%orifice > 0 .and. &
+             allocated(valorifgen) .and. is_in_network) then
+            history_values => valorifgen
+            if (associated(network%sts%orificeIndices)) then
+               if (network%sts%numOrifices > 0 .and. network%sts%numOrifices <= size(network%sts%orificeIndices)) then
+                  history_column = findloc(network%sts%orificeIndices(1:network%sts%numOrifices), item_index, dim=1)
+               end if
+            end if
+         end if
 
          ! GATES
       case ("gates")
@@ -2150,7 +2249,31 @@ contains
          case ("gateopeninghorizontaldirection")
             ! TODO: RTC: AvD: get this from gate/genstru params
             return
+         case ("discharge")
+            history_row = IVAL_DIS
+         case ("water_level_up")
+            history_row = IVAL_S1UP
+         case ("water_level_down")
+            history_row = IVAL_S1DN
+         case ("opening_height")
+            history_row = IVAL_GATE_FLOWH
+         case default
+            return
          end select
+         if (ti_his > 0.0_dp .and. his_write_settings%gate > 0 .and. allocated(valgategen)) then
+            history_values => valgategen
+            if (is_in_network) then
+               if (associated(network%sts%gateIndices)) then
+                  if (network%sts%numGates > 0 .and. network%sts%numGates <= size(network%sts%gateIndices)) then
+                     history_column = findloc(network%sts%gateIndices(1:network%sts%numGates), item_index, dim=1)
+                  end if
+               end if
+            else if (allocated(gate2cgen)) then
+               if (ngategen > 0 .and. ngategen <= size(gate2cgen)) then
+                  history_column = findloc(gate2cgen(1:ngategen), item_index, dim=1)
+               end if
+            end if
+         end if
 
          ! GENERALSTRUCTURES
       case ("generalstructures")
@@ -2191,7 +2314,47 @@ contains
          case ("gateopeninghorizontaldirection")
             ! TODO: RTC: AvD: get this from gate/genstru params
             return
+         case ("discharge")
+            history_row = IVAL_DIS
+         case ("velocity")
+            history_row = IVAL_VEL
+         case ("flow_area")
+            history_row = IVAL_AREA
+         case ("water_level_up")
+            history_row = IVAL_S1UP
+         case ("water_level_down")
+            history_row = IVAL_S1DN
+         case ("head_difference")
+            history_row = IVAL_HEAD
+         case ("opening_height")
+            history_row = IVAL_OPENH
+         case ("force_difference")
+            history_row = IVAL_FORCEDIF
+         case ("water_level_at_crest")
+            history_row = IVAL_S1ONCREST
+         case default
+            return
          end select
+         if (ti_his > 0.0_dp .and. his_write_settings%cgen > 0 .and. allocated(valgenstru)) then
+            history_values => valgenstru
+            if (is_in_network) then
+               if (associated(network%sts%generalStructureIndices)) then
+                  if (network%sts%numGeneralStructures > 0 .and. &
+                      network%sts%numGeneralStructures <= size(network%sts%generalStructureIndices)) then
+                     history_column = findloc(network%sts%generalStructureIndices(1:network%sts%numGeneralStructures), &
+                                              item_index, dim=1)
+                  end if
+               end if
+            else if (allocated(genstru2cgen)) then
+               if (ngenstru > 0 .and. ngenstru <= size(genstru2cgen)) then
+                  history_column = findloc(genstru2cgen(1:ngenstru), item_index, dim=1)
+               end if
+               if (field_name == "opening_height" .or. field_name == "force_difference" .or. &
+                   field_name == "water_level_at_crest") then
+                  history_column = 0
+               end if
+            end if
+         end if
 
          ! CULVERTS
       case ("culverts")
@@ -2206,7 +2369,36 @@ contains
                x = get_valve_opening_height_c_loc(network%sts%struct(item_index))
             end if
             return
+         case ("discharge")
+            history_row = IVAL_DIS
+         case ("velocity")
+            history_row = IVAL_VEL
+         case ("flow_area")
+            history_row = IVAL_AREA
+         case ("water_level_up")
+            history_row = IVAL_S1UP
+         case ("water_level_down")
+            history_row = IVAL_S1DN
+         case ("head_difference")
+            history_row = IVAL_HEAD
+         case ("opening_height")
+            history_row = IVAL_CL_OPENH
+         case ("crest_level")
+            history_row = IVAL_CL_CRESTL
+         case ("gate_lower_edge_level")
+            history_row = IVAL_CL_EDGEL
+         case default
+            return
          end select
+         if (ti_his > 0.0_dp .and. his_write_settings%culvert > 0 .and. &
+             allocated(valculvert) .and. is_in_network) then
+            history_values => valculvert
+            if (associated(network%sts%culvertIndices)) then
+               if (network%sts%numCulverts > 0 .and. network%sts%numCulverts <= size(network%sts%culvertIndices)) then
+                  history_column = findloc(network%sts%culvertIndices(1:network%sts%numCulverts), item_index, dim=1)
+               end if
+            end if
+         end if
 
          ! LONGCULVERTS
       case ("longculverts")
@@ -2440,6 +2632,18 @@ contains
          end select
       end select ! var_name
 
+      if (history_row > 0) then
+         if (associated(history_values)) then
+            if (history_column > 0 .and. history_column <= size(history_values, 2) .and. &
+                history_row <= size(history_values, 1)) then
+               x = c_loc(history_values(history_row, history_column))
+               return
+            end if
+         end if
+         call mess(LEVEL_WARN, 'BMI '//trim(var_name)//'/'//trim(item_name)//'/'//trim(field_name)// &
+                   ': structure history value unavailable; check the structure type and history-output settings.')
+      end if
+
       ! check automatically generated interface
       ! TODO: AvD: include "bmi_get_compound_field.inc"
 
@@ -2563,7 +2767,7 @@ contains
       use m_transport, only: NUMCONST, ISALT, ITEMP
       use m_laterals, only: qplat, incoming_lat_concentration, num_layers
       use m_source_sink, only: source_sink_all_discharges
-      use string_module, only: str_token
+      use string_module, only: str_token, str_tolower
 
       character(kind=c_char), intent(in) :: c_var_name(*) !< Name of the set variable, e.g., 'pumps'
       character(kind=c_char), intent(in) :: c_item_name(*) !< Name of a single item's index/location, e.g., 'Pump01'
@@ -2580,6 +2784,7 @@ contains
       integer :: iostat
       integer :: i_layer
       integer :: constituent_index
+      logical :: read_only_structure_output
 
       ! The fortran name of the attribute name
       character(len=MAXSTRLEN) :: var_name
@@ -2592,6 +2797,35 @@ contains
       var_name = char_array_to_string(c_var_name)
       item_name = char_array_to_string(c_item_name)
       field_name = char_array_to_string(c_field_name)
+      read_only_structure_output = .false.
+      select case (str_tolower(var_name))
+      case ("pumps")
+         select case (str_tolower(field_name))
+         case ("discharge", "water_level_up", "water_level_down", "head_difference")
+            read_only_structure_output = .true.
+         end select
+      case ("gates")
+         select case (str_tolower(field_name))
+         case ("discharge", "water_level_up", "water_level_down", "opening_height")
+            read_only_structure_output = .true.
+         end select
+      case ("weirs", "orifices", "generalstructures", "culverts")
+         select case (str_tolower(field_name))
+         case ("discharge", "velocity", "flow_area", "water_level_up", "water_level_down", "head_difference")
+            read_only_structure_output = .true.
+         case ("opening_height")
+            read_only_structure_output = str_tolower(var_name) /= "weirs"
+         case ("force_difference", "water_level_at_crest")
+            read_only_structure_output = str_tolower(var_name) /= "culverts"
+         case ("crest_level", "gate_lower_edge_level")
+            read_only_structure_output = str_tolower(var_name) == "culverts"
+         end select
+      end select
+      if (read_only_structure_output) then
+         call mess(LEVEL_ERROR, 'set_compound_field: structure output '''//trim(var_name)//'/'//trim(item_name)//'/'// &
+                   trim(field_name)//''' is read-only.')
+         return
+      end if
       ! Debugging printing only: guess that it's a scalar double value, for now.
       call c_f_pointer(xptr, x_0d_double_ptr)
       write (msgbuf, '(6a,f20.6,a)', iostat=iostat) 'set_compound_field for ', trim(var_name), '(', trim(item_name), ')::', trim(field_name), ', will be set to value = ', x_0d_double_ptr, '.'
@@ -2868,6 +3102,7 @@ contains
       var_name = char_array_to_string(c_var_name)
 
       field_index = c_field_index
+      field_name = ''
 
       select case (var_name)
          ! PUMPS
@@ -2875,6 +3110,14 @@ contains
          select case (field_index)
          case (1)
             field_name = "capacity"
+         case (2)
+            field_name = "discharge"
+         case (3)
+            field_name = "water_level_up"
+         case (4)
+            field_name = "water_level_down"
+         case (5)
+            field_name = "head_difference"
          end select
          ! WEIRS
       case ("weirs")
@@ -2883,6 +3126,22 @@ contains
             field_name = "crestLevel"
          case (2)
             field_name = "lat_contr_coeff"
+         case (3)
+            field_name = "discharge"
+         case (4)
+            field_name = "velocity"
+         case (5)
+            field_name = "flow_area"
+         case (6)
+            field_name = "water_level_up"
+         case (7)
+            field_name = "water_level_down"
+         case (8)
+            field_name = "head_difference"
+         case (9)
+            field_name = "force_difference"
+         case (10)
+            field_name = "water_level_at_crest"
          end select
          ! ORIFICES
       case ("orifices")
@@ -2891,6 +3150,24 @@ contains
             field_name = "gateLowerEdgeLevel"
          case (2)
             field_name = "CrestLevel"
+         case (3)
+            field_name = "discharge"
+         case (4)
+            field_name = "velocity"
+         case (5)
+            field_name = "flow_area"
+         case (6)
+            field_name = "water_level_up"
+         case (7)
+            field_name = "water_level_down"
+         case (8)
+            field_name = "head_difference"
+         case (9)
+            field_name = "opening_height"
+         case (10)
+            field_name = "force_difference"
+         case (11)
+            field_name = "water_level_at_crest"
          end select
          ! GATES
       case ("gates")
@@ -2905,6 +3182,14 @@ contains
             field_name = "GateOpeningWidth"
          case (5)
             field_name = "GateOpeningHorizontalDirection"
+         case (6)
+            field_name = "discharge"
+         case (7)
+            field_name = "water_level_up"
+         case (8)
+            field_name = "water_level_down"
+         case (9)
+            field_name = "opening_height"
          end select
 
          ! GENERALSTUCTURES
@@ -2920,6 +3205,24 @@ contains
             field_name = "gateOpeningWidth"
          case (5)
             field_name = "gateOpeningHorizontalDirection"
+         case (6)
+            field_name = "discharge"
+         case (7)
+            field_name = "velocity"
+         case (8)
+            field_name = "flow_area"
+         case (9)
+            field_name = "water_level_up"
+         case (10)
+            field_name = "water_level_down"
+         case (11)
+            field_name = "head_difference"
+         case (12)
+            field_name = "opening_height"
+         case (13)
+            field_name = "force_difference"
+         case (14)
+            field_name = "water_level_at_crest"
          end select
 
          ! CULVERTS
@@ -2927,6 +3230,24 @@ contains
          select case (field_index)
          case (1)
             field_name = "valveOpeningHeight"
+         case (2)
+            field_name = "discharge"
+         case (3)
+            field_name = "velocity"
+         case (4)
+            field_name = "flow_area"
+         case (5)
+            field_name = "water_level_up"
+         case (6)
+            field_name = "water_level_down"
+         case (7)
+            field_name = "head_difference"
+         case (8)
+            field_name = "opening_height"
+         case (9)
+            field_name = "crest_level"
+         case (10)
+            field_name = "gate_lower_edge_level"
          end select
          ! SOURCE-SINKS
       case ("sourcesinks")
