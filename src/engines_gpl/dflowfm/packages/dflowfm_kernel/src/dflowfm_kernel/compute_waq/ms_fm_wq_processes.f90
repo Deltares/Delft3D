@@ -82,7 +82,8 @@ contains
       end if
 
       write(*,*) 'fm_wq_processes_ini_sub'
-      write(88,*) 'fm_wq_processes_ini_sub'; flush(88)
+      write(88,*) 'fm_wq_processes_ini_sub'
+      flush(88)
 
       ibflag = 0
 
@@ -437,7 +438,8 @@ contains
       real(dp) :: global_segment_number
 
       write(*,*) 'finalize_waq_spatial_fields'
-      write(88,*) 'finalize_waq_spatial_fields'; flush(88)
+      write(88,*) 'finalize_waq_spatial_fields'
+      flush(88)
 
       if (.not. allocated(waq_segment_number_indices)) then
          return
@@ -601,7 +603,8 @@ contains
       end if
 
       write(*,*) 'fm_wq_processes_ini_proc'
-      write(88,*) 'fm_wq_processes_ini_proc'; flush(88)
+      write(88,*) 'fm_wq_processes_ini_proc'
+      flush(88)
 
       ! Register pointers to MPI subroutines
       wq_processes_mpi = wq_processes_mpi_subroutines(wq_processes_mpi_mydomain, wq_processes_mpi_reduce_sum, wq_processes_mpi_reduce_int_max)
@@ -1100,7 +1103,8 @@ contains
       jawaqproc = 2 ! processes succesfully initiated
 
       write(*,*) 'fm_wq_processes_ini_proc done'
-      write(88,*) 'fm_wq_processes_ini_proc done'; flush(88)
+      write(88,*) 'fm_wq_processes_ini_proc done'
+      flush(88)
 
       deallocate (coname_sub)
       deallocate (covalue_sub)
@@ -1154,7 +1158,8 @@ contains
       end if
 
       write(*,*) 'dfm_waq_initexternalforcings'
-      write(88,*) 'dfm_waq_initexternalforcings'; flush(88)
+      write(88,*) 'dfm_waq_initexternalforcings'
+      flush(88)
 
       iresult = DFM_NOERR
 
@@ -1517,7 +1522,8 @@ contains
       end if
 
       write(*,*) 'fm_wq_processes_step', size(vol_wq_processes)
-      write(88,*) 'fm_wq_processes_step', size(vol_wq_processes); flush(88)
+      write(88,*) 'fm_wq_processes_step', size(vol_wq_processes)
+      flush(88)
 
       select case (process_selection)
       case (WQ_RUNADSSEDTRA)
@@ -1533,7 +1539,8 @@ contains
          call timstrt("copy_data_from_fm_to_wq_processes", ithand1)
       end if
       write(*,*) 'Fm_process_step:', size(vol_wq_processes)
-      write(88,*) 'Fm_process_step:', size(vol_wq_processes); flush(88)
+      write(88,*) 'Fm_process_step:', size(vol_wq_processes)
+      flush(88)
       call copy_data_from_fm_to_wq_processes(time, vol_wq_processes)
       if (timon) then
          call timstop(ithand1)
@@ -1554,7 +1561,8 @@ contains
       end if
 
       write(*,*) 'call wq_processes_proces', size(vol_wq_processes), kbx, ktx, ktx-kbx
-      write(88,*) 'call wq_processes_proces', size(vol_wq_processes), kbx, ktx, ktx-kbx; flush(88)
+      write(88,*) 'call wq_processes_proces', size(vol_wq_processes), kbx, ktx, ktx-kbx
+      flush(88)
       call wq_processes_proces(num_substances_total, num_cells, process_space_real(ipoiconc), vol_wq_processes(kbx:ktx - kbx), time, dt, deriv, ndmpar, &
                                num_processes_activated, num_fluxes, process_space_int, prvnio, promnr, iflux, increm, process_space_real(ipoiflux), flxdmp, stochi, &
                                ibflag, bloom_status_ind, bloom_ind, amass, num_substances_transported, isfact, itfact, iexpnt, iknmrk, num_exchanges_u_dir, &
@@ -1568,7 +1576,8 @@ contains
          call timstrt("copy_data_from_wq_processes_to_fm", ithand2)
       end if
       write(*,*) 'call copy_data_from_wq_processes_to_fm', size(vol_wq_processes)
-      write(88,*) 'call copy_data_from_wq_processes_to_fm', size(vol_wq_processes);flush(88)
+      write(88,*) 'call copy_data_from_wq_processes_to_fm', size(vol_wq_processes)
+      flush(88)
       call copy_data_from_wq_processes_to_fm(dt, time, vol_wq_processes, process_space_real(ipoivelx))
       if (timon) then
          call timstop(ithand2)
@@ -1616,7 +1625,8 @@ contains
       logical, save :: first = .true.
 
       write(*,*) 'copy_data_from_fm_to_wq_processes', size(vol_wq_processes)
-      write(88,*) 'copy_data_from_fm_to_wq_processes', size(vol_wq_processes) ; flush(88)
+      write(88,*) 'copy_data_from_fm_to_wq_processes', size(vol_wq_processes)
+      flush(88)
 
       if (num_time_functions > 0) then
          do ifun = 1, num_time_functions
@@ -1670,7 +1680,8 @@ contains
       end if
 
       write(*,*) 'Copy fm-to-wq:', kbx, ktx, size(vol_wq_processes)
-      write(88,*) 'Copy fm-to-wq:', kbx, ktx, size(vol_wq_processes); flush(88)
+      write(88,*) 'Copy fm-to-wq:', kbx, ktx, size(vol_wq_processes)
+      flush(88)
 
       ipoivol = arrpoi(iivol)
       do k = 0, ktx - kbx
@@ -1839,7 +1850,8 @@ contains
       do kk = 1, Ndxi
          call getkbotktopmax(kk, kb, kt, ktmax)
          write(*,*) 'Copy fm-to-wq (2):', kk, , kb, kt, ktmax, size(vol_wq_processes)
-         write(88,*) 'Copy fm-to-wq (2):', kk, , kb, kt, ktmax, size(vol_wq_processes); flush(88)
+         write(88,*) 'Copy fm-to-wq (2):', kk, , kb, kt, ktmax, size(vol_wq_processes)
+         flush(88)
          do k = kb, ktmax
             wqactive(k) = vol_wq_processes(k) > waq_vol_dry_thr .and. (vol_wq_processes(k) / ba(kk)) > waq_dep_dry_thr
          end do
@@ -1967,7 +1979,8 @@ contains
       integer(4), save :: ithand3 = 0
 
       write(*,*) 'copy_data_from_wq_processes_to_fm', size(vol_wq_processes)
-      write(88,*) 'copy_data_from_wq_processes_to_fm', size(vol_wq_processes) ; flush(88)
+      write(88,*) 'copy_data_from_wq_processes_to_fm', size(vol_wq_processes)
+      flush(88)
 
       ! fill concentrations (transported)
       if (timon) then
@@ -1978,7 +1991,8 @@ contains
 
          if ( kb < 1 .or. kt > size(vol_wq_processes) ) then
              write(*,*) 'Copy volumes: ', kk, kb, kt
-             write(88,*) 'Copy volumes: ', kk, kb, kt; flush(88)
+             write(88,*) 'Copy volumes: ', kk, kb, kt
+             flush(88)
          endif
 
          do k = kb, kt

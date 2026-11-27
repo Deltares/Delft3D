@@ -958,7 +958,8 @@ contains
         call realloc(prvpnt, num_processes_activated, keepExisting = .false., Fill = 0)
         call realloc(promnr, num_processes_activated, keepExisting = .false., Fill = 0)
 
-        write(88,*) 'Realloc prvnpt', num_processes_activated, size(prvpnt); flush(88)
+        write(88,*) 'Realloc prvnpt', num_processes_activated, size(prvpnt)
+        flush(88)
 
         if ( num_processes_activated > 0 ) then
             prvpnt(1) = 1
