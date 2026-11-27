@@ -408,6 +408,7 @@ contains
 
    end subroutine xbeach_all_input
 
+!> Initialize Surfbeat wave state and boundary mappings.
    subroutine xbeach_wave_init()
       use precision, only: dp
       use m_flowgeom
@@ -2671,36 +2672,63 @@ contains
 
    end subroutine advec_dir
 
-!> reset XBeach wave data
+!> Clear cached Surfbeat input and arrays at model reset.
    subroutine xbeach_reset()
       use m_xbeach_readkey ! for reset_paramfile
+      use m_xbeach_data, only: dlengthrm, u1rm, uave, umeanrm, vave, vmeanrm
       implicit none
 
       call reset_paramfile()
+      if (allocated(uave)) uave = 0.0_dp
+      if (allocated(vave)) vave = 0.0_dp
+      if (allocated(dlengthrm)) dlengthrm = 0.0_dp
+      if (allocated(umeanrm)) umeanrm = 0.0_dp
+      if (allocated(vmeanrm)) vmeanrm = 0.0_dp
+      if (allocated(u1rm)) u1rm = 0.0_dp
 
    end subroutine xbeach_reset
 
-!> compute flow boundary conditions
+!> Update Surfbeat absorbing-generating flow boundaries.
+!! In MPI, all ranks participate, including ranks without local ABSGEN faces.
    subroutine xbeach_flow_bc()
-      use fm_external_forcings_data, only: nbndu
-      use m_partitioninfo, only: jampi
       implicit none
 
-      integer :: ierror
+      call xbeach_absgen_bc()
+   end subroutine xbeach_flow_bc
 
-      ierror = 1
+!> Copy horizontal cell velocities for the depth-integrated boundary signal generation.
+!! Copy the cell velocities in 2D. In 3D, average over the wet layer
+!! thicknesses and return zero for a dry column.
+   subroutine xbeach_prepare_absgen_velocity_snapshot(absgen_ucx, absgen_ucy)
+      use precision, only: dp
+      use m_flow, only: kmx, ucx, ucy, hs, zws, kbot, ktop
+      use m_flowgeom, only: ndx
+      use m_absgen_3d, only: compute_absgen_depth_averaged_velocity
 
-      if (nbndu < 1 .and. jampi == 0) then
-         goto 1234
+      implicit none(type, external)
+
+      real(kind=dp), intent(out) :: absgen_ucx(:) !< Cell mean x velocity (m/s).
+      real(kind=dp), intent(out) :: absgen_ucy(:) !< Cell mean y velocity (m/s).
+
+      integer :: k
+
+      if (kmx <= 0) then
+         absgen_ucx(1:ndx) = ucx(1:ndx)
+         absgen_ucy(1:ndx) = ucy(1:ndx)
+         return
       end if
 
-      call xbeach_absgen_bc()
-
-      ierror = 0
-1234  continue
-
-      return
-   end subroutine xbeach_flow_bc
+      do k = 1, ndx
+         if (kbot(k) <= 0 .or. ktop(k) < kbot(k) .or. hs(k) <= 0.0_dp) then
+            absgen_ucx(k) = 0.0_dp
+            absgen_ucy(k) = 0.0_dp
+            cycle
+         end if
+         call compute_absgen_depth_averaged_velocity(zws(kbot(k) - 1:ktop(k)), &
+                                                     ucx(kbot(k):ktop(k)), ucy(kbot(k):ktop(k)), &
+                                                     absgen_ucx(k), absgen_ucy(k))
+      end do
+   end subroutine xbeach_prepare_absgen_velocity_snapshot
 
 !> initialize wave spectra
    subroutine xbeach_spectral_wave_init()
@@ -3308,15 +3336,22 @@ contains
 
    end subroutine xbeach_waves
 
-!> compute bc for absorbing generating boundary
+!> Compute the depth-averaged ABSGEN velocity and boundary water level.
+!! Reduce width-weighted velocities from the owned boundary faces by global
+!! section ID before relaxing the shared section means. The instantaneous
+!! sums are cleared each update. The means persist until xbeach_reset().
+!! The momentum predictor distributes the prescribed velocity over the layers.
    subroutine xbeach_absgen_bc()
       use precision, only: dp
       use m_sferic
-      use m_xbeach_data
+      use m_xbeach_data, only: ARC, absgentype, cats, cgwav, dlengthrm, freewave, Fx_cc, Fy_cc, &
+                              kbndu2kbndw, maxnumbnds, order, Trep, u1rm, uave, uin, umeanrm, &
+                              vave, vin, vmeanrm
       use m_flowgeom
-      use m_flow
+      use m_flow, only: cfuhi, hu, huvli, kmx, s0, s1, u1, v, wdsu
+      use m_flowparameters, only: EPS10, epshu
       use m_physcoef, only: ag, rhomean
-      use fm_external_forcings_data
+      use fm_external_forcings_data, only: kbndu, nbndu, zbndu
       use m_alloc
       use messagehandling, only: LEVEL_ERROR, mess
       use m_xbeach_errorhandling
@@ -3324,6 +3359,9 @@ contains
       use m_partitioninfo
       use m_flowtimes, only: dts
       use m_waves, only: ustokes, vstokes
+      use m_absgen_3d, only: accumulate_absgen_boundary_mean, compute_absgen_friction_acceleration, &
+                            compute_absgen_incident_velocity, compute_absgen_reflected_velocity, &
+                            relax_absgen_boundary_means
       use network_data
       use geometry_module
       use m_wind, only: jawind
@@ -3331,27 +3369,91 @@ contains
 
       implicit none
 
-      integer :: ierror
-
       integer, parameter :: MAXLNX = 100
 
       integer :: numbnd
+      integer :: number_of_boundary_sections
+      integer :: boundary_array_capacity
       integer :: idum(1)
       real(kind=dp), allocatable :: idum2(:, :)
+      real(kind=dp), allocatable, save :: absgen_ucx(:)
+      real(kind=dp), allocatable, save :: absgen_ucy(:)
+      ! These cached arrays are private to absgen and are fully reset before use.
+      real(kind=dp), allocatable, save :: absgen_dbetadx(:)
+      real(kind=dp), allocatable, save :: absgen_dbetady(:)
+      real(kind=dp), allocatable, save :: absgen_ducxdx(:)
+      real(kind=dp), allocatable, save :: absgen_ducxdy(:)
+      real(kind=dp), allocatable, save :: absgen_ducydx(:)
+      real(kind=dp), allocatable, save :: absgen_ducydy(:)
+      logical :: has_local_absgen_faces
+      logical :: boundary_face_is_owned
+      logical :: use_active_absorption
 
-      real(kind=dp) :: uin_loc, vin_loc, hum, cgbound, cg0, c, umean, vmean, dum
+      real(kind=dp) :: uin_loc, vin_loc, hum, cgbound, cg0, c, umean, vmean
+      real(kind=dp) :: signed_incident_velocity, characteristic_forcing
       real(kind=dp) :: factime
       real(kind=dp) :: hsk
       real(kind=dp) :: ht(2)
+      real(kind=dp) :: riemann_beta
 
       real(kind=dp) :: un, Fn, Fwin, Ftau, ur, betaki, vert, betak1, betak2
       real(kind=dp) :: dhdn, dvds, dbetads, dbetadn, dbetadt, betanp1
-      real(kind=dp) :: alpha2, alphanew, thetai
+      real(kind=dp), parameter :: min_normal_direction_cosine = 1.0e-6_dp
 
-      integer :: n, Lb, L, kb, ki, k1, k2, i, jj
+      integer :: n, Lb, L, kb, ki, k1, k2, i
       integer :: NLNX, nw
 
-      ierror = 1
+      ! Boundary section IDs refer to the global open-boundary list and are not
+      ! bounded by the local number of velocity boundary sections. All ranks
+      ! must enter this collective exactly once, including ranks without a
+      ! local absgen face.
+      number_of_boundary_sections = 0
+      do n = 1, nbndu
+         if (kbndu(4, n) == BOUNDARY_ABSORBING_GENERATING) then
+            number_of_boundary_sections = max(number_of_boundary_sections, kbndu(5, n))
+         end if
+      end do
+      has_local_absgen_faces = number_of_boundary_sections > 0
+      if (jampi == 1) then
+         idum(1) = number_of_boundary_sections
+         call reduce_int_max(1, idum)
+         number_of_boundary_sections = idum(1)
+      end if
+
+      if (number_of_boundary_sections <= 0) then
+         return
+      end if
+      use_active_absorption = trim(absgentype) == 'abs_2d' .and. ARC /= 0
+
+      ! Keep all mean arrays large enough for the global section IDs. The
+      ! relaxed means are persistent, so existing values must be preserved.
+      boundary_array_capacity = max(100, number_of_boundary_sections)
+      if (.not. allocated(uave)) then
+         call realloc(uave, boundary_array_capacity, keepExisting=.false., fill=0.0_dp)
+      else if (size(uave) < number_of_boundary_sections) then
+         call realloc(uave, boundary_array_capacity, keepExisting=.true., fill=0.0_dp)
+      end if
+      if (.not. allocated(vave)) then
+         call realloc(vave, boundary_array_capacity, keepExisting=.false., fill=0.0_dp)
+      else if (size(vave) < number_of_boundary_sections) then
+         call realloc(vave, boundary_array_capacity, keepExisting=.true., fill=0.0_dp)
+      end if
+      if (.not. allocated(dlengthrm)) then
+         call realloc(dlengthrm, boundary_array_capacity, keepExisting=.false., fill=0.0_dp)
+      else if (size(dlengthrm) < number_of_boundary_sections) then
+         call realloc(dlengthrm, boundary_array_capacity, keepExisting=.true., fill=0.0_dp)
+      end if
+      if (.not. allocated(umeanrm)) then
+         call realloc(umeanrm, boundary_array_capacity, keepExisting=.false., fill=0.0_dp)
+      else if (size(umeanrm) < number_of_boundary_sections) then
+         call realloc(umeanrm, boundary_array_capacity, keepExisting=.true., fill=0.0_dp)
+      end if
+      if (.not. allocated(vmeanrm)) then
+         call realloc(vmeanrm, boundary_array_capacity, keepExisting=.false., fill=0.0_dp)
+      else if (size(vmeanrm) < number_of_boundary_sections) then
+         call realloc(vmeanrm, boundary_array_capacity, keepExisting=.true., fill=0.0_dp)
+      end if
+      maxnumbnds = min(size(uave), size(vave), size(dlengthrm), size(umeanrm), size(vmeanrm))
 
       !if (windmodel .eq. 0) then
       factime = 1.0_dp / cats / Trep * dts
@@ -3361,66 +3463,74 @@ contains
 
 !  compute boundary-averaged velocities
       numbnd = 0
-      uave = 0.0_dp
-      vave = 0.0_dp
-      dlengthrm = 0.0_dp
+      uave(1:number_of_boundary_sections) = 0.0_dp
+      vave(1:number_of_boundary_sections) = 0.0_dp
+      dlengthrm(1:number_of_boundary_sections) = 0.0_dp
 
       do n = 1, nbndu
          if (kbndu(4, n) == BOUNDARY_ABSORBING_GENERATING) then
             Lb = kbndu(3, n)
+            if (use_active_absorption) then
+               if (hu(Lb) <= epshu) then
+                  ! Drop the last wet sample so it cannot be reused on rewetting.
+                  u1rm(n) = 0.0_dp
+                  cycle
+               end if
+            end if
             numbnd = kbndu(5, n)
-            if (numbnd > maxnumbnds) then
-               maxnumbnds = max(int(1.2_dp * numbnd), maxnumbnds + 1)
-               !
-               if (jampi == 1) then
-                  idum(1) = maxnumbnds
-                  call reduce_int_max(1, idum)
-                  maxnumbnds = idum(1)
-               end if
-               !
-               call realloc(uave, maxnumbnds, keepExisting=.true., fill=0.0_dp)
-               call realloc(vave, maxnumbnds, keepExisting=.true., fill=0.0_dp)
-               call realloc(dlengthrm, maxnumbnds, keepExisting=.true., fill=0.0_dp)
-               call realloc(umeanrm, maxnumbnds, keepExisting=.true., fill=0.0_dp)
-               call realloc(vmeanrm, maxnumbnds, keepExisting=.true., fill=0.0_dp)
+            boundary_face_is_owned = jampi == 0
+            if (jampi == 1) then
+               boundary_face_is_owned = idomain(kbndu(2, n)) == my_rank
             end if
-            !
-            if (jampi == 0) then
-               uave(numbnd) = uave(numbnd) + wu(Lb) * u1rm(n)
-               vave(numbnd) = vave(numbnd) + wu(Lb) * v(Lb) ! for now 1d
-               dlengthrm(numbnd) = dlengthrm(numbnd) + wu(Lb)
-            else
-               if (idomain(kbndu(2, n)) == my_rank) then
-                  uave(numbnd) = uave(numbnd) + wu(Lb) * u1rm(n)
-                  vave(numbnd) = vave(numbnd) + wu(Lb) * v(Lb)
-                  dlengthrm(numbnd) = dlengthrm(numbnd) + wu(Lb)
-               end if
-            end if
-            !
+            call accumulate_absgen_boundary_mean(boundary_face_is_owned, numbnd, wu(Lb), u1rm(n), v(Lb), &
+                                                 uave, vave, dlengthrm)
          end if
       end do
 
       if (jampi == 1) then
-         if (nubnd > 0) then
-            allocate (idum2(3, nubnd))
-            idum2(1, :) = uave
-            idum2(2, :) = vave
-            idum2(3, :) = dlengthrm
-            call reduce_sum(3 * nubnd, idum2)
+         allocate (idum2(3, number_of_boundary_sections))
+         idum2(1, :) = uave(1:number_of_boundary_sections)
+         idum2(2, :) = vave(1:number_of_boundary_sections)
+         idum2(3, :) = dlengthrm(1:number_of_boundary_sections)
+         call reduce_sum(3 * number_of_boundary_sections, idum2)
 
-            uave = idum2(1, :)
-            vave = idum2(2, :)
-            dlengthrm = idum2(3, :)
-         end if
+         uave(1:number_of_boundary_sections) = idum2(1, :)
+         vave(1:number_of_boundary_sections) = idum2(2, :)
+         dlengthrm(1:number_of_boundary_sections) = idum2(3, :)
       end if
 
-      if (nubnd > 0) then
-         do n = 1, nubnd
-            uave(n) = uave(n) / max(dlengthrm(n), 1.0e-16_dp)
-            vave(n) = vave(n) / max(dlengthrm(n), 1.0e-16_dp)
-            umeanrm(n) = factime * uave(n) + (1.0_dp - factime) * umeanrm(n)
-            vmeanrm(n) = factime * vave(n) + (1.0_dp - factime) * vmeanrm(n)
-         end do
+      call relax_absgen_boundary_means(uave(1:number_of_boundary_sections), &
+                                       vave(1:number_of_boundary_sections), &
+                                       dlengthrm(1:number_of_boundary_sections), factime, &
+                                       umeanrm(1:number_of_boundary_sections), &
+                                       vmeanrm(1:number_of_boundary_sections))
+
+      ! Ranks without local faces still share the same relaxed section means.
+      if (.not. has_local_absgen_faces) then
+         return
+      end if
+
+      if (allocated(absgen_ucx)) then
+         if (size(absgen_ucx) /= ndx) then
+            deallocate (absgen_ucx, absgen_ucy)
+         end if
+      end if
+      if (.not. allocated(absgen_ucx)) then
+         allocate (absgen_ucx(ndx), absgen_ucy(ndx))
+      end if
+      call xbeach_prepare_absgen_velocity_snapshot(absgen_ucx, absgen_ucy)
+
+      if (use_active_absorption) then
+         if (allocated(absgen_dbetadx)) then
+            if (size(absgen_dbetadx) /= ndx) then
+               deallocate (absgen_dbetadx, absgen_dbetady, absgen_ducxdx, absgen_ducxdy, &
+                           absgen_ducydx, absgen_ducydy)
+            end if
+         end if
+         if (.not. allocated(absgen_dbetadx)) then
+            allocate (absgen_dbetadx(ndx), absgen_dbetady(ndx), absgen_ducxdx(ndx), absgen_ducxdy(ndx), &
+                      absgen_ducydx(ndx), absgen_ducydy(ndx))
+         end if
       end if
 
       do n = 1, nbndu
@@ -3451,7 +3561,19 @@ contains
             if (trim(absgentype) == 'abs_1d') then
                ! zbndu for absgen bc is slowly varying tide+surge water level
                hsk = s1(ki) - bl(ki)
-               u1(Lb) = (1.0_dp + sqrt(ag * hsk) / cgwav(ki)) * uin_loc - sqrt(ag / hsk) * (s1(ki) - zbndu(n)) + umeanrm(numbnd)
+               if (hsk <= epshu) then
+                  s0(kb) = s0(ki)
+                  s1(kb) = s1(ki)
+                  u1(Lb) = absgen_ucx(ki) * csu(Lb) + absgen_ucy(ki) * snu(Lb)
+                  u1rm(n) = u1(Lb)
+                  cycle
+               end if
+               if (kmx > 0 .and. freewave == 1) then
+                  u1(Lb) = 2.0_dp * uin_loc - sqrt(ag / hsk) * (s1(ki) - zbndu(n)) + umeanrm(numbnd)
+               else
+                  u1(Lb) = (1.0_dp + sqrt(ag * hsk) / max(cgwav(ki), EPS10)) * uin_loc &
+                           - sqrt(ag / hsk) * (s1(ki) - zbndu(n)) + umeanrm(numbnd)
+               end if
                s0(kb) = s0(ki)
                s1(kb) = s1(ki)
 
@@ -3476,16 +3598,16 @@ contains
                !
                if (hu(Lb) <= epshu) then
                   s1(kb) = max(zbndu(n), bl(kb))
-                  u1(Lb) = ucx(ki) * csu(Lb) + ucy(ki) * snu(Lb)
+                  u1(Lb) = absgen_ucx(ki) * csu(Lb) + absgen_ucy(ki) * snu(Lb)
                   cycle
                end if
                !
-               xbducxdx = 0.0_dp
-               xbducxdy = 0.0_dp
-               xbducydx = 0.0_dp
-               xbducydy = 0.0_dp
-               dbetadx = 0.0_dp
-               dbetady = 0.0_dp
+               absgen_ducxdx = 0.0_dp
+               absgen_ducxdy = 0.0_dp
+               absgen_ducydx = 0.0_dp
+               absgen_ducydy = 0.0_dp
+               absgen_dbetadx = 0.0_dp
+               absgen_dbetady = 0.0_dp
                !
                do i = 1, NLNX
                   L = abs(nd(ki)%ln(i))
@@ -3494,36 +3616,40 @@ contains
                   k2 = ln(2, L)
                   !
                   ! Pragmatic way
-                  betak1 = ucx(k1) * csu(Lb) + ucy(k1) * snu(Lb) - 2.0_dp * sqrt(ag * (s1(k1) - bl(k1)))
-                  betak2 = ucx(k2) * csu(Lb) + ucy(k2) * snu(Lb) - 2.0_dp * sqrt(ag * (s1(k2) - bl(k2)))
+                  betak1 = absgen_ucx(k1) * csu(Lb) + absgen_ucy(k1) * snu(Lb) - &
+                            2.0_dp * sqrt(ag * max(s1(k1) - bl(k1), epshu))
+                  betak2 = absgen_ucx(k2) * csu(Lb) + absgen_ucy(k2) * snu(Lb) - &
+                            2.0_dp * sqrt(ag * max(s1(k2) - bl(k2), epshu))
                   !
-                  dbetadx(k1) = dbetadx(k1) + wcx1(L) * (betak2 - betak1) * dxi(L)
-                  dbetadx(k2) = dbetadx(k2) + wcx2(L) * (betak2 - betak1) * dxi(L)
-                  dbetady(k1) = dbetady(k1) + wcy1(L) * (betak2 - betak1) * dxi(L)
-                  dbetady(k2) = dbetady(k2) + wcy2(L) * (betak2 - betak1) * dxi(L)
+                  absgen_dbetadx(k1) = absgen_dbetadx(k1) + wcx1(L) * (betak2 - betak1) * dxi(L)
+                  absgen_dbetadx(k2) = absgen_dbetadx(k2) + wcx2(L) * (betak2 - betak1) * dxi(L)
+                  absgen_dbetady(k1) = absgen_dbetady(k1) + wcy1(L) * (betak2 - betak1) * dxi(L)
+                  absgen_dbetady(k2) = absgen_dbetady(k2) + wcy2(L) * (betak2 - betak1) * dxi(L)
                   !
-                  xbducxdx(k1) = xbducxdx(k1) + wcx1(L) * (ucx(k2) - ucx(k1)) * dxi(L)
-                  xbducxdx(k2) = xbducxdx(k2) + wcx2(L) * (ucx(k2) - ucx(k1)) * dxi(L)
-                  xbducxdy(k1) = xbducxdy(k1) + wcy1(L) * (ucx(k2) - ucx(k1)) * dxi(L)
-                  xbducxdy(k2) = xbducxdy(k2) + wcy2(L) * (ucx(k2) - ucx(k1)) * dxi(L)
+                  absgen_ducxdx(k1) = absgen_ducxdx(k1) + wcx1(L) * (absgen_ucx(k2) - absgen_ucx(k1)) * dxi(L)
+                  absgen_ducxdx(k2) = absgen_ducxdx(k2) + wcx2(L) * (absgen_ucx(k2) - absgen_ucx(k1)) * dxi(L)
+                  absgen_ducxdy(k1) = absgen_ducxdy(k1) + wcy1(L) * (absgen_ucx(k2) - absgen_ucx(k1)) * dxi(L)
+                  absgen_ducxdy(k2) = absgen_ducxdy(k2) + wcy2(L) * (absgen_ucx(k2) - absgen_ucx(k1)) * dxi(L)
                   !
-                  xbducydx(k1) = xbducydx(k1) + wcx1(L) * (ucy(k2) - ucy(k1)) * dxi(L)
-                  xbducydx(k2) = xbducydx(k2) + wcx2(L) * (ucy(k2) - ucy(k1)) * dxi(L)
-                  xbducydy(k1) = xbducydy(k1) + wcy1(L) * (ucy(k2) - ucy(k1)) * dxi(L)
-                  xbducydy(k2) = xbducydy(k2) + wcy2(L) * (ucy(k2) - ucy(k1)) * dxi(L)
+                  absgen_ducydx(k1) = absgen_ducydx(k1) + wcx1(L) * (absgen_ucy(k2) - absgen_ucy(k1)) * dxi(L)
+                  absgen_ducydx(k2) = absgen_ducydx(k2) + wcx2(L) * (absgen_ucy(k2) - absgen_ucy(k1)) * dxi(L)
+                  absgen_ducydy(k1) = absgen_ducydy(k1) + wcy1(L) * (absgen_ucy(k2) - absgen_ucy(k1)) * dxi(L)
+                  absgen_ducydy(k2) = absgen_ducydy(k2) + wcy2(L) * (absgen_ucy(k2) - absgen_ucy(k1)) * dxi(L)
                end do
 
-               dbetadn = csu(Lb) * dbetadx(ki) + snu(Lb) * dbetady(ki) ! 1-2 direction
-               dbetads = -snu(Lb) * dbetadx(ki) + csu(Lb) * dbetady(ki) ! 3-4 direction
+               dbetadn = csu(Lb) * absgen_dbetadx(ki) + snu(Lb) * absgen_dbetady(ki) ! 1-2 direction
+               dbetads = -snu(Lb) * absgen_dbetadx(ki) + csu(Lb) * absgen_dbetady(ki) ! 3-4 direction
                !
-               dvds = -snu(Lb) * (-snu(Lb) * xbducxdx(ki) + csu(Lb) * xbducxdy(ki)) + &
-                      csu(Lb) * (-snu(Lb) * xbducydx(ki) + csu(Lb) * xbducydy(ki))
+               dvds = -snu(Lb) * (-snu(Lb) * absgen_ducxdx(ki) + csu(Lb) * absgen_ducxdy(ki)) + &
+                      csu(Lb) * (-snu(Lb) * absgen_ducydx(ki) + csu(Lb) * absgen_ducydy(ki))
                !
                dhdn = (ht(2) - ht(1)) * dxi(Lb) ! 1-2 direction (inward positive)
                !
-               Fn = csu(Lb) * Fx(Lb) + snu(Lb) * Fy(Lb) ! 1-2 direction (inward positive)
+               Fn = csu(Lb) * (acL(Lb) * Fx_cc(kb) + (1.0_dp - acL(Lb)) * Fx_cc(ki)) + &
+                    snu(Lb) * (acL(Lb) * Fy_cc(kb) + (1.0_dp - acL(Lb)) * Fy_cc(ki)) ! 1-2 direction (inward positive)
                !  compute bed friction
-               Ftau = cfuhi(Lb) * sqrt((u1(Lb) - ustokes(Lb))**2 + (v(Lb) - vstokes(Lb))**2) * (u1(Lb) - ustokes(Lb)) ! formally, not exactly correct, since we also need u1L (see furu). JRE: but we can use u1rm old timelevel
+               Ftau = compute_absgen_friction_acceleration(cfuhi(Lb), u1(Lb), v(Lb), &
+                                                           ustokes(Lb), vstokes(Lb))
                !
                if (jawind > 0) then
                   Fwin = wdsu(Lb) * huvli(Lb)
@@ -3533,52 +3659,30 @@ contains
                c = sqrt(ag * hu(Lb))
                !
                !
-               dbetadt = -(u1(Lb) - c) * dbetadn - v(Lb) * dbetads + c * dvds + ag * dhdn + Fn / (rhomean * hu(Lb)) - Ftau + Fwin
-               beta = u1(Lb) - 2.0_dp * sqrt(ag * hu(Lb))
+               dbetadt = -(u1(Lb) - c) * dbetadn - v(Lb) * dbetads + &
+                          c * dvds + ag * dhdn + Fn / (rhomean * hu(Lb)) - Ftau + Fwin
+               riemann_beta = u1(Lb) - 2.0_dp * sqrt(ag * hu(Lb))
                !
-               thetai = atan2(vin_loc, uin_loc) ! cartesian angle wrt X
-               !
-               betanp1 = beta + dbetadt * dts
-               alpha2 = (270.0_dp - dir0) * dg2rd ! first guess, theta0 not set for spectral bc as dir0 not defined
-               alphanew = 0.0_dp
-               !
+               signed_incident_velocity = compute_absgen_incident_velocity(uin_loc, vin_loc, min_normal_direction_cosine)
+               betanp1 = riemann_beta + dbetadt * dts
                cg0 = sqrt(ag * hum)
-               !
-               do jj = 1, 50
-                  !
-                  if (freewave == 1) then ! assuming incoming long wave propagates at sqrt(g*h) (free wave)
-                     ur = cos(alpha2) / (cos(alpha2) + 1.0_dp) &
-                          * (betanp1 - umean + 2.0_dp * cg0 &
-                             - uin_loc * (cos(thetai) - 1.0_dp) / cos(thetai))
-                  else ! assuming incoming long wave propagates at group velocity (bound wave)
-                     cgbound = max(0.5_dp * (cgwav(kb) + cgwav(ki)), EPS10)
-                     dum = uin_loc * (cgbound * cos(thetai) - cg0) / (cgbound * cos(thetai))
-                     ur = cos(alpha2) / (cos(alpha2) + 1.0_dp) &
-                          * (betanp1 - umean + 2.0_dp * cg0 - dum)
-                  end if
-                  !
-                  vert = v(Lb) - vmean - vin_loc ! tangential component along cell face
-                  !
-                  alphanew = atan2(vert, (ur + 1.0e-16_dp))
-                  if (alphanew > (pi * 0.5_dp)) then
-                     alphanew = alphanew - pi
-                  end if
-                  if (alphanew <= (-pi * 0.5_dp)) then
-                     alphanew = alphanew + pi
-                  end if
-                  !
-                  if (abs(alphanew - alpha2) < 1.0e-3_dp) then
-                     exit
-                  end if
-                  alpha2 = alphanew
-               end do
-               !
+               characteristic_forcing = betanp1 - umean + 2.0_dp * cg0 - uin_loc
+               if (freewave == 1) then
+                  characteristic_forcing = characteristic_forcing + signed_incident_velocity
+               else
+                  cgbound = max(0.5_dp * (cgwav(kb) + cgwav(ki)), EPS10)
+                  characteristic_forcing = characteristic_forcing + cg0 / cgbound * signed_incident_velocity
+               end if
+               vert = v(Lb) - vmean - vin_loc
+               ur = compute_absgen_reflected_velocity(characteristic_forcing, vert)
+
                u1(Lb) = (order - 1.0_dp) * uin_loc + ur + umean
                u1rm(n) = u1(Lb)
                !
                ! try from cell centre, uses value at old time level anyhow
-               betaki = ucx(ki) * csu(Lb) + ucy(ki) * snu(Lb) - 2.0_dp * sqrt(ag * (s1(ki) - bl(ki)))
-               un = ucx(ki) * csu(Lb) + ucy(ki) * snu(Lb)
+               betaki = absgen_ucx(ki) * csu(Lb) + absgen_ucy(ki) * snu(Lb) - &
+                        2.0_dp * sqrt(ag * max(s1(ki) - bl(ki), epshu))
+               un = absgen_ucx(ki) * csu(Lb) + absgen_ucy(ki) * snu(Lb)
                s1(kb) = 1.5_dp * ((betanp1 - u1rm(n))**2 / 4.0_dp / ag + 0.5_dp * (bl(kb) + bl(ki))) - &
                         0.5_dp * ((betaki - un)**2 / 4.0_dp / ag + bl(ki))
             end if
@@ -3586,10 +3690,6 @@ contains
          end if ! riemannpuntje
       end do ! loop snelheidslinks
 
-      ierror = 0
-
-1234  continue
-      return
    end subroutine xbeach_absgen_bc
 
    subroutine rollerturbulence(k)

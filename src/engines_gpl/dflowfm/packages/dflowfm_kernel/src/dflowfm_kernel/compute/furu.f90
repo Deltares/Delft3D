@@ -41,7 +41,7 @@ module m_furu
 
 contains
 
-   subroutine furu() ! set fu, ru and kfs
+   subroutine furu()
       use precision, only: dp
       use m_fixedweirfriction2d
       use m_filter
@@ -65,6 +65,7 @@ contains
       use network_data, only: LINK_1D2D_INTERNAL
       use m_boundary_condition_type, only: BOUNDARY_VELOCITY_NORMAL_INFLOW, BOUNDARY_VELOCITY_FLUX, &
                                            BOUNDARY_CRITICAL_OUTFLOW, BOUNDARY_WEIR_OUTFLOW, BOUNDARY_ABSORBING_GENERATING
+      use m_absgen_3d, only: apply_absgen_barotropic_increment
 
       implicit none
 
@@ -85,6 +86,7 @@ contains
 
       integer :: jaustarintsave
       real(kind=dp) :: sqcfi
+      real(kind=dp), dimension(kmxx) :: boundary_profile
 
       fsqrtt = sqrt(0.5_dp)
       call timstrt('Furu', handle_furu)
@@ -330,6 +332,21 @@ contains
             v(LL) = vLL
             jaustarint = jaustarintsave
             qk0 = 0.0_dp
+         end if
+
+         if (Lt > Lb .and. boundary_type == BOUNDARY_ABSORBING_GENERATING) then
+            ! first fill with old value
+            boundary_profile(1:Lt - Lb + 1) = u1(Lb:Lt)
+            if (hu(LL) > 0.0_dp) then
+               select case (iturbulencemodel)
+               case (TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU)
+                  boundary_profile(1:Lt - Lb + 1) = ru(Lb:Lt)
+               end select
+            end if
+            fu(Lb:Lt) = 0.0_dp
+            ! then fill with correct wave group flux
+            call apply_absgen_barotropic_increment(au(Lb:Lt), boundary_profile(1:Lt - Lb + 1), zbndun, ru(Lb:Lt))
+            cycle
          end if
 
          do L = Lb, Lt

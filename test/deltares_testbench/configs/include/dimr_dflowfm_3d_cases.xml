@@ -227,6 +227,20 @@
       </file>
     </checks>
   </testCase>
+  <testCase name="e02_f013_c070_absgen_3d_serial" ref="dflowfm_default">
+    <path version="DVC">e02_dflowfm/f013_waves/c070_absgen_3d_serial</path>
+    <maxRunTime>600</maxRunTime>
+    <checks>
+      <file name="DFM_OUTPUT_coast3d/coast3d_his.nc" type="netCDF">
+        <parameters>
+          <parameter name="waterlevel" toleranceAbsolute="0.0001"/>
+          <parameter name="x_velocity" toleranceAbsolute="0.001"/>
+          <parameter name="y_velocity" toleranceAbsolute="0.001"/>
+          <parameter name="zcoordinate_w" toleranceAbsolute="0.0001"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
   <testCase name="e02_f019_c013_tracer_channel3D" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f019_transport/c013_tracer_channel3D</path>
 

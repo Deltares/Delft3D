@@ -13,6 +13,8 @@ add_fortran_gtest(test_dflowfm_kernel_gtest
         src/test_tridag.f90
         src/test_getverticallyaveraged.f90
         src/test_3d_layer_administration.f90
+        src/test_absgen_3d.f90
+        src/test_smagorinsky.f90
         src/test_pol_to_cellmask.f90
         src/test_longculverts.f90
         src/test_compute_horton_infiltration.f90
