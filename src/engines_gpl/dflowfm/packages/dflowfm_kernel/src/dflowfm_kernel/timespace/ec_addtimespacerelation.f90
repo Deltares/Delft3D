@@ -39,18 +39,20 @@ contains
                                                    dtnodal, quiet, varname, varname2, data_value, targetMaskSelect, &
                                                    tgt_data1, tgt_data2, tgt_data3, tgt_data4, &
                                                    tgt_item1, tgt_item2, tgt_item3, tgt_item4, &
-                                                   multuni1, multuni2, multuni3, multuni4, sample_location, sample_transformcoef)
+                                                   multuni1, multuni2, multuni3, multuni4, target_location, interpolation_options)
       use m_fm_wq_processes_sub, only: get_waqinputname
       use m_ec_module, only: ecFindFileReader, ec_filetype_to_conv_type ! TODO: Refactor this private data access (UNST-703).
       use m_ec_field, only: ecFieldCreate1dArray
       use m_ec_quantity, only: ecQuantitySetTimeint
-      use m_ec_support, only: ecSupportFindField
+      use m_ec_support, only: ecSupportFindField, ecSupportFindConverter
+      use m_ec_interpolationsettings, only: t_interpolation_options, t_averaging_options
+      use m_ec_provider, only: ecInterpolateSampleFile
       use m_ec_filereader_read, only: ecParseARCinfoMask
       use m_flowparameters, only: jawave
-      use m_sferic, only: jsferic
-      use m_missing, only: dmiss
+      use m_sferic, only: jsferic, jasfer3d
+      use m_missing, only: dmiss, jins
+      use m_polygon, only: npl, xpl, ypl, zpl
       use fm_external_forcings_data, only: NTRANSFORMCOEF
-      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN
       use precision_basics, only: comparereal
       use m_flowtimes, only: refdate_mjd
       use string_module, only: str_upper, str_tolower, strcmpi
@@ -100,8 +102,8 @@ contains
       integer, optional, intent(inout), target :: multuni2 !< multiple uni item ID 2
       integer, optional, intent(inout), target :: multuni3 !< item ID 3
       integer, optional, intent(inout), target :: multuni4 !< item ID 4
-      integer, optional, intent(in) :: sample_location !< Mesh location type for sample averaging.
-      real(kind=dp), dimension(:), optional, intent(in) :: sample_transformcoef !< Spatial interpolation settings for samples.
+      integer, optional, intent(in) :: target_location !< FM mesh location represented by the target coordinates.
+      type(t_interpolation_options), optional, intent(in) :: interpolation_options !< Per-relation interpolation settings.
       !
       integer :: ec_filetype !< EC-module's enumeration.
       integer :: ec_convtype !< EC-module's convType_ enumeration.
@@ -138,7 +140,12 @@ contains
       type(tEcField), pointer :: sample_field
       real(dp), dimension(NTRANSFORMCOEF) :: sample_coefficients
       integer, dimension(:), allocatable :: sample_mask
-      integer :: sample_target_location, sample_field_id, sample_quantity_id, i
+      integer :: sample_field_id, sample_quantity_id, i
+      type(tEcConverter), pointer :: converter
+      real(dp), dimension(:), allocatable :: selection_x, selection_y, selection_z
+      real(dp), dimension(:, :), allocatable :: polygon_x, polygon_y
+      integer, dimension(:), allocatable :: vertex_counts
+      type(t_averaging_options) :: averaging_options
       integer, dimension(4) :: sample_target_items
 
       logical :: success
@@ -220,39 +227,37 @@ contains
             call set_ec_message('Sample forcing requires a single scalar value per horizontal target point.')
             goto 1234
          end if
-         sample_target_location = UNC_LOC_S
-         if (present(sample_location)) then
-            sample_target_location = sample_location
-         end if
-         select case (ec_method)
-         case (interpolate_triangle)
-         case (interpolate_averaging)
-            if (.not. present(sample_location) .or. &
-                .not. any(sample_target_location == [UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN])) then
+         sample_mask = merge(1, 0, mask /= 0)
+         if (ec_method == interpolate_averaging) then
+            if (.not. present(target_location)) then
+               call set_ec_message('Sample averaging requires the FM target location.')
+               goto 1234
+            end if
+            if (present(interpolation_options)) then
+               averaging_options = interpolation_options%averaging
+            end if
+            if (.not. sample_averaging_polygons(target_location, ndx, averaging_options%relative_size, &
+                                                       polygon_x, polygon_y, vertex_counts, sample_mask)) then
                call set_ec_message('Sample averaging requires cell, link, or node geometry.')
                goto 1234
             end if
-         case default
-            call set_ec_message('Sample forcing supports only triangulation and averaging.')
-            goto 1234
-         end select
+         end if
 
-         ! Interpolate once using the same mesh geometry and settings as for a static sample field.
          sample_coefficients = dmiss
-         if (present(sample_transformcoef)) then
-            if (size(sample_transformcoef) /= NTRANSFORMCOEF) then
-               call set_ec_message('Invalid number of spatial interpolation coefficients for sample forcing.')
-               goto 1234
-            end if
-            sample_coefficients = sample_transformcoef
+         allocate (selection_x(npl), selection_y(npl), selection_z(npl))
+         if (npl > 0) then
+            selection_x = xpl(1:npl)
+            selection_y = ypl(1:npl)
+            selection_z = zpl(1:npl)
          end if
          sample_field_id = ecCreateField(ecInstancePtr)
          if (.not. ecFieldCreate1dArray(ecInstancePtr, sample_field_id, ndx)) then
             goto 1234
          end if
          sample_field => ecSupportFindField(ecInstancePtr, sample_field_id)
-         success = interpolate_fm_sample_file(filename, method, x, y, sample_field%arr1d, sample_target_location, &
-                                              sample_coefficients, mask)
+         success = ecInterpolateSampleFile(filename, ec_method, x, y, sample_field%arr1d, dmiss, jsferic, jasfer3d, &
+                                           npl, jins, selection_x, selection_y, selection_z, sample_coefficients, &
+                                           averaging_options, sample_mask, polygon_x, polygon_y, vertex_counts)
          if (.not. success) then
             goto 1234
          end if
@@ -726,6 +731,11 @@ contains
       ! Construct a new Connection, and connect source and target Items.
       ! ================================================================
       connectionId = ecCreateConnection(ecInstancePtr)
+
+      if (present(interpolation_options)) then
+         converter => ecSupportFindConverter(ecInstancePtr, converterId)
+         converter%extrapolation_radius = interpolation_options%extrapolation_radius
+      end if
 
       if (ec_filetype == provFile_samples) then
          if (.not. ecSetConnectionTargetMask(ecInstancePtr, connectionId, sample_mask)) then

@@ -77,7 +77,7 @@ module m_spatial_field
       integer :: method = -1 !< FM interpolation method enum, derived by validate_spatial_field_input. -1 = not yet derived.
       integer :: filetype = -1 !< FM file type enum, derived by validate_spatial_field_input. -1 = not yet derived.
       real(dp) :: data_value !< Time and space independent value, used for multiplying quantities with a constant factor.
-      real(dp) :: max_search_radius = -1.0_dp !< Maximum search radius (m) for spatial extrapolation. Negative means no limit.
+      real(dp) :: max_search_radius = -1.0_dp !< Maximum donor distance (m) for spatial extrapolation; nonpositive means no limit.
       logical :: invert_mask = .false. !< .true., the mask polygon selection must be inverted.
       logical :: is_variable_name_available = .false. !< .true. when the forcingVariableName= keyword was present in the block.
       logical :: is_extrapolation_allowed = .false. !< .true. when extrapolation beyond the source data extent is permitted.

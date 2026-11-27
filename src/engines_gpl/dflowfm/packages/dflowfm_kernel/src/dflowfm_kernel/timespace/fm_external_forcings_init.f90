@@ -958,7 +958,8 @@ contains
 
    !> Read a static 3D field using EC. Separate routine to avoid binding a temporary array to the EC module's target array.
    function initialize_static_3d_field(quantity, target_x, target_y, mask, vector_max, forcing_file, &
-                                filetype, method, oper, variable_name, ec_item, target_data) result(res)
+                                filetype, method, oper, variable_name, ec_item, target_data, interpolation_options) result(res)
+      use m_ec_interpolationsettings, only: t_interpolation_options
       use m_setzcs, only: setzcs
       use m_flow, only: zcs, kbot, ktop, ndkx
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
@@ -977,6 +978,7 @@ contains
       integer, intent(in) :: oper !< FM's operand enumeration.
       integer, intent(inout) :: ec_item !< Target item id for the created relation.
       real(dp), dimension(:), pointer, intent(inout) :: target_data !< Target data storage for the static field.
+      type(t_interpolation_options), intent(in) :: interpolation_options !< Spatial interpolation setup.
       logical :: res !< Whether or not relation was succesfully created.
 
       ! Local variables
@@ -991,7 +993,8 @@ contains
 
       res = ec_addtimespacerelation(quantity, target_x, target_y, mask, vector_max, forcing_file, &
                                     filetype, method, oper, z=zcs, pkbot=pkbot, pktop=pktop, &
-                                    varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data)
+                                    varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data, &
+                                    interpolation_options=interpolation_options)
       if (res) then
          res = ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, tunit, tstart_user)
       end if
@@ -1001,8 +1004,10 @@ contains
    !> Register an EC time-space relation for a spatial field.
    !! BCASCII uses the forcing-file argument; other file types use a variable name or data value.
    function add_timespace_field_relation(quantity, target_x, target_y, mask, vector_max, forcing_file, &
-                                         forcing_file_type, filetype, method, oper, variable_name, data_value, ec_item, target_data) result(res)
+                                         forcing_file_type, filetype, method, oper, variable_name, data_value, ec_item, target_data, &
+                                         target_location, interpolation_options) result(res)
       use m_meteo, only: ec_addtimespacerelation
+      use m_ec_interpolationsettings, only: t_interpolation_options
       use string_module, only: str_tolower
 
       character(len=*), intent(in) :: quantity !< Quantity identifier for the EC item.
@@ -1019,19 +1024,24 @@ contains
       integer, intent(in) :: oper !< Operand applied to the forcing values.
       integer, intent(inout) :: ec_item !< EC item identifier, set when the relation is registered.
       real(dp), dimension(:), pointer, intent(inout) :: target_data !< Target array associated with the EC relation.
+      integer, optional, intent(in) :: target_location !< FM mesh location of the target coordinates.
+      type(t_interpolation_options), optional, intent(in) :: interpolation_options !< Spatial interpolation settings.
       logical :: res !< .true. if the EC relation was registered successfully.
 
       select case (trim(str_tolower(forcing_file_type)))
       case ('bcascii')
          res = ec_addtimespacerelation(quantity, target_x, target_y, mask, vector_max, 'global', filetype, &
-                                       method, oper, forcingfile=forcing_file, tgt_item1=ec_item, tgt_data1=target_data)
+                                       method, oper, forcingfile=forcing_file, tgt_item1=ec_item, tgt_data1=target_data, &
+                                       target_location=target_location, interpolation_options=interpolation_options)
       case default
          if (len_trim(variable_name) > 0) then
             res = ec_addtimespacerelation(quantity, target_x, target_y, mask, vector_max, forcing_file, filetype, &
-                                          method, oper, varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data)
+                                          method, oper, varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data, &
+                                          target_location=target_location, interpolation_options=interpolation_options)
          else
             res = ec_addtimespacerelation(quantity, target_x, target_y, mask, vector_max, forcing_file, filetype, &
-                                          method, oper, data_value=data_value, tgt_item1=ec_item, tgt_data1=target_data)
+                                          method, oper, data_value=data_value, tgt_item1=ec_item, tgt_data1=target_data, &
+                                          target_location=target_location, interpolation_options=interpolation_options)
          end if
       end select
    end function add_timespace_field_relation
@@ -1039,10 +1049,11 @@ contains
 !> Register the time-and-space dependent 3D field relation.
 !! No values are ready/set yet, that should be done by ec_gettimespacevalues in the timeloop.
    function add_timespace_3D_field_relation(quantity, target_x, target_y, mask, vector_max, forcing_file, &
-                                                        filetype, method, oper, variable_name, ec_item) result(res)
+                                                        filetype, method, oper, variable_name, ec_item, interpolation_options) result(res)
       use m_setzcs, only: setzcs
       use m_flow, only: zcs, kbot, ktop
       use m_meteo, only: ec_addtimespacerelation
+      use m_ec_interpolationsettings, only: t_interpolation_options
 
       character(len=*), intent(in) :: quantity !< Quantity id (often coming from external forcings file)
       character(len=*), intent(in) :: forcing_file !< File containing the source data values.
@@ -1055,6 +1066,7 @@ contains
       integer, intent(in) :: method !< FM's method enumeration.
       integer, intent(in) :: oper !< FM's operand enumeration.
       integer, intent(inout) :: ec_item !< Target item id for the created relation.
+      type(t_interpolation_options), intent(in) :: interpolation_options !< Spatial interpolation setup.
       logical :: res !< Whether or not relation was succesfully created.
 
       integer, pointer :: pkbot(:), pktop(:)
@@ -1065,7 +1077,7 @@ contains
 
       res = ec_addtimespacerelation(quantity, target_x, target_y, mask, vector_max, forcing_file, &
                                     filetype, method, oper, z=zcs, pkbot=pkbot, pktop=pktop, &
-                                    varname=variable_name, tgt_item1=ec_item)
+                                    varname=variable_name, tgt_item1=ec_item, interpolation_options=interpolation_options)
    end function add_timespace_3D_field_relation
 
    !> Handle a [Spatial]/[Initial]/[Parameter] block whose forcingFileType is 1dField.
@@ -1133,8 +1145,7 @@ contains
    end function init_field1d_block
 
    function init_spatial_fields(block_ptr, base_dir, file_name, group_name) result(res)
-      use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
-      use m_sferic, only: jsferic
+      use m_ec_interpolationsettings, only: t_interpolation_options, t_averaging_options
       use string_module, only: istarts_with, str_tolower
       use messageHandling, only: err_flush, mess, msgbuf, LEVEL_INFO
       use tree_data_types, only: tree_data
@@ -1143,7 +1154,7 @@ contains
       use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, fm_ext_force_name_to_ec_item, ec_addtimespacerelation
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
       use m_ec_parameters, only: ec_undef_int
-      use timespace_parameters, only: WEIGHTFACTORS, FIELD1D, DATAVALUE, NCGRID, SAMPLES
+      use timespace_parameters, only: WEIGHTFACTORS, FIELD1D, DATAVALUE, NCGRID, SAMPLES, METHOD_AVERAGING
       use properties, only: prop_get
       use m_alloc, only: realloc, reallocP
       use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input, &
@@ -1177,6 +1188,7 @@ contains
       integer :: kx, first_index
       integer :: ec_item
       type(t_spatial_field_input) :: input
+      type(t_interpolation_options) :: interpolation_options
       real(dp), parameter :: DEFAULT_AIR_PRESSURE = 100000.0_dp
 
       real(kind=dp), dimension(:), pointer :: target_data
@@ -1279,7 +1291,7 @@ contains
          call construct_mask(mask, target_location_type, parse_spatial_location_type(trim(input%location_type)), target_mask_file, invert_mask, ierr, &
                              exclude_boundary_nodes=is_static_field)
 
-         call init_spatial_extrapolation(input%max_search_radius, jsferic)
+         interpolation_options%extrapolation_radius = input%max_search_radius
 
          if (is_static_field) then
             if (target_location_type == UNC_LOC_3DV) then ! vertical profiles are special
@@ -1320,13 +1332,15 @@ contains
                   end if
 
                   if (target_location_type == UNC_LOC_S3D) then ! explicit full 3D target
-                     res = initialize_static_3d_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data)
+                     res = initialize_static_3d_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, &
+                                                      oper, variable_name, ec_item, target_data, interpolation_options)
                      ec_item = ec_undef_int
                   ! TODO: support other time-dependent filetypes as an initial field
                   else if (any(filetype == [DATAVALUE, NCGRID]) .and. associated(target_data)) then
                      res = add_timespace_field_relation(quantity, target_x, target_y, mask, kx, forcing_file, &
                                                         forcing_file_type, filetype, method, oper, variable_name, &
-                                                        input%data_value, ec_item, target_data)
+                                                        input%data_value, ec_item, target_data, &
+                                                        interpolation_options=interpolation_options)
                      if (res) then
                         res = ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, tunit, tstart_user, target_data)
                      end if
@@ -1363,23 +1377,18 @@ contains
                mapped_item1 = ec_undef_int
             end if
          else
-            if (filetype == SAMPLES .and. target_location_type /= UNC_LOC_S3D) then
-               block
-                  real(dp), dimension(NTRANSFORMCOEF) :: sample_coefficients
-
-                  sample_coefficients = dmiss
-                  call averaging_params_to_transformcoef(input%averaging_input, sample_coefficients)
-                  res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, &
-                                                tgt_item1=ec_item, tgt_data1=target_data, sample_location=target_location_type, &
-                                                sample_transformcoef=sample_coefficients)
-               end block
-            else if (target_location_type == UNC_LOC_S3D) then
+            if (filetype == SAMPLES .and. method == METHOD_AVERAGING .and. target_location_type /= UNC_LOC_S3D) then
+               associate (avg => input%averaging_input, options => interpolation_options)
+                  options%averaging = t_averaging_options(avg%averaging_type, avg%num_min, avg%rel_size, avg%percentile)
+               end associate
+            end if
+            if (target_location_type == UNC_LOC_S3D) then
                res = add_timespace_3D_field_relation(quantity, target_x, target_y, mask, kx, forcing_file, &
-                                                     filetype, method, oper, variable_name, ec_item)
+                                                     filetype, method, oper, variable_name, ec_item, interpolation_options)
             else
                res = add_timespace_field_relation(quantity, target_x, target_y, mask, kx, forcing_file, &
                                                   forcing_file_type, filetype, method, oper, variable_name, &
-                                                  input%data_value, ec_item, target_data)
+                                                  input%data_value, ec_item, target_data, target_location_type, interpolation_options)
             end if
          end if
 

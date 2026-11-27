@@ -300,6 +300,7 @@ contains
 
       x = [0.5_dp, 1.5_dp, 1.6_dp, 100.0_dp]
       y = 0.5_dp
+      target_set%ofType = elmSetType_cartesian
       target_set%x => x
       target_set%y => y
       weights%indices => indices
@@ -310,6 +311,11 @@ contains
       success = find_harmonic_extrapolation_donors(target_set, weights, [1, 0, 0, 0])
       call f90_expect_true(success, 'missing targets inside the grid must find donors')
       call f90_expect_true(all(donors == [0, 1, 1, 0]), 'missing targets must not donate to each other; outside targets must be skipped')
+
+      donors = 0
+      success = find_harmonic_extrapolation_donors(target_set, weights, [1, 0, 0, 0], extrapolation_radius=1.0_dp)
+      call f90_expect_true(success, 'no donor within the radius is not an error')
+      call f90_expect_true(all(donors == [0, 1, 0, 0]), 'the radius includes its boundary and excludes farther donors')
    end subroutine test_find_harmonic_donors
 
    !$gtest

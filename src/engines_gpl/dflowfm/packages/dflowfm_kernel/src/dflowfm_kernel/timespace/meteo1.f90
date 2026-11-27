@@ -3276,7 +3276,7 @@ contains
       case (METHOD_AVERAGING)
          ec_method = interpolate_averaging
          averaging_options = sample_averaging_options(coefficients)
-         if (.not. get_sample_averaging_footprints(location, size(values), averaging_options%relative_size, &
+         if (.not. sample_averaging_polygons(location, size(values), averaging_options%relative_size, &
                                                     polygon_x, polygon_y, vertex_counts, target_mask)) then
             call set_ec_message('XYZ sample averaging requires cell, link, or node geometry.')
             return
@@ -3314,8 +3314,8 @@ contains
       end if
    end function sample_averaging_options
 
-   !> Build averaging footprints at the FM target locations.
-   function get_sample_averaging_footprints(location, num_points, relative_size, polygon_x, polygon_y, vertex_counts, mask) result(success)
+   !> Build a search polygon around each FM target to select samples for averaging.
+   function sample_averaging_polygons(location, num_points, relative_size, polygon_x, polygon_y, vertex_counts, mask) result(success)
       use fm_location_types, only: UNC_LOC_U, UNC_LOC_S, UNC_LOC_CN
       use gridoperations, only: get_cellpolygon, make_dual_cell
       use m_flowgeom, only: ln2lne, ln, Wu1Duni
@@ -3370,13 +3370,11 @@ contains
          return
       end select
       success = .true.
-   end function get_sample_averaging_footprints
+   end function sample_averaging_polygons
 
    function timespaceinitialfield(xu, yu, zu, nx, filename, filetype, method, operand, transformcoef, iprimpos, kcc) result(success) !
       use kdtree2Factory
       use m_samples
-      use m_netw
-      use m_flowgeom, only: ln2lne, ln, lnx, Wu1Duni
       use m_netw
       use m_partitioninfo
       use unstruc_netcdf
@@ -3388,11 +3386,9 @@ contains
       use m_polygon, only: NPL, xpl, ypl, zpl
       use m_ec_basic_interpolation, only: triinterp2, averaging2, TerrorInfo
       use geometry_module, only: dbpinpol
-      use gridoperations
       use unstruc_model, only: getoutputdir
       use system_utils, only: FILESEP
       use m_arcinfo
-      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN
       use m_reapol
       use m_delsam
       use m_reasam
@@ -3430,16 +3426,13 @@ contains
       ! Local variables
       integer :: ierr
       integer :: minp0, inside, k, jdla, mout
-      integer :: n6, L, Lk, n, n1, n2, i
+      integer :: n1, n2
       integer :: ierror, jakc
       integer :: jakdtree
       integer :: local_method
       integer, dimension(:), allocatable :: nnn
-      integer, dimension(:), allocatable :: LnnL, Lorg
-      real(kind=dp) :: zz
       type(t_averaging_options) :: averaging_options
       real(kind=dp), dimension(:), allocatable :: zh
-      real(kind=dp), dimension(:), allocatable :: xxx, yyy
       real(kind=dp), dimension(:, :), allocatable :: xx, yy
       type(raster_data) :: raster
       character(len=5) :: sd
@@ -3587,57 +3580,12 @@ contains
 
             averaging_options = sample_averaging_options(transformcoef)
 
-            if (iprimpos == UNC_LOC_U) then ! primitime position = velocitypoint, cellfacemid
-               n6 = 4
-               allocate (xx(n6, lnx), yy(n6, lnx), nnn(lnx))
-               do L = 1, lnx
-                  xx(1, L) = xzw(ln(1, L))
-                  yy(1, L) = yzw(ln(1, L))
-                  xx(3, L) = xzw(ln(2, L))
-                  yy(3, L) = yzw(ln(2, L))
-                  Lk = ln2lne(L)
-                  xx(2, L) = xk(kn(1, Lk))
-                  yy(2, L) = yk(kn(1, Lk))
-                  xx(4, L) = xk(kn(2, Lk))
-                  yy(4, L) = yk(kn(2, Lk))
-               end do
-
-               nnn = 4 ! array nnn
-            else if (iprimpos == UNC_LOC_S) then ! primitime position = waterlevelpoint, cell centre
-               n6 = maxval(netcell%n)
-               if (jsferic == 1) then
-                  n6 = n6 + 2 ! safety at poles
-               end if
-
-               allocate (xx(n6, nx), yy(n6, nx), nnn(nx))
-               allocate (LnnL(n6), Lorg(n6))
-
-               do n = 1, nx
-                  call get_cellpolygon(n, n6, nnn(n), averaging_options%relative_size, xx(1, n), yy(1, n), LnnL, Lorg, zz)
-               end do
-
-               deallocate (LnnL, Lorg)
-            else if (iprimpos == UNC_LOC_CN) then ! primitime position = netnode, cell corner
-               n6 = 3 * maxval(nmk) ! 2: safe upper bound , 3 : even safer!
-               allocate (xx(n6, numk), yy(n6, numk), nnn(numk), xxx(n6), yyy(n6))
-
-               do k = 1, numk
-                  if (jakc == 1) then
-                     if (kcc(k) /= 1) then
-                        cycle
-                     end if
-                  end if
-
-                  ! get the cell list
-                  call make_dual_cell(k, n6, averaging_options%relative_size, xxx, yyy, nnn(k), Wu1Duni)
-
-                  do i = 1, nnn(k)
-                     xx(i, k) = xxx(i)
-                     yy(i, k) = yyy(i)
-                  end do
-               end do
-
-               deallocate (xxx, yyy)
+            if (.not. sample_averaging_polygons(iprimpos, nx, averaging_options%relative_size, xx, yy, nnn, kcc)) then
+               write (msgbuf, '(3a,i0)') 'Cannot build averaging polygons for file ''', trim(filename), &
+                  ''': unsupported target location ', iprimpos
+               call warn_flush()
+               call delsam(-1)
+               return
             end if
 
             if (jakdtree == 1) then
@@ -3650,7 +3598,7 @@ contains
                end if
             end if
 
-            call averaging2(1, ns, xs, ys, zs, ipsam, xu, yu, zh, nx, xx, yy, n6, nnn, jakdtree, &
+            call averaging2(1, ns, xs, ys, zs, ipsam, xu, yu, zh, nx, xx, yy, size(xx, 1), nnn, jakdtree, &
                             dmiss, jsferic, jasfer3D, JINS, NPL, xpl, ypl, zpl, errorInfo, averaging_options, kcc)
             deallocate (xx, yy, nnn)
 
@@ -3961,7 +3909,8 @@ module m_meteo
                                                       dtnodal, quiet, varname, varname2, data_value, targetMaskSelect, &
                                                       tgt_data1, tgt_data2, tgt_data3, tgt_data4, &
                                                       tgt_item1, tgt_item2, tgt_item3, tgt_item4, &
-                                                      multuni1, multuni2, multuni3, multuni4, sample_location, sample_transformcoef)
+                                                      multuni1, multuni2, multuni3, multuni4, target_location, interpolation_options)
+         use m_ec_interpolationsettings, only: t_interpolation_options
          character(len=*), intent(in) :: name !< Name for the target Quantity, possibly compounded with a tracer name.
          real(hp), dimension(:), intent(in) :: x !< Array of x-coordinates for the target ElementSet.
          real(hp), dimension(:), intent(in) :: y !< Array of y-coordinates for the target ElementSet.
@@ -3998,8 +3947,8 @@ module m_meteo
          integer, optional, intent(inout), target :: multuni2 !< multiple uni item ID 2
          integer, optional, intent(inout), target :: multuni3 !< item ID 3
          integer, optional, intent(inout), target :: multuni4 !< item ID 4
-         integer, optional, intent(in) :: sample_location !< Mesh location type for sample averaging.
-         real(hp), dimension(:), optional, intent(in) :: sample_transformcoef !< Spatial interpolation settings for samples.
+         integer, optional, intent(in) :: target_location !< FM mesh location represented by the target coordinates.
+         type(t_interpolation_options), optional, intent(in) :: interpolation_options !< Per-relation interpolation settings.
       end function ec_addtimespacerelation
    end interface
 

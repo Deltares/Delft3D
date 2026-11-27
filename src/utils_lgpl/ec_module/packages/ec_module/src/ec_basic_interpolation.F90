@@ -86,6 +86,12 @@ module m_ec_interpolationsettings
       real(kind=hp) :: percentile = 0.0_hp !< Percentage of the lowest or highest values to average for min/max.
    end type t_averaging_options
 
+   !> Per-relation spatial interpolation settings.
+   type :: t_interpolation_options
+      type(t_averaging_options) :: averaging !< Settings used for footprint averaging.
+      real(kind=hp) :: extrapolation_radius = -1.0_hp !< Maximum donor distance (m); nonpositive preserves unrestricted search.
+   end type t_interpolation_options
+
    type(t_averaging_options) :: averaging_settings !< Default options shared by legacy callers and the GUI.
 
 contains

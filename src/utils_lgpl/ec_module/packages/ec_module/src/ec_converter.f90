@@ -3120,7 +3120,8 @@ contains
          return
       end if
       if (converter%interpolationType == extrapolate_spacetimeSaveWeightFactors) then
-         success = find_harmonic_extrapolation_donors(target_item%elementSetPtr, converter%indexWeight, temp_proj%mask)
+         success = find_harmonic_extrapolation_donors(target_item%elementSetPtr, converter%indexWeight, temp_proj%mask, &
+                                                    converter%extrapolation_radius)
          if (.not. success) then
             return
          end if
@@ -3253,46 +3254,88 @@ contains
    end function interpolate_harmonic_coefficients
 
    !> Using kd-tree search, find a target donor for each unmasked target inside the source grid.
-   function find_harmonic_extrapolation_donors(targetset, weights, mask) result(success)
+   function find_harmonic_extrapolation_donors(targetset, weights, mask, extrapolation_radius) result(success)
       use kdtree2Factory
       type(tEcElementSet), intent(in) :: targetset !< Target coordinates used to search for target donors.
       type(tEcIndexWeight), intent(inout) :: weights !< Set of weights to update as to include the donor target index for each unmasked target.
       integer, dimension(:), intent(in) :: mask !< Target validity mask: zero denotes missing harmonic coefficients.
+      real(dp), optional, intent(in) :: extrapolation_radius !< Positive maximum donor distance in metres.
       logical :: success !< Whether donor discovery completed successfully.
 
       type(kdtree_instance) :: tree
       real(dp), dimension(:), allocatable :: donor_candidate_x
-      integer :: j, istat
+      integer :: j, istat, spherical
+      real(dp) :: radius
 
       success = .false.
       donor_candidate_x = targetset%x
+      radius = -1.0_dp
+      if (present(extrapolation_radius)) then
+         radius = extrapolation_radius
+      end if
+      spherical = 0
+      if (radius > 0.0_dp) then
+         spherical = merge(1, 0, targetset%ofType == elmSetType_spheric)
+      end if
       
       do j = 1, size(mask)
-         if (mask(j) == 0 .and. all(weights%indices(:, j) > 0)) then
+         if (radius > 0.0_dp) then
+            if (mask(j) == 0 .or. any(weights%indices(:, j) <= 0)) then
+               donor_candidate_x(j) = ec_undef_hp
+            end if
+         else if (mask(j) == 0 .and. all(weights%indices(:, j) > 0)) then
             donor_candidate_x(j) = ec_undef_hp ! exclude targets that need donors and lie inside the grid from being donors themselves.
          end if
       end do
+      if (radius > 0.0_dp .and. .not. any(mask /= 0 .and. all(weights%indices > 0, dim=1))) then
+         success = .true.
+         return
+      end if
       do j = 1, size(mask)
          if (mask(j) /= 0 .or. any(weights%indices(:, j) <= 0)) then
             cycle
          end if
          if (weights%substndx(j) == 0) then
             if (tree%itreestat /= ITREE_OK) then
-               call build_kdtree(tree, size(donor_candidate_x), donor_candidate_x, targetset%y, istat, 0, ec_undef_hp)
+               call build_kdtree(tree, size(donor_candidate_x), donor_candidate_x, targetset%y, istat, spherical, ec_undef_hp)
                if (istat /= 0 .or. tree%itreestat /= ITREE_OK) then
                   call delete_kdtree2(tree)
                   call set_ec_message("ERROR: ec_converter::ecConverterHarmonicCoefficients: Unable to find harmonic extrapolation donors.")
                   return
                end if
             end if
-            call make_queryvector_kdtree(tree, targetset%x(j), targetset%y(j), 0)
-            call kdtree2_n_nearest(tree%tree, tree%qv, 1, tree%results)
-            weights%substndx(j) = tree%results(1)%idx
+            weights%substndx(j) = nearest_extrapolation_donor(tree, targetset, j, spherical, radius)
          end if
       end do
       call delete_kdtree2(tree)
       success = .true.
    end function find_harmonic_extrapolation_donors
+
+   integer function nearest_extrapolation_donor(tree, targetset, target, spherical, radius) result(donor)
+      use kdtree2Factory
+      use geometry_module, only: mesh_distance => dbdistance
+      use physicalconsts, only: earth_radius
+
+      type(kdtree_instance), intent(inout) :: tree
+      type(tEcElementSet), intent(in) :: targetset
+      integer, intent(in) :: target, spherical
+      real(dp), intent(in) :: radius
+      real(dp) :: distance
+
+      call make_queryvector_kdtree(tree, targetset%x(target), targetset%y(target), spherical)
+      call kdtree2_n_nearest(tree%tree, tree%qv, 1, tree%results)
+      donor = tree%results(1)%idx
+      if (radius > 0.0_dp .and. donor > 0) then
+         distance = mesh_distance(targetset%x(target), targetset%y(target), targetset%x(donor), targetset%y(donor), &
+                                  spherical, 1, ec_undef_hp)
+         if (spherical == 1) then
+            distance = 2.0_dp * earth_radius * asin(min(1.0_dp, distance / (2.0_dp * earth_radius)))
+         end if
+         if (distance > radius) then
+            donor = 0
+         end if
+      end if
+   end function nearest_extrapolation_donor
 
    !> Find the projection for a source/target/converter key, appending an empty entry if absent.
    !! Growing the collection invalidates pointers to previously returned entries.
@@ -3415,7 +3458,7 @@ contains
       ! Step 4: copy donor values to unmasked targets.
       if (converter%interpolationType == extrapolate_spacetimeSaveWeightFactors) then
          do j = 1, size(proj%mask)
-            if (proj%mask(j) == 0 .and. all(weights%indices(:, j) > 0)) then
+            if (proj%mask(j) == 0 .and. all(weights%indices(:, j) > 0) .and. weights%substndx(j) > 0) then
                target_field(j) = target_field(weights%substndx(j))
             end if
          end do
@@ -4051,7 +4094,11 @@ contains
 
                   if (connection%converterPtr%interpolationType == extrapolate_spacetimeSaveWeightFactors) then
                      allocate (x_extrapolate(n_points))
-                     x_extrapolate = targetElementSet%x
+                     if (connection%converterPtr%extrapolation_radius > 0.0_dp) then
+                        x_extrapolate = ec_undef_hp
+                     else
+                        x_extrapolate = targetElementSet%x
+                     end if
                   end if
 
                   allocate (missing(n_points))
@@ -4168,20 +4215,29 @@ contains
                   end do ! points j
 
                   if (connection%converterPtr%interpolationType == extrapolate_spacetimeSaveWeightFactors) then ! if extrapolation permitted ...
+                     if (connection%converterPtr%extrapolation_radius > 0.0_dp .and. &
+                         .not. any(x_extrapolate /= ec_undef_hp)) then
+                        missing = .false.
+                     end if
                      do j = 1, n_points ! Loop over the grid for missing in the target grid
                         if (missing(j)) then ! Can only be an interior point with ORIGINALLY valid mp and np
                            if (indexWeight%substndx(j) == 0) then ! if we had not yet searched for a replacement value in the target grid, do so.
+                              jsferic = merge(1, 0, connection%converterPtr%extrapolation_radius > 0.0_dp .and. &
+                                                    targetElementSet%ofType == elmSetType_spheric)
                               if (treeinst%itreestat /= ITREE_OK) then
-                                 !                                   jsferic = merge(1,0,targetElementSet%ofType == elmSetType_spheric)                  ! adopt the global jsferic setting of the EC-module instance
-                                 jsferic = 0 ! in EC-converter treat all coordinates as carthesian
-                                 ! Now kdtree over target locations which do NOT yet have a value ('missing')
                                  call build_kdtree(treeinst, n_points, x_extrapolate, targetElementSet%y, ierr, jsferic, ec_undef_hp)
+                                 if (ierr /= 0 .or. treeinst%itreestat /= ITREE_OK) then
+                                    call delete_kdtree2(treeinst)
+                                    call set_ec_message('ERROR: ecConverterNetcdf: Unable to build the extrapolation donor search tree.')
+                                    return
+                                 end if
                               end if
-                              call make_queryvector_kdtree(treeinst, targetElementSet%x(j), targetElementSet%y(j), jsferic)
-                              call kdtree2_n_nearest(treeinst%tree, treeinst%qv, 1, treeinst%results) ! use the first nearest neighbour
-                              indexWeight%substndx(j) = treeinst%results(1)%idx ! store its index for for later use (in an array that is init to zero)
+                              indexWeight%substndx(j) = nearest_extrapolation_donor(treeinst, targetElementSet, j, jsferic, &
+                                                                                  connection%converterPtr%extrapolation_radius)
                            end if
-                           targetValues(j) = targetValues(indexWeight%substndx(j)) ! and copy its value as a target value for the target point with missing data.
+                           if (indexWeight%substndx(j) > 0) then
+                              targetValues(j) = targetValues(indexWeight%substndx(j))
+                           end if
                         end if
                      end do ! points j
                   end if

@@ -264,6 +264,7 @@ module m_ec_typedefs
       type(tEcIndexWeight), pointer :: indexWeight => null() !<
       type(tEcMask) :: srcmask !< Array with mask info on selection of gridpoints
       logical :: extrapolated = .false. !< indexWeight is updated as a result of extrapolation
+      real(hp) :: extrapolation_radius = -1.0_hp !< Maximum donor distance in metres; nonpositive means unrestricted.
       real(hp), pointer :: inputptr !< pointer to an optional input argument (e.g.for qh lookup tables)
    end type tEcConverter
 
