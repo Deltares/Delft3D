@@ -97,6 +97,7 @@ module m_unstruc_netcdf_data
       integer :: id_erolaydim = -1 !< Dimension ID for location of erodable layer thickness.
       integer :: id_sedtotdim = -1 !< Dimension ID for number of all sediment fractions.
       integer :: id_sedsusdim = -1 !< Dimension ID for number of suspended sediment fractions.
+      integer :: id_frazildim = -1 !< Dimension ID for number of frazil ice classes.
       ! arrays to identify 1d mesh and 1d2d contacts !> TODO: Remove these as they are already in t_fm_flowgeom
       integer, allocatable :: edgetoln(:)
       integer, allocatable :: contactstoln(:)
@@ -436,6 +437,7 @@ module m_unstruc_netcdf_data
       integer :: id_frac_name = -1
       integer :: id_susfrac_name = -1
       integer :: id_sedfrac(MAX_ID_VAR) = -1
+      integer :: id_frazilfrac(MAX_ID_VAR) = -1
       integer :: id_kmxsed(MAX_ID_VAR) = -1
       integer :: id_subsupl(MAX_ID_VAR) = -1
       ! for 1d only
