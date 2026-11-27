@@ -1,8 +1,6 @@
 #include "ini/IniValueConversion.h"
 #include "ini/StringUtils.h"
 
-#include <algorithm>
-#include <cctype>
 #include <format>
 #include <locale>
 #include <sstream>
@@ -209,8 +207,7 @@ namespace ini::conversion
             {"true", true}, {"false", false}, {"yes", true}, {"no", false}, {"1", true}, {"0", false},
         };
 
-        std::string lower = trim(std::string(value));
-        std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+        const std::string lower = ini::tolower(trim(std::string(value)));
 
         const auto it = mappings.find(lower);
         if (it != mappings.end())

@@ -352,7 +352,7 @@ namespace ini::test
     }
 
     INSTANTIATE_TEST_SUITE_P(IniValueConversionTest, IniValueConversionFromStringInvalidBoolTest,
-                             ::testing::Values("tue", "fals", "fals e", "#true", "invalid"));
+                             ::testing::Values("tue", "fals", "fals e", "#true", "invalid", "trué"));
 
     class IniValueConversionFromStringBoolTest : public ::testing::TestWithParam<std::pair<std::string, bool>>
     {
