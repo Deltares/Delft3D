@@ -102,7 +102,11 @@ type icecover_type
    !
    integer  :: model_type                        !< type of the ice cover (one of ICECOVER_...)
    integer  :: frict_type                        !< friction type exerted by the ice cover
-   logical  :: frazil                            !< enable single frazil ice class transport and production
+   logical  :: frazil                            !< enable frazil ice transport and supercooling production
+   integer  :: frazil_num_classes                !< number of frazil size classes
+   real(fp) :: frazil_rise_velocity_min          !< rise velocity for smallest frazil class (m/s, negative is upward)
+   real(fp) :: frazil_rise_velocity_max          !< rise velocity for largest frazil class (m/s, negative is upward)
+   real(fp) :: frazil_production_coefficient     !< production coefficient from supercooling (kg m-3 s-1 K-1)
    !
    integer  :: ice_area_fraction_forcing_available    !< flag indicating whether ice area fraction is available via external forcing
    integer  :: ice_thickness_forcing_available   !< flag indicating whether ice thickness is available via external forcing
@@ -222,6 +226,10 @@ function select_icecover_model(icecover, model_type) result(istat)
    icecover%frict_type                = FRICT_AS_DRAG_COEFF
    icecover%frict_val                 = 0.005_fp
    icecover%frazil                    = .false.
+   icecover%frazil_num_classes        = 1
+   icecover%frazil_rise_velocity_min  = -5.0e-4_fp
+   icecover%frazil_rise_velocity_max  = -5.0e-4_fp
+   icecover%frazil_production_coefficient = 1.0e-4_fp
    
    if (model_type == ICECOVER_NONE) then
        istat = clr_icecover(icecover)

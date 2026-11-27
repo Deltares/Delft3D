@@ -52,7 +52,8 @@ contains
       use m_nudge, only: nudge_rate, nudge_temperature, nudge_salinity
       use m_turbulence, only: Schmidt_number_salinity, Prandtl_number_temperature, Schmidt_number_tracer, sigdifi, sigsed, wsf
       use fm_external_forcings_data, only: wstracers
-      use m_fm_icecover, only: ice_frazil, ice_frazil_constituent, FRAZIL_RISE_VELOCITY, FRAZIL_PRODUCTION_COEFFICIENT, freezing_temperature
+      use m_fm_icecover, only: ice_frazil, ice_frazil_constituents, ice_frazil_class_rise_velocity, ice_frazil_production_coefficient, &
+                               freezing_temperature
       use m_source_sink, only: source_sinks, FLOWCELL_SINK, FLOWCELL_SOURCE, BOTTOM_LAYER_SINK, TOP_LAYER_SINK, BOTTOM_LAYER_SOURCE, TOP_LAYER_SOURCE
       use m_sediment, only: sed, sedtra, stm_included, stmpar, jased, mxgr, ws
       use m_mass_balance_area_data, only: jamba, mbadefdomain, mbafluxheat, mbafluxsorsin
@@ -76,6 +77,7 @@ contains
       integer :: iconst, kk, kkk, k, kb, kt, n, kk2, imba, jamba_src
       integer :: jsed ! counter for suspended sediment fractions
       integer :: jtra ! counter for tracers
+      integer :: ifrazil, frazil_num_active, iconst_frazil
       logical :: use_vertical_molecular_diffusion
       real(kind=dp), parameter :: dtol = 1e-8_dp
       real(kind=dp) :: spir_ce, spir_be, spir_e, alength_a, time_a, alpha, fcoriocof, qsrck, qsrckk, dzss
@@ -167,8 +169,13 @@ contains
          end do
       end if
 
-      if (ice_frazil .and. ice_frazil_constituent > 0) then
-         wsf(ice_frazil_constituent) = real(FRAZIL_RISE_VELOCITY, dp)
+      if (ice_frazil .and. allocated(ice_frazil_constituents)) then
+         do ifrazil = 1, size(ice_frazil_constituents)
+            iconst_frazil = ice_frazil_constituents(ifrazil)
+            if (iconst_frazil > 0) then
+               wsf(iconst_frazil) = real(ice_frazil_class_rise_velocity(ifrazil), dp)
+            end if
+         end do
       end if
 
       ! add lateral in- and outflow of constituents as sources and sinks
@@ -227,7 +234,7 @@ contains
 
          end do
 
-         if (ice_frazil .and. ice_frazil_constituent > 0 .and. ITEMP > 0 .and. kt >= kb) then
+         if (ice_frazil .and. allocated(ice_frazil_constituents) .and. ITEMP > 0 .and. kt >= kb) then
             salinity = backgroundsalinity
             if (ISALT > 0) then
                salinity = constituents(ISALT, kt)
@@ -235,8 +242,21 @@ contains
             t_freeze = real(freezing_temperature(real(salinity, fp)), dp)
             supercooling = max(0.0_dp, t_freeze - constituents(ITEMP, kt))
             if (supercooling > 0.0_dp .and. hs(kk) > epshu) then
-               frazil_source = real(FRAZIL_PRODUCTION_COEFFICIENT, dp) * supercooling
-               const_sour(ice_frazil_constituent, kt) = const_sour(ice_frazil_constituent, kt) + frazil_source
+               frazil_num_active = 0
+               do ifrazil = 1, size(ice_frazil_constituents)
+                  if (ice_frazil_constituents(ifrazil) > 0) then
+                     frazil_num_active = frazil_num_active + 1
+                  end if
+               end do
+               if (frazil_num_active > 0) then
+                  frazil_source = real(ice_frazil_production_coefficient, dp) * supercooling / real(frazil_num_active, dp)
+                  do ifrazil = 1, size(ice_frazil_constituents)
+                     iconst_frazil = ice_frazil_constituents(ifrazil)
+                     if (iconst_frazil > 0) then
+                        const_sour(iconst_frazil, kt) = const_sour(iconst_frazil, kt) + frazil_source
+                     end if
+                  end do
+               end if
             end if
          end if
 

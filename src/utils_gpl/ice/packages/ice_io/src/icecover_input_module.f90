@@ -141,6 +141,27 @@ subroutine read_icecover_parameters(icecover, md_ptr, chapter, error)
    call prop_get(md_ptr, chapter, 'reduceSurfExch', icecover%reduce_surface_exchange)
    call prop_get(md_ptr, chapter, 'reduceWaves', icecover%reduce_waves)
    call prop_get(md_ptr, chapter, 'frazil', icecover%frazil)
+   call prop_get(md_ptr, chapter, 'frazilNumClasses', icecover%frazil_num_classes)
+   call prop_get(md_ptr, chapter, 'frazilRiseVelocityMin', icecover%frazil_rise_velocity_min)
+   call prop_get(md_ptr, chapter, 'frazilRiseVelocityMax', icecover%frazil_rise_velocity_max)
+   call prop_get(md_ptr, chapter, 'frazilProductionCoefficient', icecover%frazil_production_coefficient)
+   if (icecover%frazil) then
+      if (icecover%frazil_num_classes < 1) then
+         call mess(LEVEL_ERROR, 'invalid frazilNumClasses; value must be >= 1')
+         error = .true.
+         return
+      end if
+      if (icecover%frazil_rise_velocity_min > icecover%frazil_rise_velocity_max) then
+         call mess(LEVEL_ERROR, 'invalid frazil rise velocity range; require frazilRiseVelocityMin <= frazilRiseVelocityMax')
+         error = .true.
+         return
+      end if
+      if (icecover%frazil_production_coefficient < 0.0) then
+         call mess(LEVEL_ERROR, 'invalid frazilProductionCoefficient; value must be >= 0')
+         error = .true.
+         return
+      end if
+   end if
    tmp = ' '
    call prop_get(md_ptr, chapter, 'modifyWindDrag', tmp)
    call str_lower(tmp, len(tmp))
@@ -309,6 +330,16 @@ function echo_icecover(icecover, lundia) result (error)
 
    txtput1 = '  Frazil transport'
    call write_logical(lundia, txtput1, icecover%frazil)
+   if (icecover%frazil) then
+      txtput1 = '  Frazil number of classes'
+      write (lundia, '(2a,i0)') txtput1, ': ', icecover%frazil_num_classes
+      txtput1 = '  Frazil rise velocity min'
+      write (lundia, '(2a,e20.4)') txtput1, ': ', icecover%frazil_rise_velocity_min
+      txtput1 = '  Frazil rise velocity max'
+      write (lundia, '(2a,e20.4)') txtput1, ': ', icecover%frazil_rise_velocity_max
+      txtput1 = '  Frazil production coefficient'
+      write (lundia, '(2a,e20.4)') txtput1, ': ', icecover%frazil_production_coefficient
+   end if
 
    txtput1 = '  Modify wind drag'
    select case (icecover%modify_winddrag)
