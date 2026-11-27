@@ -1882,6 +1882,90 @@ contains
    end subroutine test_static_datavalue_dynamic_multiply_resets_base
 
    !$gtest
+   subroutine test_standalone_pseudo_air_pressure() bind(C)
+      call check_standalone_water_level_forcing('pseudoAirPressure', 'Pa')
+   end subroutine test_standalone_pseudo_air_pressure
+
+   !$gtest
+   subroutine test_standalone_water_level_correction() bind(C)
+      call check_standalone_water_level_forcing('waterLevelCorrection', 'm')
+   end subroutine test_standalone_water_level_correction
+
+   subroutine check_standalone_water_level_forcing(quantity, unit)
+      use dfm_error, only: DFM_NOERR
+      use fm_external_forcings, only: set_external_forcings
+      use m_flowparameters, only: jatidep
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_fm_icecover, only: ja_icecover
+      use m_wind, only: jawind, air_pressure_available, pseudo_air_pressure, water_level_correction
+      use timers, only: timini
+
+      character(len=*), intent(in) :: quantity, unit
+      character(len=len(quantity) + 4) :: ext_file
+      character(len=len(quantity) + 3) :: bc_file
+      type(t_abort_threshold_guard) :: abort_threshold
+      type(tree_data), pointer :: ext_ptr, block_ptr
+      real(dp), dimension(:), pointer :: values
+      integer :: iresult
+      logical :: initialized
+
+      ext_file = quantity//'.ext'
+      bc_file = quantity//'.bc'
+      call create_file(bc_file, [character(len=80) :: &
+                       '[General]', &
+                       'fileVersion = 1.01', &
+                       'fileType = boundConds', &
+                       '[Forcing]', &
+                       'name = global', &
+                       'function = timeseries', &
+                       'timeInterpolation = linear', &
+                       'quantity = time', &
+                       'unit = seconds since 2000-01-01 00:00:00', &
+                       'quantity = '//quantity, &
+                       'unit = '//unit, &
+                       '0  0.125', &
+                       '60 0.375'])
+      call create_file(ext_file, [character(len=80) :: &
+                       '[Spatial]', &
+                       'quantity = '//quantity, &
+                       'forcingFile = '//bc_file, &
+                       'forcingFileType = bcascii'])
+
+      call abort_threshold%set(LEVEL_FATAL)
+      call setup_minimal_grid()
+      allocate (ja_icecover, source=0)
+      jatidep = 0
+      jawind = 0
+      air_pressure_available = .false.
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      call timini()
+      call initialize_ec_module()
+
+      call parse_spatial_block(ext_file, ext_ptr, block_ptr)
+      initialized = init_spatial_fields(block_ptr, BASE_DIR, ext_file, 'Spatial')
+      call tree_destroy(ext_ptr)
+      call f90_expect_true(initialized, quantity//' should initialize')
+      if (initialized) then
+         if (quantity == 'pseudoAirPressure') then
+            values => pseudo_air_pressure
+         else
+            values => water_level_correction
+         end if
+         call set_external_forcings(0.0_dp, .false., iresult)
+         call f90_expect_eq(iresult, DFM_NOERR, 'first external forcing update should succeed')
+         call f90_expect_near(values(1), 0.125_dp, 1.0e-6_dp, quantity//' at the first time')
+         call set_external_forcings(60.0_dp, .false., iresult)
+         call f90_expect_eq(iresult, DFM_NOERR, 'second external forcing update should succeed')
+         call f90_expect_near(values(1), 0.375_dp, 1.0e-6_dp, quantity//' at the second time')
+      end if
+
+      deallocate (ja_icecover)
+      call teardown_minimal_grid()
+   end subroutine check_standalone_water_level_forcing
+
+   !$gtest
    !> Verifies that an initialwaterdepth [Spatial] block fills hs AND derives s1 = bl + hs.
    !! The s1 derivation is post-processing performed by enable_quantity, not by
    !! timespaceinitialfield itself. This proves enable_quantity fires correctly on the
