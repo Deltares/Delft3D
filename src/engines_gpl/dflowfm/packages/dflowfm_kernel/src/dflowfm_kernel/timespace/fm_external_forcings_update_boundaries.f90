@@ -69,7 +69,7 @@ contains
       integer, intent(out) :: iresult !< Integer error status
 
       ! Local variables
-      integer :: i, n, k2, kb, L, itrac, isf
+      integer :: i, n, k2, kb, L, itrac, isf                    
       real(kind=dp) :: dQ
 
       iresult = DFM_EXTFORCERROR
@@ -170,6 +170,7 @@ contains
 
       if (item_dischargebnd /= ec_undef_int) then
          success = ec_gettimespacevalue(ecInstancePtr, item_dischargebnd, irefdate, tzone, tunit, time)
+         zbndq = zbndq*kbndu(8,:)
          if (.not. success) then
             goto 888
          end if

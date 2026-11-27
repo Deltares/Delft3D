@@ -1989,13 +1989,13 @@ contains
          call str_lower(quantityname)
          if (index(trim(bctfilename)//'|', '_his.nc|') > 0) then
             ! History file
-            if (istarts_with(quantityname, 'tracerbnd')) then
-               quantityname = quantityname(10:len(quantityname))
-            end if
-            if (strcmpi(quantityname,'waterlevelbnd'           )) quantityname = 'waterlevel'
-            if (strcmpi(quantityname,'salinitybnd'             )) quantityname = 'salinity'
-            if (strcmpi(quantityname,'temperaturebnd'          )) quantityname = 'temperature'
-            if (strcmpi(quantityname,'uxuyadvectionvelocitybnd')) quantityname = 'x_velocity'
+            if (strcmpi(quantityname(1:9),'tracerbnd'               )) quantityname = quantityname(10:len(quantityname))    
+            if (strcmpi(quantityname     ,'waterlevelbnd'           )) quantityname = 'waterlevel'
+            if (strcmpi(quantityname     ,'salinitybnd'             )) quantityname = 'salinity'
+            if (strcmpi(quantityname     ,'temperaturebnd'          )) quantityname = 'temperature'
+            if (strcmpi(quantityname     ,'uxuyadvectionvelocitybnd')) quantityname = 'x_velocity'
+            if (strcmpi(quantityname     ,'dischargebnd'            )) quantityname = 'cross_section_discharge'
+   
          else
             ! Old existing nc files 
             if (strcmpi(quantityname,'waterlevelbnd'           )) quantityname = 'waterlevelbnd'
@@ -2035,6 +2035,12 @@ contains
             has_label = .true.
          end if
 
+         ! if it is a discharge from the history file, remove the pli point number
+         if (strcmpi(quantityname,'CROSS_SECTION_DISCHARGE') ) then
+              plipointlbl = plipointlbl (1:len(plipointlbl) - 5)
+         end if                         
+         
+         
          if (.not. ecProviderInitializeBCBlock(InstancePtr, bcBlockId, fileReaderPtr%tframe%k_refdate, fileReaderPtr%tframe%k_timezone, fileReaderPtr%tframe%k_timestep_unit, &
                                                id, bctfilename, bctfiletype, quantityname, plipointlbl, istat, dtnodal=fileReaderPtr%tframe%dtnodal)) then
             if (has_label) then ! for explicitly labelled pli-points, require data

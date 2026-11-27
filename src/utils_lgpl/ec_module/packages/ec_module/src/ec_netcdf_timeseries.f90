@@ -288,6 +288,26 @@ contains
             station_id_found = .true.
          end if
 
+     ! Check for important var: was it the crossections? (for nestinmg of discharge bnds)
+         if (strcmpi(ncptr%variable_names(iVars),'cross_section_name') ) then        
+            ! Compose an index timeseries id's 
+            ierr = nf90_inquire_variable(ncptr%ncid, iVars, dimids=dimids_tsid)
+            if (ierr /= NF90_NOERR) return
+            tslen = ncptr%dimlen(dimids_tsid(1)) ! timeseries ID length
+            nTims = ncptr%dimlen(dimids_tsid(2)) ! number of timeseries IDs
+         
+            allocate (ncptr%tsid_q(nTims), stat=ierr)
+            if (ierr /= 0) return
+            tslen = min(tslen, len(ncptr%tsid_q(1)))
+            ncptr%tsid_q = ''
+            do iTims = 1, nTims
+               ierr = nf90_get_var(ncptr%ncid, iVars, ncptr%tsid_q(iTims), (/1, iTims/), (/tslen, 1/))
+               if (ierr /= NF90_NOERR) return
+               call replace_char(ncptr%tsid_q(iTims), 0, 32) ! Replace NULL char by whitespace: iachar(' ') == 32
+            end do
+            station_id_found = .true.
+         end if
+
          ! Check for important var: was it time?
          if (strcmpi(ncptr%variable_names(iVars),'time')) then 
                ierr = nf90_get_att(ncptr%ncid, iVars, 'units', ncptr%timeunit) ! Store the unit string of the time variable
@@ -397,7 +417,9 @@ contains
       integer :: n_dims
       integer :: ivar, itim, ltl, iv
       integer :: ierr, vmax
+      integer :: no_stat_crs
       character(len=30), dimension(:), allocatable :: elmnames
+      character(len=:) , dimension(:), allocatable :: name_stat_crs
       integer, dimension(:), allocatable :: dimids_check
       character(len=NF90_MAX_NAME), dimension(:), allocatable :: ncstdnames !< list with standard names to be filled
       character(len=NF90_MAX_NAME), dimension(:), allocatable :: ncvarnames !< list with variable names to be filled
@@ -407,8 +429,19 @@ contains
       success = .false.
       vmax = 1
 
-      !first check with the quantity name directly
-      do ivar = 1, ncptr%nVars
+      ! Distinguish between stations and crossections 
+      if (.not. strcmpi(quantity,'CROSS_SECTION_DISCHARGE') ) then
+         ! Stations, waterlevels, salinity etc
+         no_stat_crs  = size(ncptr%tsid)
+         allocate(character(len=len(ncptr%tsid(1))):: name_stat_crs(1:no_stat_crs))
+         name_stat_crs = ncptr%tsid
+     else
+        no_stat_crs  = size(ncptr%tsid_q)
+        allocate(character(len=len(ncptr%tsid_q(1))):: name_stat_crs(1:no_stat_crs))
+        name_stat_crs = ncptr%tsid_q
+     end if
+     do ivar = 1, ncptr%nVars
+         ltl = len_trim(quantity)
          if (strcmpi(ncptr%variable_names(ivar), quantity)) then
             exit
          end if
@@ -454,15 +487,17 @@ contains
          q_id(1) = -1
       end if
 
-      do itim = 1, ncptr%nTims
+      ! Find location number (station or crosssection) 
+      do itim = 1, no_stat_crs
          ltl = len_trim(location)
-         if (strcmpi(ncptr%tsid(itim), location)) exit ! Found
+         if (strcmpi(name_stat_crs(itim), location)) exit ! Found
       end do
-      if (itim <= ncptr%nTims) then
+      if (itim <= no_stat_crs) then
          l_id = itim
       else
          l_id = -1
       end if
+      deallocate(name_stat_crs)
       if (l_id <= 0 .or. q_id(1) <= 0) then
          return ! l_id<0 means : location not found, q_id<0 means quantity not found
       end if

@@ -178,7 +178,7 @@ contains
       if (allocated(ftpet)) then
          deallocate (ftpet)
       end if
-      allocate (kce(nx), ke(nx), kez(nx), keu(nx), kes(nx), ketm(nx), kesd(nx), keuxy(nx), ket(nx), ken(nx), ke1d2d(nx), keg(nx), ked(nx), kep(nx), kedb(nx), keklep(nx), kevalv(nx), kegs(nx), kegen(nx), itpez(nx), itpenz(nx), itpeu(nx), itpenu(nx), kew(nx), ftpet(nx), stat=ierr)
+      allocate (kce(nx), ke(nx), kez(nx), keu(nx), kes(nx), ketm(nx), kesd(nx), keuxy(nx), ket(nx), ken(nx), ke1d2d(nx), keg(nx), ked(nx), kep(nx), kedb(nx), keklep(nx), kevalv(nx), kegs(nx), kegen(nx), itpez(nx), itpenz(nx), itpeu(nx), itpeu_ib(nx), itpenu(nx), kew(nx), ftpet(nx), stat=ierr)
       call aerr('kce(nx), ke(nx), kez(nx), keu(nx), kes(nx), ketm(nx), kesd(nx), keuxy(nx), ket(nx), ken(nx), ke1d2d(nx), keg(nx), ked(nx), kep(nx), kedb(nx), keklep(nx), kevalv(nx), kegs(nx), kegen(nx), itpez(nx), itpenz(nx), itpeu(nx) , itpenu(nx), kew(nx), ftpet(nx)', ierr, 17 * nx)
       kce = 0
       ke = 0
@@ -201,6 +201,7 @@ contains
       itpez = 0
       itpenz = 0
       itpeu = 0
+      itpeu_ib = 0
       itpenu = 0
       kew = 0
       ftpet = 1e6_dp
@@ -556,12 +557,13 @@ contains
             call prop_get(node_ptr, '', 'bndBlDepth', blDepth)
 
             if (group_ok) then
-               if (rrtolb > 0.0_dp) then
-                  call processexternalboundarypoints(quantity, location_file, filetype, return_time, nx, kce, numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf, rrtolrel=(1 + 2 * rrtolb) / (1 + 2 * rrtol), tfc=transformcoef, width1D=width1D, blDepth=blDepth)
-               else
-                  call processexternalboundarypoints(quantity, location_file, filetype, return_time, nx, kce, numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf, rrtolrel=1.0_dp, tfc=transformcoef, width1D=width1D, blDepth=blDepth)
-               end if
                num_bc_ini_blocks = num_bc_ini_blocks + 1
+               if (rrtolb > 0.0_dp) then
+                  call processexternalboundarypoints(quantity, location_file, filetype, return_time, nx, kce, numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf, rrtolrel=(1 + 2 * rrtolb) / (1 + 2 * rrtol), tfc=transformcoef, width1D=width1D, blDepth=blDepth,num_bc_ini_blocks = num_bc_ini_blocks)
+               else
+                  call processexternalboundarypoints(quantity, location_file, filetype, return_time, nx, kce, numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf, rrtolrel=1.0_dp, tfc=transformcoef, width1D=width1D, blDepth=blDepth,num_bc_ini_blocks = num_bc_ini_blocks)
+               end if
+           
             end if
 
             file_ok = file_ok .and. group_ok
@@ -611,7 +613,7 @@ contains
    subroutine processexternalboundarypoints(qid, filename, filetype, return_time, nx, kce, &
                                             numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, &
                                             numqh, numw, numtr, numsf, rrtolrel, tfc, &
-                                            width1D, blDepth) ! helper for finding external boundary points
+                                            width1D, blDepth, num_bc_ini_blocks) ! helper for finding external boundary points
       use m_netw
       use m_flow, qid_flow => qid, filetype_flow => filetype
       use m_flowgeom
@@ -650,6 +652,7 @@ contains
       real(kind=dp), dimension(NUMGENERALKEYWRD), optional, intent(in) :: tfc
       real(kind=dp), optional, intent(in) :: width1D !< Optional custom width for boundary flow link.
       real(kind=dp), optional, intent(in) :: blDepth !< Optional custom bed level depths below water level boundaries's initial value for boundary points.
+      integer      , optional, intent(in) :: num_bc_ini_blocks 
 
       ! Local variables
       character(len=256) :: qidfm
@@ -774,6 +777,7 @@ contains
          end if
 
          itpeu(nbndu + 1:nbndu + numu) = boundary_type
+         if (present(num_bc_ini_blocks) ) itpeu_ib(nbndu + 1:nbndu + numu) = num_bc_ini_blocks
 
          call addopenbndsection(numu, keu(nbndu + 1:nbndu + numu), filename, IBNDTP_U)
 
@@ -1325,7 +1329,7 @@ contains
       ! Local variables
       integer :: ierr
       integer :: k, L, LF, KB, KBI, N, K2, iad, numnos, isf, mx, itrac
-      integer, parameter :: N4 = 6
+      integer, parameter :: N4 = 8
       character(len=256) :: rec
       integer :: tmp_nbndu, tmp_nbndt, tmp_nbndn
 
@@ -1525,8 +1529,9 @@ contains
             kbndu(3, k) = Lf
             kbndu(4, k) = itpeu(k)
             kbndu(5, k) = itpenu(k)
-            kbndu(6, k) = ftpet(k) ! riemann relaxation time
-
+            kbndu(6, k) = ftpet(k)        ! riemann relaxation time
+            kbndu(7, k) = itpeu_ib(k)     ! boundary segment number
+            kbndu(8, k) = 1               ! factor for multiplification of discharge boundaries 
             lnxbnd(Lf - lnxi) = itpenu(k)
 
             do n = 1, nd(kbi)%lnx
@@ -2518,5 +2523,24 @@ contains
       call check_model_has_structures_across_partitions
 
    end subroutine finalize
+
+   !> Check whether zerozbndinflowadvection is incompatible with prescribed boundary advection velocities.
+   !! Returns .false. and reports an error when the combination is not allowed.
+   function check_keyword_zerozbndinflowadvection() result(success)
+      use m_flowparameters, only: jaZerozbndinflowadvection
+      use messagehandling, only: LEVEL_ERROR, msgbuf, mess
+
+      logical :: success
+
+      success = .true.
+
+      if (jaZerozbndinflowadvection > 0) then
+         write (msgbuf, '(a,i0,a)') &
+            'The combination of prescribing advection velocities via [Boundary]-quantity "uxuyadvectionvelocitybnd" and "Zerozbndinflowadvection" = ', &
+            jaZerozbndinflowadvection, ' is inconsistent and not allowed.'
+         call mess(LEVEL_ERROR, msgbuf)
+         success = .false.
+      end if
+   end function check_keyword_zerozbndinflowadvection
 
 end module fm_external_forcings
