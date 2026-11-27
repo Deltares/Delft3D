@@ -484,15 +484,14 @@ contains
       else
          outmorphopol = 1
       end if
-
       call realloc(kcsmor, ndx, stat=ierr, fill=outmorphopol, keepExisting=.false.)
       !
       inquire (file=trim(md_morphopol), exist=ex)
       if (.not. ex) then
-         call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - Morphopol set but file does not exist, morphopol not used.')
-         md_morphopol = ''
-         ! do all cells
-         kcsmor = 1
+         if (len_trim(md_morphopol) > 0) then
+            call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - Morphopol set but file does not exist, morphopol not used.')
+         end if
+         kcsmor = 1 ! do all cells
       else
          if (allocated(kp)) then
             deallocate (kp)

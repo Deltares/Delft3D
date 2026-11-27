@@ -415,10 +415,23 @@ module m_flowparameters
 
    integer :: jaZerozbndinflowadvection = 0 !< set zero advection velocity on inflow at z boundaries 0=no, 1=yes
 
-   integer :: flow_solver !< 1=stepreduce, 2=1d implicit
+   integer :: flow_solver !< 1=stepreduce, 2=1d implicit, 3=frozen 1d/2d, 4=sequence
    character(len=28) :: md_flow_solver = 'generic1d2d3d'
+   character(len=255) :: sequence_file = ' '
    integer, parameter :: FLOW_SOLVER_FM = 1
    integer, parameter :: FLOW_SOLVER_SRE = 2
+   integer, parameter :: FLOW_SOLVER_FROZEN_1D2D = 3
+   integer, parameter :: FLOW_SOLVER_SEQUENCE = 4
+   type :: solver_period
+      real(kind=dp) :: tstart
+      integer :: solver = FLOW_SOLVER_FROZEN_1D2D
+      character(len=255) :: restart_file = ' '
+      character(len=20) :: restart_date_time = ' '
+      logical :: use_restart_bedlevel = .false.
+      logical :: use_restart_bedcomp = .false.
+   end type solver_period
+   type(solver_period), allocatable :: solver_sequence(:)
+   integer :: solver_period_index = 0
 
    integer :: jatransportautotimestepdiff = 0 ! Auto Timestep in Transport module, 0 = limitation of diffusion, but no limitation of time-step due to diffusion, 1 = no limitation of diffusion, but limitation of time step due to diffusion, 2: no limitation of diffusion and no limitation of time step due to diffusion
 
@@ -626,7 +639,8 @@ module m_flowparameters
    logical :: write_surface_data_to_map_file
 
    ! read from restart
-   integer :: jarstignorebl !< Flag indicating if bed level on restart file should be ignored (0/1, default: 0)
+    logical :: use_restart_bedlevel !< Use bed level from restart file (default: true).
+    logical :: use_restart_bedcomp !< Use bed composition from restart file (default: true).
 
    ! Write partition domain file
    integer :: japartdomain !< Write a separate netcdf file for partition domain info., 0: no, 1: yes
@@ -968,6 +982,7 @@ contains
       jastructurelayersactive = 1
       JaZerozbndinflowadvection = 0
       md_flow_solver = 'generic1d2d3d'
+      sequence_file = ''
 
       jaanalytic = 0 !< analytic solution available in black sideview => do not also show computed surface in black
       jaustarint = 1 !< 1=integral bed layer velocity,  0=velocity at half bed layer
@@ -998,7 +1013,8 @@ contains
 
       write_surface_data_to_map_file = .false.
 
-      jarstignorebl = 0
+      use_restart_bedlevel = .true.
+      use_restart_bedcomp = .true.
 
       epswetout = epshs ! the same as numerical threshold to counts as 'wet'.
       jatekcd = 1 ! wind cd coeffs on tek

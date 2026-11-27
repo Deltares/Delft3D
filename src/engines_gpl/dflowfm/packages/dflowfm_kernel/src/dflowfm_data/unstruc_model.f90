@@ -60,6 +60,7 @@ contains
 !!
 !! Add initialization/default values for all module variables here.
    subroutine resetModel()
+      use m_flowparameters, only: solver_sequence, solver_period_index, md_flow_solver, flow_solver, FLOW_SOLVER_FM
       use m_trachy, only: trtdef_ptr
       use unstruc_netcdf, only: UNC_CONV_UGRID
       use unstruc_channel_flow
@@ -107,6 +108,10 @@ contains
       md_shipdeffile = ' '
       md_inifieldfile = ' '
       md_restartfile = ' '
+      if (allocated(solver_sequence)) deallocate(solver_sequence)
+      solver_period_index = 0
+      md_flow_solver = 'generic1d2d3d'
+      flow_solver = FLOW_SOLVER_FM
       md_extfile = ' '
       md_extfile_new = ' '
       md_extfile_dir = ' '
@@ -548,6 +553,7 @@ contains
       integer :: ibuf, ifil
       integer :: i, n, iostat, readerr, ierror
       integer :: jadum
+      integer :: rst_ignore_bl_value
       real(hp) :: ti_rst_array(3), ti_map_array(3), ti_his_array(3), ti_wav_array(3), ti_waq_array(3), ti_classmap_array(3), ti_st_array(3), ti_com_array(3)
       character(len=200), dimension(:), allocatable :: fnames
       real(kind=dp) :: tim
@@ -1257,13 +1263,25 @@ contains
 
       call prop_get(md_ptr, 'numerics', 'FlowSolver', md_flow_solver, success)
       call str_lower(md_flow_solver)
+      sequence_file = ' '
       select case (md_flow_solver)
       case ('generic1d2d3d')
          flow_solver = FLOW_SOLVER_FM
       case ('implicit1d')
          flow_solver = FLOW_SOLVER_SRE
+       case ('frozen1d2d')
+          flow_solver = FLOW_SOLVER_FROZEN_1D2D
+      case ('sequence')
+         call prop_get(md_ptr, 'numerics', 'solverSequence', sequence_file, success)
+         if (.not. success .or. len_trim(sequence_file) == 0) then
+            call mess(LEVEL_ERROR, 'FlowSolver=sequence requires numerics/solverSequence.')
+            istat = DFM_GENERICERROR
+            return
+         end if
+         flow_solver = FLOW_SOLVER_SEQUENCE
       case default
-         call mess(LEVEL_ERROR, 'Invalid flow solver '''//trim(md_flow_solver)//''' . Select between `generic1d2d3d` and `implicit1d`.')
+          call mess(LEVEL_ERROR, 'Invalid flow solver '''//trim(md_flow_solver)// &
+                    ''' . Select `generic1d2d3d`, `implicit1d`, `frozen1d2d` or `sequence`.')
       end select
 
       call prop_get(md_ptr, 'numerics', 'PillarFarFieldVelocity', md_pillar_use_far_field_velocity, success)
@@ -1928,9 +1946,25 @@ contains
       ! TIDAL TURBINES: Insert calls to rdturbine and echoturbine here (use the structure_turbines variable defined in m_structures)
       !
 ! Restart information
-      call prop_get(md_ptr, 'restart', 'RestartFile', md_restartfile, success)
-      call prop_get(md_ptr, 'restart', 'RestartDateTime', restart_date_time, success)
-      call prop_get(md_ptr, 'restart', 'RstIgnoreBl', jarstignorebl, success)
+      call prop_get(md_ptr, 'restart', 'restartFile', md_restartfile, success)
+      call prop_get(md_ptr, 'restart', 'restartDateTime', restart_date_time, success)
+      rst_ignore_bl_value = merge(0, 1, use_restart_bedlevel)
+      call prop_get(md_ptr, 'restart', 'rstIgnoreBl', rst_ignore_bl_value, success)
+      use_restart_bedlevel = rst_ignore_bl_value == 0
+      call prop_get(md_ptr, 'restart', 'useRestartBedlevel', use_restart_bedlevel, success)
+      call prop_get(md_ptr, 'restart', 'useRestartBedComp', use_restart_bedcomp, success)
+      if (flow_solver == FLOW_SOLVER_SEQUENCE) then
+         call read_solver_sequence(sequence_file, istat)
+         if (istat /= DFM_NOERR) return
+         flow_solver = solver_sequence(solver_period_index)%solver
+         if (len_trim(md_restartfile) == 0 .and. &
+             len_trim(solver_sequence(solver_period_index)%restart_file) > 0) then
+            md_restartfile = solver_sequence(solver_period_index)%restart_file
+            restart_date_time = solver_sequence(solver_period_index)%restart_date_time
+            use_restart_bedlevel = solver_sequence(solver_period_index)%use_restart_bedlevel
+            use_restart_bedcomp = solver_sequence(solver_period_index)%use_restart_bedcomp
+         end if
+      end if
 
 ! External forcings
       call prop_get(md_ptr, 'external forcing', 'ExtForceFile', md_extfile, success)
@@ -2651,6 +2685,98 @@ contains
       call calculate_derived_coefficients_turbulence()
 
    end subroutine readMDUFile
+
+   subroutine read_solver_sequence(filename, istat)
+      use dfm_error, only: DFM_GENERICERROR
+      use m_flowparameters, only: solver_sequence, solver_period_index, FLOW_SOLVER_FM, FLOW_SOLVER_FROZEN_1D2D
+      use m_flowtimes, only: tfac, dt_user, tstart_user, tstop_user
+      use string_module, only: str_lower
+      use tree_structures, only: tree_count_nodes_byname, tree_num_nodes, tree_get_name
+
+      character(len=*), intent(in) :: filename
+      integer, intent(out) :: istat
+      type(tree_data), pointer :: sequence_tree, block
+      character(len=255) :: file_type, solver_name, block_name
+      real(kind=dp) :: start_time, step_number
+      real(kind=dp) :: version
+      logical :: found
+      integer :: i, period, readerr, nperiods
+
+      istat = DFM_GENERICERROR
+      call tree_create(trim(filename), sequence_tree)
+      call prop_file('ini', filename, sequence_tree, readerr)
+      if (readerr /= 0) then
+         call mess(LEVEL_ERROR, 'Cannot read solver sequence file: '//trim(filename))
+         call tree_destroy(sequence_tree)
+         return
+      end if
+
+      file_type = ' '
+      version = -1.0_dp
+      call prop_get(sequence_tree, 'General', 'fileType', file_type, found)
+      call prop_get(sequence_tree, 'General', 'fileVersion', version, found)
+      call str_lower(file_type)
+      nperiods = tree_count_nodes_byname(sequence_tree, 'Period')
+      if (trim(file_type) /= 'solversequence' .or. version /= 1.0_dp .or. &
+          tree_count_nodes_byname(sequence_tree, 'General') /= 1 .or. nperiods < 1 .or. &
+          tree_num_nodes(sequence_tree) /= nperiods + 1 .or. dt_user <= 0.0_dp) then
+         call mess(LEVEL_ERROR, 'Invalid solver sequence General block, or no Period blocks: '//trim(filename))
+         call tree_destroy(sequence_tree)
+         return
+      end if
+
+      allocate(solver_sequence(nperiods))
+      period = 0
+      do i = 1, tree_num_nodes(sequence_tree)
+         block => sequence_tree%child_nodes(i)%node_ptr
+         block_name = tree_get_name(block)
+         call str_lower(block_name)
+         if (trim(block_name) /= 'period') cycle
+         period = period + 1
+         start_time = 0.0_dp
+         call prop_get(block, 'tStart', start_time, found)
+         if (.not. found) exit
+         solver_sequence(period)%tstart = start_time * tfac
+         step_number = (solver_sequence(period)%tstart - tstart_user) / dt_user
+         if (abs(step_number - anint(step_number)) > 1.0e-8_dp .or. &
+             solver_sequence(period)%tstart >= tstop_user) exit
+         if (period == 1) then
+            ! start of first block must be equal or before the simulation start time
+            if (solver_sequence(period)%tstart - tstart_user > 1.0e-8_dp) exit
+            solver_period_index = 1
+         else
+            if (solver_sequence(period)%tstart <= solver_sequence(period - 1)%tstart) exit
+            if (solver_sequence(period)%tstart <= tstart_user) then
+               solver_period_index = period
+            end if
+         end if
+         solver_name = 'frozen1d2d'
+         call prop_get(block, 'flowSolver', solver_name)
+         call str_lower(solver_name)
+         select case (trim(solver_name))
+         case ('generic1d2d3d')
+            solver_sequence(period)%solver = FLOW_SOLVER_FM
+         case ('frozen1d2d')
+            solver_sequence(period)%solver = FLOW_SOLVER_FROZEN_1D2D
+         case default
+            exit
+         end select
+         call prop_get(block, 'restartFile', solver_sequence(period)%restart_file)
+         call prop_get(block, 'restartDateTime', solver_sequence(period)%restart_date_time)
+         call prop_get(block, 'useRestartBedlevel', solver_sequence(period)%use_restart_bedlevel)
+         call prop_get(block, 'useRestartBedComp', solver_sequence(period)%use_restart_bedcomp)
+         if (len_trim(solver_sequence(period)%restart_date_time) > 0 .and. &
+             len_trim(solver_sequence(period)%restart_file) == 0) exit
+      end do
+
+      if (period /= nperiods .or. i <= tree_num_nodes(sequence_tree)) then
+         call mess(LEVEL_ERROR, 'Invalid, unordered or off-grid Period in solver sequence: '//trim(filename))
+         deallocate(solver_sequence)
+      else
+         istat = 0
+      end if
+      call tree_destroy(sequence_tree)
+   end subroutine read_solver_sequence
 
 !> helper routine to read the class boundaries
    subroutine readClasses(className, incr_classes)
@@ -3443,6 +3569,9 @@ contains
       end if
 
       call prop_set(prop_ptr, 'numerics', 'FlowSolver', trim(md_flow_solver), 'Flow solver.')
+      if (md_flow_solver == 'sequence') then
+         call prop_set(prop_ptr, 'numerics', 'solverSequence', trim(sequence_file), 'File containing solver sequence.')
+      end if
 
       ! Physics
       call prop_set(prop_ptr, 'physics', 'unifFrictCoef', uniform_friction_coefficient_2D, 'Uniform friction coefficient [the unit depends on unifFrictType].')
@@ -3883,9 +4012,10 @@ contains
       end if
 
 ! Restart settings
-      call prop_set(prop_ptr, 'restart', 'RestartFile', trim(md_restartfile), 'Restart netcdf-file, either *_rst.nc or *_map.nc')
-      call prop_set(prop_ptr, 'restart', 'RestartDateTime', trim(restart_date_time), 'Restart date and time (yyyymmddhhmmss) when restarting from *_map.nc')
-      call prop_set(prop_ptr, 'restart', 'RstIgnoreBl', jarstignorebl, 'Flag indicating whether bed level from restart should be ignored (0=no (default), 1=yes)')
+      call prop_set(prop_ptr, 'restart', 'restartFile', trim(md_restartfile), 'Restart netcdf-file, either *_rst.nc or *_map.nc')
+      call prop_set(prop_ptr, 'restart', 'restartDateTime', trim(restart_date_time), 'Restart date and time (yyyymmddhhmmss) when restarting from *_map.nc')
+      call prop_set(prop_ptr, 'restart', 'useRestartBedlevel', use_restart_bedlevel, 'Use bed level from restart file (default: true)')
+      call prop_set(prop_ptr, 'restart', 'useRestartBedComp', use_restart_bedcomp, 'Use bed composition from restart file (default: true)')
 
 ! External forcings
       call prop_set(prop_ptr, 'external forcing', 'ExtForceFile', trim(md_extfile), 'Old format for external forcings file *.ext, link with tim/cmp-format boundary conditions specification')
