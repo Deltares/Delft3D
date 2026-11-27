@@ -90,7 +90,7 @@ contains
       ! FM solver
       !------------------------------------------
 
-      if (flow_solver /= FLOW_SOLVER_SRE) then ! FM or frozen1d2d solver
+      if (flow_solver /= FLOW_SOLVER_SRE) then ! for the staggered schemes
 
          ! we define the node as the begin/end point of the first link connected to it
          if (stmpar%morpar%mornum%pure1d) then

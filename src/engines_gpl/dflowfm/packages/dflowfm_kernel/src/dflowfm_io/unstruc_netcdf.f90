@@ -13178,7 +13178,6 @@ contains
                end if
             end if
          end if
-         
          ! Update the D50 based on the info in the restart file
          call initsedtra(sedtra, stmpar%sedpar, stmpar%trapar, stmpar%morpar, stmpar%morlyr, rhomean, ag, vismol, 1, ndx, ndx, stmpar%lsedsus, stmpar%lsedtot)
       end if

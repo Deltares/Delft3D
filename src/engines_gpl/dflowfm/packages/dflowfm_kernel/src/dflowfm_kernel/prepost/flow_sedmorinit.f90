@@ -487,10 +487,10 @@ contains
       call realloc(kcsmor, ndx, stat=ierr, fill=outmorphopol, keepExisting=.false.)
       !
       inquire (file=trim(md_morphopol), exist=ex)
-      if (md_morphopol == ' ') then
-         kcsmor = 1 ! do all cells
-      elseif (.not. ex) then
-         call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - Morphopol set but file does not exist, morphopol not used.')
+      if (.not. ex) then
+         if (len_trim(md_morphopol) > 0) then
+            call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - Morphopol set but file does not exist, morphopol not used.')
+         end if
          kcsmor = 1 ! do all cells
       else
          if (allocated(kp)) then

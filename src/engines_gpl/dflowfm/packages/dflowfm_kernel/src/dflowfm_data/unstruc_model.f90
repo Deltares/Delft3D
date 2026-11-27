@@ -1269,7 +1269,7 @@ contains
          flow_solver = FLOW_SOLVER_FM
       case ('implicit1d')
          flow_solver = FLOW_SOLVER_SRE
-       case ('frozen1d2d', 'frozen2d')
+       case ('frozen1d2d')
           flow_solver = FLOW_SOLVER_FROZEN_1D2D
       case ('sequence')
          call prop_get(md_ptr, 'numerics', 'solverSequence', sequence_file, success)
@@ -1946,23 +1946,23 @@ contains
       ! TIDAL TURBINES: Insert calls to rdturbine and echoturbine here (use the structure_turbines variable defined in m_structures)
       !
 ! Restart information
-      call prop_get(md_ptr, 'restart', 'RestartFile', md_restartfile, success)
-      call prop_get(md_ptr, 'restart', 'RestartDateTime', restart_date_time, success)
+      call prop_get(md_ptr, 'restart', 'restartFile', md_restartfile, success)
+      call prop_get(md_ptr, 'restart', 'restartDateTime', restart_date_time, success)
       rst_ignore_bl_value = merge(0, 1, use_restart_bedlevel)
-      call prop_get(md_ptr, 'restart', 'RstIgnoreBl', rst_ignore_bl_value, success)
+      call prop_get(md_ptr, 'restart', 'rstIgnoreBl', rst_ignore_bl_value, success)
       use_restart_bedlevel = rst_ignore_bl_value == 0
       call prop_get(md_ptr, 'restart', 'useRestartBedlevel', use_restart_bedlevel, success)
       call prop_get(md_ptr, 'restart', 'useRestartBedComp', use_restart_bedcomp, success)
       if (flow_solver == FLOW_SOLVER_SEQUENCE) then
          call read_solver_sequence(sequence_file, istat)
          if (istat /= DFM_NOERR) return
-         flow_solver = solver_sequence(1)%solver
-         solver_period_index = 1
-         if (len_trim(solver_sequence(1)%restart_file) > 0) then
-            md_restartfile = solver_sequence(1)%restart_file
-            restart_date_time = solver_sequence(1)%restart_date_time
-            use_restart_bedlevel = solver_sequence(1)%use_restart_bedlevel
-            use_restart_bedcomp = solver_sequence(1)%use_restart_bedcomp
+         flow_solver = solver_sequence(solver_period_index)%solver
+         if (len_trim(md_restartfile) == 0 .and. &
+             len_trim(solver_sequence(solver_period_index)%restart_file) > 0) then
+            md_restartfile = solver_sequence(solver_period_index)%restart_file
+            restart_date_time = solver_sequence(solver_period_index)%restart_date_time
+            use_restart_bedlevel = solver_sequence(solver_period_index)%use_restart_bedlevel
+            use_restart_bedcomp = solver_sequence(solver_period_index)%use_restart_bedcomp
          end if
       end if
 
@@ -2688,7 +2688,7 @@ contains
 
    subroutine read_solver_sequence(filename, istat)
       use dfm_error, only: DFM_GENERICERROR
-      use m_flowparameters, only: solver_sequence, FLOW_SOLVER_FM, FLOW_SOLVER_FROZEN_1D2D
+      use m_flowparameters, only: solver_sequence, solver_period_index, FLOW_SOLVER_FM, FLOW_SOLVER_FROZEN_1D2D
       use m_flowtimes, only: tfac, dt_user, tstart_user, tstop_user
       use string_module, only: str_lower
       use tree_structures, only: tree_count_nodes_byname, tree_num_nodes, tree_get_name
@@ -2741,9 +2741,14 @@ contains
          if (abs(step_number - anint(step_number)) > 1.0e-8_dp .or. &
              solver_sequence(period)%tstart >= tstop_user) exit
          if (period == 1) then
-            if (abs(solver_sequence(period)%tstart - tstart_user) > 1.0e-8_dp) exit
+            ! start of first block must be equal or before the simulation start time
+            if (solver_sequence(period)%tstart - tstart_user > 1.0e-8_dp) exit
+            solver_period_index = 1
          else
             if (solver_sequence(period)%tstart <= solver_sequence(period - 1)%tstart) exit
+            if (solver_sequence(period)%tstart <= tstart_user) then
+               solver_period_index = period
+            end if
          end if
          solver_name = 'frozen1d2d'
          call prop_get(block, 'flowSolver', solver_name)
@@ -2756,8 +2761,8 @@ contains
          case default
             exit
          end select
-         call prop_get(block, 'RestartFile', solver_sequence(period)%restart_file)
-         call prop_get(block, 'RestartDateTime', solver_sequence(period)%restart_date_time)
+         call prop_get(block, 'restartFile', solver_sequence(period)%restart_file)
+         call prop_get(block, 'restartDateTime', solver_sequence(period)%restart_date_time)
          call prop_get(block, 'useRestartBedlevel', solver_sequence(period)%use_restart_bedlevel)
          call prop_get(block, 'useRestartBedComp', solver_sequence(period)%use_restart_bedcomp)
          if (len_trim(solver_sequence(period)%restart_date_time) > 0 .and. &
@@ -4007,8 +4012,8 @@ contains
       end if
 
 ! Restart settings
-      call prop_set(prop_ptr, 'restart', 'RestartFile', trim(md_restartfile), 'Restart netcdf-file, either *_rst.nc or *_map.nc')
-      call prop_set(prop_ptr, 'restart', 'RestartDateTime', trim(restart_date_time), 'Restart date and time (yyyymmddhhmmss) when restarting from *_map.nc')
+      call prop_set(prop_ptr, 'restart', 'restartFile', trim(md_restartfile), 'Restart netcdf-file, either *_rst.nc or *_map.nc')
+      call prop_set(prop_ptr, 'restart', 'restartDateTime', trim(restart_date_time), 'Restart date and time (yyyymmddhhmmss) when restarting from *_map.nc')
       call prop_set(prop_ptr, 'restart', 'useRestartBedlevel', use_restart_bedlevel, 'Use bed level from restart file (default: true)')
       call prop_set(prop_ptr, 'restart', 'useRestartBedComp', use_restart_bedcomp, 'Use bed composition from restart file (default: true)')
 
