@@ -1,0 +1,481 @@
+{
+  "schema_version": "1.0.0",
+  "specification_file": "specifications/dflowfm/mdu.json",
+  "source_ref": "2027.01",
+  "target_ref": "main",
+  "changes": [
+    {
+      "type": "added",
+      "target": {
+        "section": "meteo",
+        "property": null,
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "meteo",
+        "property": "airSeaInteractionModel",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "meteo",
+        "property": "airTemperatureForcingHeight",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "meteo",
+        "property": "airViscousHeatCoefficient",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "meteo",
+        "property": "airViscousMoistureCoefficient",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "meteo",
+        "property": "airViscousMomentumCoefficient",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "meteo",
+        "property": "charnockCoefficient",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "meteo",
+        "property": "freeConvection",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "meteo",
+        "property": "humidityForcingHeight",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "meteo",
+        "property": "longwaveEmissivity",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "meteo",
+        "property": "QsatFactor",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "meteo",
+        "property": "rainTemperature",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "meteo",
+        "property": "salinityDependentEvaporationMethod",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "meteo",
+        "property": "stabilityFunctions",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "meteo",
+        "property": "windForcingHeight",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "petscPreconditionerReuse",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "10"
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "44"
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "8"
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "9"
+      }
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "1"
+      },
+      "field": "description",
+      "old_value": "sobekGS_OMP",
+      "new_value": "Sobek Guus Stelling solver with OpenMP parallelization"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "2"
+      },
+      "field": "description",
+      "old_value": "sobekGS_OMPthreadsafe",
+      "new_value": "Thread-safe Sobek Guus Stelling solver with OpenMP parallelization"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "3"
+      },
+      "field": "status.comment",
+      "new_value": "Sobek Guus Stelling solver without OpenMP is no longer supported."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "3"
+      },
+      "field": "status.since_release",
+      "new_value": 2027.02
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "3"
+      },
+      "field": "status.value",
+      "old_value": "GA",
+      "new_value": "obsolete"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "3"
+      },
+      "field": "description",
+      "old_value": "sobekGS",
+      "new_value": "Sobek Guus Stelling solver without OpenMP"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "4"
+      },
+      "field": "description",
+      "old_value": "sobekGS + Saad-ILUD (default sequential)",
+      "new_value": "Sobek Guus Stelling solver combined with Saad-ILUD (default for sequential runs)"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "5"
+      },
+      "field": "status.comment",
+      "new_value": "Global Saad solver is no longer supported."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "5"
+      },
+      "field": "status.since_release",
+      "new_value": 2027.02
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "5"
+      },
+      "field": "status.value",
+      "old_value": "GA",
+      "new_value": "obsolete"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "6"
+      },
+      "field": "description",
+      "old_value": "PETSc (default parallel)",
+      "new_value": "PETSc (Portable, Extensible Toolkit for Scientific Computation) solver for MPI-parallel runs (default parallel)"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "7"
+      },
+      "field": "status.comment",
+      "new_value": "Windows MPI solver is no longer supported."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "7"
+      },
+      "field": "status.since_release",
+      "new_value": 2027.02
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "7"
+      },
+      "field": "status.value",
+      "old_value": "GA",
+      "new_value": "obsolete"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "7"
+      },
+      "field": "description",
+      "old_value": "CG+MILU (parallel)",
+      "new_value": "Conjugate Gradient + MILU (parallel)"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "wriMap_Chezy_on_flow_links_1d_sections",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "wriMap_flowarea_au_1d_sections",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "wriMap_flowflux_q1_1d_sections",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "output",
+        "property": "wriMap_Chezy",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "Write chezy roughness in flow elements to map file.",
+      "new_value": "Write Chezy roughness in flow elements to map file."
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "output",
+        "property": "wriMap_Chezy_on_flow_links",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "Write chezy roughness on flow links to map file.",
+      "new_value": "Write Chezy roughness on flow links to map file."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "wriMap_flow_flux_q1_main",
+        "enum_value": null
+      },
+      "field": "status.comment",
+      "new_value": "Use `[output] wriMap_flowflux_q1_1d_sections` instead."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "wriMap_flow_flux_q1_main",
+        "enum_value": null
+      },
+      "field": "status.date",
+      "new_value": "2026-11-18"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "output",
+        "property": "wriMap_flow_flux_q1_main",
+        "enum_value": null
+      },
+      "field": "status.value",
+      "old_value": "GA",
+      "new_value": "deprecated"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "output",
+        "property": "wriMap_flowarea_au",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "Write low areas au to map file.",
+      "new_value": "Write total flow area, 1D hydraulic radius and flow width to the map file. Previously it wrote flow areas."
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "output",
+        "property": "wriMap_input_roughness",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "Write chezy input roughness on flow links to map file.",
+      "new_value": "Write Chezy input roughness on flow links to map file."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "tracerConcentrationMax",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "tracerConcentrationMin",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "processes",
+        "property": "sedimentationTransportCoupling",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "removed",
+      "target": {
+        "section": "processes",
+        "property": "thetaVertical",
+        "enum_value": null
+      },
+      "field": "status.date",
+      "old_value": "2025-10-01"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "processes",
+        "property": "thetaVertical",
+        "enum_value": null
+      },
+      "field": "status.since_release",
+      "new_value": 2027.02
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "processes",
+        "property": "thetaVertical",
+        "enum_value": null
+      },
+      "field": "status.value",
+      "old_value": "deprecated",
+      "new_value": "obsolete"
+    }
+  ]
+}

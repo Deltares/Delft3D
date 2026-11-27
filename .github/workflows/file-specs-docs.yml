@@ -1,0 +1,47 @@
+name: File specifications - Generate Markdown Docs
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches: ["**"]
+    paths: "file_specs/**"
+
+jobs:
+  docs-generation:
+    name: Markdown generation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Run markdown generation script
+        run: python "file_specs/scripts/generate_markdown.py"
+
+      - name: Run script for creating the JSON changelogs
+        run: >-
+          python file_specs/scripts/generate_json_changelog.py
+          9b0f080da179ced0cdc17cc5780707b77065fc78 "$GITHUB_SHA"
+          --source-label 2027.01 --cicd
+
+      - name: Run script for creating the Markdown changelogs
+        run: python "file_specs/scripts/generate_markdown_changelog.py"
+
+      - name: Commit and push if changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add -- file_specs/specifications file_specs/changelogs
+          if ! git diff --staged --quiet -- file_specs/specifications file_specs/changelogs; then
+            git commit -m "Auto-generate file specification docs"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi

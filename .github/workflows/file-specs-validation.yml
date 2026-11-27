@@ -1,0 +1,25 @@
+name: File specifications - Validate JSON files
+
+on:
+  push:
+    branches: ["**"]
+    paths: "file_specs/**"
+
+jobs:
+  json-validation:
+    name: JSON schema validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: pip install jsonschema
+
+      - name: Run JSON Schema validation
+        run: python "file_specs/scripts/validate_json_files.py"

@@ -1,0 +1,4389 @@
+{
+  "schema_version": "1.0.0",
+  "specification_file": "specifications/dflowfm/mdu.json",
+  "source_ref": "2026.02",
+  "target_ref": "2027.01",
+  "changes": [
+    {
+      "type": "added",
+      "target": {
+        "section": "ice",
+        "property": null,
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "ice",
+        "property": "wriHis_ice_area_fraction",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "ice",
+        "property": "wriHis_ice_default",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "ice",
+        "property": "wriHis_ice_lower_surface_height",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "ice",
+        "property": "wriHis_ice_open_water_level",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "ice",
+        "property": "wriHis_ice_pressure",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "ice",
+        "property": "wriHis_ice_surface_height",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "ice",
+        "property": "wriHis_ice_temperature",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "ice",
+        "property": "wriHis_ice_thickness",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "ice",
+        "property": "wriHis_snow_temperature",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "ice",
+        "property": "wriHis_snow_thickness",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "model",
+        "property": null,
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "model",
+        "property": "autoStart",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "model",
+        "property": "convertLongCulverts",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "model",
+        "property": "guiVersion",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "model",
+        "property": "inputSpecific",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "model",
+        "property": "mduFormatVersion",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "model",
+        "property": "modelSpecific",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "model",
+        "property": "pathsRelativeToParent",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "model",
+        "property": "program",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "model",
+        "property": "version",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "calibration",
+        "property": "areaFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "calibration",
+        "property": "definitionFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "external forcing",
+        "property": "evaporation",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "external forcing",
+        "property": "extForceFile",
+        "enum_value": null
+      },
+      "field": "status.comment",
+      "new_value": "Use `[external forcing] extForceFileNew` instead. Note: you should update some keywords and values in the file contents to the new format. See the User Manual for details."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "external forcing",
+        "property": "extForceFile",
+        "enum_value": null
+      },
+      "field": "status.date",
+      "new_value": "2026-08-06"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "external forcing",
+        "property": "extForceFile",
+        "enum_value": null
+      },
+      "field": "status.value",
+      "old_value": "GA",
+      "new_value": "deprecated"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "external forcing",
+        "property": "extForceFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "external forcing",
+        "property": "extForceFileNew",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": []
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "external forcing",
+        "property": "extForceFileNew",
+        "enum_value": null
+      },
+      "field": "value_type",
+      "old_value": "path",
+      "new_value": "list[path]"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "external forcing",
+        "property": "extForceFileNew",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "New format for external forcings file *.ext, link with bc-format boundary conditions specification.",
+      "new_value": "New format for external forcings file *.ext, link with bc-format boundary conditions specification. Supports multiple filenames separated by spaces. Filenames containing spaces must be placed inside double quotes."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "external forcing",
+        "property": "qExt",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "external forcing",
+        "property": "rainfall",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "external forcing",
+        "property": "windExt",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "general",
+        "property": "convertLongCulverts",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "general",
+        "property": "autoStart",
+        "enum_value": null
+      },
+      "field": "status.comment",
+      "new_value": "Keyword will be removed in a future release."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "general",
+        "property": "autoStart",
+        "enum_value": null
+      },
+      "field": "status.date",
+      "new_value": "2025-09-04"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "general",
+        "property": "autoStart",
+        "enum_value": null
+      },
+      "field": "status.value",
+      "old_value": "GA",
+      "new_value": "deprecated"
+    },
+    {
+      "type": "removed",
+      "target": {
+        "section": "general",
+        "property": "fileType",
+        "enum_value": null
+      },
+      "field": "validation.is_required",
+      "old_value": true
+    },
+    {
+      "type": "removed",
+      "target": {
+        "section": "general",
+        "property": "fileVersion",
+        "enum_value": null
+      },
+      "field": "validation.is_required",
+      "old_value": true
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "general",
+        "property": "guiVersion",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "general",
+        "property": "inputSpecific",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "general",
+        "property": "modelSpecific",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "general",
+        "property": "pathsRelativeToParent",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "Resolve file names (e.g. inside the *.ext file) relative to their direct parent, instead of to the toplevel MDU working dir.",
+      "new_value": "Resolve file names (e.g. inside the *.ext file) relative to their direct parent, instead of to the top-level MDU working dir."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "1dNetworkFile",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "bathymetryFile",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "bedLevelFile",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "bedLevMode",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "botLevType",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "botLevUni",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "circumcenter",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "Grdang",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "iThinDykeScheme",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "keepZLayeringAtBed",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "manholeFile",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "nodeFile",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "noOptimizedPolygon",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "orgFloorLevTopLayDef",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "roughnessFiles",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "thinDykeFile",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "1D2DInternalLinkType",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 1
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "1D2DLinkFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "bedWaveAmplitude",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0.0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "bedWaveLength",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0.0
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "geometry",
+        "property": "blMeanBelow",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "If not -999.0, below this level the cell centre bedlevel is the mean of surrouding netnodes.",
+      "new_value": "If not -999.0, below this level the cell centre bedlevel is the mean of surrounding netnodes."
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "geometry",
+        "property": "blMinAbove",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "If not -999.0, above this level the cell centre bedlevel is the min of surrouding netnodes.",
+      "new_value": "If not -999.0, above this level the cell centre bedlevel is the min of surrounding netnodes."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "circumcenterMethod",
+        "enum_value": null
+      },
+      "field": "status.comment",
+      "new_value": "Once the keyword is removed/becomes obsolete, the `allNetlinksLoop` method will be used."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "circumcenterMethod",
+        "enum_value": null
+      },
+      "field": "status.date",
+      "new_value": "2026-03-01"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "geometry",
+        "property": "circumcenterMethod",
+        "enum_value": null
+      },
+      "field": "status.value",
+      "old_value": "GA",
+      "new_value": "deprecated"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "circumcenterTolerance",
+        "enum_value": null
+      },
+      "field": "status.comment",
+      "new_value": "Once the keyword is removed/becomes obsolete, a fixed tolerance will be used."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "circumcenterTolerance",
+        "enum_value": null
+      },
+      "field": "status.date",
+      "new_value": "2026-03-01"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "geometry",
+        "property": "circumcenterTolerance",
+        "enum_value": null
+      },
+      "field": "status.value",
+      "old_value": "GA",
+      "new_value": "deprecated"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "cosphiutrsh",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0.5
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "createLinks1D2D",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "crossDefFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "crossLocFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "cutCellList",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "dryPointsFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": []
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "extrBl",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "fixedWeirFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": []
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "frictFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": []
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "gridEnclosureFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "groundLayerThickness",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": -999.0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "gulliesFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "helmert",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "ihuz",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 4
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "ihuzcSig",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 3
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "iniFieldFile",
+        "enum_value": null
+      },
+      "field": "status.comment",
+      "new_value": "Use `[external forcing] extForceFileNew` instead. Note: you should update some keywords and values in the file contents to the new format. See the User Manual for details."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "iniFieldFile",
+        "enum_value": null
+      },
+      "field": "status.date",
+      "new_value": "2026-08-06"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "geometry",
+        "property": "iniFieldFile",
+        "enum_value": null
+      },
+      "field": "status.value",
+      "old_value": "GA",
+      "new_value": "deprecated"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "iniFieldFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "keepZLay1BedVol",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "landBoundaryFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": []
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "layerType",
+        "enum_value": "3"
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "layerType",
+        "enum_value": "4"
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "netFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "geometry",
+        "property": "nonLin1D",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "old_value": 1,
+      "new_value": 0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "nonLin1D",
+        "enum_value": "0"
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "partitionFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "pillarFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": []
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "geometry",
+        "property": "pillarFile",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "Polyline file (*_pillar.pliz), containing four colums with x, y, diameter and Cd coefficient for bridge pillars.",
+      "new_value": "Polyline file (*_pillar.pliz), containing four columns with x, y, diameter and Cd coefficient for bridge pillars."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "pipeFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "profDefFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "profDefXyzFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "profLocFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "removeSmallLinksTrsh",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0.1
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "roofsFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "shipDefFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "sigmaGrowthFactor",
+        "enum_value": null
+      },
+      "field": "status.comment",
+      "new_value": "Use `[geometry] zLayerGrowthFactor` instead."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "sigmaGrowthFactor",
+        "enum_value": null
+      },
+      "field": "status.date",
+      "new_value": "2026-01-30"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "storageNodeFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "stretchCoef",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": []
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "stretchType",
+        "enum_value": "0"
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "structureFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": []
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "geometry",
+        "property": "structureFile",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "File (*.ini) containing list of hydraulic structures.",
+      "new_value": "File (*.ini) containing list of hydraulic structures. Supports multiple filenames separated by spaces. Filenames containing spaces must be placed inside double quotes."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "thinDamFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": []
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "topLayMinThick",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0.01
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "geometry",
+        "property": "tSigma",
+        "enum_value": null
+      },
+      "field": "status.value",
+      "old_value": "deprecated",
+      "new_value": "research"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "tSigma",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 100.0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "uniformHu",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": -999.0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "uniformTyp1D",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 3
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "geometry",
+        "property": "vertPlizFile",
+        "enum_value": null
+      },
+      "field": "status.value",
+      "old_value": "deprecated",
+      "new_value": "research"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "vertPlizFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "waterDepthIni1D",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": -999.0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "waterLevIniFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "geometry",
+        "property": "zLayBot",
+        "enum_value": null
+      },
+      "field": "value_type",
+      "old_value": "int",
+      "new_value": "float"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "zLayBot",
+        "enum_value": null
+      },
+      "field": "unit",
+      "new_value": "m"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "zLayerAtuByBob",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "geometry",
+        "property": "zLayTop",
+        "enum_value": null
+      },
+      "field": "value_type",
+      "old_value": "int",
+      "new_value": "float"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "geometry",
+        "property": "zLayTop",
+        "enum_value": null
+      },
+      "field": "unit",
+      "new_value": "m"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "barocTerm",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "barocTimeInt",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "barocZLayBed",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "CFLWaveFrac",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "epsEPS",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "epsTKE",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "facLaxTurb",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "facLaxTurbHor",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "facLaxTurbVer",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "filter",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "hkad",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "iThinDykeScheme",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "jaDrhoDz",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "jaEmbed1d",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "jaOrgSethu",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "maxSSC",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "orgBarocKeywords",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "perotType",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "perotWeightUpdate",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "relax",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "sobekdfm_minimal_1d2d_embankment",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "sobekdfm_relax",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "sobekdfm_umin",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "sobekdfm_umin_method",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "thinDykeContraction",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "transportMethod",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "transportTimeStepping",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "wridia_viscosity_diffusivity_limit",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "removed",
+      "target": {
+        "section": "numerics",
+        "property": "maxItVerticalForester",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "advecType",
+        "enum_value": null
+      },
+      "field": "value_type",
+      "old_value": "intenum",
+      "new_value": "int"
+    },
+    {
+      "type": "removed",
+      "target": {
+        "section": "numerics",
+        "property": "advecType",
+        "enum_value": "0"
+      }
+    },
+    {
+      "type": "removed",
+      "target": {
+        "section": "numerics",
+        "property": "advecType",
+        "enum_value": "3"
+      }
+    },
+    {
+      "type": "removed",
+      "target": {
+        "section": "numerics",
+        "property": "advecType",
+        "enum_value": "33"
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "baOrgFracMin",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0.0
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "c3eStable",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "c3e coefficient (for stable stratification) in k-eps turbulance model.",
+      "new_value": "c3e coefficient (for stable stratification) in k-eps turbulence model."
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "c3eUnstable",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "c3e coefficient (for unstable stratification) in k-eps turbulance model.",
+      "new_value": "c3e coefficient (for unstable stratification) in k-eps turbulence model."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "cfConHorMom",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0.0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "cfExpHorMom",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 1.0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "cfExpHu",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 1.0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "cfFacHorMom",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 1.0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "cfFacHu",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 1.0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "chkdifd",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0.01
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "coriohhtrsh",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0.0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "dtol",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0.0
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "dtol",
+        "enum_value": null
+      },
+      "field": "value_type",
+      "old_value": "string",
+      "new_value": "float"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "epsMaxLev",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "Stop criterium for non linear iteration.",
+      "new_value": "Stop criterion for non linear iteration."
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "epsMaxLevM",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "Stop criterium for Nested Newton loop in non-linear iteration.",
+      "new_value": "Stop criterion for Nested Newton loop in non-linear iteration."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "fixedWeirScheme",
+        "enum_value": "0"
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "fixedWeirScheme",
+        "enum_value": "1"
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "fixedWeirScheme",
+        "enum_value": "2"
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "fixedWeirScheme",
+        "enum_value": "3"
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "fixedWeirScheme",
+        "enum_value": "4"
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "fixedWeirScheme",
+        "enum_value": "5"
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "fixedWeirScheme",
+        "enum_value": "7"
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "fixedWeirTopFrictCoef",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": -999.0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "huWeirRegular",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0.0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "1"
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "2"
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "3"
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "icgSolver",
+        "enum_value": "5"
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "ilutype",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "ilutype",
+        "enum_value": null
+      },
+      "field": "value_type",
+      "old_value": "string",
+      "new_value": "int"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "keepZLayeringAtBed",
+        "enum_value": null
+      },
+      "field": "status.comment",
+      "new_value": "Use `[geometry] keepZLayeringAtBed` instead."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "keepZLayeringAtBed",
+        "enum_value": null
+      },
+      "field": "status.date",
+      "new_value": "2026-06-01"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "keepZLayeringAtBed",
+        "enum_value": null
+      },
+      "field": "status.value",
+      "old_value": "research",
+      "new_value": "deprecated"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "lateral_fixedweir_minimal_1d2d_embankment",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0.0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "lateral_fixedweir_relax",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0.1
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "lateral_fixedweir_umin_method",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "lateral_fixedweir_umin_method",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "Method for minimal velocity treshold for weir losses in iterative lateral 1D2D weir coupling.",
+      "new_value": "Method for minimal velocity threshold for weir losses in iterative lateral 1D2D weir coupling."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "limTypW",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 4
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "linkDriedMx",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "linkDriedMx",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "Maximum numberr of Au growth steps after having dried.",
+      "new_value": "Maximum number of Au growth steps after having dried."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "maxItPresDens",
+        "enum_value": null
+      },
+      "field": "status.comment",
+      "new_value": "Keyword will be removed in a future release."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "maxItPresDens",
+        "enum_value": null
+      },
+      "field": "status.date",
+      "new_value": "2026-07-29"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "maxItPresDens",
+        "enum_value": null
+      },
+      "field": "status.value",
+      "old_value": "GA",
+      "new_value": "deprecated"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "maxItVerticalForesterSal",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "Forester iterations for salinity (0: no vertical filter for salinity, > 0: max nr of iterations).",
+      "new_value": "Maximum number of vertical Forester iterations for salinity (0: no vertical filter for salinity, > 0: max nr of iterations)."
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "maxItVerticalForesterTem",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "Forester iterations for temperature (0: no vertical filter for temperature, > 0: max nr of iterations).",
+      "new_value": "Maximum number of vertical Forester iterations for temperature (0: no vertical filter for temperature, > 0: max nr of iterations)."
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "minTimeStepBreak",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "old_value": 0.0,
+      "new_value": 0.001
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "nlevel",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "nlevel",
+        "enum_value": null
+      },
+      "field": "value_type",
+      "old_value": "string",
+      "new_value": "int"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "noDerivedTypes",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 5
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "numlimdt_baorg",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "numlimdt_baorg",
+        "enum_value": null
+      },
+      "field": "value_type",
+      "old_value": "float",
+      "new_value": "int"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "qhRelax",
+        "enum_value": null
+      },
+      "field": "status.comment",
+      "new_value": "Option no longer needed due to improved semi-implicit algorithm."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "qhRelax",
+        "enum_value": null
+      },
+      "field": "status.since_release",
+      "new_value": 2022.02
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "qhRelax",
+        "enum_value": null
+      },
+      "field": "status.value",
+      "old_value": "GA",
+      "new_value": "obsolete"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "structureLayersActive",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 1
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "subsuplupdates1",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "testFixedWeirs",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "timeStepType",
+        "enum_value": "2"
+      },
+      "field": "description",
+      "old_value": "full implicit step_reduce",
+      "new_value": "full implicit step-reduce"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "timeStepType",
+        "enum_value": "3"
+      },
+      "field": "description",
+      "old_value": "step_jacobi",
+      "new_value": "step-Jacobi"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "trsh_u1lb",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0.0
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "numerics",
+        "property": "turbulenceAdvection",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "Turbulance advection.",
+      "new_value": "Turbulence advection."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "vertAdvTypSal",
+        "enum_value": null
+      },
+      "field": "status.comment",
+      "new_value": "Use `[numerics] verticalAdvectionType` instead."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "vertAdvTypSal",
+        "enum_value": null
+      },
+      "field": "status.date",
+      "new_value": "2025-10-01"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "vertAdvTypSal",
+        "enum_value": "5"
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "vertAdvTypTem",
+        "enum_value": null
+      },
+      "field": "status.comment",
+      "new_value": "Use `[numerics] verticalAdvectionType` instead."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "numerics",
+        "property": "vertAdvTypTem",
+        "enum_value": null
+      },
+      "field": "status.date",
+      "new_value": "2025-10-01"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "avgWaveOutputInterval",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "enableDebugArrays",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "heatFluxesOnOutput",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "mapOutputPolygonFile",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "mbaFile",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "s1incInterval",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "snapshotdir",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "waqFileBase",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "wriHis_bubblescreens",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "wriHis_crs_constituents",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "wriHis_crs_flow",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "wrihis_heatflux",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "wriHis_runupgauge",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "wriHis_water_quality_output",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "wriHis_windstress",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "wrimap_input_dt",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "writeBalanceFile",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "writeSurfaceDataToMapFile",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "classMapFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "output",
+        "property": "classMapInterval",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "Interval between class map file outputs.",
+      "new_value": "Interval between class map file outputs, given as 'interval' 'start period' 'end period'."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "classMapInterval",
+        "enum_value": null
+      },
+      "field": "validation.max_length",
+      "new_value": 3
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "classMapInterval",
+        "enum_value": null
+      },
+      "field": "validation.min_length",
+      "new_value": 1
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "output",
+        "property": "comInterval",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "old_value": 300.0,
+      "new_value": [
+        300.0
+      ]
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "output",
+        "property": "comInterval",
+        "enum_value": null
+      },
+      "field": "value_type",
+      "old_value": "float",
+      "new_value": "list[float]"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "comInterval",
+        "enum_value": null
+      },
+      "field": "validation.max_length",
+      "new_value": 3
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "comInterval",
+        "enum_value": null
+      },
+      "field": "validation.min_length",
+      "new_value": 1
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "comOutputTimeVector",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "crsFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": []
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "flowGeomFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "fouFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "generateUuid",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 1
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "hisFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "output",
+        "property": "hisInterval",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "old_value": [
+        300.0
+      ],
+      "new_value": [
+        0.0
+      ]
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "hisInterval",
+        "enum_value": null
+      },
+      "field": "validation.max_length",
+      "new_value": 3
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "hisInterval",
+        "enum_value": null
+      },
+      "field": "validation.min_length",
+      "new_value": 1
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "mapFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "mapFormat",
+        "enum_value": "2"
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "mapFormat",
+        "enum_value": "3"
+      }
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "output",
+        "property": "mapInterval",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "old_value": [
+        1200.0
+      ],
+      "new_value": [
+        0.0
+      ]
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "mapInterval",
+        "enum_value": null
+      },
+      "field": "validation.max_length",
+      "new_value": 3
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "mapInterval",
+        "enum_value": null
+      },
+      "field": "validation.min_length",
+      "new_value": 1
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "mapOutputTimeVector",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "mbaInterval",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0.0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "mbaLumpBoundaries",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "mbaLumpFromToMba",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "mbaLumpProcesses",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "mbaLumpSourceSinks",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "mbaWriteCsv",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "mbaWriteNetcdf",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "mbaWriteTxt",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 1
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "metadataFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "obsFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": []
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "outputDir",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "rstInterval",
+        "enum_value": null
+      },
+      "field": "validation.max_length",
+      "new_value": 3
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "rstInterval",
+        "enum_value": null
+      },
+      "field": "validation.min_length",
+      "new_value": 1
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "rugFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "timeSplitInterval",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "output",
+        "property": "velocityMagnitudeClasses",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "old_value": [
+        0.0
+      ],
+      "new_value": []
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "waqHorAggr",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "output",
+        "property": "waqInterval",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "Interval between DELWAQ file outputs.",
+      "new_value": "Interval between DELWAQ file outputs, given as 'interval' 'start period' 'end period'."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "waqInterval",
+        "enum_value": null
+      },
+      "field": "validation.max_length",
+      "new_value": 3
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "waqInterval",
+        "enum_value": null
+      },
+      "field": "validation.min_length",
+      "new_value": 1
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "waqOutputDir",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "waqVertAggr",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "output",
+        "property": "waterDepthClasses",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "old_value": [
+        0.0
+      ],
+      "new_value": []
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "output",
+        "property": "waterLevelClasses",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "old_value": [
+        0.0
+      ],
+      "new_value": []
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "output",
+        "property": "wriHis_sourcesink",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "Write sources-sinks statistics to his file.",
+      "new_value": "Write sources-sinks data to his file."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "wrimap_ice",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "wrimap_nearfield",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "wrirst_bnd",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 1
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "wrishp_enc",
+        "enum_value": null
+      },
+      "field": "status.comment",
+      "new_value": "Use `[output] wrishp_dryarea` instead."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "wrishp_enc",
+        "enum_value": null
+      },
+      "field": "status.since_release",
+      "new_value": 2022.02
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "output",
+        "property": "wrishp_enc",
+        "enum_value": null
+      },
+      "field": "status.value",
+      "old_value": "GA",
+      "new_value": "obsolete"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "writeDetailedTimers",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "output",
+        "property": "writeDfmInterpretedValues",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "output",
+        "property": "writePart_domain",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "old_value": 1,
+      "new_value": 0
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "output",
+        "property": "writePart_domain",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "Write partition domain info, for postprocessing.",
+      "new_value": "Write interpreted network file (DFM_interpreted_idomain_*.nc) containing domain partition info."
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "output",
+        "property": "xlsInterval",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "old_value": [
+        0.0
+      ],
+      "new_value": 0.0
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "output",
+        "property": "xlsInterval",
+        "enum_value": null
+      },
+      "field": "value_type",
+      "old_value": "list[float]",
+      "new_value": "float"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "particles",
+        "property": "particlesFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "particles",
+        "property": "particlesReleaseFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "allowCoolingBelowZero",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "dRoot",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "dStem",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "dynRoughVeg",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "dynVegPol",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "effectSpiral",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "rhoAirRhoWater",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "SecchiDepth2",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "SecchiDepth2Fraction",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "SecchiDepthNonPenetrative",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "SecchiDepthNonPenetrativeFraction",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "stericCorrection",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "unifFrictCoefNoVeg",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "physics",
+        "property": "backgroundSalinity",
+        "enum_value": null
+      },
+      "field": "unit",
+      "old_value": "psu",
+      "new_value": "ppt"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "equili",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "physics",
+        "property": "iniWithNudge",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "old_value": 3600.0,
+      "new_value": 0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "irov",
+        "enum_value": "2"
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "jadelvappos",
+        "enum_value": null
+      },
+      "field": "status.comment",
+      "new_value": "Keyword will be removed in a future release."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "jadelvappos",
+        "enum_value": null
+      },
+      "field": "status.date",
+      "new_value": "2026-03-09"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "nfEntrainmentMomentum",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "prandtlNumberTemperature",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0.7
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "salinityDependentFreezingPoint",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "schmidtNumberSalinity",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0.7
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "schmidtNumberTracer",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 1.0
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "physics",
+        "property": "SecchiDepth",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "old_value": 2.0,
+      "new_value": 1.0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "surfTempSmoFac",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0.0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "umodLin",
+        "enum_value": null
+      },
+      "field": "status.comment",
+      "new_value": "Keyword no longer supported, the provided value is ignored."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "umodLin",
+        "enum_value": null
+      },
+      "field": "status.date",
+      "new_value": "2026-06-17"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "physics",
+        "property": "umodLin",
+        "enum_value": null
+      },
+      "field": "status.value",
+      "old_value": "research",
+      "new_value": "deprecated"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "umodLin",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 1.0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "uniffrictcoef1dgrlay",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0.05
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "physics",
+        "property": "unifFrictType",
+        "enum_value": "-1"
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "processes",
+        "property": "dtMassBalance",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "processes",
+        "property": "wriWaqBot3dOutput",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "processes",
+        "property": "additionalHistoryOutputFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "processes",
+        "property": "processFluxIntegration",
+        "enum_value": null
+      },
+      "field": "status.comment",
+      "new_value": "Process fluxes integration is always done by WAQ."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "processes",
+        "property": "processFluxIntegration",
+        "enum_value": null
+      },
+      "field": "status.since_release",
+      "new_value": 2022.02
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "processes",
+        "property": "processFluxIntegration",
+        "enum_value": null
+      },
+      "field": "status.value",
+      "old_value": "research",
+      "new_value": "obsolete"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "processes",
+        "property": "statisticsFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "processes",
+        "property": "substanceDensityCoupling",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "processes",
+        "property": "substanceFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "processes",
+        "property": "thetaVertical",
+        "enum_value": null
+      },
+      "field": "status.comment",
+      "new_value": "Use `[numerics] verticalAdvectionType` instead."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "processes",
+        "property": "thetaVertical",
+        "enum_value": null
+      },
+      "field": "status.date",
+      "new_value": "2025-10-01"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "restart",
+        "property": "restartDateTime",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "removed",
+      "target": {
+        "section": "restart",
+        "property": "restartDateTime",
+        "enum_value": null
+      },
+      "field": "unit",
+      "old_value": "yyyymmddhhmmss"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "restart",
+        "property": "restartDateTime",
+        "enum_value": null
+      },
+      "field": "format",
+      "new_value": "datetime"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "restart",
+        "property": "restartFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sediment",
+        "property": "alfaBed",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sediment",
+        "property": "alfaSus",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sediment",
+        "property": "bndTreatment",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sediment",
+        "property": "cRefCav",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sediment",
+        "property": "d50",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sediment",
+        "property": "dredgeFile",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sediment",
+        "property": "DzbDtMax",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sediment",
+        "property": "erosionPar",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sediment",
+        "property": "initialSedimentConcentration",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sediment",
+        "property": "inMorphoPol",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sediment",
+        "property": "masBalMinDep",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sediment",
+        "property": "morCFL",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sediment",
+        "property": "morFac",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sediment",
+        "property": "mormergeDtUser",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sediment",
+        "property": "morphoPol",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sediment",
+        "property": "numIntVerticalEinstein",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sediment",
+        "property": "rhoSed",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sediment",
+        "property": "sourSink",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sediment",
+        "property": "tauCre",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sediment",
+        "property": "tMorfSpinup",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sediment",
+        "property": "uniformErodableThickness",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sediment",
+        "property": "upperLimitSSC",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sediment",
+        "property": "ws",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sediment",
+        "property": "implicitFallVelocity",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 1
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sediment",
+        "property": "jaceneqtr",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 2
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sediment",
+        "property": "morFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sediment",
+        "property": "mxgrkrone",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": -1
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sediment",
+        "property": "nr_of_sedfractions",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sediment",
+        "property": "sedDensCoupling",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sediment",
+        "property": "sedFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "sedtrails",
+        "property": null,
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "",
+      "new_value": "Section for configuring the Sedtrails output."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sedtrails",
+        "property": "sedtrailsAnalysis",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": "all"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "sedtrails",
+        "property": "sedtrailsAnalysis",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "Sedtrails analysis.",
+      "new_value": "Option for writing sedtrails to the output file."
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "sedtrails",
+        "property": "sedtrailsAnalysis",
+        "enum_value": "all"
+      },
+      "field": "description",
+      "old_value": "",
+      "new_value": "write all quantities"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "sedtrails",
+        "property": "sedtrailsAnalysis",
+        "enum_value": "flowvelocity"
+      },
+      "field": "description",
+      "old_value": "",
+      "new_value": "write depth-averaged velocity components at grid corners"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "sedtrails",
+        "property": "sedtrailsAnalysis",
+        "enum_value": "soulsby"
+      },
+      "field": "description",
+      "old_value": "",
+      "new_value": "write quantities for the Soulsby sediment mobility method"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "sedtrails",
+        "property": "sedtrailsAnalysis",
+        "enum_value": "transport"
+      },
+      "field": "description",
+      "old_value": "",
+      "new_value": "write bedload and suspended-load transport vectors per sediment fraction"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sedtrails",
+        "property": "sedTrailsGrid",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sedtrails",
+        "property": "sedtrailsInterval",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": [
+        0.0
+      ]
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "sedtrails",
+        "property": "sedtrailsInterval",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "Sedtrails output, given as 'interval' 'start period' 'end period'",
+      "new_value": "Sedtrails output, given as 'interval' 'start period' 'end period'."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sedtrails",
+        "property": "sedtrailsInterval",
+        "enum_value": null
+      },
+      "field": "validation.max_length",
+      "new_value": 3
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sedtrails",
+        "property": "sedtrailsInterval",
+        "enum_value": null
+      },
+      "field": "validation.min_length",
+      "new_value": 1
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "sedtrails",
+        "property": "sedtrailsOutputFile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "time",
+        "property": "autoTimeStepDiff",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "time",
+        "property": "autoTimeStepVisc",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "removed",
+      "target": {
+        "section": "time",
+        "property": "refDate",
+        "enum_value": null
+      },
+      "field": "unit",
+      "old_value": "yyyymmdd"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "time",
+        "property": "refDate",
+        "enum_value": null
+      },
+      "field": "format",
+      "new_value": "date"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "time",
+        "property": "startDateTime",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "removed",
+      "target": {
+        "section": "time",
+        "property": "startDateTime",
+        "enum_value": null
+      },
+      "field": "unit",
+      "old_value": "yyyymmddhhmmss"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "time",
+        "property": "startDateTime",
+        "enum_value": null
+      },
+      "field": "format",
+      "new_value": "datetime"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "time",
+        "property": "startDateTimeTlfsmo",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "removed",
+      "target": {
+        "section": "time",
+        "property": "startDateTimeTlfsmo",
+        "enum_value": null
+      },
+      "field": "unit",
+      "old_value": "yyyymmddhhmmss"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "time",
+        "property": "startDateTimeTlfsmo",
+        "enum_value": null
+      },
+      "field": "format",
+      "new_value": "datetime"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "time",
+        "property": "stopDateTime",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "removed",
+      "target": {
+        "section": "time",
+        "property": "stopDateTime",
+        "enum_value": null
+      },
+      "field": "unit",
+      "old_value": "yyyymmddhhmmss"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "time",
+        "property": "stopDateTime",
+        "enum_value": null
+      },
+      "field": "format",
+      "new_value": "datetime"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "trachytopes",
+        "property": "trtdt",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "trachytopes",
+        "property": "trtCll",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "trachytopes",
+        "property": "trtDef",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "trachytopes",
+        "property": "trtL",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "trachytopes",
+        "property": "trtMnh",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0.1
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "trachytopes",
+        "property": "trtMth",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 1
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "veg",
+        "property": null,
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "This section contains setting for a dynamic vegetation model",
+      "new_value": "This section contains setting for a dynamic vegetation model."
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "veg",
+        "property": "densVegMinBap",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "Minimum vegeation density in Baptist formula. Only in 2D.",
+      "new_value": "Minimum vegetation density in Baptist formula. Only in 2D."
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "veg",
+        "property": "rhoVeg",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "Stem Rho, if > 0, bouyant stick procedure.",
+      "new_value": "Stem Rho, if > 0, buoyant stick procedure."
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "waves",
+        "property": null,
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "The wind section prescribes the dependency of the wind drag coefficient to the wind velocity through 2 or 3 breakpoints. This field also contains pressure information",
+      "new_value": "The wind section prescribes the dependency of the wind drag coefficient to the wind velocity through 2 or 3 breakpoints. This field also contains pressure information."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "waves",
+        "property": "3dWaveBreakerTurbulence",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "waves",
+        "property": "3Dwaveturbpendepth",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "waves",
+        "property": "fbreak",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "waves",
+        "property": "fforc",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "waves",
+        "property": "ftauw",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "waves",
+        "property": "fwfac",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "waves",
+        "property": "streamLayerFac",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "waves",
+        "property": "waveForcing",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "waves",
+        "property": "waveNikuradse",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "waves",
+        "property": "3DStokesProfile",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 1
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "waves",
+        "property": "3DWaveBoundaryLayer",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 1
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "waves",
+        "property": "3DWaveBoundaryLayer",
+        "enum_value": "0"
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "waves",
+        "property": "3DWaveStreaming",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "waves",
+        "property": "hminlw",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0.2
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "waves",
+        "property": "hwavuni",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0.0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "waves",
+        "property": "phiwavuni",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0.0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "waves",
+        "property": "rouWav",
+        "enum_value": "none"
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "waves",
+        "property": "surfBeatInput",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": ""
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "waves",
+        "property": "tiFetchComp",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0.0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "waves",
+        "property": "twavuni",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0.0
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "waves",
+        "property": "uorbfac",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "waves",
+        "property": "waveModelNr",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "old_value": 3,
+      "new_value": 0
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "waves",
+        "property": "waveModelNr",
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "Wave model nr.",
+      "new_value": "Wave model number."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "waves",
+        "property": "waveModelNr",
+        "enum_value": "7"
+      }
+    },
+    {
+      "type": "removed",
+      "target": {
+        "section": "waves",
+        "property": "waveModelNr",
+        "enum_value": "4"
+      }
+    },
+    {
+      "type": "removed",
+      "target": {
+        "section": "waves",
+        "property": "waveModelNr",
+        "enum_value": "6"
+      }
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "waves",
+        "property": "waveModelNr",
+        "enum_value": "1"
+      },
+      "field": "description",
+      "old_value": "fetch/depth limited hurdlestive",
+      "new_value": "fetch/depth limited Hurdle-Stive"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "waves",
+        "property": "waveModelNr",
+        "enum_value": "2"
+      },
+      "field": "description",
+      "old_value": "Young-Verhagen",
+      "new_value": "fetch/depth limited Young-Verhagen"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "waves",
+        "property": "waveModelNr",
+        "enum_value": "3"
+      },
+      "field": "description",
+      "old_value": "SWAN",
+      "new_value": "online wave coupling with D-Waves"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "waves",
+        "property": "waveSwartDelwaq",
+        "enum_value": null
+      },
+      "field": "default_value",
+      "new_value": 0
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "waves",
+        "property": "waveSwartDelwaq",
+        "enum_value": null
+      },
+      "field": "value_type",
+      "old_value": "intbool",
+      "new_value": "intenum"
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "waves",
+        "property": "waveSwartDelwaq",
+        "enum_value": "0"
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "waves",
+        "property": "waveSwartDelwaq",
+        "enum_value": "1"
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "waves",
+        "property": "waveSwartDelwaq",
+        "enum_value": "2"
+      }
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "wind",
+        "property": null,
+        "enum_value": null
+      },
+      "field": "description",
+      "old_value": "The wind section prescribes the dependency of the wind drag coefficient to the wind velocity through 2 or 3 breakpoints. This field also contains pressure information",
+      "new_value": "The wind section prescribes the dependency of the wind drag coefficient to the wind velocity through 2 or 3 breakpoints. This field also contains pressure information."
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "wind",
+        "property": "gapres",
+        "enum_value": null
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "wind",
+        "property": "icdTyp",
+        "enum_value": "0"
+      }
+    },
+    {
+      "type": "added",
+      "target": {
+        "section": "wind",
+        "property": "icdTyp",
+        "enum_value": "9"
+      }
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "wind",
+        "property": "icdTyp",
+        "enum_value": "8"
+      },
+      "field": "description",
+      "old_value": "`4`+viscous",
+      "new_value": "Charnock+viscous"
+    },
+    {
+      "type": "changed",
+      "target": {
+        "section": "wind",
+        "property": "wind_eachstep",
+        "enum_value": null
+      },
+      "field": "value_type",
+      "old_value": "intbool",
+      "new_value": "intenum"
+    }
+  ]
+}
