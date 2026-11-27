@@ -33,6 +33,7 @@ module update_waves
 ! NONE
 !!--declarations----------------------------------------------------------------
 use precision_basics
+implicit none
 ! Module parameters
 !
     integer :: luniwp = -1  ! Unibest wave conditions input file unit
@@ -45,8 +46,6 @@ subroutine update_wavecond(sr,wavetime)
    use swan_input
    use wave_data
    use table_handles
-   !
-   implicit none
    !
    type(swan_type)         :: sr
    type(wave_time_type)    :: wavetime
@@ -192,8 +191,6 @@ subroutine update_wavecond_mdw(sr,wavetime)
    use swan_input
    use wave_data
    !
-   implicit none
-   !
    type(swan_type)         :: sr
    type(wave_time_type)    :: wavetime
    !
@@ -269,7 +266,6 @@ subroutine iniswn(nnest     , sr)
 !!--declarations----------------------------------------------------------------
 !
     use swan_input
-    implicit none
 !
 ! Global variables
 !
@@ -308,7 +304,6 @@ subroutine setswn(nnest     ,hs        ,per       ,dir       ,dd        , &
 !--declarations----------------------------------------------------------------
 !
     use swan_input
-    implicit none
 !
 ! Global variables
 !
@@ -369,7 +364,6 @@ subroutine varcon(fname     ,timmin    ,result    ,isdir     ,nres )
 !     VARCON interpolates record of values from time series file
 !     TEKAL format; first column time in minutes
 !
-    implicit none
 !
 ! Local parameters
 !

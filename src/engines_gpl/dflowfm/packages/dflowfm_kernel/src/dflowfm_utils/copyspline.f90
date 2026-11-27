@@ -43,11 +43,11 @@ contains
 
    subroutine copyspline(ispline, inode, xp, yp)
       use precision, only: dp
-      use m_splines, only: nump, maxspl, xsp, ysp, dxymis, newspline, addsplinepoint, mcs
+      use m_splines, only: nump, spline_capacity, xsp, ysp, dxymis, newspline, addsplinepoint, mcs
       use m_sferic, only: jsferic, jasfer3d, ra, dg2rd
       use m_splint, only: splint
       use m_spline, only: spline
-      use m_splines, only: maxsplen
+      use m_splines, only: points_per_spline_capacity
       use m_comp_curv, only: comp_curv
       use geometry_module, only: dbdistance, dcosphi
       use m_missing, only: dmiss
@@ -56,7 +56,7 @@ contains
       integer, intent(in) :: inode !< spline control point
       real(kind=dp), intent(in) :: xp, yp !< new spline control point coordinates
 
-      real(kind=dp), dimension(maxsplen) :: xspp, yspp, xlist, ylist
+      real(kind=dp), dimension(points_per_spline_capacity) :: xspp, yspp, xlist, ylist
 
       real(kind=dp) :: dnx, dny, dsx, dsy, curv, alphan, alphas
       real(kind=dp) :: x0, y0, x1, y1, ds, t
@@ -68,7 +68,7 @@ contains
       integer, parameter :: Nresample = 1
 
       call nump(ispline, num)
-      if (ispline > 0 .and. ispline <= maxspl .and. inode > 0 .and. inode <= num) then
+      if (ispline > 0 .and. ispline <= spline_capacity .and. inode > 0 .and. inode <= num) then
          x0 = xsp(ispline, inode)
          y0 = ysp(ispline, inode)
 

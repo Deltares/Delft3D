@@ -201,12 +201,18 @@ class TestPublishReleaseChangelog:
         self.helper._ChangeLogPublisher__changelog_file = changelog_file
 
         self.helper._ChangeLogPublisher__prepend_or_replace_in_changelog(
-            "DIMRset_2.99.99", ["<li>New entry</li>"], dry_run=False
+            "DIMRset_2.99.99",
+            [
+                "<li>New entry</li>",
+                "<li>I edited src\\cmake\\CMakeLists.txt!</li>",  # Fix exception when there are backslashes.
+            ],
+            dry_run=False,
         )
 
         content = changelog_file.read_text()
         assert content.startswith("<h1>DIMRset weekly changelog</h1>")
         assert "DIMRset_2.99.99" in content
+        assert "src\\cmake\\CMakeLists.txt" in content
 
     # ---------------- __issue_number_pattern ----------------
 

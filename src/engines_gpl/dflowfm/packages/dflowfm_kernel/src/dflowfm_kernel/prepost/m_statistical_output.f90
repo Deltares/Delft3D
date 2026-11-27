@@ -48,7 +48,7 @@ module m_statistical_output
       module procedure reallocate_output_set_cropped
    end interface
 
-   !> Free the memory of cross-section definition or cross-sections
+   !> Free an output set and the statistical buffers it owns.
    interface dealloc
       module procedure deallocate_output_set
    end interface dealloc
@@ -113,13 +113,24 @@ contains
    end subroutine reallocate_to_capacity
 
    subroutine deallocate_output_set(output_set)
-      implicit none
-      ! Input/output parameters
-      type(t_output_variable_set), intent(inout) :: output_set !< Current cross-section definition
+      type(t_output_variable_set), intent(inout) :: output_set !< Output set to release
+      integer :: item_index
 
       if (allocated(output_set%statout)) then
+         do item_index = 1, min(output_set%count, size(output_set%statout))
+            associate (item => output_set%statout(item_index))
+               select case (item%operation_type)
+               case (SO_MIN, SO_MAX, SO_AVERAGE)
+                  if (associated(item%stat_output)) then
+                     deallocate (item%stat_output)
+                  end if
+               end select
+            end associate
+         end do
          deallocate (output_set%statout)
       end if
+      output_set%count = 0
+      output_set%capacity = 0
    end subroutine deallocate_output_set
 
    !> Update the variables that need a separate subroutine call to update their source_input array
@@ -344,7 +355,7 @@ contains
          item%stat_output => item%source_input
       case (SO_MIN, SO_MAX, SO_AVERAGE)
          allocate (item%stat_output(input_size))
-         allocate(item%missing(input_size))
+         allocate (item%missing(input_size))
       case (SO_NONE)
          continue
       case default

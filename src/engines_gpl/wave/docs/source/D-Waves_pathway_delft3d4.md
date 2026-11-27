@@ -19,9 +19,9 @@ processes, usually started by a shell or batch script.
 | D-Waves/SWAN staged files | D-Waves / SWAN | SWAN / D-Waves | Solver inputs, nesting boundaries and results; internal to D-Waves execution. |
 
 The `WaveOL` keyword in the `.mdf` file configures Delft3D4's online behavior;
-it does not launch D-Waves. The launcher starts both processes. Mode 1 together
-with a blank `[Output] COMFile` (that is, no D-Flow FM file route) selects the
-classic D-Waves handshake.
+it does not launch D-Waves. The launcher starts both processes. D-Waves selects
+this handshake with `--online=delftio` (or the legacy numeric online mode);
+that selection pairs DelftIO synchronization with NEFIS com-files.
 
 **Com-file format.** The com-file that Delft3D4 and D-Waves exchange is always a
 NEFIS file pair (`com-<runid>.dat` and `.def`). Delft3D4 can write its map,
@@ -101,13 +101,14 @@ partitions wait. This partition coordination is separate from SWAN's OpenMP
 parallelism. The SWAN grid/nest loop remains sequential: SWAN nests are not
 Delft3D4 partitions or MPI ranks.
 
-## Fluid-mud extension: preserve both dependencies
+## Legacy fluid-mud extension: preserve both dependencies
 
-Mode 2 adds a **second connection to the mud model**. D-Waves waits for both
-water and mud commands, reads mud density, viscosity, depth and level,
-and reports completion to both. The implementation requires one water
-domain and one mud domain with identical grids. This restriction concerns
-the water/mud grids, not the SWAN grid.
+The legacy mode 2 / `[General] FlowMudFile` setting adds a **second connection
+to the mud model**. `FlowMudFile` is deprecated but retained by this branch for
+compatibility. D-Waves waits for both water and mud commands, reads mud
+density, viscosity, depth and level, and reports completion to both. The
+implementation requires one water domain and one mud domain with identical
+grids. This restriction concerns the water/mud grids, not the SWAN grid.
 
 This is a classic Delft3D4 extension, not a D-Flow FM/BMI mud capability or a
 general suspended-sediment option.
