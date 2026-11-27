@@ -129,7 +129,7 @@ namespace ini
                 return;
             }
 
-            if (!IsValidLineStart() && !IsMultiLineContinuation())
+            if (!IsValidLineStart())
             {
                 HandleInvalidLineFormat();
             }

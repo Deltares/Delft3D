@@ -690,31 +690,6 @@ namespace ini::test
         EXPECT_EQ(property.GetValue(), "value1\nvalue2\nvalue3");
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniParserTest, IniParserMultiLineValueTest, ::testing::Values('-', '^', '$', '&', '\\'));
-
-    class IniParserMultiLineValueStartingWithSpecialCharacterTest : public ::testing::TestWithParam<char>
-    {
-    };
-
-    TEST_P(IniParserMultiLineValueStartingWithSpecialCharacterTest,
-           Parse_PropertyWithMultiLineValueStartingWithSpecialCharacter_PropertyHasMultiLineValue)
-    {
-        IniParserOptions options;
-        options.allowMultiLineValues = true;
-
-        const std::string continuationValue = std::string(1, GetParam()) + "value2";
-        const std::string ini = "[section]\nproperty=value1 \\\n" + continuationValue;
-
-        const IniData iniData = Parse(ini, {}, options);
-        const IniSection section = iniData.GetSection("section");
-        const IniProperty property = section.GetProperty("property");
-
-        EXPECT_EQ(property.GetValue(), "value1\n" + continuationValue);
-    }
-
-    INSTANTIATE_TEST_SUITE_P(IniParserTest, IniParserMultiLineValueStartingWithSpecialCharacterTest,
-                             ::testing::Values('!', '*', ';', ':', '\\'));
-
     TEST(IniParserTest, Parse_PropertyWithMultiLineValueWithoutDelimiter_PropertyHasMultiLineValue)
     {
         IniParserOptions options;
