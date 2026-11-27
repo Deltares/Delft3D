@@ -2,11 +2,12 @@
 module test_tridag
    use assertions_gtest, only: f90_expect_near
    use precision, only: dp
-   use m_tridag, only: tridag
+   use m_tridag, only: tridag, tridag_two_rhs
 
    implicit none(type, external)
    private
-   public :: test_single_rhs, test_varying_sizes, test_zero_rhs, test_first_pivot, test_eliminated_pivot
+   public :: test_single_rhs, test_varying_sizes, test_two_rhs, test_zero_rhs, test_zero_constant_rhs
+   public :: test_first_pivot, test_eliminated_pivot
 
    real(kind=dp), parameter :: tolerance = 1.0e-12_dp
 
@@ -29,6 +30,7 @@ contains
       call f90_expect_near(diagonal, [4.0_dp, 5.0_dp, 6.0_dp], 0.0_dp, "Main diagonal unchanged")
       call f90_expect_near(upper, [-1.0_dp, -3.0_dp, 99.0_dp], 0.0_dp, "Upper diagonal unchanged")
       call f90_expect_near(rhs, [6.0_dp, -21.0_dp, 20.0_dp], 0.0_dp, "RHS unchanged")
+      call f90_expect_near(normalized_upper(1), 0.0_dp, 0.0_dp, "First workspace entry initialized")
    end subroutine test_single_rhs
 
    !$gtest
@@ -73,6 +75,40 @@ contains
    end subroutine test_varying_sizes
 
    !$gtest
+   !> Compare paired solves with independent solves and residuals for 1--64 rows.
+   subroutine test_two_rhs() bind(C)
+      integer, parameter :: max_rows = 64
+      real(kind=dp), parameter :: constant_rhs = -0.7_dp
+      real(kind=dp), dimension(max_rows) :: lower, diagonal, upper, rhs, constant_vector, normalized_upper
+      real(kind=dp), dimension(max_rows) :: solution, constant_solution, reference_solution, reference_constant_solution, expected
+      integer :: row, n
+
+      do row = 1, max_rows
+         lower(row) = -0.2_dp - 0.01_dp * real(mod(row, 5), dp)
+         upper(row) = 0.15_dp + 0.025_dp * real(mod(row, 3), dp)
+         diagonal(row) = 1.5_dp + abs(lower(row)) + abs(upper(row)) + 0.01_dp * real(row, dp)
+         expected(row) = sin(real(row, dp))
+      end do
+      constant_vector = constant_rhs
+
+      do n = 1, max_rows
+         rhs(1:n) = matrix_vector_product(lower(1:n), diagonal(1:n), upper(1:n), expected(1:n))
+         call tridag(lower, diagonal, upper, rhs, normalized_upper, reference_solution, n)
+         call tridag(lower, diagonal, upper, constant_vector, normalized_upper, reference_constant_solution, n)
+         call tridag_two_rhs(lower, diagonal, upper, rhs, constant_rhs, normalized_upper, solution, constant_solution, n)
+
+         call f90_expect_near(solution(1:n), expected(1:n), tolerance, "Paired vector RHS known solution")
+         call f90_expect_near(solution(1:n), reference_solution(1:n), tolerance, "Paired vector RHS vs single solve")
+         call f90_expect_near(constant_solution(1:n), reference_constant_solution(1:n), tolerance, &
+                              "Paired constant RHS vs single solve")
+         call f90_expect_near(matrix_vector_product(lower(1:n), diagonal(1:n), upper(1:n), solution(1:n)), &
+                              rhs(1:n), tolerance, "Vector RHS residual")
+         call f90_expect_near(matrix_vector_product(lower(1:n), diagonal(1:n), upper(1:n), constant_solution(1:n)), &
+                              constant_vector(1:n), tolerance, "Constant RHS residual")
+      end do
+   end subroutine test_two_rhs
+
+   !$gtest
    !> A zero right-hand side must produce a zero solution.
    subroutine test_zero_rhs() bind(C)
       real(kind=dp), dimension(3) :: lower, diagonal, upper, rhs, normalized_upper, solution
@@ -88,11 +124,29 @@ contains
    end subroutine test_zero_rhs
 
    !$gtest
-   !> Preserve the original use of signed small first pivots without regularization.
+   !> A zero constant right-hand side must produce a zero second solution.
+   subroutine test_zero_constant_rhs() bind(C)
+      real(kind=dp), dimension(3) :: lower, diagonal, upper, rhs, normalized_upper, solution, constant_solution
+
+      lower = -1.0_dp
+      diagonal = 4.0_dp
+      upper = -1.0_dp
+      rhs = [5.0_dp, 6.0_dp, 7.0_dp]
+
+      call tridag_two_rhs(lower, diagonal, upper, rhs, 0.0_dp, normalized_upper, solution, constant_solution, 3)
+
+      call f90_expect_near(constant_solution, [0.0_dp, 0.0_dp, 0.0_dp], 0.0_dp, "Zero constant RHS")
+      call f90_expect_near(matrix_vector_product(lower, diagonal, upper, solution), rhs, tolerance, &
+                           "Nonzero vector RHS residual")
+   end subroutine test_zero_constant_rhs
+
+   !$gtest
+   !> Guard zero and signed small first pivots in both solver variants.
    subroutine test_first_pivot() bind(C)
-      real(kind=dp), dimension(6), parameter :: pivots = [0.5e-15_dp, -0.5e-15_dp, 1.0e-15_dp, -1.0e-15_dp, 2.0e-15_dp, -2.0e-15_dp]
-      real(kind=dp), dimension(6), parameter :: expected = [4.0_dp, -4.0_dp, 2.0_dp, -2.0_dp, 1.0_dp, -1.0_dp]
-      real(kind=dp), dimension(1) :: lower, diagonal, upper, rhs, normalized_upper, solution
+      real(kind=dp), dimension(7), parameter :: pivots = [0.0_dp, 0.5e-15_dp, -0.5e-15_dp, 1.0e-15_dp, &
+                                                           -1.0e-15_dp, 2.0e-15_dp, -2.0e-15_dp]
+      real(kind=dp), dimension(7), parameter :: expected = [2.0_dp, 2.0_dp, -2.0_dp, 2.0_dp, -2.0_dp, 1.0_dp, -1.0_dp]
+      real(kind=dp), dimension(1) :: lower, diagonal, upper, rhs, normalized_upper, solution, constant_solution
       integer :: pivot_index
 
       lower = 99.0_dp
@@ -103,7 +157,11 @@ contains
          diagonal = pivots(pivot_index)
          call tridag(lower, diagonal, upper, rhs, normalized_upper, solution, 1)
 
-         call f90_expect_near(solution(1), expected(pivot_index), 0.0_dp, "First pivot used without regularization")
+         call f90_expect_near(solution(1), expected(pivot_index), tolerance, "Single solve guarded first pivot")
+         call tridag_two_rhs(lower, diagonal, upper, rhs, 3.0e-15_dp, normalized_upper, solution, constant_solution, 1)
+
+         call f90_expect_near(solution(1), expected(pivot_index), tolerance, "Paired first pivot solution")
+         call f90_expect_near(constant_solution(1), 1.5_dp * expected(pivot_index), tolerance, "Paired first pivot solution")
       end do
    end subroutine test_first_pivot
 
@@ -111,7 +169,7 @@ contains
    !> Check that zero and small pivots created by elimination are replaced with a sign-preserving minimum magnitude.
    subroutine test_eliminated_pivot() bind(C)
       real(kind=dp), dimension(3), parameter :: second_diagonals = [0.5_dp, 0.5_dp + 0.5e-15_dp, 0.5_dp - 0.5e-15_dp]
-      real(kind=dp), dimension(2) :: lower, diagonal, upper, rhs, normalized_upper, solution
+      real(kind=dp), dimension(2) :: lower, diagonal, upper, rhs, normalized_upper, solution, constant_solution
       real(kind=dp) :: expected_sign
       integer :: pivot_index
 
@@ -126,6 +184,9 @@ contains
 
          call f90_expect_near(solution, [1.0e-15_dp - 0.5_dp * expected_sign, expected_sign], &
                               tolerance, "Signed eliminated pivot solution")
+         call tridag_two_rhs(lower, diagonal, upper, rhs, 1.0e-15_dp, normalized_upper, solution, constant_solution, 2)
+         call f90_expect_near(constant_solution(2), 0.5_dp * expected_sign, tolerance, &
+                              "Paired signed eliminated pivot solution")
       end do
    end subroutine test_eliminated_pivot
 

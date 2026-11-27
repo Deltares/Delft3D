@@ -2962,12 +2962,21 @@ contains
          mf = floor(spwphihat / spwdphi) + 1 ! find orientation in windrose
          nf = floor(spwradhat / spwdrad) + 1 ! find orientation on radius
 
-         ! If outside spiderweb or exactly in eye, then set windspeed to zero, else find weightfactors and interpolate
-         if (nf >= connection%sourceItemsPtr(1)%ptr%elementSetPtr%n_rows .or. (dlat == 0.0_dp .and. dlon == 0.0_dp)) then
+         if (comparereal(dlat, 0.0_dp) == 0 .and. comparereal(dlon, 0.0_dp) == 0) then
+            ! In eye set windspeed to zero. 
+            uintp = 0.0_dp
+            vintp = 0.0_dp
+            if (twp > 0) then ! To not have a pressure jump at the eye, we interpolate the pressure from the two nearest points in time.
+               pintp = connection%sourceItemsPtr(swp)%ptr%sourceT0FieldPtr%arr1dPtr(1) * a0 + &
+                  connection%sourceItemsPtr(swp)%ptr%sourceT1FieldPtr%arr1dPtr(1) * a1
+            end if
+         elseif (nf >= connection%sourceItemsPtr(1)%ptr%elementSetPtr%n_rows) then
+            ! If outside spiderweb set windspeed and pressure drop to zero.
             uintp = 0.0_dp
             vintp = 0.0_dp
             pintp = 0.0_dp
          else
+            ! Find weightfactors and interpolate for wind and pressure drop.
             ! Get data from stencil (mf (+1), nf (+1))
             if ((twx > 0) .or. (twy > 0)) then
                spwr1 = connection%sourceItemsPtr(swr)%ptr%sourceT0FieldPtr%arr1dPtr(mf + n_cols * (nf - 1)) * a0 + &

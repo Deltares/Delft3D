@@ -34,6 +34,8 @@ module read_grids
 !!--declarations----------------------------------------------------------------
     !
     use precision_basics
+    !
+    implicit none
 
 
 contains
@@ -43,7 +45,6 @@ contains
 subroutine get_gri(filnam    ,xz        ,yz        ,guu       ,gvv       , &
                 &  alfas     ,kcs       ,covered   ,mmax      ,nmax      , &
                 &  kmax      ,xymiss    ,layer_model)
-    implicit none
 !
 ! Local parameters
 !
@@ -290,7 +291,6 @@ end subroutine get_gri
 !
 !==============================================================================
 subroutine readgriddims(filnam, mmax, nmax)
-    implicit none
 !
 ! Global variables
 !
@@ -326,7 +326,6 @@ end subroutine readgriddims
 !
 !==============================================================================
 subroutine replacecoordinates(filnam, mmax, nmax, xb, yb)
-    implicit none
 !
 ! Global variables
 !
@@ -357,7 +356,6 @@ end subroutine replacecoordinates
 !==============================================================================
 subroutine read_grd(filnam    ,xb     ,yb   ,codb ,covered, mmax  ,nmax ,sferic ,xymiss)
     use geometry_module, only: clockwise
-    implicit none
 !
 ! Global variables
 !
@@ -580,7 +578,6 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
     use dwaves_version_module
     use m_ec_basic_interpolation, only: tricall
 
-    implicit none
 !
 ! Parameters
 !
@@ -1183,7 +1180,6 @@ end subroutine read_netcdf_grd
 subroutine readregulargrid(filnam, sferic_exp, xorigin, yorigin, alpha, &
                           & mmax, nmax, dx, dy)
     use geometry_module, only: clockwise
-    implicit none
 !
 ! Global variables
 !
@@ -1356,7 +1352,6 @@ end subroutine readregulargrid
 !
 !==============================================================================
 subroutine write_swan_grid (x,y,mmax,nmax,inest,fname)
-   implicit none
    !
    integer                       , intent(in)  :: mmax
    integer                       , intent(in)  :: nmax

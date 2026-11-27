@@ -58,7 +58,7 @@ digraph dwaves_communication_model {
     w4 -> wf [style=invis, weight=30];
 
     legend [shape=plaintext, style="", fontsize=10,
-            label="Solid arrows: field/file I/O. Dashed arrows: control.\n* Wave-field writeback requires WriteCOM (mandatory for online runs);\nreading hydrodynamic input is configured independently.\nStandalone starts no Delft3D4 or D-Flow FM engine.\npreCICE is outside this model."];
+            label="Solid arrows: field/file I/O. Dashed arrows: control.\n* Wave-field writeback requires WriteCOM (mandatory for DelftIO and DIMR);\nreading hydrodynamic input is configured independently.\nStandalone starts no Delft3D4 or D-Flow FM engine.\n--online=precice exists, but coupling is not implemented."];
     cs -> legend [style=invis];
 
     diagram_credit [shape=box, style=filled, fillcolor="#FFF176", color="#E0C200",
