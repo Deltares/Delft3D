@@ -1538,6 +1538,7 @@ contains
    end function ecSampleReadAll_from_fileReader
 
    !> Reads a sample file (*.xyz) given an already opened logical unit number, into allocatable arrays.
+   !! At each exact (x, y) location, keep the first valid record in file order.
    function ecSampleReadAll_from_lun(msam, filename, xs, ys, zs, nSamples, kx) result(success)
       use, intrinsic :: ieee_arithmetic, only: ieee_is_finite, ieee_quiet_nan, ieee_value
       use, intrinsic :: iso_fortran_env, only: iostat_end
@@ -1572,6 +1573,7 @@ contains
       do
          call GetLine(msam, rec, istat)
          if (istat == iostat_end) then
+            call remove_duplicate_xyz_samples(xs, ys, zs, nSamples)
             call realloc(xs, nSamples)
             call realloc(ys, nSamples)
             call realloc(zs, [kx, nSamples])
@@ -1617,6 +1619,49 @@ contains
       write (tex, '(3a,i0,a)') "Invalid XYZ sample record in '", trim(filename), "' at line ", line_number, "."
       call set_ec_message(trim(tex))
    end function ecSampleReadAll_from_lun
+
+   subroutine remove_duplicate_xyz_samples(xs, ys, zs, nSamples)
+      use stdlib_sorting, only: sort_index, int_size
+
+      real(dp), dimension(:), allocatable, intent(inout) :: xs, ys
+      real(dp), dimension(:, :), allocatable, intent(inout) :: zs
+      integer, intent(inout) :: nSamples
+
+      real(dp), dimension(:), allocatable :: sorted_coordinate
+      integer(int_size), dimension(:), allocatable :: y_order, x_order
+      logical, dimension(:), allocatable :: duplicate
+      integer :: i, previous, current, kept
+
+      if (nSamples < 2) then
+         return
+      end if
+
+      allocate (y_order(nSamples), x_order(nSamples), duplicate(nSamples))
+      duplicate = .false.
+      ! Stable sorts group exact coordinate pairs without changing which record came first.
+      sorted_coordinate = ys(1:nSamples)
+      call sort_index(sorted_coordinate, y_order)
+      sorted_coordinate = xs(y_order)
+      call sort_index(sorted_coordinate, x_order)
+      previous = y_order(x_order(1))
+      do i = 2, nSamples
+         current = y_order(x_order(i))
+         duplicate(current) = xs(current) == xs(previous) .and. ys(current) == ys(previous)
+         previous = current
+      end do
+
+      kept = 0
+      do i = 1, nSamples
+         if (duplicate(i)) then
+            cycle
+         end if
+         kept = kept + 1
+         xs(kept) = xs(i)
+         ys(kept) = ys(i)
+         zs(:, kept) = zs(:, i)
+      end do
+      nSamples = kept
+   end subroutine remove_duplicate_xyz_samples
 
 !!==============================================================================
 !

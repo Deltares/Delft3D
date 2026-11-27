@@ -303,6 +303,48 @@ contains
    end subroutine test_polygon_preserves_uncovered_values
 
    !$gtest
+   subroutine test_legacy_sample_averaging_ignores_duplicates() bind(C)
+      use fm_external_forcings_data, only: NTRANSFORMCOEF
+      use fm_location_types, only: UNC_LOC_U
+      use m_ec_interpolationsettings, only: AVGTP_MEAN
+      use m_flowgeom, only: ln, ln2lne
+      use m_missing, only: dmiss
+      use m_netw, only: xzw, yzw, xk, yk, kn
+      use m_polygon, only: m_polygon_destructor
+      use m_sferic, only: jsferic
+      use timespace, only: timespaceinitialfield
+      use timespace_parameters, only: SAMPLES, METHOD_AVERAGING, OPERAND_OVERRIDE
+
+      character(len=*), parameter :: SAMPLE_FILE = 'test_legacy_duplicate_samples.xyz'
+      real(dp), dimension(NTRANSFORMCOEF) :: coefficients
+      real(dp), dimension(1) :: values
+      logical :: success
+      integer :: ierr
+
+      call create_file(SAMPLE_FILE, [character(len=16) :: '0 0 -999', '0 0 2', '0 1 8', '1 0 5', '0 0 50'])
+      ln = reshape([1, 2], [2, 1])
+      ln2lne = [1]
+      kn = reshape([1, 2, 2], [3, 1])
+      xzw = [-2.0_dp, 2.0_dp]
+      yzw = [0.0_dp, 0.0_dp]
+      xk = [0.0_dp, 0.0_dp]
+      yk = [-2.0_dp, 2.0_dp]
+      ierr = m_polygon_destructor()
+      jsferic = 0
+      coefficients = dmiss
+      coefficients(4:5) = [real(AVGTP_MEAN, dp), 1.0_dp]
+      coefficients(8) = 3.0_dp
+      values = 0.0_dp
+
+      success = timespaceinitialfield([0.0_dp], [0.0_dp], values, size(values), SAMPLE_FILE, &
+                                      SAMPLES, METHOD_AVERAGING, OPERAND_OVERRIDE, coefficients, UNC_LOC_U)
+
+      call f90_expect_true(success, 'duplicate sample initialization should succeed')
+      call f90_expect_near(values(1), 5.0_dp, 1.0e-12_dp, 'the first valid sample at each location should contribute to the mean')
+      deallocate (ln, ln2lne, kn, xzw, yzw, xk, yk)
+   end subroutine test_legacy_sample_averaging_ignores_duplicates
+
+   !$gtest
    subroutine test_waqparameter_polygon_preserves_uncovered_values() bind(C)
       use m_flow, only: kmx, ndkx
       use m_polygon, only: m_polygon_destructor
