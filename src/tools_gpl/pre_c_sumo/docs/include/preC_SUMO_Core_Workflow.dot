@@ -1,5 +1,4 @@
-// Detailed workflow of preC-SUMO core processes
-// Shows the sequence of tasks and data flow within the preC-SUMO adapter
+// Detailed workflow of preC-SUMO initialization and coupling windows
 
 digraph preCSUMOWorkflow {
 
@@ -20,34 +19,60 @@ digraph preCSUMOWorkflow {
   ProC_Adapter [label="preC-SUMO Adapter\n(preCICE interface)", shape=box, fillcolor="#A5B51B", style="rounded,filled"];
 
   /* -------------------------
-     Core Tasks
+     Initialization
   --------------------------*/
   subgraph cluster_workflow {
-    label="preC-SUMO Core Workflow";
+    label="preC-SUMO Initialization";
     style="rounded,filled";
     fillcolor="#FFE6E6";
 
-    task1 [label="readCsumoSettingsFile()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_read_csumo_settings_file", tooltip="Open readCsumoSettingsFile docs"];
+    task1 [label="readSettingsFile()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_read_csumo_settings_file", tooltip="Open readSettingsFile docs"];
 
-    task2 [label="receiveFFData()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_receive_ff_data", tooltip="Open receiveFFData docs"];
+    task2 [label="Register sampling meshes", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled"];
 
-    task3 [label="writeFF2NFFiles()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_write_ff2nf", tooltip="Open writeFF2NFFiles docs"];
+    task3 [label="Wait for and read\ninitial NF2FF files", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_read_nf2ff", tooltip="Read initial NF2FF data before participant initialization"];
 
-    task4 [label="C-SUMO near-field", shape=box, fillcolor="#1285f0", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_write_ff2nf", tooltip="FF2NF to NF2FF exchange"];
+    task4 [label="Convert initial results\nand register sink/source mesh", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_convert_nf_to_sink_source_connections", tooltip="Determine initial sink/source mesh from NF2FF data"];
 
-    task5 [label="readNF2FFFiles()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_read_nf2ff", tooltip="Open readNF2FFFiles docs"];
-
-    task6 [label="convertNFtoConnectedSinkSources()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_convert_nf_to_connected_sink_sources", tooltip="Open conversion docs"];
-
-   task7 [label="write_to_precice()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_connected_sink_sources_write_to_precice", tooltip="Open write_to_precice docs"];
+    task5 [label="Check initial data requirement\nand initialize participant", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled"];
 
     task1 -> task2;
     task2 -> task3;
     task3 -> task4;
     task4 -> task5;
-    task5 -> task6;
-    task6 -> task7;
   }
+
+  /* -------------------------
+     Coupling Window
+  --------------------------*/
+  subgraph cluster_coupling {
+    label="Each preCICE Coupling Window";
+    style="rounded,filled";
+    fillcolor="#FFF6E8";
+
+    task6 [label="receiveFFData()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_receive_ff_data", tooltip="Open receiveFFData docs"];
+
+    task7 [label="write FF2NF files", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_write_ff2nf", tooltip="Open FF2NFWriter::write docs"];
+
+    task8 [label="C-SUMO near-field", shape=box, fillcolor="#1285f0", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_write_ff2nf", tooltip="FF2NF to NF2FF exchange"];
+
+    task9 [label="wait + read NF2FF", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_read_nf2ff", tooltip="Open NF2FF read docs"];
+
+    task10 [label="convertCSumoToPrecice()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_convert_nf_to_sink_source_connections", tooltip="Open conversion docs"];
+
+    task11 [label="writeSinkSourceConnections()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled", URL="\\ref pre_c_sumo_sink_source_connections_write_to_precice", tooltip="Open writeSinkSourceConnections docs"];
+
+    task12 [label="advance()", shape=box, fillcolor="#F26422", fontcolor="white", style="rounded,filled"];
+
+    task6 -> task7;
+    task7 -> task8;
+    task8 -> task9;
+    task9 -> task10;
+    task10 -> task11;
+    task11 -> task12;
+    task12 -> task6 [constraint=false];
+  }
+  task5 -> task6;
 
   /* -------------------------
      Output
@@ -59,12 +84,14 @@ digraph preCSUMOWorkflow {
   --------------------------*/
   CSUMOConfig -> task1;
   ProC_Adapter -> task2;
-  task7 -> FMAdapter;
+  ProC_Adapter -> task6;
+  task11 -> FMAdapter;
+  ExtCSUMO -> task3;
+  ExtCSUMO -> task9;
 
   /* -------------------------
      External Coupling
   --------------------------*/
   ExtCSUMO [label="External C-SUMO\nnear-field solver", shape=box, fillcolor="#1285f0", fontcolor="white", style="rounded,filled"];
-  task3 -> ExtCSUMO;
-  ExtCSUMO -> task4;
+  task7 -> ExtCSUMO;
 }
