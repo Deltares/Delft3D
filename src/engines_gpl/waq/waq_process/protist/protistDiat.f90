@@ -145,6 +145,9 @@ contains
         ipnt(1:ipointLength) = ipoint(1:ipointLength)
         iflux = 0
 
+        write(88,*) 'Step ProtDiat'
+
+
         ! segment loop
         segmentLoop : do iseg = 1, num_cells
             call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
@@ -159,6 +162,16 @@ contains
                 PFD = process_space_real(ipnt(7))  !    from rad to photon flux density                        (umol photon m-2)
                 atten = process_space_real(ipnt(8))  !    attenuation of light by water + plankton Chl           (-)
                 exat = EXP(-atten)        !    -ve exponent of attenuation                            (-)
+
+
+                call check_value( 'Diat', iseg, PO4 ,     'PO4'       )
+                call check_value( 'Diat', iseg, NH4 ,     'NH4'       )
+                call check_value( 'Diat', iseg, NO3 ,     'NO3'       )
+                call check_value( 'Diat', iseg, Si  ,     'Si '       )
+                call check_value( 'Diat', iseg, Temp,     'Temp'       )
+                call check_value( 'Diat', iseg, PFD,      'PFD'       )
+                call check_value( 'Diat', iseg, atten,    'atten'       )
+                call check_value( 'Diat', iseg, exat,     'exat'       )
 
                 ! species loop
                 speciesLoop : do iSpec = 1, nrSpec
@@ -211,6 +224,47 @@ contains
                     SiCopt = process_space_real(ipnt(spInc + 36))   !      minimum Si:C (diatom)                                  (gSi gC-1)
                     UmRT = process_space_real(ipnt(spInc + 37))   !      maximum growth rate at reference T                     (d-1)
 
+                    if ( si < 0.0 ) then
+                        write(88,*) 'Si: ', iseg, si
+                    endif
+
+                    call check_value( 'Diat', iseg, protC,    'protC'       )
+                    call check_value( 'Diat', iseg, protN,    'protN      ' )
+                    call check_value( 'Diat', iseg, protP,    'protP      ' )
+                    call check_value( 'Diat', iseg, protSi,   'protSi     ' )
+                    call check_value( 'Diat', iseg, alpha,    'alpha      ' )
+                    call check_value( 'Diat', iseg, ChlCm,    'ChlCm      ' )
+                    call check_value( 'Diat', iseg, ChlCo,    'ChlCo      ' )
+                    call check_value( 'Diat', iseg, CR,       'CR         ' )
+                    call check_value( 'Diat', iseg, FrAut,    'FrAut      ' )
+                    call check_value( 'Diat', iseg, FrDet,    'FrDet      ' )
+                    call check_value( 'Diat', iseg, KtNH4,    'KtNH4      ' )
+                    call check_value( 'Diat', iseg, KtNO3,    'KtNO3      ' )
+                    call check_value( 'Diat', iseg, KtP,      'KtP        ' )
+                    call check_value( 'Diat', iseg, KtSi,     'KtSi       ' )
+                    call check_value( 'Diat', iseg, MrtRT,    'MrtRT      ' )
+                    call check_value( 'Diat', iseg, NCm,      'NCm        ' )
+                    call check_value( 'Diat', iseg, NCo,      'NCo        ' )
+                    call check_value( 'Diat', iseg, NCopt,    'NCopt      ' )
+                    call check_value( 'Diat', iseg, NO3Cm,    'NO3Cm      ' )
+                    call check_value( 'Diat', iseg, NO3Copt,  'NO3Copt    ' )
+                    call check_value( 'Diat', iseg, PCm,      'PCm        ' )
+                    call check_value( 'Diat', iseg, PCo,      'PCo        ' )
+                    call check_value( 'Diat', iseg, PCoNCm,   'PCoNCm     ' )
+                    call check_value( 'Diat', iseg, PCoNCopt, 'PCoNCopt   ' )
+                    call check_value( 'Diat', iseg, PCopt,    'PCopt      ' )
+                    call check_value( 'Diat', iseg, PSDOC,    'PSDOC      ' )
+                    call check_value( 'Diat', iseg, Q10,      'Q10        ' )
+                    call check_value( 'Diat', iseg, redco,    'redco      ' )
+                    call check_value( 'Diat', iseg, relPS,    'relPS      ' )
+                    call check_value( 'Diat', iseg, ReUmNH4,  'ReUmNH4    ' )
+                    call check_value( 'Diat', iseg, ReUmNO3,  'ReUmNO3    ' )
+                    call check_value( 'Diat', iseg, RT,       'RT         ' )
+                    call check_value( 'Diat', iseg, SiCm,     'SiCm       ' )
+                    call check_value( 'Diat', iseg, SiCo,     'SiCo       ' )
+                    call check_value( 'Diat', iseg, SiCopt,   'SiCopt     ' )
+                    call check_value( 'Diat', iseg, UmRT,     'UmRT       ' )
+
 
                     ! Calculate the nutrient quota of the cell-------------------------------------------------------------------------------
                     ! Units: gNut gC-1
@@ -232,12 +286,20 @@ contains
                     SCu = statusSC(SiCopt, SiCo, Si, KtSi)
                     NPSiCu = min(NCu, PCu, SCu)
 
+                    if ( si < 0.0 ) then
+                        write(88,'(20g12.4)') 'SCu: ', scu, ncu, pcu
+                    endif
+
                     ! Calculate uptake for the nutrients ---------------------------------------
                     ! Units: gNut gC-1 d-1
                     upP = uptakeP(PC, PCo, PCopt, PCm, UmT, PO4, KtP)
                     upNH4 = uptakeNH4(PCoNCopt, PCoNCm, PCu, NCu, NC, NCo, NCopt, NCm, UmT, ReUmNH4, NH4, KtNH4)
                     upNO3 = uptakeNO3(PCoNCm, PCu, NCu, NC, NCo, NO3Copt, NO3Cm, UmT, ReUmNO3, NO3, KtNO3)
                     upSi = uptakeSi(SC, SiCo, SiCopt, SiCm, UmT, Si, KtSi)
+
+                    if ( si < 0.0 ) then
+                        write(88,'(20g12.4)') 'UptakeSi: ',upSi, SC, SiCo, SiCopt, SiCm, UmT, Si, KtSi
+                    endif
 
                     ! Calculate photosynthesis related equation ---------------------------------------
                     ! Units: gC gC-1 d-1
@@ -246,10 +308,18 @@ contains
                     PS = grossPS(ChlC, PFD, exat, atten, PSqm, alpha)
                     Cfix = netPS(PS, PSDOC)
 
+                    if ( si < 0.0 ) then
+                        write(88,'(20g12.4)') 'Cfix: ',Cfix, PS, PSDOC, PSqm
+                    endif
+
                     ! Calculate chlorophyll synthesis and degradation ---------------------------------------
                     ! Units: gChl gC-1 d-1
                     synChl = synthesisChl(ChlC, ChlCo, ChlCm, UmT, maxPSreq, NPSiCu, Cfix, PSqm)
                     degChl = degradeChl(ChlC, ChlCm, UmT, NPSiCu)
+
+                    if ( si < 0.0 ) then
+                        write(88,'(20g12.4)') 'synChl: ',synchl, degchl, ChlC, ChlCo, ChlCm
+                    endif
 
                     ! Calculate respiration and C-growth  ---------------------------------------
                     ! Units: gC gC-1 d-1
@@ -307,6 +377,32 @@ contains
                     process_space_real(ipnt(spInc + 23)) = mrt
                     process_space_real(ipnt(spInc + 24)) = mrtFrAut
                     process_space_real(ipnt(spInc + 25)) = mrtFrDet
+
+                    call check_value( 'DiatEnd', iseg, NC        , 'NC        ' )
+                    call check_value( 'DiatEnd', iseg, PC        , 'PC        ' )
+                    call check_value( 'DiatEnd', iseg, SC        , 'SC        ' )
+                    call check_value( 'DiatEnd', iseg, ChlC      , 'ChlC      ' )
+                    call check_value( 'DiatEnd', iseg, UmT       , 'UmT       ' )
+                    call check_value( 'DiatEnd', iseg, BR        , 'BR        ' )
+                    call check_value( 'DiatEnd', iseg, NCu       , 'NCu       ' )
+                    call check_value( 'DiatEnd', iseg, PCu       , 'PCu       ' )
+                    call check_value( 'DiatEnd', iseg, SCu       , 'SCu       ' )
+                    call check_value( 'DiatEnd', iseg,  NPSiCu   , ' NPSiCu   ' )
+                    call check_value( 'DiatEnd', iseg,  upP      , ' upP      ' )
+                    call check_value( 'DiatEnd', iseg,  upNH4    , ' upNH4    ' )
+                    call check_value( 'DiatEnd', iseg,  upNO3    , ' upNO3    ' )
+                    call check_value( 'DiatEnd', iseg,  upSi     , ' upSi     ' )
+                    call check_value( 'DiatEnd', iseg,  PSqm     , ' PSqm     ' )
+                    call check_value( 'DiatEnd', iseg,  PS       , ' PS       ' )
+                    call check_value( 'DiatEnd', iseg,  Cfix     , ' Cfix     ' )
+                    call check_value( 'DiatEnd', iseg,  NPP      , ' NPP      ' )
+                    call check_value( 'DiatEnd', iseg,  synChl   , ' synChl   ' )
+                    call check_value( 'DiatEnd', iseg,  degChl   , ' degChl   ' )
+                    call check_value( 'DiatEnd', iseg,  totR     , ' totR     ' )
+                    call check_value( 'DiatEnd', iseg,  Cu       , ' Cu       ' )
+                    call check_value( 'DiatEnd', iseg,  mrt      , ' mrt      ' )
+                    call check_value( 'DiatEnd', iseg,  mrtFrAut , ' mrtFrAut ' )
+                    call check_value( 'DiatEnd', iseg,  mrtFrDet , ' mrtFrDet ' )
 
                     ! FLUXES -------------------------------------------------------------------
                     ! Protist gains------------------------------------------------------------

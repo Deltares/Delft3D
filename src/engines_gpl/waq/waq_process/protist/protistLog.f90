@@ -25,6 +25,7 @@
 
 module m_protistlog
     use m_logger_helper
+    use ieee_arithmetic
 
     implicit none
 
@@ -58,5 +59,31 @@ contains
             endif
         endif
     end subroutine write_warning
+
+    subroutine check_value( module, segment, value, name )
+        character(len=*), intent(in) :: module
+        integer, intent(in)          :: segment
+        real, intent(in)             :: value
+        character(len=*), intent(in) :: name
+
+        logical, save                :: first = .true.
+        integer, save                :: luchk
+        real                         :: rnd
+        character(len=40)            :: filename
+
+        if ( first ) then
+            first = .false.
+            call random_init( .true., .true. )
+            call random_number( rnd )
+            write( filename, '(a,i10,a)' ) 'protist_', int( 1.0e9 * rnd ), '.out'
+            open( newunit = luchk, file = filename )
+        endif
+
+        if ( value < 0.0 .or. value > 1.0e5 ) then
+            write( luchk, * ) trim(module), segment, ': ', trim(name), value
+        elseif ( .not. ieee_is_finite(value) ) then
+            write( luchk, * ) trim(module), segment, ': ', trim(name), value, ' -- not finite!'
+        endif
+    end subroutine check_value
 
 end module m_protistLog

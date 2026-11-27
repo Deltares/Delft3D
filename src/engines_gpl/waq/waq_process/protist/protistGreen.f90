@@ -161,6 +161,15 @@ contains
                 atten = process_space_real(ipnt(7))  !    attenuation of light by water + plankton Chl           (-)
                 exat = EXP(-atten)        !    -ve exponent of attenuation                            (-)
 
+                call check_value( 'Green', iseg, PO4    , 'PO4    ' )
+                call check_value( 'Green', iseg, NH4    , 'NH4    ' )
+                call check_value( 'Green', iseg, NO3    , 'NO3    ' )
+                call check_value( 'Green', iseg, Temp   , 'Temp   ' )
+                call check_value( 'Green', iseg, PFD    , 'PFD    ' )
+                call check_value( 'Green', iseg, atten  , 'atten  ' )
+                call check_value( 'Green', iseg, exat   , 'exat   ' )
+
+
                 ! species loop
                 speciesLoop : do iSpec = 1, nrSpec
 
@@ -208,6 +217,39 @@ contains
                     rProt = process_space_real(ipnt(spInc + 32))   !      radius of nutrient repleted protist cell               (um)
                     UmRT = process_space_real(ipnt(spInc + 33))   !      maximum growth rate at reference T                     (d-1)
 
+
+                    call check_value( 'Green', iseg, protChl  , 'protChl ')
+                    call check_value( 'Green', iseg, protN    , 'protN   ')
+                    call check_value( 'Green', iseg, protP    , 'protP   ')
+                    call check_value( 'Green', iseg, alpha    , 'alpha   ')
+                    call check_value( 'Green', iseg, ChlCm    , 'ChlCm   ')
+                    call check_value( 'Green', iseg, ChlCo    , 'ChlCo   ')
+                    call check_value( 'Green', iseg, CR       , 'CR      ')
+                    call check_value( 'Green', iseg, FrAut    , 'FrAut   ')
+                    call check_value( 'Green', iseg, FrDet    , 'FrDet   ')
+                    call check_value( 'Green', iseg, KtNH4    , 'KtNH4   ')
+                    call check_value( 'Green', iseg, KtNO3    , 'KtNO3   ')
+                    call check_value( 'Green', iseg, KtP      , 'KtP     ')
+                    call check_value( 'Green', iseg, MrtRT    , 'MrtRT   ')
+                    call check_value( 'Green', iseg, NCm      , 'NCm     ')
+                    call check_value( 'Green', iseg, NCo      , 'NCo     ')
+                    call check_value( 'Green', iseg, NCopt    , 'NCopt   ')
+                    call check_value( 'Green', iseg, NO3Cm    , 'NO3Cm   ')
+                    call check_value( 'Green', iseg, NO3Copt  , 'NO3Copt ')
+                    call check_value( 'Green', iseg, PCm      , 'PCm     ')
+                    call check_value( 'Green', iseg, PCo      , 'PCo     ')
+                    call check_value( 'Green', iseg, PCoNCm   , 'PCoNCm  ')
+                    call check_value( 'Green', iseg, PCoNCopt , 'PCoNCopt')
+                    call check_value( 'Green', iseg, PCopt    , 'PCopt   ')
+                    call check_value( 'Green', iseg, PSDOC    , 'PSDOC   ')
+                    call check_value( 'Green', iseg, Q10      , 'Q10     ')
+                    call check_value( 'Green', iseg, redco    , 'redco   ')
+                    call check_value( 'Green', iseg, relPS    , 'relPS   ')
+                    call check_value( 'Green', iseg, ReUmNH4  , 'ReUmNH4 ')
+                    call check_value( 'Green', iseg, ReUmNO3  , 'ReUmNO3 ')
+                    call check_value( 'Green', iseg, RT       , 'RT      ')
+                    call check_value( 'Green', iseg, rProt    , 'rProt   ')
+                    call check_value( 'Green', iseg, UmRT     , 'UmRT    ')
 
                     ! Calculate the nutrient quota of the cell-------------------------------------------------------------------------------
                     ! Units: gNut gC-1
@@ -305,6 +347,30 @@ contains
                     process_space_real(ipnt(spInc + 22)) = mrtFrAut
                     process_space_real(ipnt(spInc + 23)) = mrtFrDet
 
+
+                    call check_value( 'GreenEnd', iseg, NC        , 'NC       ')
+                    call check_value( 'GreenEnd', iseg, PC        , 'PC       ')
+                    call check_value( 'GreenEnd', iseg, ChlC      , 'ChlC     ')
+                    call check_value( 'GreenEnd', iseg, UmT       , 'UmT      ')
+                    call check_value( 'GreenEnd', iseg, BR        , 'BR       ')
+                    call check_value( 'GreenEnd', iseg, NCu       , 'NCu      ')
+                    call check_value( 'GreenEnd', iseg, PCu       , 'PCu      ')
+                    call check_value( 'GreenEnd', iseg, NPCu      , 'NPCu     ')
+                    call check_value( 'GreenEnd', iseg, mot       , 'mot      ')
+                    call check_value( 'GreenEnd', iseg,  upP      , ' upP     ')
+                    call check_value( 'GreenEnd', iseg,  upNH4    , ' upNH4   ')
+                    call check_value( 'GreenEnd', iseg,  upNO3    , ' upNO3   ')
+                    call check_value( 'GreenEnd', iseg,  PSqm     , ' PSqm    ')
+                    call check_value( 'GreenEnd', iseg,  PS       , ' PS      ')
+                    call check_value( 'GreenEnd', iseg,  Cfix     , ' Cfix    ')
+                    call check_value( 'GreenEnd', iseg,  NPP      , ' NPP     ')
+                    call check_value( 'GreenEnd', iseg,  synChl   , ' synChl  ')
+                    call check_value( 'GreenEnd', iseg,  degChl   , ' degChl  ')
+                    call check_value( 'GreenEnd', iseg,  totR     , ' totR    ')
+                    call check_value( 'GreenEnd', iseg,  Cu       , ' Cu      ')
+                    call check_value( 'GreenEnd', iseg,  mrt      , ' mrt     ')
+                    call check_value( 'GreenEnd', iseg,  mrtFrAut , ' mrtFrAut')
+                    call check_value( 'GreenEnd', iseg,  mrtFrDet , ' mrtFrDet')
 
                     ! FLUXES -------------------------------------------------------------------
                     ! Protist gains------------------------------------------------------------
