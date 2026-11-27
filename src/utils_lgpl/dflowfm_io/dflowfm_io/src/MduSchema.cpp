@@ -1,0 +1,93 @@
+#include <dflowfm_io/MduSchema.h>
+#include <dflowfm_io/MduSchemaGenerated.h>
+#include "StringUtils.h"
+
+#include "MduConversion.h"
+
+#include <format>
+#include <stdexcept>
+
+namespace dflowfm_io
+{
+    MduSchema::MduSchema(std::string description, std::vector<SectionSchema> sections)
+        : description(std::move(description)), sections(std::move(sections))
+    {
+        for (const auto& ss : this->sections)
+        {
+            section_map.emplace(tolower(ss.name), &ss);
+            for (const auto& ps : ss.properties)
+                property_map.emplace(FormatKey(ss.name, ps.key), &ps);
+        }
+    }
+
+    const SectionSchema* MduSchema::FindSection(std::string_view name) const
+    {
+        auto it = section_map.find(tolower(name));
+        return it != section_map.end() ? it->second : nullptr;
+    }
+
+    const PropertySchema* MduSchema::FindProperty(std::string_view key) const
+    {
+        auto it = property_map.find(tolower(key));
+        return it != property_map.end() ? it->second : nullptr;
+    }
+
+    const PropertySchema* MduSchema::FindProperty(std::string_view section, std::string_view property) const
+    {
+        auto it = property_map.find(FormatKey(section, property));
+        return it != property_map.end() ? it->second : nullptr;
+    }
+
+    const EnumValueSchema* MduSchema::FindEnumValue(const PropertySchema& propertySchema, std::string_view rawValue) const
+    {
+        if (propertySchema.value_type != ValueType::StringEnum && propertySchema.value_type != ValueType::IntEnum)
+            return nullptr;
+
+        for (const auto& enumValueSchema : propertySchema.enum_values)
+            if (iequals(rawValue, enumValueSchema.value))
+                return &enumValueSchema;
+                
+        return nullptr;
+    }
+
+    bool MduSchema::IsObsolete(const PropertySchema& propertySchema, std::string_view rawValue) const
+    {
+        if (propertySchema.status.type == StatusType::Obsolete) return true;
+
+        const auto* enumValueSchema = FindEnumValue(propertySchema, rawValue);
+        return enumValueSchema && enumValueSchema->status.type == StatusType::Obsolete;
+    }
+
+    std::unordered_map<std::string, Value> MduSchema::CreateDefaultValues() const
+    {
+        std::unordered_map<std::string, Value> entries;
+
+        for (const auto& sectionSchema : Sections())
+        {
+            if (sectionSchema.status.type == StatusType::Obsolete) continue;
+
+            for (const auto& propertySchema : sectionSchema.properties)
+            {
+                if (IsObsolete(propertySchema, propertySchema.default_value)) continue;
+
+                Value value = conversion::ValueFromString(propertySchema, propertySchema.default_value);
+                const std::string key = FormatKey(sectionSchema.name, propertySchema.key);
+                entries[key] = std::move(value);
+            }
+        }
+
+        return entries;
+    }
+
+    std::string FormatKey(std::string_view section, std::string_view property)
+    {
+        return tolower(std::format("{}.{}", section, property));
+    }
+
+    const MduSchema& GetMduSchema()
+    {
+        static const MduSchema instance = BuildMduSchema();
+        return instance;
+    }
+
+} // namespace dflowfm_io

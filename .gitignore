@@ -5,8 +5,9 @@ install_*/**
 
 # editor files
 .vscode
-.idea/*
-.vs/**
+.idea
+.vs
+*.user
 
 # python virtual environment and caches
 .venv
