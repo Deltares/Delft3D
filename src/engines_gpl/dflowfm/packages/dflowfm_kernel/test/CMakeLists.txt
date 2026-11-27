@@ -4,19 +4,24 @@ endif()
 
 if(WIN32)
     set(conan_run_script "${CMAKE_BINARY_DIR}/conan/generators/conanrun.bat")
-    cmake_path(NATIVE_PATH conan_run_script conan_run_script)
-    set(conan_test_launcher
-        cmd.exe /d /v:off /c call "${conan_run_script}" "&&"
-    )
-elseif(UNIX) 
-    set(conan_test_launcher
-        bash -c [=[source "$1" && shift && exec "$@"]=] conan-test
-        "${CMAKE_BINARY_DIR}/conan/generators/conanrun.sh"
-    )
-endif()
-
-if(conan_test_launcher)
-    set(CMAKE_TEST_LAUNCHER ${conan_test_launcher} ${CMAKE_TEST_LAUNCHER})
+    set(conan_test_script "${CMAKE_CURRENT_BINARY_DIR}/conan_test_launcher.bat")
+    file(CONFIGURE OUTPUT "${conan_test_script}" CONTENT [=[
+@echo off
+call "@conan_run_script@"
+if not "%errorlevel%"=="0" exit /b %errorlevel%
+%*
+exit /b %errorlevel%
+]=] @ONLY NEWLINE_STYLE CRLF)
+    set(CMAKE_TEST_LAUNCHER "${conan_test_script}" ${CMAKE_TEST_LAUNCHER})
+elseif(UNIX)
+    set(conan_run_script "${CMAKE_BINARY_DIR}/conan/generators/conanrun.sh")
+    set(conan_test_script "${CMAKE_CURRENT_BINARY_DIR}/conan_test_launcher.sh")
+    file(CONFIGURE OUTPUT "${conan_test_script}" CONTENT [=[
+set -eo pipefail
+source "@conan_run_script@"
+exec "$@"
+]=] @ONLY NEWLINE_STYLE LF)
+    set(CMAKE_TEST_LAUNCHER "${conan_test_script}" ${CMAKE_TEST_LAUNCHER})
 endif()
 
 set_source_files_properties(src/test_dflowfm_version.F90 PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
