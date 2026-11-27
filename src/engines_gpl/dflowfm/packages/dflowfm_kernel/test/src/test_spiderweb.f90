@@ -1,11 +1,15 @@
 module test_spiderweb
    use assertions_gtest, only: f90_assert_true, f90_expect_eq, f90_expect_near, f90_expect_true
    use m_ec_module, only: ecFreeInstance
-   use m_file_helpers, only: create_file
+   use m_ec_parameters, only: ec_undef_hp
    use m_flowtimes, only: refdate_mjd, tunit, tzone
-   use m_meteo, only: ecInstancePtr, ec_gettimespacevalue
+   use m_file_helpers, only: create_file
+   use m_meteo, only: ecInstancePtr, ec_addtimespacerelation, ec_gettimespacevalue, initialize_ec_module
+   use m_sferic, only: CARTESIAN, SFERIC, jsferic
    use m_teardown_helpers, only: t_teardown
    use precision, only: dp
+   use time_module, only: ymd2modified_jul
+   use timespace_parameters, only: OPERAND_OVERRIDE, SPIDERWEB, WEIGHTFACTORS
    implicit none(type, external)
    private
 
@@ -38,13 +42,20 @@ contains
          eye_t0=[EYE, 1000.0_dp], eye_t1=[EYE, 3000.0_dp], &
          data_t0=RING_DATA, data_t1=RING_DATA)
 
-      call initialize_spiderweb(SPW_FILE, 'airpressure_windx_windy', target_xy=EYE, success=success)
+      ! Initialize ec-module
+      success = ymd2modified_jul(REFERENCE_DATE, refdate_mjd)
+      tzone = 0.0_dp
+      jsferic = SFERIC
+      call initialize_ec_module()
+      success = ec_addtimespacerelation( &
+         'airpressure_windx_windy', [EYE(1)], [EYE(2)], [1], 1, SPW_FILE, &
+         SPIDERWEB, WEIGHTFACTORS, OPERAND_OVERRIDE)
       if (.not. f90_assert_true(success, 'could not register spiderweb pressure and wind')) then
          return
       end if
       air_pressure = BACKGROUND_PRESSURE
-      ec_pwxwy_x = 5.0_dp
-      ec_pwxwy_y = -5.0_dp
+      ec_pwxwy_x = 42.0_dp ! Will be overriden.
+      ec_pwxwy_y = 42.0_dp
 
       ! Evaluate wind and pressure drop at T0 + six hours (that's a quarter of the way between T0 and T1).
       success = ec_gettimespacevalue(ecInstancePtr, item_apwxwy_p, REFERENCE_DATE, tzone, tunit, 6.0_dp * 3600.0_dp)
@@ -65,6 +76,8 @@ contains
             call f90_expect_true(ecFreeInstance(ecInstancePtr), 'EC instance cleanup should succeed')
          end if
          deallocate (air_pressure, ec_pwxwy_x, ec_pwxwy_y)
+         refdate_mjd = ec_undef_hp
+         jsferic = CARTESIAN
       end subroutine cleanup
 
    end subroutine test_spiderweb__evaluate_pressure_at_eye   
@@ -96,7 +109,14 @@ contains
          data_t0=[SPEED_T0, RING_DIRECTION, RING_DROP], &
          data_t1=[SPEED_T1, RING_DIRECTION, RING_DROP])
 
-      call initialize_spiderweb(SPW_FILE, 'windxy', target_xy=TARGET_XY, success=success)
+      ! Initialize ec-module
+      success = ymd2modified_jul(REFERENCE_DATE, refdate_mjd)
+      tzone = 0.0_dp
+      jsferic = SFERIC
+      call initialize_ec_module()
+      success = ec_addtimespacerelation( &
+         'windxy', [TARGET_XY(1)], [TARGET_XY(2)], [1], 1, SPW_FILE, &
+         SPIDERWEB, WEIGHTFACTORS, OPERAND_OVERRIDE)
       if (.not. f90_assert_true(success, 'could not register spiderweb wind')) then
          return
       end if
@@ -121,6 +141,8 @@ contains
             call f90_expect_true(ecFreeInstance(ecInstancePtr), 'EC instance cleanup should succeed')
          end if
          deallocate (wx, wy)
+         refdate_mjd = ec_undef_hp
+         jsferic = CARTESIAN
       end subroutine cleanup
 
    end subroutine test_spiderweb__evaluate_wind_north_of_eye
@@ -200,28 +222,5 @@ contains
          end do
       end subroutine write_snapshot
    end subroutine create_spiderweb_file
-
-   !> Initialize the ec-module and add a spiderweb time-space relation.
-   subroutine initialize_spiderweb(filename, quantity, target_xy, success)
-      use m_meteo, only: ec_addtimespacerelation, initialize_ec_module
-      use m_sferic, only: jsferic
-      use time_module, only: ymd2modified_jul
-      use timespace_parameters, only: OPERAND_OVERRIDE, SPIDERWEB, WEIGHTFACTORS
-
-      character(len=*), intent(in) :: filename, quantity
-      real(dp), dimension(2), intent(in) :: target_xy
-      logical, intent(out) :: success
-
-      success = ymd2modified_jul(REFERENCE_DATE, refdate_mjd)
-      if (.not. success) then
-         return
-      end if
-      tzone = 0.0_dp
-      jsferic = 1
-      call initialize_ec_module()
-      success = ec_addtimespacerelation( &
-         quantity, target_xy(1:1), target_xy(2:2), [1], 1, filename, &
-         SPIDERWEB, WEIGHTFACTORS, OPERAND_OVERRIDE)
-   end subroutine initialize_spiderweb
 
 end module test_spiderweb
