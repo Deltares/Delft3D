@@ -87,7 +87,7 @@ contains
       use m_flowgeom, only: bl, dxi, csu, snu, wcx1, wcx2, wcy1, wcy2, acl, csu, snu, wcl
       use m_flow, only: s0, s1, u1, v, kmx, zws, hs, iturbulencemodel, z0urou, ifrcutp, hu, spirint, spiratx, spiraty, &
                         u_to_umain, frcu_mor, javeg, jabaptist, cfuhi, taubxu, epsz0, &
-                        TURBULENCE_MODEL_NONE, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU
+                        TURBULENCE_MODEL_NONE, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC, TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU
       use m_flowtimes, only: julrefdat, dts, time1
       use unstruc_files, only: mdia
       use unstruc_channel_flow, only: t_branch, t_node, nt_LinkNode
@@ -97,7 +97,7 @@ contains
       use dfparall
       use m_alloc
       use m_missing
-      use m_turbulence, only: vicwws, turkinws, rhowat
+      use m_turbulence, only: vicwws, turbulent_kinetic_energy_ws, rhowat
       use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE, jawave, jasecflow, jasourcesink, v2dwbl, &
                                   flow_without_waves, epshu
       use m_fm_erosed, only: bsskin, varyingmorfac, npar, iflufflyr, rca, anymud, frac, lsedtot, seddif, sedthr, ust2, kfsed, &
@@ -401,7 +401,7 @@ contains
          select case (iturbulencemodel)
          case (TURBULENCE_MODEL_NONE, TURBULENCE_MODEL_CONSTANT, TURBULENCE_MODEL_ALGEBRAIC)
             ltur = 0
-         case (TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU)
+         case (TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU)
             ltur = 2
          end select
       end if
@@ -810,11 +810,11 @@ contains
                                 & rhowat(kbed), vismol, stmpar%sedpar, afluff)
             end if
          end if
-         !
+         
          ustarc = umod(nm) * VON_KARMAN / log(1.0_fp + zumod(nm) / max(z0rou, epsz0))
-         !
          ! To be in line with rest of FM, this should be
-         !ustarc = umod(nm)*VON_KARMAN/log(zumod(nm)/z0rou - 1d0)
+         ! ustarc = umod(nm)*VON_KARMAN/log(zumod(nm)/z0rou - 1d0)
+         
          tauadd = 0.0_dp
          
          ! Compute effective depth averaged velocity
@@ -913,8 +913,8 @@ contains
          dll_reals(RP_DM) = real(dxx(nm, i50), hp) ! d50 mixture, not dm; following Van Rijn 2007c
          dll_reals(RP_SNDFR) = real(sandfrac(nm), hp)
          dll_reals(RP_DGSD) = real(dgsd(nm), hp)
-         if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS, TURBULENCE_MODEL_KTAU]) .and. kmx > 0) then
-            dll_reals(RP_KTUR) = real(turkinws(kb), hp)
+         if (any(iturbulencemodel == [TURBULENCE_MODEL_KEPS_FLOW_LINKS, TURBULENCE_MODEL_KTAU]) .and. kmx > 0) then
+            dll_reals(RP_KTUR) = real(turbulent_kinetic_energy_ws(kb), hp)
          end if
          dll_reals(RP_UMEAN) = real(umean, hp)
          dll_reals(RP_VMEAN) = real(vmean, hp)
