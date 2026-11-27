@@ -1,3 +1,5 @@
+set(DFLOWFM_INI_PARSER_PRIVATE_HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/private_headers)
+
 add_library(dflowfm_ini_parser STATIC
     include/ini/IniData.h
     include/ini/IniFile.h
@@ -7,7 +9,8 @@ add_library(dflowfm_ini_parser STATIC
     include/ini/IniProperty.h
     include/ini/IniSection.h
     include/ini/IniValueConversion.h
-    include/ini/StringUtils.h
+
+    src/private_headers/StringUtils.h
 
     src/IniData.cpp
     src/IniFile.cpp
@@ -21,6 +24,8 @@ add_library(dflowfm_ini_parser STATIC
 target_include_directories(dflowfm_ini_parser
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
+    PRIVATE
+        ${DFLOWFM_INI_PARSER_PRIVATE_HEADER_DIR}
 )
 
 add_subdirectory(test)

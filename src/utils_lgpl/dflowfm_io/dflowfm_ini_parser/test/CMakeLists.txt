@@ -28,6 +28,8 @@ endif()
 
 target_link_libraries(dflowfm_ini_parser_tests PRIVATE dflowfm_ini_parser GTest::gtest_main)
 
+target_include_directories(dflowfm_ini_parser_tests PRIVATE ${DFLOWFM_INI_PARSER_PRIVATE_HEADER_DIR})
+
 if(WIN32)
     add_custom_command(TARGET dflowfm_ini_parser_tests POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:dflowfm_ini_parser_tests> $<TARGET_RUNTIME_DLLS:dflowfm_ini_parser_tests>

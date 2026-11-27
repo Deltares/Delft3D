@@ -1,5 +1,5 @@
 #include "ini/IniValueConversion.h"
-#include "ini/StringUtils.h"
+#include "StringUtils.h"
 
 #include <format>
 #include <locale>

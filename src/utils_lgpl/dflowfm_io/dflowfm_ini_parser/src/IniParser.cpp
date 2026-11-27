@@ -2,7 +2,7 @@
 #include "ini/IniData.h"
 #include "ini/IniSection.h"
 #include "ini/IniProperty.h"
-#include "ini/StringUtils.h"
+#include "StringUtils.h"
 
 #include <algorithm>
 #include <format>

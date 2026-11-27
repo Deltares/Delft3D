@@ -1,5 +1,5 @@
 #include "ini/IniProperty.h"
-#include "ini/StringUtils.h"
+#include "StringUtils.h"
 
 #include <iostream>
 #include <stdexcept>

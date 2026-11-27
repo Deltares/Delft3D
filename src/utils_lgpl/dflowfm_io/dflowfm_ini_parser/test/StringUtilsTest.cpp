@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "ini/StringUtils.h"
+#include "StringUtils.h"
 
 namespace ini::test
 {
