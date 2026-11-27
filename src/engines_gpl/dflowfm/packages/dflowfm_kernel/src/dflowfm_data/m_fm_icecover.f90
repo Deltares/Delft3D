@@ -67,6 +67,12 @@ module m_fm_icecover
 
    integer, pointer :: ja_icecover !< module pointer to modeltype flag inside ice_data that specifies the ice cover model
    integer, pointer :: ice_frict_type !< module pointer to frict_type inside ice_data
+   logical, pointer :: ice_frazil !< module pointer to frazil switch inside ice_data
+
+   integer :: ice_frazil_constituent = 0 !< constituent index of frazil tracer in transport administration
+   character(len=*), parameter :: FRAZIL_TRACER_NAME = 'frazil_ice'
+   real(fp), parameter :: FRAZIL_RISE_VELOCITY = -5.0e-4_fp !< upward frazil rise velocity (m/s), negative is upward in transport convention
+   real(fp), parameter :: FRAZIL_PRODUCTION_COEFFICIENT = 1.0e-4_fp !< production rate coefficient from supercooling (kg m-3 s-1 K-1)
 
    real(fp), pointer :: ice_density !< module pointer to ice_density inside ice_data
    real(fp), pointer :: ice_albedo !< module pointer to ice_albedo inside ice_data
@@ -126,6 +132,7 @@ contains
       ice_density => ice_data%ice_density
       ice_frict_type => ice_data%frict_type
       ice_frcuni => ice_data%frict_val
+      ice_frazil => ice_data%frazil
 
       snow_albedo => ice_data%snow_albedo
       snow_conductivity => ice_data%snow_conductivity
@@ -227,12 +234,62 @@ contains
       logical :: error !< ice module error flag
 
       call read_icecover(ice_data, md_ptr, MDU_ICE_CHAPTER, error)
+      call fm_ice_register_frazil_tracer()
       call fm_ice_update_spatial_pointers()
 
       if (error) then
          ierror = DFM_WRONGINPUT
       end if
    end subroutine fm_ice_read
+
+   !> Add frazil tracer administration entry when enabled in [ice] section.
+   subroutine fm_ice_register_frazil_tracer()
+      use fm_external_forcings_data, only: numtracers, nbndtr, trnames, trunits, wstracers, decaytimetracers
+      use m_alloc, only: realloc
+      use m_find_name, only: find_name
+
+      integer :: itrac
+
+      if (.not. ice_data%frazil) then
+         return
+      end if
+
+      if (.not. allocated(trnames)) then
+         allocate (trnames(0), trunits(0), nbndtr(0), wstracers(0), decaytimetracers(0))
+      end if
+
+      itrac = find_name(trnames, FRAZIL_TRACER_NAME)
+      if (itrac == 0) then
+         numtracers = numtracers + 1
+         call realloc(nbndtr, numtracers, keepExisting=.true., fill=0)
+         call realloc(trnames, numtracers, keepExisting=.true., fill='')
+         call realloc(trunits, numtracers, keepExisting=.true., fill='')
+         call realloc(wstracers, numtracers, keepExisting=.true., fill=0.0_dp)
+         call realloc(decaytimetracers, numtracers, keepExisting=.true., fill=0.0_dp)
+         trnames(numtracers) = FRAZIL_TRACER_NAME
+         trunits(numtracers) = 'kg m-3'
+      end if
+   end subroutine fm_ice_register_frazil_tracer
+
+   !> Resolve frazil constituent index in transport administration.
+   subroutine fm_ice_update_frazil_transport_index()
+      use m_transportdata, only: const_names, itra1, itran
+      use m_find_name, only: find_name
+
+      integer :: iconst
+
+      ice_frazil_constituent = 0
+      if (.not. ice_data%frazil) then
+         return
+      end if
+
+      if (itra1 > 0) then
+         iconst = find_name(const_names, FRAZIL_TRACER_NAME)
+         if (iconst >= itra1 .and. iconst <= itran) then
+            ice_frazil_constituent = iconst
+         end if
+      end if
+   end subroutine fm_ice_update_frazil_transport_index
 
 !> Report the ice configuration to the diagnostic output.
    subroutine fm_ice_echo(mdia)

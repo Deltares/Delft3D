@@ -140,6 +140,7 @@ subroutine read_icecover_parameters(icecover, md_ptr, chapter, error)
    call prop_get(md_ptr, chapter, 'applyFriction', icecover%apply_friction)
    call prop_get(md_ptr, chapter, 'reduceSurfExch', icecover%reduce_surface_exchange)
    call prop_get(md_ptr, chapter, 'reduceWaves', icecover%reduce_waves)
+   call prop_get(md_ptr, chapter, 'frazil', icecover%frazil)
    tmp = ' '
    call prop_get(md_ptr, chapter, 'modifyWindDrag', tmp)
    call str_lower(tmp, len(tmp))
@@ -305,6 +306,9 @@ function echo_icecover(icecover, lundia) result (error)
 
    txtput1 = '  Reduce waves'
    call write_logical(lundia, txtput1, icecover%reduce_waves)
+
+   txtput1 = '  Frazil transport'
+   call write_logical(lundia, txtput1, icecover%frazil)
 
    txtput1 = '  Modify wind drag'
    select case (icecover%modify_winddrag)

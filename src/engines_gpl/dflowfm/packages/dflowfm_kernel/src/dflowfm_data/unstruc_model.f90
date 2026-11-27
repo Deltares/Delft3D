@@ -3936,6 +3936,7 @@ contains
       if (writeall .or. ja_icecover /= ICECOVER_NONE) then
          call prop_set(prop_ptr, MDU_ICE_CHAPTER, 'IceCoverModel', trim(fm_ice_convert_value_to_string('IceCoverModel', ice_data)), 'Type of ice model (None, External, Semtner)')
          call prop_set(prop_ptr, MDU_ICE_CHAPTER, 'AddIceToMap', ice_data%mapout%default, 'Add ice quantities to map file (1 = yes, 0 = no)')
+         call prop_set(prop_ptr, MDU_ICE_CHAPTER, 'frazil', ice_data%frazil, 'Enable single frazil class transport and supercooling production')
       end if
 
 ! Output

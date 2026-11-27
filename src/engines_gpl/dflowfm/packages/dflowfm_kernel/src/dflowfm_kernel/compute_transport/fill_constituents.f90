@@ -48,10 +48,11 @@ contains
       use m_flowgeom, only: ndx, ndxi, ba
       use m_flow, only: kmx, ndkx, zws, hs, sq, vol1, spirint, spirucm, spircrv, fcoris, czssf
       use m_wind, only: heatsrc
-      use m_physcoef, only: uniform_horizontal_eddy_diffusivity, background_vertical_eddy_diffusivity, DIFMOLSAL, DIFMOLTEM, DIFMOLTRACER, use_salinity_freezing_point, ag, VON_KARMAN
+      use m_physcoef, only: uniform_horizontal_eddy_diffusivity, background_vertical_eddy_diffusivity, DIFMOLSAL, DIFMOLTEM, DIFMOLTRACER, use_salinity_freezing_point, ag, VON_KARMAN, backgroundsalinity
       use m_nudge, only: nudge_rate, nudge_temperature, nudge_salinity
       use m_turbulence, only: Schmidt_number_salinity, Prandtl_number_temperature, Schmidt_number_tracer, sigdifi, sigsed, wsf
       use fm_external_forcings_data, only: wstracers
+      use m_fm_icecover, only: ice_frazil, ice_frazil_constituent, FRAZIL_RISE_VELOCITY, FRAZIL_PRODUCTION_COEFFICIENT, freezing_temperature
       use m_source_sink, only: source_sinks, FLOWCELL_SINK, FLOWCELL_SOURCE, BOTTOM_LAYER_SINK, TOP_LAYER_SINK, BOTTOM_LAYER_SOURCE, TOP_LAYER_SOURCE
       use m_sediment, only: sed, sedtra, stm_included, stmpar, jased, mxgr, ws
       use m_mass_balance_area_data, only: jamba, mbadefdomain, mbafluxheat, mbafluxsorsin
@@ -65,7 +66,7 @@ contains
       use timers, only: timon, timstrt, timstop
       use m_alloc, only: aerr
       use m_get_kbot_ktop
-      use precision, only: dp
+      use precision, only: dp, fp
 
       implicit none
 
@@ -78,6 +79,7 @@ contains
       logical :: use_vertical_molecular_diffusion
       real(kind=dp), parameter :: dtol = 1e-8_dp
       real(kind=dp) :: spir_ce, spir_be, spir_e, alength_a, time_a, alpha, fcoriocof, qsrck, qsrckk, dzss
+      real(kind=dp) :: salinity, t_freeze, supercooling, frazil_source
 
       real(kind=dp) :: Trefi
       integer(4) :: ithndl = 0
@@ -165,6 +167,10 @@ contains
          end do
       end if
 
+      if (ice_frazil .and. ice_frazil_constituent > 0) then
+         wsf(ice_frazil_constituent) = real(FRAZIL_RISE_VELOCITY, dp)
+      end if
+
       ! add lateral in- and outflow of constituents as sources and sinks
       if (apply_transport_is_used) then
          call add_lateral_load_and_sink(const_sour, const_sink, vol1, dtol)
@@ -220,6 +226,19 @@ contains
             end do
 
          end do
+
+         if (ice_frazil .and. ice_frazil_constituent > 0 .and. ITEMP > 0 .and. kt >= kb) then
+            salinity = backgroundsalinity
+            if (ISALT > 0) then
+               salinity = constituents(ISALT, kt)
+            end if
+            t_freeze = real(freezing_temperature(real(salinity, fp)), dp)
+            supercooling = max(0.0_dp, t_freeze - constituents(ITEMP, kt))
+            if (supercooling > 0.0_dp .and. hs(kk) > epshu) then
+               frazil_source = real(FRAZIL_PRODUCTION_COEFFICIENT, dp) * supercooling
+               const_sour(ice_frazil_constituent, kt) = const_sour(ice_frazil_constituent, kt) + frazil_source
+            end if
+         end if
 
          !     Note: from now on, only _add_ to sources
 
