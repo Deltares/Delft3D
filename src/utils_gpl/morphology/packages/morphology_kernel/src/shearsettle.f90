@@ -34,7 +34,7 @@ subroutine shearsettle(dll_function, dll_handle, max_integers, max_reals, max_st
 !!--declarations----------------------------------------------------------------
     use precision
     use morphology_data_module
-    use message_module, only: write_error
+    use message_module, only: write_error, write_warning
     !
     implicit none
 !
