@@ -51,7 +51,7 @@ module m_laterals
    !                    3) in test_laterals (unit test)
    ! so yes, 3 is necessary for now.
    real(kind=dp), allocatable, target, public :: qplat(:, :) !< [m3/s] Lateral discharge of provider {"shape": ["num_layers", "numlatsg"]}
-   real(kind=dp), allocatable, target, public :: qqlat(:, :) !< [m3/s] Lateral discharge at xz,yz {"location": "face": ["num_layers","nlatnd"]}
+   real(kind=dp), allocatable, target, public :: qqlat(:, :) !< [m3/s] Lateral discharge at xz,yz {"location": "face", "shape": ["num_layers","nlatnd"]}
    real(kind=dp), allocatable, target, public :: balat(:) !< [m2] total area of all cells in provider numlatsg {"shape": ["numlatsg"]}
    character(len=128), allocatable, public :: lat_ids(:) !< id of laterals {"shape": ["numlatsg"]}
    real(kind=dp), allocatable, target, public :: qplatCum(:) !< [m3/s] Cumulative lateral discharge of provider {"shape": ["numlatsg"]}

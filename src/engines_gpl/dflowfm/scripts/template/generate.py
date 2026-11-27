@@ -1,27 +1,22 @@
 #!/usr/bin/env python
 
-"""
-Parse a fortran file and generate BMI functions from templates.
+"""Parse Fortran source files and generate BMI functions from templates."""
 
-Usage:
-  generate-bmi [--fortranfiles-dir=<fortranfiles-dir>]... [--template-dir=<template-dir>] [--verbose]
-"""
-
-import os
+import argparse
+import fileinput
 import glob
 import inspect
-import re
 import json
 import logging
-import fileinput
-
-from docopt import docopt
+import os
+import re
 from pathlib import Path
-import mako.template
+
 import mako.lookup
+import mako.template
 
 
-def main(fortranfiledirs, templatedir="templates"):
+def main(fortranfiles, templatedir="templates"):
     """read the fortran files, parse them and apply them
     to the templates in templatedir"""
 
@@ -60,42 +55,36 @@ def main(fortranfiledirs, templatedir="templates"):
 
     variables = []
     numv = 0
-    for fdir in fortranfiledirs:
-        fortranfiles = open(Path(fdir), "r")
-        for fortranfile in fortranfiles.read().splitlines():
-            logging.info("Scanning file %s...", fortranfile)
-            with open(Path(fortranfile)) as f:
-                linenr = 0
-                for line in f.readlines():
-                    linenr = linenr + 1
-                    match = variable_re.match(line)
-                    if match:
-                        # print '   ', line
-                        variable = match.groupdict()
-                        if variable["dimension"].strip():
-                            variable["rank"] = variable["dimension"].count(",") + 1
-                        else:
-                            variable["rank"] = 0
-                        variable["type"] = FORTRANTYPESMAP[variable["fortrantype"]]
+    for fortranfile in fortranfiles:
+        logging.info("Scanning file %s...", fortranfile)
+        with open(Path(fortranfile)) as f:
+            for linenr, line in enumerate(f, start=1):
+                match = variable_re.match(line)
+                if match:
+                    variable = match.groupdict()
+                    if variable["dimension"].strip():
+                        variable["rank"] = variable["dimension"].count(",") + 1
+                    else:
+                        variable["rank"] = 0
+                    variable["type"] = FORTRANTYPESMAP[variable["fortrantype"]]
 
-                        try:
-                            variable.update(json.loads(variable["json"]))
-                        except ValueError as e:
-                            logging.exception(
-                                "Variable's JSON string could not be parsed: %s. File: %s, line %d.",
-                                variable,
-                                fortranfile,
-                                linenr,
-                            )
+                    try:
+                        variable.update(json.loads(variable["json"]))
+                    except ValueError:
+                        logging.exception(
+                            "Variable's JSON string could not be parsed: %s. File: %s, line %d.",
+                            variable,
+                            fortranfile,
+                            linenr,
+                        )
 
-                        # shape overwrites rank
-                        if "shape" in variable:
-                            variable["rank"] = len(variable["shape"])
+                    # shape overwrites rank
+                    if "shape" in variable:
+                        variable["rank"] = len(variable["shape"])
 
-                        # print 'variable: ', variable
-                        variables.append(variable)
-            logging.info("Extracted %d variables.", len(variables) - numv)
-            numv = len(variables)
+                    variables.append(variable)
+        logging.info("Extracted %d variables.", len(variables) - numv)
+        numv = len(variables)
 
     logging.info("Total: extracted %d variables.", len(variables))
 
@@ -115,9 +104,15 @@ def main(fortranfiledirs, templatedir="templates"):
         else:
             return ""
 
-    templates = [template for template in os.listdir(templatedir) if template.lower().endswith(".f90")]
+    templates = [
+        template
+        for template in os.listdir(templatedir)
+        if template.lower().endswith(".f90")
+    ]
 
-    lookup = mako.lookup.TemplateLookup(directories=[templatedir], module_directory="/tmp/mako_modules")
+    lookup = mako.lookup.TemplateLookup(
+        directories=[templatedir], module_directory="/tmp/mako_modules"
+    )
 
     for template_name in templates:
         # template = lookup.get_template(template_name) # is not so nice on Windows: changes CRLF into CRCRLF.
@@ -134,9 +129,26 @@ def main(fortranfiledirs, templatedir="templates"):
 
 
 if __name__ == "__main__":
-    arguments = docopt(__doc__)
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--fortranfiles",
+        nargs="+",
+        action="extend",
+        required=True,
+        metavar="FILE",
+        help="Fortran source paths to scan.",
+    )
+    parser.add_argument(
+        "--template-dir",
+        default="templates",
+        help="Directory containing the Fortran templates.",
+    )
+    parser.add_argument(
+        "--verbose", action="store_true", help="Log files scanned and variable counts."
+    )
+    arguments = parser.parse_args()
 
-    if arguments["--verbose"]:
+    if arguments.verbose:
         logging.basicConfig(level=logging.INFO)
 
-    main(arguments["--fortranfiles-dir"] or "fortranfiledirs", arguments["--template-dir"] or "templates")
+    main(arguments.fortranfiles, arguments.template_dir)

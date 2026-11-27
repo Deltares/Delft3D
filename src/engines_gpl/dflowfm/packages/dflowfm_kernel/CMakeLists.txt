@@ -82,6 +82,63 @@ get_fortran_source_files(${dflowfm_utils_path}/to_deltares_common dflowfm_utils_
 
 get_fortran_source_files(${src_path}/to_thirdparty to_thirdparty)
 
+# Generate BMI Fortran include files from templates
+find_package(Python COMPONENTS Interpreter REQUIRED)
+
+set(bmi_scripts "${CMAKE_CURRENT_SOURCE_DIR}/../../scripts")
+set(bmi_include "$${CMAKE_CURRENT_SOURCE_DIR}/../dflowfm_lib/include")
+set(bmi_templates "${CMAKE_CURRENT_SOURCE_DIR}/../dflowfm_lib/templates")
+set(fortran_dir "${CMAKE_CURRENT_SOURCE_DIR}/${src_path}")
+
+set(bmi_outputs
+    bmi_get_var_count.inc
+    bmi_get_var_location.inc
+    bmi_get_var_name.inc
+    bmi_get_var_rank.inc
+    bmi_get_var_shape.inc
+    bmi_get_var_type.inc
+    bmi_get_var.inc
+    bmi_set_var_slice.inc
+    bmi_set_var.inc
+)
+list(TRANSFORM bmi_outputs PREPEND "${bmi_include}/")
+
+set(fortranfiles
+    dflowfm_data/partition.F90
+    dflowfm_data/m_waves.f90
+    dflowfm_data/m_sediment.f90
+    dflowfm_data/hydrology_data.f90
+    dflowfm_data/m_ship.f90
+    dflowfm_data/m_wind.f90
+    dflowfm_kernel/compute/laterals.f90
+    dflowfm_data/m_heatfluxes.f90
+    dflowfm_data/fm_external_forcings_data.f90
+    dflowfm_data/m_turbulence.f90
+    dflowfm_data/m_vegetation.f90
+    dflowfm_data/m_flow.f90
+    dflowfm_data/m_flowgeom.f90
+    ../../../../../utils_lgpl/gridgeom/packages/gridgeom/src/network_data.f90
+    dflowfm_kernel/compute/d_flooding.f90
+    dflowfm_kernel/prepost/m_observations.f90
+    dflowfm_kernel/prepost/m_integralstats.f90
+    ../../../../../utils_lgpl/gridgeom/packages/gridgeom/src/generalmodules.f90
+    dflowfm_kernel/compute/volume_table.f90
+)
+list(TRANSFORM fortranfiles PREPEND "${fortran_dir}/")
+
+add_custom_command(
+    OUTPUT ${bmi_outputs}
+    COMMAND Python::Interpreter "${bmi_scripts}/template/generate.py"
+        --fortranfiles ${fortranfiles} "--template-dir=${bmi_templates}" --verbose
+    WORKING_DIRECTORY "${bmi_include}"
+    DEPENDS
+        "${bmi_scripts}/template/generate.py"
+        ${fortranfiles}
+        "${bmi_templates}/"
+    VERBATIM
+)
+add_custom_target(generate_bmi DEPENDS ${bmi_outputs})
+
 # --- Generated unc_put_var_map ---
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/unc_put_var_map.cmake)
 
