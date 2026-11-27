@@ -58,7 +58,7 @@ contains
       use m_initsedtra, only: initsedtra
       use m_rdmorlyr, only: rdinimorlyr
       use fm_external_forcings_data, only: numfracs, nopenbndsect, openbndname, openbndlin, nopenbndlin
-      use m_flowparameters, only: jasecflow, ibedlevtyp, jasal, temperature_model, EPS4, use_restart_bedcomp
+      use m_flowparameters, only: jasecflow, ibedlevtyp, jasal, temperature_model, EPS4
       use m_bedform, only: bfmpar, bfm_included
       use unstruc_channel_flow
       use m_oned_functions, only: gridpoint2cross
