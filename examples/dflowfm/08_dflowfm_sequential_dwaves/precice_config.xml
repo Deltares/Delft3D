@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<precice-configuration experimental="true" allow-remeshing="true">
+<!-- <precice-configuration> -->
+  <log>
+    <sink type="file" output="precice_debug_output.txt" filter= "(%Severity% > debug) or (%Severity% >= debug and %Module% contains ParticipantImpl) or (%Severity% >= debug and %Module% contains partition) or (%Severity% >= debug and %Module% contains PointToPointCommunication)" enabled="true" />
+    <sink type="stream" output="stdout" filter= "(%Severity% > debug) or (%Severity% >= debug and %Module% contains ParticipantImpl) or (%Severity% >= debug and %Module% contains partition) or (%Severity% >= debug and %Module% contains PointToPointCommunication)" enabled="true" />
+  </log>
+
+  <profiling mode="fundamental" flush-every="50" directory="." synchronize="false"/>
+
+  <data:scalar name="sea_floor_depth_below_sea_surface" />
+  <data:scalar name="sea_surface_height" />
+  <data:scalar name="sea_floor_depth_below_geoid" />
+  <data:scalar name="sea_water_potential_density" />
+  <data:vector name="flow_velocity_3d" />
+  <data:vector name="sea_surface_wave_significant_height_vector_from_direction" />
+  <data:scalar name="sea_surface_wave_period" />
+  <data:vector name="wave_force" />
+  <data:vector name="wave_forcing_term_in_water_body" />
+  <data:vector name="wave_mass_flux" />
+  <data:scalar name="wave_orbital_velocity" />
+  <data:scalar name="wave_dissipation_surface_breaking" />
+  <data:scalar name="wave_dissipation_whitecapping" />
+
+<!-- FM side -->
+  <mesh name="fm_flow_cells" dimensions="2">
+    <use-data name="sea_floor_depth_below_sea_surface" />
+    <use-data name="sea_surface_height" />
+    <use-data name="sea_floor_depth_below_geoid" />
+    <use-data name="flow_velocity_2d" />
+    <use-data name="sea_surface_wave_significant_height_vector_from_direction" />
+    <use-data name="sea_surface_wave_period" />
+    <use-data name="wave_force" />
+    <use-data name="wave_forcing_term_in_water_body" />
+    <use-data name="wave_mass_flux" />
+    <use-data name="wave_orbital_velocity" />
+    <use-data name="wave_dissipation_surface_breaking" />
+    <use-data name="wave_dissipation_whitecapping" />
+  </mesh>
+
+<!-- D-Waves side -->
+  <mesh name="dwaves_2d_nodes" dimensions="2">
+    <use-data name="sea_floor_depth_below_sea_surface" />
+    <use-data name="sea_surface_height" />
+    <use-data name="sea_floor_depth_below_geoid" />
+  </mesh>
+
+<!-- FM participant -->
+  <participant name="fm">
+    <provide-mesh name="fm_flow_cells" />
+    <receive-mesh name="dwaves_2d_nodes" from="dwaves" />
+    <read-data name="sea_surface_wave_significant_height_vector_from_direction" />
+    <read-data name="sea_surface_wave_period" />
+    <read-data name="wave_force" />
+    <read-data name="wave_forcing_term_in_water_body" />
+    <read-data name="wave_mass_flux" />
+    <read-data name="wave_orbital_velocity" />
+    <read-data name="wave_dissipation_surface_breaking" />
+    <read-data name="wave_dissipation_whitecapping" />
+    <export:vtu directory="precice-exports" />
+  </participant>
+
+<!-- D-Waves participant -->
+  <participant name="dwaves">
+    <provide-mesh name="dwaves_2d_nodes" />
+    <receive-mesh name="fm_flow_cells" from="fm" />
+    <export:vtu directory="precice-exports" />
+  </participant>
+
+<!-- Connection -->
+  <m2n:sockets acceptor="fm" connector="dwaves" exchange-directory=".." />
+
+  <coupling-scheme:parallel-explicit>
+    <time-window-size value="7200"/>
+    <max-time value="21600" />
+    <participants first="fm" second="dwaves" />
+    <exchange data="sea_floor_depth_below_sea_surface" mesh="fm_flow_cells" from="fm" to="dwaves" initialize="true" />
+    <exchange data="sea_surface_height" mesh="fm_flow_cells" from="fm" to="dwaves" initialize="true" />
+  </coupling-scheme:parallel-explicit>
+</precice-configuration>
