@@ -337,7 +337,7 @@ namespace ini::test
 
     INSTANTIATE_TEST_SUITE_P(IniParserTest, IniParserSpecialCharactersPropertyKeyTest,
                              ::testing::Values("_property_1", ".property_1", "-property_1", "property_1", "property-1",
-                                               "property~1", "property*1", "property.1", "property#1", "property\\1",
+                                               "property~1", "property*1", "property.1", "property\\1",
                                                "property²", "p][r[o]p][e[]rt[y"));
 
     TEST(IniParserTest, Parse_PropertyWithNullChar_SectionHasProperty)
@@ -579,6 +579,11 @@ namespace ini::test
                                                "property=value # a = b", "# block comment\nproperty=value",
                                                "# a = b\nproperty=value"));
 
+    TEST(IniParserTest, Parse_AssignmentOnlyInInlineComment_ThrowsFormatError)
+    {
+        EXPECT_THROW(Parse("[section]\nproperty#note=value"), std::format_error);
+    }
+
     TEST(IniParserTest, Parse_PropertyWithCommentLines_CommentLinesAreIgnored)
     {
         const std::string ini = "[section]\n# property comment 1\n# property comment 2\nkey=value";
@@ -690,6 +695,8 @@ namespace ini::test
         EXPECT_EQ(property.GetValue(), "value1\nvalue2\nvalue3");
     }
 
+    INSTANTIATE_TEST_SUITE_P(IniParserTest, IniParserMultiLineValueTest, ::testing::Values('-', '^', '$', '&', '\\'));
+
     TEST(IniParserTest, Parse_PropertyWithMultiLineValueWithoutDelimiter_PropertyHasMultiLineValue)
     {
         IniParserOptions options;
@@ -773,21 +780,18 @@ namespace ini::test
             std::format_error);
     }
 
-    TEST(IniParserTest, Parse_ContinuationAfterSectionWithoutCurrentProperty_ThrowsFormatError)
+    TEST(IniParserTest, Parse_PropertyWithMultiLineValueAndContinuationAfterSection_ThrowsFormatError)
     {
         IniParserOptions options;
         options.allowMultiLineValues = true;
 
-        IniScheme scheme;
-        scheme.multiLineValueDelimiter = std::nullopt;
-
-        const std::string ini = "[section]\nproperty=value1\n[section2]\nvalue2";
+        const std::string ini = "[section]\nproperty=value1 \\\n[section2]\nvalue2";
 
         EXPECT_THROW(
             {
                 try
                 {
-                    Parse(ini, scheme, options);
+                    Parse(ini, {}, options);
                 }
                 catch (const std::format_error& ex)
                 {
@@ -828,6 +832,20 @@ namespace ini::test
 
         EXPECT_EQ(property.GetComment(), "comment1\ncomment2\ncomment3");
         EXPECT_EQ(property.GetValue(), "value1\nvalue2\nvalue3");
+    }
+
+    TEST(IniParserTest, Parse_PropertyWithMultiLineValueAndAssignmentInContinuationComment_PropertyHasComment)
+    {
+        IniParserOptions options;
+        options.allowMultiLineValues = true;
+
+        const std::string ini = "[section]\nproperty=value1 \\\nvalue2 # note = text\nnext=value3";
+        const IniSection section = Parse(ini, {}, options).GetSection("section");
+        const IniProperty property = section.GetProperty("property");
+
+        EXPECT_EQ(property.GetValue(), "value1\nvalue2");
+        EXPECT_EQ(property.GetComment(), "note = text");
+        EXPECT_EQ(section.GetProperty("next").GetValue(), "value3");
     }
 
     TEST(IniParserTest, Parse_PropertyWithMultiLineValueAndInlineCommentAndParseCommentsIsFalse_PropertyCommentIsEmpty)
@@ -874,6 +892,24 @@ namespace ini::test
         expected.AddSection(std::move(section));
 
         EXPECT_EQ(iniData, expected);
+    }
+
+    TEST(IniParserTest, Parse_AssignmentInContinuationCommentWithCustomScheme_ContinuesProperty)
+    {
+        IniParserOptions options;
+        options.allowMultiLineValues = true;
+
+        IniScheme scheme;
+        scheme.propertyAssignmentDelimiter = ':';
+        scheme.commentDelimiter = ';';
+
+        const std::string ini = "[section]\nproperty:value1 \\\nvalue2 ; note: text\nnext:value3";
+        const IniSection section = Parse(ini, scheme, options).GetSection("section");
+        const IniProperty property = section.GetProperty("property");
+
+        EXPECT_EQ(property.GetValue(), "value1\nvalue2");
+        EXPECT_EQ(property.GetComment(), "note: text");
+        EXPECT_EQ(section.GetProperty("next").GetValue(), "value3");
     }
 
     // -------------------------------------------------------------------------

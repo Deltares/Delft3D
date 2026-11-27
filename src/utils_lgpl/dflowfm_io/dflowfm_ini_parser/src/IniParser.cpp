@@ -158,23 +158,38 @@ namespace ini
             }
         }
 
-        bool ParsingContext::IsEmptyLine() const { return currentLine.empty(); }
+        bool ParsingContext::IsEmptyLine() const
+        {
+            return currentLine.empty();
+        }
 
         bool ParsingContext::IsValidLineStart() const
         {
             return invalidStartChars.find(currentLine[0]) == invalidStartChars.end();
         }
 
-        bool ParsingContext::IsCommentLine() const { return currentLine[0] == scheme.commentDelimiter; }
+        bool ParsingContext::IsCommentLine() const
+        {
+            return currentLine[0] == scheme.commentDelimiter;
+        }
 
-        bool ParsingContext::IsSectionLine() const { return currentLine[0] == scheme.sectionStartDelimiter; }
+        bool ParsingContext::IsSectionLine() const
+        {
+            return currentLine[0] == scheme.sectionStartDelimiter;
+        }
 
         bool ParsingContext::IsPropertyLine() const
         {
-            return currentLine.find(scheme.propertyAssignmentDelimiter) != std::string::npos;
+            const std::size_t assignmentIndex = currentLine.find(scheme.propertyAssignmentDelimiter);
+            const std::size_t commentIndex = currentLine.find(scheme.commentDelimiter);
+            
+            return assignmentIndex < commentIndex;
         }
 
-        bool ParsingContext::IsMultiLineContinuation() const { return multiLineContinuation; }
+        bool ParsingContext::IsMultiLineContinuation() const
+        {
+            return multiLineContinuation;
+        }
 
         void ParsingContext::HandleInvalidLineFormat() const
         {
