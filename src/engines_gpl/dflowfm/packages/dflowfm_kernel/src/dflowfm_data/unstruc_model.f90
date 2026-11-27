@@ -3936,6 +3936,11 @@ contains
       if (writeall .or. ja_icecover /= ICECOVER_NONE) then
          call prop_set(prop_ptr, MDU_ICE_CHAPTER, 'IceCoverModel', trim(fm_ice_convert_value_to_string('IceCoverModel', ice_data)), 'Type of ice model (None, External, Semtner)')
          call prop_set(prop_ptr, MDU_ICE_CHAPTER, 'AddIceToMap', ice_data%mapout%default, 'Add ice quantities to map file (1 = yes, 0 = no)')
+         call prop_set(prop_ptr, MDU_ICE_CHAPTER, 'frazil', ice_data%frazil, 'Enable frazil ice transport and supercooling production')
+         call prop_set(prop_ptr, MDU_ICE_CHAPTER, 'frazilNumClasses', ice_data%frazil_num_classes, 'Number of frazil size classes (>=1)')
+         call prop_set(prop_ptr, MDU_ICE_CHAPTER, 'frazilRiseVelocityMin', ice_data%frazil_rise_velocity_min, 'Rise velocity for smallest frazil class (m/s, negative is upward)')
+         call prop_set(prop_ptr, MDU_ICE_CHAPTER, 'frazilRiseVelocityMax', ice_data%frazil_rise_velocity_max, 'Rise velocity for largest frazil class (m/s, negative is upward)')
+         call prop_set(prop_ptr, MDU_ICE_CHAPTER, 'frazilProductionCoefficient', ice_data%frazil_production_coefficient, 'Production coefficient from supercooling (kg m-3 s-1 K-1)')
       end if
 
 ! Output

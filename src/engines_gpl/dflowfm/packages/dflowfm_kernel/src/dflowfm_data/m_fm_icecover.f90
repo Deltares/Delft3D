@@ -67,6 +67,15 @@ module m_fm_icecover
 
    integer, pointer :: ja_icecover !< module pointer to modeltype flag inside ice_data that specifies the ice cover model
    integer, pointer :: ice_frict_type !< module pointer to frict_type inside ice_data
+   logical, pointer :: ice_frazil !< module pointer to frazil switch inside ice_data
+   integer, pointer :: ice_frazil_num_classes !< number of frazil size classes
+   real(fp), pointer :: ice_frazil_rise_velocity_min !< rise velocity for smallest frazil class (m/s)
+   real(fp), pointer :: ice_frazil_rise_velocity_max !< rise velocity for largest frazil class (m/s)
+   real(fp), pointer :: ice_frazil_production_coefficient !< production coefficient from supercooling
+
+   integer, allocatable :: ice_frazil_constituents(:) !< constituent indices for frazil classes
+   real(fp), allocatable :: ice_frazil_class_rise_velocity(:) !< class-wise frazil rise velocities
+   character(len=*), parameter :: FRAZIL_TRACER_NAME = 'frazil_ice'
 
    real(fp), pointer :: ice_density !< module pointer to ice_density inside ice_data
    real(fp), pointer :: ice_albedo !< module pointer to ice_albedo inside ice_data
@@ -91,6 +100,7 @@ contains
 
       istat = clr_icecover(ice_data)
       istat = null_icecover(ice_data)
+      call fm_ice_reset_frazil_transport_admin()
 
       call fm_ice_update_all_pointers()
    end subroutine default_fm_icecover
@@ -126,6 +136,11 @@ contains
       ice_density => ice_data%ice_density
       ice_frict_type => ice_data%frict_type
       ice_frcuni => ice_data%frict_val
+      ice_frazil => ice_data%frazil
+      ice_frazil_num_classes => ice_data%frazil_num_classes
+      ice_frazil_rise_velocity_min => ice_data%frazil_rise_velocity_min
+      ice_frazil_rise_velocity_max => ice_data%frazil_rise_velocity_max
+      ice_frazil_production_coefficient => ice_data%frazil_production_coefficient
 
       snow_albedo => ice_data%snow_albedo
       snow_conductivity => ice_data%snow_conductivity
@@ -227,12 +242,119 @@ contains
       logical :: error !< ice module error flag
 
       call read_icecover(ice_data, md_ptr, MDU_ICE_CHAPTER, error)
+      call fm_ice_register_frazil_tracer()
       call fm_ice_update_spatial_pointers()
 
       if (error) then
          ierror = DFM_WRONGINPUT
       end if
    end subroutine fm_ice_read
+
+   !> Add frazil tracer administration entries when enabled in [ice] section.
+   subroutine fm_ice_register_frazil_tracer()
+      use fm_external_forcings_data, only: numtracers, nbndtr, trnames, trunits, wstracers, decaytimetracers
+      use m_alloc, only: realloc
+      use m_find_name, only: find_name
+
+      integer :: itrac, iclass
+      character(len=64) :: frazil_tracer_name
+
+      if (.not. ice_data%frazil) then
+         call fm_ice_reset_frazil_transport_admin()
+         return
+      end if
+
+      if (.not. allocated(trnames)) then
+         allocate (trnames(0))
+      end if
+      if (.not. allocated(trunits)) then
+         allocate (trunits(0))
+      end if
+      if (.not. allocated(nbndtr)) then
+         allocate (nbndtr(0))
+      end if
+      if (.not. allocated(wstracers)) then
+         allocate (wstracers(0))
+      end if
+      if (.not. allocated(decaytimetracers)) then
+         allocate (decaytimetracers(0))
+      end if
+
+      do iclass = 1, max(1, ice_data%frazil_num_classes)
+         frazil_tracer_name = fm_ice_get_frazil_tracer_name(iclass, ice_data%frazil_num_classes)
+         itrac = find_name(trnames, frazil_tracer_name)
+         if (itrac == 0) then
+            numtracers = numtracers + 1
+            call realloc(nbndtr, numtracers, keepExisting=.true., fill=0)
+            call realloc(trnames, numtracers, keepExisting=.true., fill='')
+            call realloc(trunits, numtracers, keepExisting=.true., fill='')
+            call realloc(wstracers, numtracers, keepExisting=.true., fill=0.0_dp)
+            call realloc(decaytimetracers, numtracers, keepExisting=.true., fill=0.0_dp)
+            trnames(numtracers) = frazil_tracer_name
+            trunits(numtracers) = 'kg m-3'
+         end if
+      end do
+   end subroutine fm_ice_register_frazil_tracer
+
+   !> Resolve frazil constituent indices in transport administration.
+   subroutine fm_ice_update_frazil_transport_index()
+      use m_transportdata, only: const_names, itra1, itran
+      use m_find_name, only: find_name
+
+      integer :: iconst, iclass, nclasses
+      real(fp) :: alpha
+      character(len=64) :: frazil_tracer_name
+
+      call fm_ice_reset_frazil_transport_admin()
+      if (.not. ice_data%frazil) then
+         return
+      end if
+
+      nclasses = max(1, ice_data%frazil_num_classes)
+      allocate (ice_frazil_constituents(nclasses), ice_frazil_class_rise_velocity(nclasses))
+      ice_frazil_constituents = 0
+      do iclass = 1, nclasses
+         if (nclasses == 1) then
+            alpha = 0.0_fp
+         else
+            alpha = real(iclass - 1, fp) / real(nclasses - 1, fp)
+         end if
+         ice_frazil_class_rise_velocity(iclass) = (1.0_fp - alpha) * ice_data%frazil_rise_velocity_min &
+                                                  + alpha * ice_data%frazil_rise_velocity_max
+
+         if (itra1 > 0) then
+            frazil_tracer_name = fm_ice_get_frazil_tracer_name(iclass, nclasses)
+            iconst = find_name(const_names, frazil_tracer_name)
+            if (iconst >= itra1 .and. iconst <= itran) then
+               ice_frazil_constituents(iclass) = iconst
+            end if
+         end if
+      end do
+   end subroutine fm_ice_update_frazil_transport_index
+
+   !> reset frazil transport administration arrays
+   subroutine fm_ice_reset_frazil_transport_admin()
+      if (allocated(ice_frazil_constituents)) then
+         deallocate (ice_frazil_constituents)
+      end if
+      if (allocated(ice_frazil_class_rise_velocity)) then
+         deallocate (ice_frazil_class_rise_velocity)
+      end if
+      allocate (ice_frazil_constituents(0), ice_frazil_class_rise_velocity(0))
+   end subroutine fm_ice_reset_frazil_transport_admin
+
+   !> Get frazil tracer name for class index.
+   function fm_ice_get_frazil_tracer_name(iclass, nclasses) result(tracer_name)
+      integer, intent(in) :: iclass
+      integer, intent(in) :: nclasses
+      character(len=64) :: tracer_name
+
+      if (nclasses <= 1) then
+         tracer_name = FRAZIL_TRACER_NAME
+      else
+         write (tracer_name, '(a,"_",i0)') FRAZIL_TRACER_NAME, iclass
+      end if
+   end function fm_ice_get_frazil_tracer_name
 
 !> Report the ice configuration to the diagnostic output.
    subroutine fm_ice_echo(mdia)

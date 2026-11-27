@@ -2073,6 +2073,10 @@ contains
             end if
          end if
          !
+      end if
+
+      if (jased > 0 .and. stm_included) then
+         !
          ierr = nf90_def_var(irstfile, 'mor_bl', nf90_double, [id_flowelemdim, id_timedim], id_morbl)
          ierr = nf90_put_att(irstfile, id_morbl, 'coordinates', 'FlowElem_xcc FlowElem_ycc') ! not CF
          ierr = nf90_put_att(irstfile, id_morbl, 'long_name', 'Time-varying bottom level in flow cell center')
@@ -3789,7 +3793,7 @@ contains
       use Timers
       use fm_location_types
       use m_map_his_precision
-      use m_fm_icecover, only: ice_mapout, ice_s1, ice_zmin, ice_zmax, ice_area_fraction, ice_thickness, ice_pressure, ice_temperature, qh_air2ice, qh_ice2wat, snow_thickness, snow_temperature, ja_icecover, ICECOVER_NONE, ICECOVER_SEMTNER
+      use m_fm_icecover, only: ice_mapout, ice_s1, ice_zmin, ice_zmax, ice_area_fraction, ice_thickness, ice_pressure, ice_temperature, qh_air2ice, qh_ice2wat, snow_thickness, snow_temperature, ja_icecover, ICECOVER_NONE, ICECOVER_SEMTNER, ice_frazil, ice_frazil_constituents
       use m_gettaus
       use m_gettauswave
       use m_get_kbot_ktop
@@ -4258,6 +4262,16 @@ contains
                                       '', trim(const_names(j))//' in flow element', const_units(j), jabndnd=jabndnd_)
             end do
          end if
+
+      if (ice_frazil .and. allocated(ice_frazil_constituents) .and. size(ice_frazil_constituents) > 0) then
+         ierr = nf90_def_dim(mapids%ncid, 'nFrazil', size(ice_frazil_constituents), mapids%id_tsp%id_frazildim)
+         if (kmx > 0) then
+            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_frazilfrac, nc_precision, UNC_LOC_S3D, 'frazil_concentration', '', 'Frazil ice concentration in flow cell', 'kg m-3', dimids=[-3, -2, mapids%id_tsp%id_frazildim, -1], jabndnd=jabndnd_)
+         else
+            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_frazilfrac, nc_precision, UNC_LOC_S, 'frazil_concentration', '', 'Frazil ice concentration in flow cell', 'kg m-3', dimids=[-2, mapids%id_tsp%id_frazildim, -1], jabndnd=jabndnd_)
+         end if
+      end if
+
          ! Discharges
          ! TODO: AVD...
          ! TIDAL TURBINES: Insert equivalent of addturbine_cnst and addturbine_time here
@@ -5473,6 +5487,32 @@ contains
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_const(:, j), UNC_LOC_S, workx, jabndnd=jabndnd_)
             end if
          end do
+      end if
+
+      if (ice_frazil .and. allocated(ice_frazil_constituents) .and. size(ice_frazil_constituents) > 0) then
+         if (kmx > 0) then
+            call realloc(work3d, [kmx, ndxndxi, size(ice_frazil_constituents)], keepExisting=.false., fill=dmiss)
+            do kk = 1, ndxndxi
+               call getkbotktop(kk, kb, kt)
+               call getlayerindices(kk, nlayb, nrlay)
+               do k = kb, kt
+                  do j = 1, size(ice_frazil_constituents)
+                     if (ice_frazil_constituents(j) > 0) then
+                        work3d(k - kb + nlayb, kk, j) = constituents(ice_frazil_constituents(j), k)
+                     end if
+                  end do
+               end do
+            end do
+            ierr = nf90_put_var(mapids%ncid, mapids%id_frazilfrac(2), work3d(1:kmx, 1:ndxndxi, 1:size(ice_frazil_constituents)), start=[1, 1, 1, itim], count=[kmx, ndxndxi, size(ice_frazil_constituents), 1])
+         else
+            call realloc(work1d_z, [ndxndxi, size(ice_frazil_constituents)], keepExisting=.false., fill=dmiss)
+            do j = 1, size(ice_frazil_constituents)
+               if (ice_frazil_constituents(j) > 0) then
+                  work1d_z(:, j) = constituents(ice_frazil_constituents(j), :)
+               end if
+            end do
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_frazilfrac, UNC_LOC_S, work1d_z, jabndnd=jabndnd_)
+         end if
       end if
 
       ! Turbulence.

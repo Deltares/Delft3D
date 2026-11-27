@@ -54,6 +54,7 @@ contains
       use m_fm_wq_processes
       use m_alloc
       use m_bedform, only: bfmpar
+      use m_fm_icecover, only: fm_ice_update_frazil_transport_index
 
       character(len=8) :: str
       character(len=256) :: msg
@@ -230,6 +231,8 @@ contains
             call mess(LEVEL_INFO, msg)
          end do
       end if
+
+      call fm_ice_update_frazil_transport_index()
 
       if (numwqbots > 0) then
          call mess(LEVEL_INFO, 'List of water quality bottom variables defined in the model')
