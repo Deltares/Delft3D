@@ -475,7 +475,7 @@ type gd_r_i_ch
        integer(pntrsize) :: kcscut     !  Description and declaration in esm_alloc_int.f90
        integer(pntrsize) :: kcu45      !  Description and declaration in esm_alloc_int.f90
        integer(pntrsize) :: kcv45      !  Description and declaration in esm_alloc_int.f90
-! integer slurry branch, to turn off the baraclinic term:
+! integer slurry branch, to turn off the baroclinic term:
        integer(pntrsize) :: kfushr  !  Description and declaration in esm_alloc_int.f90
        integer(pntrsize) :: kfvshr  !  Description and declaration in esm_alloc_int.f90
 !

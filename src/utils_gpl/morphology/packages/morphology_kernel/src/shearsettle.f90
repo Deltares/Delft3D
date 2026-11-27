@@ -111,22 +111,22 @@ subroutine shearsettle(dll_function, dll_handle, max_integers, max_reals, max_st
     !
     ! CarrierFluid is waterClay
     !
-    if (Shearsettle_w_opt == 1)then
+    if (Shearsettle_w_opt == 1) then
        wss = (SluSettParam1/18.0_fp)*((rhosol-rhoint) * ag * dss**2 / (cfvic*rhocf))  ! version 1. Arno's formula
        if (ifirst_settle==1) then
-          write(errmsg,'(a,a,a)') ' Settling velocity formula of Talmon is used!'
-          call write_error(errmsg, unit=lundia)
+          errmsg = 'Settling velocity formula of Talmon is used!'
+          call write_warning(errmsg, unit=lundia)
           ifirst_settle = 0
        endif
-    elseif (Shearsettle_w_opt == 2)then
+    elseif (Shearsettle_w_opt == 2) then
        wss = (SluSettParam1/18.0_fp)*((rhosol-rhocf) * ag * dss**2 / (cfvic*rhocf))  ! version 2. Han's formula
        if (ifirst_settle==1) then
-          write(errmsg,'(a,a,a)') ' Settling velocity formula of Winterwerp is used!'
-          call write_error(errmsg, unit=lundia)
+          errmsg = 'Settling velocity formula of Winterwerp is used!'
+          call write_warning(errmsg, unit=lundia)
           ifirst_settle = 0
        endif
     else
-       write(errmsg,'(a,a,a)') ' Settling velocity formula is not defined!  ERROR!!!'
+       errmsg = 'Settling velocity formula is not defined!'
        call write_error(errmsg, unit=lundia)
        error = .true.
        return
