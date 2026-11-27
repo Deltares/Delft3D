@@ -2652,6 +2652,18 @@
       </file>
     </checks>
   </testCase>
+  <testCase name="e02_f006_c412_discharge2" ref="dflowfm_nesting">
+    <path version="DVC">e02_dflowfm/f006_external_forcing/c412_discharge2</path>
+    <checks>
+      <file name="small_02/results/simplechannel_small2_his.nc" type="netcdf">
+        <parameters>
+          <parameter name="waterlevel" toleranceAbsolute="0.005"/>
+          <parameter name="x_velocity" toleranceAbsolute="0.005"/>
+          <parameter name="y_velocity" toleranceAbsolute="0.005"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
   <testCase name="e02_f008_c010_ws_bedlevel_asdefault" ref="dflowfm_default">
     <path version="DVC">e02_dflowfm/f008_network/c010_ws_bedlevel_asdefault</path>
 
