@@ -1,0 +1,65 @@
+name: dflowfm_io macOS wheels
+
+on:
+  push:
+    paths: &dflowfm_io_paths
+      - ".github/workflows/dflowfm_io_macos.yml"
+      - "src/utils_lgpl/dflowfm_io/**"
+      - "file_specs/**"
+  pull_request:
+    paths: *dflowfm_io_paths
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.runner }} (${{ matrix.architecture }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            architecture: arm64
+          - runner: macos-15-intel
+            architecture: x86_64
+          - runner: macos-26
+            architecture: arm64
+          - runner: macos-26-intel
+            architecture: x86_64
+
+    env:
+      MACOSX_DEPLOYMENT_TARGET: "15.0"
+      CXX: clang++
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+
+      - name: Configure
+        run: |
+          cmake -S src/utils_lgpl/dflowfm_io -B build/dflowfm_io -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET="$MACOSX_DEPLOYMENT_TARGET" \
+            -DCMAKE_OSX_ARCHITECTURES=${{ matrix.architecture }} \
+            -DPython3_EXECUTABLE="$(command -v python)" \
+            -DDFLOWFM_IO_BUILD_WRAPPER_PACKAGES=ON
+
+      - name: Build library, tests and wheel
+        run: cmake --build build/dflowfm_io --parallel
+
+      - name: Run all tests
+        run: ctest --test-dir build/dflowfm_io --build-config Release --output-on-failure --no-tests=error --parallel
+
+      - name: Upload wheel
+        uses: actions/upload-artifact@v7
+        with:
+          name: dflowfm_io-${{ matrix.runner }}-${{ matrix.architecture }}
+          path: build/dflowfm_io/dflowfm_io_api/wrappers/python/wheel/*.whl
+          if-no-files-found: error
