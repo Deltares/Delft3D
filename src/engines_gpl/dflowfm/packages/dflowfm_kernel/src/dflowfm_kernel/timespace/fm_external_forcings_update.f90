@@ -93,6 +93,7 @@ module fm_external_forcings_update
    public :: compute_air_water_interaction_most_fluxes
    public :: update_sea_surface_temperature
    public :: prepare_air_pressure_temperature_dew_point_temperature
+   public :: update_pseudo_pressure_and_water_level_correction
    public :: prepare_wind
    public :: calculate_wind_stresses
 
@@ -165,6 +166,12 @@ contains
       if (ja_computed_airdensity == 1) then
          ! Compute air_density based on air_pressure, air_temperature and dew_point_temperature
          call get_airdensity(air_pressure, air_temperature, dew_point_temperature, air_density, iresult)
+      end if
+
+      call update_pseudo_pressure_and_water_level_correction(time_in_seconds, iresult)
+      if (iresult /= DFM_NOERR) then
+         call timstop(handle_ext)
+         return
       end if
 
       call prepare_wind(time_in_seconds, iresult)
@@ -992,7 +999,33 @@ contains
       
    end subroutine prepare_air_pressure_temperature_dew_point_temperature
 
-   !> Prepare wind data if jawind=1 and air_pressure_available
+   !> Update the registered pseudo-pressure and water-level corrections independently of wind forcing.
+   subroutine update_pseudo_pressure_and_water_level_correction(time_in_seconds, iresult)
+      use precision, only: dp
+      use m_meteo, only: item_pseudo_air_pressure, item_water_level_correction
+      use fm_external_forcings_utils, only: print_error_message
+
+      real(dp), intent(in) :: time_in_seconds !< Time to evaluate the corrections, in seconds.
+      integer, intent(out) :: iresult !< Error status, DFM_NOERR on success.
+
+      integer, dimension(2) :: item_ids
+      integer :: i
+
+      iresult = DFM_NOERR
+      item_ids = [item_pseudo_air_pressure, item_water_level_correction]
+      do i = 1, size(item_ids)
+         if (item_ids(i) == ec_undef_int) then
+            cycle
+         end if
+         if (.not. ec_gettimespacevalue(ecInstancePtr, item_ids(i), irefdate, tzone, tunit, time_in_seconds)) then
+            iresult = DFM_EXTFORCERROR
+            call print_error_message(time_in_seconds)
+            return
+         end if
+      end do
+   end subroutine update_pseudo_pressure_and_water_level_correction
+
+   !> Update wind and ordinary atmospheric pressure when configured.
    subroutine prepare_wind(time_in_seconds, iresult)
       use m_wind, only: jawind, air_pressure_available
       use dfm_error, only: DFM_NOERR
@@ -1090,12 +1123,6 @@ contains
             ! Retrieve wind's p-component for ext-file quantity 'airpressure'.
          else if (ec_item_id == item_airpressure) then
             call get_timespace_value_by_item(item_airpressure)
-            ! Retrieve value for ext-file quantity 'pseudo_air_pressure'.
-         else if (ec_item_id == item_pseudo_air_pressure) then
-            call get_timespace_value_by_item(item_pseudo_air_pressure)
-            ! Retrieve value for ext-file quantity 'water_level_correction'.
-         else if (ec_item_id == item_water_level_correction) then
-            call get_timespace_value_by_item(item_water_level_correction)
          else
             cycle ! avoid updating id_first_wind and id_last_wind
          end if

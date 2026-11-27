@@ -69,7 +69,7 @@ contains
       use m_sethu
       use fm_external_forcings, only: prepare_air_pressure_temperature_dew_point_temperature, &
          compute_air_water_interaction_most_fluxes, prepare_wind, calculate_wind_stresses, set_external_forcings_boundaries, &
-         update_sea_surface_temperature
+         update_sea_surface_temperature, update_pseudo_pressure_and_water_level_correction
       use m_wind, only: update_wind_stress_each_time_step, jaheat_eachstep
       use m_meteo, only: ja_computed_airdensity, air_sea_interaction_model, AIR_SEA_INTERACTION_MODEL_MOST
       use m_fm_icecover, only: update_icecover
@@ -155,6 +155,12 @@ contains
       if (update_wind_stress_each_time_step > 0) then ! Update wind in each computational timestep
          if (ja_computed_airdensity == 1 .or. air_sea_interaction_model == AIR_SEA_INTERACTION_MODEL_MOST) then
             call prepare_air_pressure_temperature_dew_point_temperature(time0)
+         end if
+
+         ! Preserve the correction update cadence with Wind_eachstep.
+         call update_pseudo_pressure_and_water_level_correction(time0, iresult)
+         if (iresult /= DFM_NOERR) then
+            return
          end if
 
          call prepare_wind(time0, iresult)
