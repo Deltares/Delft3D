@@ -35,7 +35,9 @@ namespace dflowfm_io::test
 
     TEST_F(MduDocumentTest, Constructor_PopulatesSchemaDefaults)
     {
-        EXPECT_FALSE(doc.GetData().empty());
+        EXPECT_EQ(doc.GetValue<std::string>("general.fileVersion"), "1.09");
+        EXPECT_EQ(doc.GetValue<int>("numerics.maxNonLinearIterations"), 100);
+        EXPECT_DOUBLE_EQ(doc.GetValue<double>("geometry.bedLevUni"), -5.0);
     }
 
     // -------------------------------------------------------------------------
@@ -49,11 +51,13 @@ namespace dflowfm_io::test
         EXPECT_FALSE(HasIssue(report, Severity::Error));
     }
 
-    TEST_F(MduDocumentTest, LoadFromString_ValidString_PopulatesMduData)
+    TEST_F(MduDocumentTest, LoadFromString_ValidString_PopulatesValues)
     {
         doc.LoadFromString(TestMduString());
 
-        EXPECT_FALSE(doc.GetData().empty());
+        EXPECT_EQ(doc.GetValue<std::string>("general.fileVersion"), "1.09");
+        EXPECT_EQ(doc.GetValue<int>("numerics.maxNonLinearIterations"), 100);
+        EXPECT_DOUBLE_EQ(doc.GetValue<double>("geometry.bedLevUni"), -5.0);
     }
 
     TEST_F(MduDocumentTest, LoadFromString_EmptyString_ReportsErrorsAndRetainsSchemaDefaults)

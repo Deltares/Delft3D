@@ -1,4 +1,4 @@
-#include <dflowfm_io/MduData.h>
+#include "MduData.h"
 #include "StringUtils.h"
 
 #include <stdexcept>

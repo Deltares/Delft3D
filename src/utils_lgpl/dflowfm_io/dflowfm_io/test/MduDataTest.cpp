@@ -4,7 +4,7 @@
 #include <ranges>
 #include <vector>
 
-#include <dflowfm_io/MduData.h>
+#include "MduData.h"
 #include <dflowfm_io/MduSchema.h>
 
 #include "MduTestData.h"

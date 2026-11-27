@@ -1,7 +1,7 @@
 #pragma once
 
 #include <dflowfm_io/IssueReport.h>
-#include <dflowfm_io/MduData.h>
+#include "MduData.h"
 
 #include <ini/IniData.h>
 

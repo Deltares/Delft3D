@@ -19,13 +19,13 @@ set(DFLOWFM_IO_PRIVATE_HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/private_header
 
 add_library(dflowfm_io STATIC
     include/dflowfm_io/IssueReport.h
-    include/dflowfm_io/MduData.h
     include/dflowfm_io/MduDocument.h
     include/dflowfm_io/MduSchema.h
     ${MDU_SCHEMA_GENERATED}
 
     # Internal headers; not part of the public API.
     src/private_headers/MduConversion.h
+    src/private_headers/MduData.h
     src/private_headers/MduValidation.h
     src/private_headers/StringUtils.h
 
