@@ -58,7 +58,7 @@ contains
 
       implicit none
 
-      logical :: javegczu
+      logical :: javegczu, vegetation_link
       integer :: k1, k2, L
       real(kind=dp) :: phivr
       real(kind=dp) :: fw, astar, astarc, tauwav, taucur, cdrag, tpu, z0, uorbu, fsqrtt
@@ -74,7 +74,7 @@ contains
       waveps = 1.0e-4_dp ! see taubot
       astarc = 30.*pi**2 ! critical value for astar
       fsqrtt = sqrt(0.5_dp)
-      javegczu = javeg > 1 .and. jabaptist > 1
+      javegczu = javeg == 1 .and. jabaptist > 1
 
       ! parameterized bottom friction models
 
@@ -94,6 +94,15 @@ contains
          huL = max(huL, 1.0e-2_dp)
          k1 = ln(1, L)
          k2 = ln(2, L)
+         cdrag = 0.0_dp
+         vegetation_link = .false.
+         if (javegczu) then
+            vegetation_link = 0.5_dp * (rnveg(k1) + rnveg(k2)) > densvegminbap .and. cfuhi(L) >= 0.0_dp
+         end if
+         if (vegetation_link) then
+            ! Undo the normalization by the actual link depth in setbaptist.
+            cdrag = cfuhi(L) * hu(L)
+         end if
          ac1 = acl(L)
          ac2 = 1.0_dp - ac1
          !
@@ -160,9 +169,9 @@ contains
             ! and due to current alone
             !
             tauwav = 0.5_dp * rhoL * fw * ftauw * uorbu * uorbu ! wave related bed shear stress
-            if ((javegczu .and. cfuhi(L) > 0.0_dp) .or. trachy_resistance) then ! vegetation hk/trachy
+            if (trachy_resistance) then
                cdrag = cfuhi(L) * huL
-            else
+            else if (.not. vegetation_link) then
                cdrag = ag / cz / cz
             end if
             taucur = rhoL * cdrag * umod * umod ! current related bed shear stress
@@ -215,21 +224,25 @@ contains
          end if
          !
          ! Wave enhanced roughness heights
-         if (modind == 0) then
-            umod = sqrt(umodsq) ! no limitation
-            z0urou(L) = huL * exp(-1.0_dp - VON_KARMAN * cz / sag)
-            rz = huL / (ee * z0urou(L))
-            cf = log(rz) / VON_KARMAN
-            cwall = 1.0_dp / (cf**2)
-            taubu(L) = cwall * rhoL * umod * (u1(L) + ustokes(L))
-            taubxu(L) = cwall * rhoL * umod * umod
-            cfwavhi(L) = cfuhi(L)
-         else if (modind == 10) then
-            umod = sqrt((u1(L) - ustokes(L))**2 + (v(L) - vstokes(L))**2 + (1.16_dp * uorbu * fsqrtt)**2)
-            z0urou(L) = huL * exp(-1.0_dp - VON_KARMAN * cz / sag)
-            rz = huL / (ee * z0urou(L))
-            cf = log(rz) / VON_KARMAN
-            cwall = 1.0_dp / (cf**2)
+         if (modind == 0 .or. modind == 10) then
+            if (modind == 0) then
+               umod = sqrt(umodsq) ! no limitation
+               cfwavhi(L) = cfuhi(L)
+            else
+               umod = sqrt((u1(L) - ustokes(L))**2 + (v(L) - vstokes(L))**2 + (1.16_dp * uorbu * fsqrtt)**2)
+            end if
+            if (vegetation_link) then
+               cwall = cdrag
+               z0urou(L) = epsz0
+               if (cwall > 0.0_dp) then
+                  z0urou(L) = max(epsz0, huL * exp(-1.0_dp - VON_KARMAN / sqrt(cwall)))
+               end if
+            else
+               z0urou(L) = huL * exp(-1.0_dp - VON_KARMAN * cz / sag)
+               rz = huL / (ee * z0urou(L))
+               cf = log(rz) / VON_KARMAN
+               cwall = 1.0_dp / (cf**2)
+            end if
             taubu(L) = cwall * rhoL * umod * (u1(L) + ustokes(L))
             taubxu(L) = cwall * rhoL * umod * umod
          else if (modind == 9) then
@@ -241,7 +254,8 @@ contains
                cf = min(umod / ust, 40.0_dp) ! cz/sag
                z0urou(L) = huL * exp(-1.0_dp - VON_KARMAN * cf)
                z0urou(L) = min(z0urou(L), 10.0_dp)
-               !
+            else if (vegetation_link .and. cdrag == 0.0_dp) then
+               z0urou(L) = epsz0
             end if
          end if
       end do

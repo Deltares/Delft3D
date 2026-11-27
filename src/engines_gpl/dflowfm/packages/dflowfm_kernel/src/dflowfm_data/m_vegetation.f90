@@ -31,19 +31,30 @@
 !
 
 module m_vegetation
+   use iso_c_binding, only: c_int
    use precision, only: dp
+
+   abstract interface
+      function update_vegetation_drag() bind(C) result(status)
+         import :: c_int
+         integer(c_int) :: status !< Zero on success.
+      end function update_vegetation_drag
+   end interface
+
+   procedure(update_vegetation_drag), pointer :: vegetation_drag_callback => null()
 
    integer :: javeg = 0 ! 0,1,2,3 , jabaptist is javeg
    ! only for kmx == 0:
    integer :: jabaptist = 0 ! 1 = use standard baptist, only cfuhi      unfortunately, taubed/ro is not computed correctly
    ! 2 = use DFM formulation for cfuhi and alfaveg, such that taubed/ro=cfu*umod**2
-   ! 3 = use cfuveg and alfaveg provided by python, such that taubed/ro=cfu*umod**2
+   ! 3 = use external link drag coefficients
+   logical :: baptist_drag_callback_enabled = .false. !< Use a BMI callback to supply model 3 drag at each flow step.
    real(kind=dp) :: densvegminbap = 0.0_dp ! minimum vegetation density for baptist formulation (1/m2)
    integer :: jaCdvegsp = 0 ! 1 = use bmi for Cdvegsp
    real(kind=dp), allocatable, target :: rnveg(:) !< [1/m2] 3D plant density , 2D part is basis input (1/m2) {"location": "face", "shape": ["ndkx"]}
    real(kind=dp), allocatable, target :: diaveg(:) !< [m] 3D plant diameter, 2D part is basis input (m) {"location": "face", "shape": ["ndkx"]}
    real(kind=dp), allocatable, target :: cfuveg(:) !< [ ]   2D only, g/C2 in 2D such that bedstress is computed correctly {"location": "face", "shape": ["lnx"]}
-   real(kind=dp), allocatable, target :: alfaveg(:) !< [1/m] 2D only, stem contribution {"location": "face", "shape": ["lnx"]}
+   real(kind=dp), allocatable, target :: alfaveg(:) !< [-] 2D only, stem drag coefficient before division by depth {"location": "face", "shape": ["lnx"]}
    real(kind=dp), allocatable, target :: stemdens(:) !< [1/m2] TEMP 2D plant density (1/m2) {"location": "face", "shape": ["ndx"]}
    real(kind=dp), allocatable, target :: stemdiam(:) !< [m] TEMP 2D plant diameters (m) {"location": "face", "shape": ["ndx"]}
    real(kind=dp), allocatable, target :: stemheight(:) !< [m] 2D plant heights (m) {"location": "face", "shape": ["ndx"]}

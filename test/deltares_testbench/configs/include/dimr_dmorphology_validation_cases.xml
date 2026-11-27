@@ -351,4 +351,54 @@
       </file>
     </checks>
   </testCase>
+
+    <testCase name="e02_f026_c06_bmi_drag_wetting" ref="vegetation_bmi_default">
+      <path version="DVC">e02_dflowfm/f026_vegetation/c06_bmi_drag_wetting</path>
+      <maxRunTime>120</maxRunTime>
+      <checks>
+        <file name="current/output/channel_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_waterdepth" toleranceAbsolute="0.00001"/>
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001"/>
+            <parameter name="mesh2d_taub" toleranceAbsolute="0.0005"/>
+            <parameter name="mesh2d_mor_bl" toleranceAbsolute="0.000001"/>
+          </parameters>
+        </file>
+        <file name="fr84/output/channel_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_waterdepth" toleranceAbsolute="0.00001"/>
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001"/>
+            <parameter name="mesh2d_taub" toleranceAbsolute="0.0005"/>
+            <parameter name="mesh2d_mor_bl" toleranceAbsolute="0.000001"/>
+            <parameter name="mesh2d_uorb" toleranceAbsolute="0.0001"/>
+          </parameters>
+        </file>
+        <file name="ru03/output/channel_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_waterdepth" toleranceAbsolute="0.00001"/>
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001"/>
+            <parameter name="mesh2d_taub" toleranceAbsolute="0.0005"/>
+            <parameter name="mesh2d_mor_bl" toleranceAbsolute="0.000001"/>
+            <parameter name="mesh2d_uorb" toleranceAbsolute="0.0001"/>
+          </parameters>
+        </file>
+        <file name="manual/output/channel_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_waterdepth" toleranceAbsolute="0.00001"/>
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001"/>
+            <parameter name="mesh2d_taub" toleranceAbsolute="0.0005"/>
+            <!-- Allow for the observed manual BMI bed-level difference of 7.17e-6 m between builds. -->
+            <parameter name="mesh2d_mor_bl" toleranceAbsolute="0.00001"/>
+          </parameters>
+        </file>
+        <file name="model2/output/channel_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_waterdepth" toleranceAbsolute="0.00001"/>
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001"/>
+            <parameter name="mesh2d_taub" toleranceAbsolute="0.0005"/>
+            <parameter name="mesh2d_mor_bl" toleranceAbsolute="0.000001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
 </testCases>

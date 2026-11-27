@@ -1350,7 +1350,7 @@ contains
       call prop_get(md_ptr, 'physics', 'tracerConcentrationMin', tracer_concentration_min, tracer_concentration_min_enabled)
       call prop_get(md_ptr, 'physics', 'tracerConcentrationMax', tracer_concentration_max, tracer_concentration_max_enabled)
       if (tracer_concentration_min >= tracer_concentration_max) then
-         call mess(LEVEL_ERROR, 'In [physics] tracerConcentrationMin must be greater than tracerConcentrationMax')
+         call mess(LEVEL_ERROR, 'In [physics] tracerConcentrationMin must not be greater than tracerConcentrationMax')
       end if
 
       call prop_get(md_ptr, 'physics', 'Smagorinsky', smagorinsky_coefficient)
@@ -1456,6 +1456,13 @@ contains
       end if
       if (kmx == 0 .and. javeg > 0) then
          jabaptist = javeg
+      end if
+      baptist_drag_callback_enabled = .false.
+      call prop_get(md_ptr, 'veg', 'BaptistDragCallback', baptist_drag_callback_enabled)
+      if (baptist_drag_callback_enabled .and. (kmx /= 0 .or. javeg /= 3)) then
+         istat = DFM_EFILEFORMAT
+         call mess(LEVEL_ERROR, 'BaptistDragCallback requires 2D and Vegetationmodelnr = 3.')
+         return
       end if
       call prop_get(md_ptr, 'veg', 'Clveg', Clveg)
       call prop_get(md_ptr, 'veg', 'Cdveg', Cdveg)
@@ -2788,7 +2795,7 @@ contains
       character(len=20) :: rundat
       character(len=128) :: helptxt
       character(len=256) :: tmpstr
-      integer :: ibuf, fww
+      integer :: ibuf, fww, vegetation_model_number
       real(kind=hp) :: ti_map_array(3), ti_rst_array(3), ti_his_array(3), ti_waq_array(3), ti_classmap_array(3), ti_st_array(3), ti_com_array(3)
 
       istat = 0 ! Success
@@ -3665,7 +3672,12 @@ contains
       end if
 
       if (writeall .or. javeg > 0) then
-         call prop_set(prop_ptr, 'veg', 'Vegetationmodelnr', javeg, 'Vegetation model nr, (0=no, 1=Baptist DFM)')
+         vegetation_model_number = javeg
+         if (kmx == 0 .and. javeg > 0 .and. jabaptist > 0) then
+            vegetation_model_number = jabaptist
+         end if
+         call prop_set(prop_ptr, 'veg', 'Vegetationmodelnr', vegetation_model_number, &
+                       'Vegetation model nr (0=no vegetation, 1-3=Baptist options in 2D)')
          call prop_set(prop_ptr, 'veg', 'Clveg', Clveg, 'Stem distance factor, default 0.8 ()')
          call prop_set(prop_ptr, 'veg', 'Cdveg', Cdveg, 'Stem Cd coefficient , default 0.7 ()')
          call prop_set(prop_ptr, 'veg', 'Cbveg', Cbveg, 'Stem stiffness coefficient , default 0.0 ()')
@@ -3676,6 +3688,10 @@ contains
          end if
          if (kmx == 0) then
             call prop_set(prop_ptr, 'veg', 'Densvegminbap', Densvegminbap, 'Minimum vegetation density in Baptist formula  (1/m2)')
+            if (baptist_drag_callback_enabled) then
+               call prop_set(prop_ptr, 'veg', 'BaptistDragCallback', baptist_drag_callback_enabled, &
+                             'Use a BMI callback to supply model 3 drag at each flow timestep')
+            end if
          end if
          if (expchistem < 0) then
             call prop_set(prop_ptr, 'veg', 'Expchistem', expchistem, '( )')

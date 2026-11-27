@@ -341,6 +341,18 @@ contains
       call mess(LEVEL_WARN, "callback initialized")
    end subroutine set_logger_c_callback
 
+   !> Register a callback that updates cfuveg and alfaveg from the current computational step's hu.
+   subroutine dfm_set_vegetation_drag_callback(callback) bind(C, name="dfm_set_vegetation_drag_callback")
+      !DEC$ ATTRIBUTES DLLEXPORT :: dfm_set_vegetation_drag_callback
+      type(c_funptr), value, intent(in) :: callback !< Pass a null pointer to unregister.
+
+      if (c_associated(callback)) then
+         call c_f_procpointer(callback, vegetation_drag_callback)
+      else
+         nullify(vegetation_drag_callback)
+      end if
+   end subroutine dfm_set_vegetation_drag_callback
+
    subroutine get_version_string(c_version_string) bind(C, name="get_version_string")
       !DEC$ ATTRIBUTES DLLEXPORT :: get_version_string
       use iso_c_binding, only: c_char
@@ -508,6 +520,7 @@ contains
       !DEC$ ATTRIBUTES DLLEXPORT :: finalize
       use m_partitioninfo
 
+      nullify(vegetation_drag_callback)
       call write_some_final_output()
 
       if (jampi == 1) then

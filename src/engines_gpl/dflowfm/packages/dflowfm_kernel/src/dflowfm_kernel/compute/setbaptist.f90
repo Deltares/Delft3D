@@ -42,12 +42,19 @@ contains
 
    subroutine setbaptist()
       use precision, only: dp
-      use m_flow, only: rnveg, hu, densvegminbap, jabaptist, frcu, u1, v, ifrcutp, diaveg, stemheight, jacdvegsp, cdvegsp, cdveg, uchistem, expchistem, uchileaf, expchileaf, cdleaf, arealeaf, ag, sag, VON_KARMAN, cfuhi, alfav, cfuveg, alfaveg
+      use m_flow, only: rnveg, hu, densvegminbap, jabaptist, frcu, u1, v, ifrcutp, diaveg, stemheight, &
+                        jacdvegsp, cdvegsp, cdveg, uchistem, expchistem, uchileaf, expchileaf, cdleaf, &
+                        arealeaf, ag, sag, VON_KARMAN, cfuhi, alfav, cfuveg, alfaveg
       use m_flowgeom, only: ln, lnx
       use m_get_chezy, only: get_chezy
 
       integer :: L, k1, k2
       real(kind=dp) :: ap, Cz, Czb, Czr, rnL, diaL, stemhL, gamhg, Cda, areastem, umag, fac, facL, Cdaleaf
+      real(kind=dp) :: link_drag
+
+      if (jabaptist >= 2) then
+         alfav = 0.0_dp
+      end if
 
       do L = 1, lnx
          k1 = ln(1, L)
@@ -56,7 +63,7 @@ contains
          rnL = 0.5_dp * (rnveg(k1) + rnveg(k2))
 
          if (hu(L) > 0 .and. rnL > densvegminbap) then ! overwrite cfuhi on veg locations with 2D Baptist
-            if (jaBaptist <= 2) then ! compute Baptist on board
+            if (jabaptist <= 2) then
                Czb = get_chezy(hu(L), frcu(L), u1(L), v(L), ifrcutp(L)) ! standard Chezy coeff
                if (diaveg(k1) > 0 .and. diaveg(k2) > 0) then
                   diaL = 0.5_dp * (diaveg(k1) + diaveg(k2))
@@ -70,14 +77,15 @@ contains
                end if
                stemhL = min(stemhL, hu(L))
                areastem = diaL * stemhL
+               link_drag = cdveg
                if (jaCdvegsp == 1) then
                   if (Cdvegsp(k1) > 0 .and. Cdvegsp(k2) > 0) then
-                     Cdveg = 0.5_dp * (Cdvegsp(k1) + Cdvegsp(k2))
+                     link_drag = 0.5_dp * (Cdvegsp(k1) + Cdvegsp(k2))
                   else
-                     Cdveg = max(Cdvegsp(k1), Cdvegsp(k2))
+                     link_drag = max(Cdvegsp(k1), Cdvegsp(k2))
                   end if
                end if
-               Cda = Cdveg * areastem
+               Cda = link_drag * areastem
                if (uchistem > 0.0_dp .and. expchistem < 0.0_dp) then
                   umag = sqrt(u1(L)**2 + v(L)**2)
                   if (umag > 0.0_dp) then
@@ -112,12 +120,12 @@ contains
                end if
                if (jaBaptist == 1) then
                   cfuhi(L) = ag / (Czr * Czr * hu(L)) ! use as is, wrong morpho ?
-               else if (jaBaptist == 2) then
+               else if (jabaptist == 2) then
                   Cz = Czr * sqrt(1.0_dp + gamhg * Czb * Czb)
                   cfuhi(L) = ag / (Cz * Cz * hu(L)) ! better for morfo
                   alfav(L) = ag * (1.0_dp / (Czr * Czr) - 1.0_dp / (Cz * Cz)) / hu(L)
                end if
-            else if (jaBaptist == 3) then ! by biologists through Python
+            else if (jabaptist == 3) then ! Apply the external bed and stem drag inputs.
                cfuhi(L) = cfuveg(L) / hu(L)
                alfav(L) = alfaveg(L) / hu(L)
             end if
