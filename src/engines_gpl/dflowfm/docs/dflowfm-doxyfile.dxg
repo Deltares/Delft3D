@@ -2893,6 +2893,10 @@ DIA_PATH               =
 
 DIAFILE_DIRS           =
 
+# The MERMAIDFILE_DIRS setting points to the directory where .mmd files can reside
+# that can be included using the \mermaidfile command.
+MERMAIDFILE_DIRS       = include
+
 # When using PlantUML, the PLANTUML_JAR_PATH tag should be used to specify the
 # path where java can find the plantuml.jar file or to the filename of jar file
 # to be used. If left blank, it is assumed PlantUML is not used or called during

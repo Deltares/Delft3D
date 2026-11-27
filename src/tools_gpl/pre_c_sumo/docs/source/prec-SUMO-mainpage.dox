@@ -63,10 +63,12 @@ same-boundary FM-to-preC-SUMO-to-FM feedback. Serial coupling with remeshing is 
 For the preCICE calls alone, including mesh registration and conditional source/sink mesh resets,
 see the adapter-only mermaid diagram. File exchange and near-field processing are intentionally omitted.
 
-`docs/include/preC_SUMO_adapter_sequence_diagram.mmd` for viewing in a Mermaid-capable editor.
+\mermaidfile include/preC_SUMO_adapter_sequence_diagram.mmd
 
 For a joint FM/preC-SUMO exchange overview, see
-`docs/include/FM_preC_SUMO_Exchange_Overview.mmd`.
+
+\mermaidfile include/FM_preC_SUMO_Exchange_Overview.mmd
+
 preC-SUMO has no independent internal timestep or subcycling: each iteration uses
 `getMaxTimeStepSize()` and advances by the full available preCICE window.
 FM, in contrast, accumulates its user timesteps until the exchange boundary.

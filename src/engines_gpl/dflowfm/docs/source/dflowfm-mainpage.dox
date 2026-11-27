@@ -29,4 +29,4 @@ The Mermaid diagram shows the current adapter's preCICE calls, including initial
 conditional FM3D mesh resets, and received source/sink mesh access after advancing.
 Internal solver operations are omitted.
 
-`docs/include/FM_preCICE_adapter_sequence_diagram.mmd` for viewing in a Mermaid-capable editor.
+\mermaidfile include/FM_preCICE_adapter_sequence_diagram.mmd
