@@ -10,7 +10,7 @@
 !
 !-------------------------------------------------------------------------------
 
-!> Support wave-group transport at absorbing-generating (ABSGEN) boundaries.
+!> Support wave-group transport at absorbing-generating boundaries.
 !! Compute depth-averaged inputs to the boundary closure and distribute its
 !! prescribed transport over the layers while preserving vertical shear.
 module m_absgen_3d
@@ -29,9 +29,7 @@ module m_absgen_3d
 
 contains
 
-   !> Accumulate width-weighted velocities for one owned boundary face.
-   !! The caller sums these local contributions across MPI ranks using the
-   !! same global section IDs on each rank.
+   !> Accumulate width-weighted velocities for a link
    pure subroutine accumulate_absgen_boundary_mean(is_owned, boundary_section, face_width, normal_velocity, &
                                                     tangential_velocity, weighted_u, weighted_v, boundary_length)
       logical, intent(in) :: is_owned !< Whether this rank owns the face.
@@ -52,10 +50,7 @@ contains
       boundary_length(boundary_section) = boundary_length(boundary_section) + face_width
    end subroutine accumulate_absgen_boundary_mean
 
-   !> Apply a depth-uniform velocity increment while preserving layer shear.
-   !! The wet-layer transport (m^3/s) equals total wet area times the target
-   !! velocity, up to rounding. If the total wet area is zero, return the
-   !! target velocity uniformly.
+   !> Apply a depth-uniform velocity change while preserving layer shear
    pure subroutine apply_absgen_barotropic_increment(layer_area, current_velocity, target_depth_averaged_velocity, target_velocity)
       real(kind=dp), intent(in) :: layer_area(:) !< Wetted face area per layer (m^2).
       real(kind=dp), intent(in) :: current_velocity(:) !< Input layer normal velocity (m/s).
@@ -83,9 +78,7 @@ contains
       target_velocity = target_velocity + transport_correction
    end subroutine apply_absgen_barotropic_increment
 
-   !> Compute a thickness-weighted cell velocity without modifying flow state.
-   !! Pass one more interface than velocity sample, ordered bottom to top.
-   !! Return zero for a dry column or inconsistent input sizes.
+   !> Compute a thickness-weighted depth-averaged velocity without modifying flow state.
    pure subroutine compute_absgen_depth_averaged_velocity(interface_elevation, layer_velocity_x, layer_velocity_y, &
                                                           depth_averaged_velocity_x, depth_averaged_velocity_y)
       real(kind=dp), intent(in) :: interface_elevation(:) !< Layer interface elevations (m).
@@ -123,8 +116,7 @@ contains
    end subroutine compute_absgen_depth_averaged_velocity
 
    !> Compute the signed normal acceleration term for quadratic friction.
-   !! Use velocities relative to Stokes drift. The boundary closure subtracts
-   !! this term from the inward normal acceleration.
+   !! Use Eulerian velocities.
    pure function compute_absgen_friction_acceleration(friction_coefficient, normal_velocity, tangential_velocity, &
                                                       normal_stokes_velocity, tangential_stokes_velocity) result(acceleration)
       real(kind=dp), intent(in) :: friction_coefficient !< Depth-scaled friction coefficient (1/m).
@@ -145,9 +137,6 @@ contains
    end function compute_absgen_friction_acceleration
 
    !> Relax globally accumulated boundary means without changing empty sections.
-   !! Divide each weighted sum by its section length. Blend the resulting
-   !! velocity into the stored mean with weight dt / (cats * Trep), where
-   !! cats is the relaxation timescale in representative wave periods.
    pure subroutine relax_absgen_boundary_means(weighted_u, weighted_v, boundary_length, relaxation_factor, mean_u, mean_v)
       real(kind=dp), intent(in) :: weighted_u(:) !< Section sum of widths times normal velocity (m^2/s).
       real(kind=dp), intent(in) :: weighted_v(:) !< Section sum of widths times tangential velocity (m^2/s).
@@ -175,7 +164,6 @@ contains
    end subroutine relax_absgen_boundary_means
 
    !> Recover the signed velocity along the incident wave direction (m/s).
-   !! Use a cosine floor to bound the reconstructed amplitude near grazing incidence.
    pure function compute_absgen_incident_velocity(normal_velocity, tangential_velocity, &
                                                    min_normal_direction_cosine) result(signed_velocity)
       real(kind=dp), intent(in) :: normal_velocity !< Inward incident velocity (m/s).
@@ -196,11 +184,7 @@ contains
       signed_velocity = normal_velocity / max(direction_cosine, min_normal_direction_cosine)
    end function compute_absgen_incident_velocity
 
-   !> Solve for the signed reflected normal velocity (m/s) in the ABSGEN closure.
-   !! Inward folding gives cos(alpha) = abs(ur) / hypot(ur, tangential_residual).
-   !! Substituting in ur = forcing * cos(alpha) / (1 + cos(alpha)) gives
-   !! abs(forcing) = hypot(ur, tangential_residual) + abs(ur) on the nonzero branch.
-   !! At or below the tangential threshold the reflected normal velocity is zero.
+   !> Solve for the reflected normal velocity (m/s) in the ABSGEN closure.
    pure function compute_absgen_reflected_velocity(forcing, tangential_residual) result(normal_velocity)
       real(kind=dp), intent(in) :: forcing !< Signed characteristic forcing (m/s).
       real(kind=dp), intent(in) :: tangential_residual !< Reflected along-face velocity (m/s).

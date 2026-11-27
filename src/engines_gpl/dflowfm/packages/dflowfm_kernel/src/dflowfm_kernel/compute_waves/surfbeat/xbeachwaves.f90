@@ -409,8 +409,6 @@ contains
    end subroutine xbeach_all_input
 
 !> Initialize Surfbeat wave state and boundary mappings.
-!! Initialize the ABSGEN section means on first allocation. For an existing
-!! model, xbeach_reset() explicitly clears the running means.
    subroutine xbeach_wave_init()
       use precision, only: dp
       use m_flowgeom
@@ -2674,9 +2672,7 @@ contains
 
    end subroutine advec_dir
 
-!> Clear cached Surfbeat input and the ABSGEN history at model reset.
-!! Clear the relaxed section means and the previous boundary velocities.
-!! These values carry forward between boundary updates during a run.
+!> Clear cached Surfbeat input and arrays at model reset.
    subroutine xbeach_reset()
       use m_xbeach_readkey ! for reset_paramfile
       use m_xbeach_data, only: dlengthrm, u1rm, uave, umeanrm, vave, vmeanrm
@@ -2700,8 +2696,8 @@ contains
       call xbeach_absgen_bc()
    end subroutine xbeach_flow_bc
 
-!> Snapshot horizontal cell velocities for the depth-integrated closure.
-!! Copy the native cell velocities in 2D. In 3D, average over the wet layer
+!> Copy horizontal cell velocities for the depth-integrated boundary signal generation.
+!! Copy the cell velocities in 2D. In 3D, average over the wet layer
 !! thicknesses and return zero for a dry column.
    subroutine xbeach_prepare_absgen_velocity_snapshot(absgen_ucx, absgen_ucy)
       use precision, only: dp

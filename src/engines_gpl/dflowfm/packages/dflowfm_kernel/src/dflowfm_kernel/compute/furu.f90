@@ -41,10 +41,6 @@ module m_furu
 
 contains
 
-   !> Assemble the momentum predictor and update the wet-cell flags.
-   !! At a multilayer ABSGEN boundary, impose the prescribed depth-averaged
-   !! normal velocity through a uniform shift of the layer velocities. This
-   !! matches the target transport while retaining the predictor's shear.
    subroutine furu()
       use precision, only: dp
       use m_fixedweirfriction2d
@@ -339,7 +335,7 @@ contains
          end if
 
          if (Lt > Lb .and. boundary_type == BOUNDARY_ABSORBING_GENERATING) then
-            ! Use the previous profile when a fresh predictor is unavailable.
+            ! first fill with old value
             boundary_profile(1:Lt - Lb + 1) = u1(Lb:Lt)
             if (hu(LL) > 0.0_dp) then
                select case (iturbulencemodel)
@@ -348,6 +344,7 @@ contains
                end select
             end if
             fu(Lb:Lt) = 0.0_dp
+            ! then fill with correct wave group flux
             call apply_absgen_barotropic_increment(au(Lb:Lt), boundary_profile(1:Lt - Lb + 1), zbndun, ru(Lb:Lt))
             cycle
          end if
