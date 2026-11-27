@@ -43,7 +43,6 @@ class Delft3DRecipe(ConanFile):
         self.options["zlib"].shared = True
         self.options["hdf5"].shared = True
         self.options["netcdf"].shared = True
-        self.options["netcdf"].build_utilities = True
         self.options["netcdf-fortran"].shared = True
         self.options["proj"].shared = True
         self.options["gdal"].shared = True

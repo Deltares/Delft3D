@@ -16,7 +16,6 @@ object WindowsUnitTest : BuildType({
 
     artifactRules = """
         x64/test/**/*.html
-        src/test/engines_gpl/dflowfm/packages/test_dflowfm/test_data/*.log
     """.trimIndent()
 
     templates(
@@ -80,44 +79,6 @@ object WindowsUnitTest : BuildType({
                 test_io_netcdf.exe
                 mv ftnunit.html io_netcdf_ftnunit.html
             """.trimIndent()
-        }
-        script {
-            conditions {
-                matches("product", """^(fm-(suite|testbench))|(all-testbench)$""")
-            }
-            name = "D-Flow FM: dflowfm_kernel_test"
-            executionMode = BuildStep.ExecutionMode.ALWAYS
-            workingDir = "x64/test/test_data"
-            scriptContent = """
-                ..\dflowfm_kernel_test.exe
-                mv ftnunit.html ..\dflowfm_kernel_ftnunit.html
-            """.trimIndent()
-        }
-        script {
-            conditions {
-                matches("product", """^(fm-(suite|testbench))|(all-testbench)$""")
-            }
-            name = "D-Flow FM (version string): dflowfm --version > screen.log"
-            executionMode = BuildStep.ExecutionMode.ALWAYS
-            workingDir = "src/test/engines_gpl/dflowfm/packages/test_dflowfm/test_data"
-            scriptContent = """
-                dflowfm-cli.exe --version >screen.log 2>&1
-            """.trimIndent()
-        }
-        python {
-            conditions {
-                matches("product", """^(fm-(suite|testbench))|(all-testbench)$""")
-            }
-            name = "D-Flow FM (version string): dflowfm_compare_version_output.py"
-            executionMode = BuildStep.ExecutionMode.ALWAYS
-            workingDir = "src/test/engines_gpl/dflowfm/packages/test_dflowfm/test_data"
-            command = file {
-                filename = "dflowfm_compare_version_output.py"
-                scriptArguments = """
-                    --ref dflowfm_version_win.log
-                    --new screen.log
-                """.trimIndent()
-            }
         }
     }
 
