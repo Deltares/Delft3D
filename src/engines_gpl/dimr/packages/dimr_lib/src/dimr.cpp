@@ -59,6 +59,7 @@
 #include <netcdf.h>
 #include <ctime>
 #include <stdio.h>
+#include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <cstring>
@@ -1729,7 +1730,7 @@ void Dimr::scanUnits(XmlTree* rootXml)
 void Dimr::scanComponent(XmlTree* xmlComponent, dimr_component* newComp)
 {
     // Needed for path handling
-    char* curPath = new char[MAXSTRING];
+    char curPath[MAXSTRING];
     if (!getcwd(curPath, MAXSTRING))
         throw Exception(Exception::ERR_OS, "ERROR obtaining the current working directory (scan)");
     //
@@ -1861,13 +1862,10 @@ void Dimr::scanComponent(XmlTree* xmlComponent, dimr_component* newComp)
 
     // Element inputFile (optional?)
     XmlTree* inputFileElement = xmlComponent->Lookup("inputFile");
-    if (inputFileElement == NULL)
+    newComp->inputFile = inputFileElement ? inputFileElement->charData : nullptr;
+    if (!newComp->inputFile)
     {
         log->Write(INFO, my_rank, "WARNING: No inputFile specified for component %s.", newComp->name);
-    }
-    else
-    {
-        newComp->inputFile = inputFileElement->charData;
     }
 
     // Element mpi_barrier_sleep (optional)
@@ -1910,45 +1908,74 @@ void Dimr::scanComponent(XmlTree* xmlComponent, dimr_component* newComp)
 
     // Element workingDir
     XmlTree* workingDirElement = xmlComponent->Lookup("workingDir");
+    auto workingPath = std::filesystem::path(curPath);
     if (workingDirElement == NULL)
     {
-        newComp->workingDir = (char*)&curPath;
         log->Write(INFO, my_rank, "WARNING: No workingDir specified for component %s.", newComp->name);
-        log->Write(INFO, my_rank, "         workingDir is set to %s", newComp->workingDir);
+        log->Write(INFO, my_rank, "         workingDir is set to %s", curPath);
     }
     else
     {
-        newComp->workingDir = workingDirElement->charData;
-    }
-    // Is workingDir a valid relative path?
-    char* combinedPath = new char[MAXSTRING];
-    sprintf(combinedPath, "%s%s%s", curPath, dirSeparator, newComp->workingDir);
-    if (chdir(combinedPath))
-    {
-        // CombinedPath is not correct. May be just workingDir?
-        delete[] combinedPath;
-        // Is workingDir a valid absolute path?
-        if (chdir(newComp->workingDir))
+        if (!workingDirElement->charData || !*workingDirElement->charData)
         {
-            throw Exception(Exception::ERR_INVALID_INPUT, "Component \"%s\" has an invalid workingDir \"%s\"",
-                            newComp->name, newComp->workingDir);
+            throw Exception(Exception::ERR_INVALID_INPUT,
+                            "Component \"%s\" in \"%s\": <workingDir> is empty. "
+                            "It must point to an existing, accessible directory.",
+                            newComp->name, configfile);
+        }
+        workingPath /= workingDirElement->charData;
+    }
+    const std::string workingDir = workingPath.string();
+    if (chdir(workingDir.c_str()))
+    {
+        throw Exception(Exception::ERR_INVALID_INPUT,
+                        "Component \"%s\" in \"%s\": cannot enter <workingDir> \"%s\". "
+                        "It must point to an existing, accessible directory.",
+                        newComp->name, configfile, workingDir.c_str());
+    }
+    if (chdir(curPath))
+    {
+        throw Exception(Exception::ERR_OS, "Cannot restore DIMR's working directory \"%s\"", curPath);
+    }
+
+    const bool inputIsWorkingDir = newComp->inputFile && strcmp(newComp->inputFile, ".") == 0;
+    if (newComp->type == COMP_TYPE_RTC)
+    {
+        if (!newComp->inputFile || !*newComp->inputFile)
+        {
+            throw Exception(Exception::ERR_INVALID_INPUT,
+                            "RTC component \"%s\" in \"%s\": <inputFile> is missing or empty. "
+                            "Set <workingDir> to the RTC input directory and set <inputFile> to \".\".",
+                            newComp->name, configfile);
+        }
+
+        const auto inputPath = inputIsWorkingDir ? workingPath : workingPath / newComp->inputFile;
+        std::error_code pathError;
+        if (!std::filesystem::is_directory(inputPath, pathError))
+        {
+            throw Exception(Exception::ERR_INVALID_INPUT,
+                            "RTC component \"%s\" in \"%s\": cannot access RTC input directory \"%s\". "
+                            "Check that <workingDir> points to the RTC input directory and <inputFile> is \".\".",
+                            newComp->name, configfile, inputPath.string().c_str());
+        }
+
+        const auto settingsPath = inputPath / "settings.json";
+        if (!std::filesystem::is_regular_file(settingsPath, pathError) || !std::ifstream(settingsPath))
+        {
+            throw Exception(Exception::ERR_INVALID_INPUT,
+                            "RTC component \"%s\" in \"%s\": cannot read required RTC input file \"%s\". "
+                            "Check that <workingDir> points to the RTC directory containing settings.json "
+                            "and <inputFile> is \".\".",
+                            newComp->name, configfile, settingsPath.string().c_str());
         }
     }
-    else
-    {
-        // newComp->workingDir was a pointer to workingDirElement->charData; now it will point to the new combinedPath
-        newComp->workingDir = combinedPath;
-    }
-    chdir(curPath);
 
-    // Hack for RTC-Tools:
-    // inputFile is an input directory
-    // "." means workingDir
-    if (strcmp(newComp->inputFile, ".") == 0)
+    newComp->workingDir = new char[workingDir.size() + 1];
+    strcpy(newComp->workingDir, workingDir.c_str());
+    if (inputIsWorkingDir)
     {
         newComp->inputFile = newComp->workingDir;
     }
-    delete[] curPath;
 }
 
 //------------------------------------------------------------------------------

@@ -324,7 +324,7 @@ target values are already reduced in rank 0.
 
 \<component name=\"rtc\"\>
 
-\<library\>RTCTools_BMI\</library\>
+\<library\>FBCTools_BMI\</library\>
 
 \<process\>0\</process\>
 
@@ -335,6 +335,11 @@ target values are already reduced in rank 0.
 \<inputFile\>.\</inputFile\>
 
 \</component\>
+
+For `FBCTools_BMI`, `<inputFile>` specifies the RTC input directory, not
+an individual file. Relative paths are resolved from `<workingDir>`, so
+`.` selects the working directory itself. The selected directory must
+contain a readable `settings.json`.
 
 ![](DIMR_MPI.png)
 
