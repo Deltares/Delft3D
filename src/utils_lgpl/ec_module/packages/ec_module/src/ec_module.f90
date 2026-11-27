@@ -354,7 +354,7 @@ module m_ec_module
       module procedure ecConnectionSetConverter
    end interface ecSetConnectionConverter
    
-   interface  ecAddConnectionSourceItem
+   interface ecAddConnectionSourceItem
       module procedure ecConnectionAddSourceItem
    end interface ecAddConnectionSourceItem
    
