@@ -2532,6 +2532,8 @@ contains
 
    end subroutine finalize
 
+   !> Check whether zerozbndinflowadvection is incompatible with prescribed boundary advection velocities.
+   !! Returns .false. and reports an error when the combination is not allowed.
    function check_keyword_zerozbndinflowadvection() result(success)
       use m_flowparameters, only: jaZerozbndinflowadvection
       use messagehandling, only: LEVEL_ERROR, msgbuf, mess

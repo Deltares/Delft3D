@@ -2390,7 +2390,6 @@ contains
       xpli_centre = (xpl(i_first) + xpl(i_last))/2.0_dp
       ypli_centre = (ypl(i_first) + ypl(i_last))/2.0_dp
       
-      ! Determine closest boundary point (probably more ellegant to use find_nearest_flownode, for now keep it simple)
       tmpname(1)      = 'dummy'
       x_tmp(1)        = xpli_centre
       y_tmp(1)        = ypli_centre
