@@ -3451,7 +3451,7 @@ contains
 !>     inside cell in other domain:  dist=DPENALTY
 !>     outside cell in own domain:   dist=DPENALTY + distance
 !>     outside cell in other domain: dist=DREJECT (>DPENALTY) never
-!>   reduce: take global cell with lowest dist
+!>   reduce: take global cell with lowest dist, ties resolved by is_preferred_obs_cell
    subroutine reduce_kobs(N, kobs, xobs, yobs, jaoutside)
       use m_flowgeom, only: xz, yz, nd
       use messagehandling, only: LEVEL_ERROR, LEVEL_WARN, mess
@@ -3474,14 +3474,17 @@ contains
 
 #ifdef HAVE_MPI
       real(kind=dp), dimension(:), allocatable :: dist ! distances from flow nodes to observation stations
-      real(kind=dp), dimension(:, :), allocatable :: dist_all
+      real(kind=dp), dimension(:), allocatable :: xcell, ycell ! centres of the proposed flow nodes
+      real(kind=dp), dimension(:, :), allocatable :: dist_all, xcell_all, ycell_all
 
-      real(kind=dp) :: xp, yp
+      real(kind=dp) :: xp, yp, xbest, ybest
 
       integer :: i, other_domain, in, k1, ierror
 
       real(kind=dp), parameter :: DPENALTY = 1.0e10_dp ! should be smaller than DREJECT
       real(kind=dp), parameter :: DREJECT = 2.0e99_dp ! should be larger than DPENALTY
+
+      logical :: take
 
       if (N < 1) then
          return
@@ -3490,7 +3493,12 @@ contains
       allocate (dist(N))
       dist = DREJECT
 
+      allocate (xcell(N), ycell(N))
+      xcell = 0.0_dp
+      ycell = 0.0_dp
+
       allocate (dist_all(N, 0:ndomains - 1))
+      allocate (xcell_all(N, 0:ndomains - 1), ycell_all(N, 0:ndomains - 1))
 
 !     set distances to observation stations
       do i = 1, N
@@ -3498,6 +3506,8 @@ contains
          if (k1 == 0) then
             cycle
          end if
+         xcell(i) = xz(k1)
+         ycell(i) = yz(k1)
 
 !        check if the observation station is inside the cell
          call pinpok(xobs(i), yobs(i), size(nd(k1)%x), nd(k1)%x, nd(k1)%y, in, jins, dmiss)
@@ -3524,23 +3534,39 @@ contains
 
 !     globally reduce
       call mpi_allgather(dist, N, MPI_DOUBLE_PRECISION, dist_all, N, MPI_DOUBLE_PRECISION, DFM_COMM_DFMWORLD, ierror)
+      call mpi_allgather(xcell, N, MPI_DOUBLE_PRECISION, xcell_all, N, MPI_DOUBLE_PRECISION, DFM_COMM_DFMWORLD, ierror)
+      call mpi_allgather(ycell, N, MPI_DOUBLE_PRECISION, ycell_all, N, MPI_DOUBLE_PRECISION, DFM_COMM_DFMWORLD, ierror)
 
 !     select domain
       do i = 1, N
          k1 = 0
          dist(i) = DREJECT
+         xbest = 0.0_dp
+         ybest = 0.0_dp
 
-!        compare distance with distances in other subdomains
+!        compare distance with distances in other subdomains, equal distances are resolved by cell position
          do other_domain = 0, ndomains - 1
             if (dist_all(i, other_domain) == DREJECT) then
                cycle
-            else if (dist_all(i, other_domain) < dist(i) .or. dist(i) == DREJECT) then
+            else if (dist(i) == DREJECT) then
+               take = .true.
+            else if (dist_all(i, other_domain) < dist(i)) then
+               take = .true.
+            else if (dist_all(i, other_domain) == dist(i)) then
+               take = is_preferred_obs_cell(xobs(i), yobs(i), xcell_all(i, other_domain), ycell_all(i, other_domain), xbest, ybest)
+            else
+               take = .false.
+            end if
+
+            if (take) then
                if (other_domain == my_rank) then
                   k1 = kobs(i) ! use value in this subdomain
                else
                   k1 = -1 ! in another subdomain
                end if
                dist(i) = dist_all(i, other_domain)
+               xbest = xcell_all(i, other_domain)
+               ybest = ycell_all(i, other_domain)
             end if
          end do
 
@@ -3571,8 +3597,41 @@ contains
       if (allocated(dist_all)) then
          deallocate (dist_all)
       end if
+      if (allocated(xcell)) then
+         deallocate (xcell, ycell)
+      end if
+      if (allocated(xcell_all)) then
+         deallocate (xcell_all, ycell_all)
+      end if
 #endif
    end subroutine reduce_kobs
+
+!> Tie-break between two candidate flow cells for an observation station.
+!> The cell whose centre is nearer to the station is preferred. On an exact tie (e.g. a station
+!> on a cell face) the cell with the smaller centre coordinates is preferred. Only geometry is
+!> used, so the choice is the same for every partitioning.
+   logical function is_preferred_obs_cell(xobs, yobs, xnew, ynew, xold, yold)
+      use geometry_module, only: dbdistance
+      use m_missing, only: dmiss
+      use m_sferic, only: jsferic, jasfer3D
+
+      implicit none
+
+      real(kind=dp), intent(in) :: xobs, yobs !< observation station coordinates
+      real(kind=dp), intent(in) :: xnew, ynew !< centre of the candidate flow cell
+      real(kind=dp), intent(in) :: xold, yold !< centre of the currently selected flow cell
+
+      real(kind=dp) :: dnew, dold
+
+      dnew = dbdistance(xobs, yobs, xnew, ynew, jsferic, jasfer3D, dmiss)
+      dold = dbdistance(xobs, yobs, xold, yold, jsferic, jasfer3D, dmiss)
+
+      if (dnew /= dold) then
+         is_preferred_obs_cell = dnew < dold
+      else
+         is_preferred_obs_cell = xnew < xold .or. (xnew == xold .and. ynew < yold)
+      end if
+   end function is_preferred_obs_cell
 
    !> Reduce lateral output, make all them available only in rank0
    subroutine reduce_lateral_output()

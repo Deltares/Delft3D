@@ -145,6 +145,7 @@ contains
       use m_flowgeom
       use m_GlobalParameters, only: INDTP_1D, INDTP_2D, INDTP_ALL
       use kdtree2Factory
+      use m_partitioninfo, only: is_preferred_obs_cell
       use m_sferic
       use messagehandling, only: LEVEL_INFO, mess
       use gridoperations
@@ -173,7 +174,6 @@ contains
 
       integer :: i, ip1, isam, in, k, N, NN
       integer :: nstart, nend
-      real(kind=dp) :: dist_old, dist_new
 
       ierror = 1
 
@@ -257,19 +257,15 @@ contains
                call pinpok(xs(isam), ys(isam), N, xloc, yloc, in, jins, dmiss)
             end if
             if (in == 1) then
-               if (node_nr_nearest(isam) /= 0) then ! should not happen, but it can: for example in case of overlapping 1D branches
+               if (node_nr_nearest(isam) /= 0) then ! should not happen, but it can: for example in case of overlapping cells or 1D branches
                   write (mesg, "('find_nearest_flownodes_kdtree: sample/point ', I0, ' in cells ', I0, ' and ', I0)") isam, node_nr_nearest(isam), k
                   call mess(LEVEL_INFO, mesg)
                   ! goto 1234
-                  if (k > ndx2D .and. k < ndxi + 1 .and. jaoutside == 1) then ! ONLY in case of a 1D node, consider replacing, if the 1D node is closer
-                     dist_old = dbdistance(xs(isam), ys(isam), xz(node_nr_nearest(isam)), yz(node_nr_nearest(isam)), jsferic, jasfer3D, dmiss)
-                     dist_new = dbdistance(xs(isam), ys(isam), xz(k), yz(k), jsferic, jasfer3D, dmiss)
-                     if (dist_new < dist_old) then ! if the new candidate is nearer to the observation station  ...
-                        node_nr_nearest(isam) = k ! ... adopt the new candidate as primary candidate
-                     end if
-                     write (mesg, "('   selected : ',I0,' based on distance comparison.')") node_nr_nearest(isam)
-                     call mess(LEVEL_INFO, mesg)
+                  if (is_preferred_obs_cell(xs(isam), ys(isam), xz(k), yz(k), xz(node_nr_nearest(isam)), yz(node_nr_nearest(isam)))) then
+                     node_nr_nearest(isam) = k ! adopt the new candidate if it is preferred, independent of the partitioning
                   end if
+                  write (mesg, "('   selected : ',I0,' based on distance comparison.')") node_nr_nearest(isam)
+                  call mess(LEVEL_INFO, mesg)
                else
                   node_nr_nearest(isam) = k
                end if
