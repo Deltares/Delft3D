@@ -528,6 +528,59 @@ contains
    end subroutine test_xy_in_ext_file_z_ranges
 
 !$gtest
+   subroutine test_nearfield_source_track_preserves_speed() bind(C)
+      use m_flow_geominit, only: flow_geominit
+      use m_nearfield, only: addNearfieldData, reset_nearfieldData, nf_num_dif, nf_numintake, nf_numsink, nf_numsour, &
+                             nf_q_source, nf_sink, nf_sour, nf_const_operator
+      use m_network_helpers, only: t_grid_helper
+      use m_partitioninfo, only: jampi
+      use m_source_sink, only: source_sinks, source_sink_all_discharges
+      use m_transport, only: numconst
+      use Timers, only: timini, timon
+
+      type(t_grid_helper) :: grid_helper
+      real(kind=dp), dimension(1), target :: total_discharge
+      real(kind=dp), dimension(1, 1, 6), target :: sink
+      real(kind=dp), dimension(1, 1, 8), target :: source
+      character(len=8), dimension(1), target :: const_operator
+      real(kind=dp), parameter :: speed = 4.0_dp, tolerance = 1.0e-12_dp
+      integer :: saved_numconst
+
+      call timini()
+      timon = .false.
+      jampi = 0
+      call grid_helper%make_square_grid(0.0_dp, 0.0_dp, 10.0_dp, rows=1, columns=2, array_size_margin=2)
+      call flow_geominit(0)
+      call source_sinks%reset()
+      saved_numconst = numconst
+      numconst = 0
+
+      ! The track spans x=7 to x=17 at y=5, putting 30% and 70% of the samples in the two cells.
+      total_discharge = 10.0_dp
+      sink(1, 1, :) = [12.0_dp, 3.0_dp, 1.0_dp, 1.0_dp, 0.0_dp, 0.0_dp]
+      source(1, 1, :) = [12.0_dp, 5.0_dp, 1.0_dp, 1.0_dp, 0.5_dp, 5.0_dp, speed, 90.0_dp]
+      const_operator = "absolute"
+      nf_num_dif = 1
+      nf_numintake = 0
+      nf_numsink = 1
+      nf_numsour = 1
+      nf_q_source => total_discharge
+      nf_sink => sink
+      nf_sour => source
+      nf_const_operator => const_operator
+
+      call addNearfieldData()
+
+      if (f90_assert_eq(source_sinks%num_nearfield, 2)) then
+         call f90_expect_near(source_sink_all_discharges(1, 1:2), [3.0_dp, 7.0_dp], tolerance)
+         call f90_expect_near(source_sinks%area(1:2), [0.75_dp, 1.75_dp], tolerance, &
+                              "Both cells must retain the specified discharge speed")
+      end if
+      call reset_nearfieldData()
+      numconst = saved_numconst
+   end subroutine test_nearfield_source_track_preserves_speed
+
+!$gtest
    subroutine test_nearfield_discharge_layer_selection() bind(C)
       call check_nearfield_discharge(-6.0_dp, -6.0_dp, 10.0_dp, [0.0_dp, 10.0_dp, 0.0_dp])
       call check_nearfield_discharge(-12.0_dp, -11.0_dp, 10.0_dp, [10.0_dp, 0.0_dp, 0.0_dp])

@@ -38,23 +38,49 @@ digraph preCSUMOSwimlanes {
 
     node [group="precsumo"];
 
-    s0 [label="settings\nreadCsumoSettingsFile()", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::readCsumoSettingsFile", tooltip="Open readCsumoSettingsFile docs"];
-    s1 [label="mesh\nsetup", fillcolor="#FFE3D1", URL="\\ref anonymous_namespace{pre_c_sumo_lib.cpp}::getMesh2D3D()", tooltip="Set up meshes for preCICE exchange"];
-    s2 [label="wait + read\nNF2FF", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::waitForNF2FFFiles", tooltip="Open initial NF2FF bootstrap docs"];
-    s3 [label="init\nparticipant", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::run()", tooltip="Open participant initialization docs"];
+    start [label="construct preCICE\nparticipant", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::run()", tooltip="Construct the preCICE participant"];
+    s0 [label="settings\nreadSettingsFile()", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::c_sumo::readSettingsFile", tooltip="Open readSettingsFile docs"];
+    s1 [label="register sampling\nmeshes", fillcolor="#FFE3D1", tooltip="Register preC-SUMO sampling meshes"];
+    s2 [label="wait + read\ninitial NF2FF", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::c_sumo::waitForNF2FFFiles", tooltip="Read initial NF2FF data before participant initialization"];
+    s3 [label="convert initial result +\nregister sink/source mesh", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::convertCSumoToPrecice", tooltip="Set up sink/source mesh from initial NF2FF data"];
+    s4 [label="requiresInitialData()?", shape=diamond, style=filled, fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::run()", tooltip="Reject required outgoing initial data"];
+    initial_error [label="report error and return", fillcolor="#FFE3D1"];
+    initialize [label="initialize()", fillcolor="#FFE3D1", URL="\\ref pre_c_sumo::run()", tooltip="Initialize the preCICE participant"];
 
-    l0 [label="receiveFFData()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::receiveFFData", tooltip="Open receiveFFData docs"];
-    l1 [label="writeFF2NF()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::writeFF2NFFiles", tooltip="Open writeFF2NFFiles docs"];
-    l2 [label="waitNF2FF()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::waitForNF2FFFiles", tooltip="Open waitForNF2FFFiles docs"];
-    l3 [label="readNF2FF()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::readNF2FFFiles", tooltip="Open readNF2FFFiles docs"];
-    l4 [label="convert()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::convertNFtoConnectedSinkSources", tooltip="Open convertNFtoConnectedSinkSources docs"];
-    l5 [label="source-sink\nwrite", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo_connected_sink_sources_write_to_precice", tooltip="Open write_to_precice docs"];
-    l6 [label="advance()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::run()", tooltip="Open run() loop docs"];
+    ongoing [label="isCouplingOngoing()?", shape=diamond, style=filled, fillcolor="#FFF6E8"];
+    finished [label="finished", fillcolor="#FFF6E8"];
+    timestep [label="getMaxTimeStepSize()", fillcolor="#FFF6E8"];
+    l0 [label="receiveFFData()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::precice::receiveFFData", tooltip="Open receiveFFData docs"];
+    diffuser [label="next diffuser?", shape=diamond, style=filled, fillcolor="#FFF6E8"];
+    convert_ff [label="convertPreciceToCSumo()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::convertPreciceToCSumo", tooltip="Convert preCICE data for one diffuser"];
+    l1 [label="FF2NFWriter::write()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo_write_ff2nf", tooltip="Open FF2NFWriter::write docs"];
+    l2 [label="waitForNF2FFFiles()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::c_sumo::waitForNF2FFFiles", tooltip="Wait for complete NF2FF files"];
+    l3 [label="readNF2FFFiles()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::c_sumo::readNF2FFFiles", tooltip="Open readNF2FFFiles docs"];
+    l4 [label="convertCSumoToPrecice()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::convertCSumoToPrecice", tooltip="Open convertCSumoToPrecice docs"];
+    window_complete [label="isTimeWindowComplete()?", shape=diamond, style=filled, fillcolor="#FFF6E8"];
+    reset [label="reset + register\nsink/source mesh", fillcolor="#FFF6E8", tooltip="Reset the mesh and register its updated vertices"];
+    l5 [label="writeSinkSourceConnections()", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo_sink_source_connections_write_to_precice", tooltip="Open writeSinkSourceConnections docs"];
+    l6 [label="advance(dt)\nupdate current time", fillcolor="#FFF6E8", URL="\\ref pre_c_sumo::run()", tooltip="Advance the participant and update the current time"];
     lane_left [label="", shape=point, width=0.01, height=0.01, style=invis];
 
-    s0 -> s1 -> s2 -> s3 -> l0 -> l1 -> l2 -> l3 -> l4 -> l5 -> l6;
+    start -> s0 -> s1 -> s2 -> s3 -> s4;
+    s4 -> initial_error [xlabel="yes"];
+    s4 -> initialize [xlabel="no"];
+    initialize -> ongoing;
+    ongoing -> finished [xlabel="no"];
+    ongoing -> timestep [xlabel="yes"];
+    timestep -> l0 -> diffuser;
+    diffuser -> convert_ff [xlabel="yes"];
+    convert_ff -> l1;
+    l1 -> diffuser [constraint=false];
+    diffuser -> l2 [xlabel="no"];
+    l1 -> l2 [style=invis];
+    l2 -> l3 -> l4 -> window_complete;
+    window_complete -> reset [xlabel="yes"];
+    window_complete -> l5 [xlabel="no"];
+    reset -> l5 -> l6;
+    l6 -> ongoing [constraint=false, color="#666666"];
     lane_left -> l0 [style=invis, weight=120];
-    l6 -> l0 [color="#666666"];
   }
 
   { rank=same; precice; lane_left; l0; }
@@ -66,17 +92,22 @@ digraph preCSUMOSwimlanes {
     color="#1285F0";
     style="rounded";
 
-    c0 [label="FF2NF Files", fillcolor="#DDEBFF", tooltip="Produced by writeFF2NFFiles"];
+    c_initial [label="Initial NF2FF files\nfor startup", fillcolor="#DDEBFF", tooltip="Read before preCICE initialization"];
+    c0 [label="FF2NF Files", fillcolor="#DDEBFF", tooltip="Produced by FF2NFWriter::write"];
     c1 [label="Near-field Calculation", fillcolor="#DDEBFF",  tooltip="External step consuming FF2NF and generating NF2FF files"];
     c2 [label="NF2FF Files", fillcolor="#DDEBFF", tooltip="Consumed by readNF2FFFiles"];
     c0 -> c1 -> c2;
   }
 
+  c_initial -> s2 [constraint=false, style=dashed];
   precice:e -> l0:w [constraint=false, xlabel="readData()"];
-  l5:w -> precice:se [constraint=false, xlabel="mesh reset"];
+  reset:w -> precice:se [constraint=false, xlabel="mesh reset + registration"];
   l5:w -> precice:se [constraint=false, xlabel="writeData()"];
 
-  l1 -> c0 [lhead=cluster_csumo];
-  c2 -> l2 [ltail=cluster_csumo];
+  l1 -> c0 [constraint=false, style=dashed];
+  c2 -> l3 [constraint=false, style=dashed];
+  { rank=same; l1; c0; }
+  { rank=same; l2; c1; }
+  { rank=same; l3; c2; }
 }
 

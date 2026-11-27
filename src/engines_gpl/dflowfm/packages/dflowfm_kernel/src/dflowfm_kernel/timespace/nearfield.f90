@@ -729,7 +729,7 @@ contains
       integer :: isour
       integer :: iconst_operator
       integer :: sourId
-      real(kind=dp) :: area
+      real(kind=dp) :: source_speed
       real(kind=dp), dimension(:), allocatable :: intake_avg_consts !< If CONST_OPERATOR = EXCESS: Constituent values, averaged over all intake points
       !
       ! Body
@@ -807,24 +807,14 @@ contains
          ! Do not use "D0" nor "SIGMA0" from Cosumo input file.
          ! Use columns 7 (UMAG) and 8 (UDIR) from each source line
          !
-         ! Area: Atot = Q_TOT / UMAG
-         if (nf_sour(idif, sourId, NF_IUMAG) < EPS_DP) then
-            area = 0.0_dp
+         ! With qi = wi * Q_TOT, use ai = qi / UMAG to keep the specified speed.
+         ! For a common UMAG, the fluxes qi**2 / ai = qi * UMAG sum to Q_TOT * UMAG.
+         source_speed = nf_sour(idif, sourId, NF_IUMAG)
+         if (source_speed < EPS_DP) then
+            source_sinks%area(source_sinks%num_total) = 0.0_dp
          else
-            area = nf_q_source(idif) / nf_sour(idif, sourId, NF_IUMAG)
+            source_sinks%area(source_sinks%num_total) = source_sink_all_discharges(1, source_sinks%num_total) / source_speed
          end if
-         !
-         ! Area of this fraction is total area divided by the weight factor:
-         ! Qtot**2/Atot must be conserved when dividing it over multiple cells (where we can choose a1, a2, ...):
-         !            Qtot**2/Atot                         = (Qtot*w1)**2/a1 + (Qtot*w2)**2/a2 + ...
-         ! Since w1+w2+...=1.0, we can write this as:
-         !         w1*Qtot**2/Atot + w2*Qtot**2/Atot + ... = (Qtot*w1)**2/a1 + (Qtot*w2)**2/a2 + ...
-         ! =>
-         !         wi*Qtot**2/Atot  = (Qtot*wi)**2/ai
-         ! =>
-         !         ai = Atot / wi
-         !
-         source_sinks%area(source_sinks%num_total) = area * nf_sour_wght_sum(idif) / nf_sour_wght(idif, isour)
          ! Direction:
          ! nf_sour(:,:,NF_IUDIR)                           : 0=east , 90=north
          ! To be consistent with Delft3D4, change this into: 0=north, 90=east

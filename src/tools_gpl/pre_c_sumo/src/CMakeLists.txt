@@ -1,26 +1,43 @@
 set(source_files
     pre_c_sumo_lib.cpp
-    connected_sinks_sources.cpp
-    coupling_steps.cpp
-    csumo_settings_reader.cpp
-    FF2NF_writer.cpp
-    NF2FF_reader.cpp
-    parsing_utils.cpp
+    conversions.cpp
+    csumo/diffuser.cpp
+    csumo/exchange.cpp
+    csumo/ff2nf_writer.cpp
+    csumo/file_paths.cpp
+    csumo/nf2ff_reader.cpp
+    csumo/settings_reader.cpp
+    csumo/xml.cpp
+    precice/data.cpp
+    precice/exchange.cpp
+    precice/sink_source_connections.cpp
+    utils/file_io.cpp
+    utils/xml_parsing.cpp
 )
 set(include_dir ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 set(header_files
     ${include_dir}/pre_c_sumo_lib.hpp
-    ${include_dir}/connected_sinks_sources.hpp
-    ${include_dir}/coupling_steps.hpp
-    ${include_dir}/csumo_settings_reader.hpp
-    ${include_dir}/monadic_utils.hpp
-    ${include_dir}/FF2NF_writer.hpp
-    ${include_dir}/NF2FF_reader.hpp
-    ${include_dir}/parsing_utils.hpp
-    ${include_dir}/parsing_types.hpp
+    ${include_dir}/conversions.hpp
+    ${include_dir}/csumo/data.hpp
+    ${include_dir}/csumo/diffuser.hpp
+    ${include_dir}/csumo/exchange.hpp
+    ${include_dir}/csumo/ff2nf_writer.hpp
+    ${include_dir}/csumo/file_paths.hpp
+    ${include_dir}/csumo/nf2ff_reader.hpp
+    ${include_dir}/csumo/settings_reader.hpp
+    ${include_dir}/csumo/xml.hpp
+    ${include_dir}/precice/data.hpp
+    ${include_dir}/precice/exchange.hpp
+    ${include_dir}/precice/sink_source_connections.hpp
+)
+set(utility_headers
+    ${include_dir}/utils/file_io.hpp
+    ${include_dir}/utils/io_errors.hpp
+    ${include_dir}/utils/monadic.hpp
+    ${include_dir}/utils/xml_parsing.hpp
 )
 
-add_library(pre_c_sumo_lib ${source_files} ${header_files})
+add_library(pre_c_sumo_lib ${source_files} ${header_files} ${utility_headers})
 
 target_link_libraries(pre_c_sumo_lib PRIVATE
     compiler_warnings_settings
@@ -59,6 +76,7 @@ endif()
 
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files} main.cpp)
+source_group(TREE ${include_dir} PREFIX "Header Files" FILES ${header_files} ${utility_headers})
 set_target_properties(preC-SUMO pre_c_sumo_lib PROPERTIES FOLDER tools_gpl/pre_c_sumo)
 
 install(TARGETS preC-SUMO RUNTIME DESTINATION bin)
