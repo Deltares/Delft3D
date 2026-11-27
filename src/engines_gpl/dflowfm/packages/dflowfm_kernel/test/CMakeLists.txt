@@ -1,6 +1,24 @@
 if(TARGET GDAL::GDAL)
     set(geotiff_test_source src/test_bilinear_geotiff.f90)
 endif()
+
+if(WIN32)
+    set(conan_run_script "${CMAKE_BINARY_DIR}/conan/generators/conanrun.bat")
+    cmake_path(NATIVE_PATH conan_run_script conan_run_script)
+    set(conan_test_launcher
+        cmd.exe /d /v:off /c call "${conan_run_script}" "&&"
+    )
+elseif(UNIX) 
+    set(conan_test_launcher
+        bash -c [=[source "$1" && shift && exec "$@"]=] conan-test
+        "${CMAKE_BINARY_DIR}/conan/generators/conanrun.sh"
+    )
+endif()
+
+if(conan_test_launcher)
+    set(CMAKE_TEST_LAUNCHER ${conan_test_launcher} ${CMAKE_TEST_LAUNCHER})
+endif()
+
 set_source_files_properties(src/test_dflowfm_version.F90 PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 add_fortran_gtest(test_dflowfm_kernel_gtest
     TEST_TEARDOWN reset_dflowfm_after_test
