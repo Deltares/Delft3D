@@ -82,123 +82,157 @@ subroutine rdsedmortra(lundia, error, lsal, ltem, lsed, &
    logical :: cmpupdall
    logical :: cmpupdany
    integer :: i
+   integer :: istat
    real(fp) :: fwfacmor
    character(256) :: filmor
    character(256) :: filsed
+   character(256) :: filslu
    character(256) :: filtrn
    character(256) :: string
    type(tree_data), pointer :: mor_ptr
    type(tree_data), pointer :: sed_ptr
-   integer, dimension(2, NPARDEF) :: ipardef
+   type(tree_data), pointer :: slu_ptr
+   integer, dimension(2,NPARDEF) :: ipardef
    real(fp), dimension(NPARDEF) :: rpardef
 !
 !! executable statements -------------------------------------------------------
 !
-   morft => gdp%gdmorpar%morft
-   morft0 => gdp%gdmorpar%morft0
-   lfbedfrm => gdp%gdbedformpar%lfbedfrm
+   morft               => gdp%gdmorpar%morft
+   morft0              => gdp%gdmorpar%morft0
+   lfbedfrm            => gdp%gdbedformpar%lfbedfrm
    ag => gdp%gdphysco%ag
    !
    error = .false.
    !
    if (morft == 0.0_hp) then
-      !
-      ! if the morphological start time is not set to some positive value due
-      ! to restart from trim-file, then make sure that the morphological start
-      ! time corresponds to the hydrodynamic start time. This includes TStart!
-      !
-      morft = real(tstart * tunit, hp) / 86400.0_hp
-      morft0 = morft
+       !
+       ! if the morphological start time is not set to some positive value due
+       ! to restart from trim-file, then make sure that the morphological start
+       ! time corresponds to the hydrodynamic start time. This includes TStart!
+       !
+       morft  = real(tstart*tunit,hp)/86400.0_hp
+       morft0 = morft
    end if
    !
    ! Read name of default transport formula
    !
    filtrn = ' '
-   call prop_get(gdp%mdfile_ptr, '*', 'TraFrm', filtrn)
+   call prop_get(gdp%mdfile_ptr,'*','TraFrm',filtrn)
    !
    call initrafrm(lundia, error, lsedtot, gdp%gdtrapar)
-   if (.not. error) then
+   if (.not.error) then
+   !
+   ! Read name of sediment input file
+   !
+   filsed = ' '
+   call prop_get(gdp%mdfile_ptr, '*', 'Filsed', filsed)
+   !
+   ! Sediment input has been placed in input_tree in subroutine dimsedconst
+   ! get pointer
+   !
+   call tree_get_node_by_name( gdp%input_tree, 'Sediment Input', sed_ptr )
+   !
+   ! Read name of slurry input file
+   !
+   filslu = ' '
+   call prop_get(gdp%mdfile_ptr, '*', 'Filslu', filslu)
+   if (filslu /= ' ') then
       !
-      ! Read name of sediment input file
+      ! Create slurry branch in input tree
       !
-      filsed = ' '
-      call prop_get(gdp%mdfile_ptr, '*', 'Filsed', filsed)
+      call tree_create_node(gdp%input_tree, 'Slurry Input', slu_ptr )
+      call tree_put_data(slu_ptr, transfer(trim(filslu),node_value), 'STRING' )
       !
-      ! Sediment input has been placed in input_tree in subroutine dimsedconst
-      ! get pointer
+      ! Put slu-file in input tree
       !
-      call tree_get_node_by_name(gdp%input_tree, 'Sediment Input', sed_ptr)
-      !
-      ! Read data from that file
-      !
-      call rdsed(lundia, error, lsal, ltem, lsed, &
-               & lsedtot, lstsci, ltur, namcon, iopsus, &
-               & gdp%d%nmlb, gdp%d%nmub, filsed, sed_ptr, &
-               & gdp%gdsedpar, gdp%gdtrapar, gdp%griddim)
-   end if
-   if (.not. error) then
-      !
-      ! Read name of morphology input file
-      !
-      filmor = ' '
-      call prop_get(gdp%mdfile_ptr, '*', 'Filmor', filmor)
-      !
-      ! Create Morphology branch in input tree
-      !
-      call tree_create_node(gdp%input_tree, 'Morphology Input', mor_ptr)
-      call tree_put_data(mor_ptr, transfer(trim(filmor), node_value), 'STRING')
-      !
-      ! Read data from that file
-      !
-      call rdmor(lundia, error, filmor, lsec, lsedtot, &
-               & lsed, nmaxus, nto, lfbedfrm, &
-               & nambnd, gdp%gdinttim%julday, mor_ptr, gdp%gdsedpar, &
-               &gdp%gdmorpar, fwfacmor, gdp%gdmorlyr, gdp%griddim, ag)
-   end if
-   if (.not. error) then
-      !
-      ! FWFac is independent of sediment transport. Use the value historically
-      ! specified in mor file only if it hasn't been specified in the mdf file.
-      !
-      string = ' '
-      call prop_get(gdp%mdfile_ptr, '*', 'FWFac', string)
-      if (string == ' ') then
-         gdp%gdnumeco%fwfac = fwfacmor
+      call prop_file('ini', trim(filslu), slu_ptr, istat)
+      if (istat /= 0) then
+         select case (istat)
+         case(1)
+            call write_error(FILE_NOT_FOUND//trim(filslu), unit=lundia)
+         case(3)
+            call write_error(PREMATURE_EOF//trim(filslu), unit=lundia)
+         case default
+            call write_error(FILE_READ_ERROR//trim(filslu), unit=lundia)
+         endselect
+         error = .true.
+         return
       end if
-      !
-      ! Some other parameters are transport formula specific. Use the value
-      ! historically specified in mor file as default.
-      !
-      ipardef = 0
-      rpardef = 0.0_fp
-      ! Van Rijn (1993)
-      call setpardef(ipardef, rpardef, NPARDEF, -1, 1, gdp%gdmorpar%iopsus)
-      call setpardef(ipardef, rpardef, NPARDEF, -1, 2, gdp%gdmorpar%aksfac)
-      call setpardef(ipardef, rpardef, NPARDEF, -1, 3, gdp%gdmorpar%rwave)
-      call setpardef(ipardef, rpardef, NPARDEF, -1, 4, gdp%gdmorpar%rdc)
-      call setpardef(ipardef, rpardef, NPARDEF, -1, 5, gdp%gdmorpar%rdw)
-      call setpardef(ipardef, rpardef, NPARDEF, -1, 6, gdp%gdmorpar%iopkcw)
-      ! for backward compatibility gdp%gdmorpar%epspar should NOT be copied to par 7 of Van Rijn 1993 (-1)
-      ! Van Rijn (2007)
-      call setpardef(ipardef, rpardef, NPARDEF, -2, 1, gdp%gdmorpar%iopsus)
-      call setpardef(ipardef, rpardef, NPARDEF, -2, 2, gdp%gdmorpar%pangle)
-      call setpardef(ipardef, rpardef, NPARDEF, -2, 3, gdp%gdmorpar%fpco)
-      call setpardef(ipardef, rpardef, NPARDEF, -2, 4, gdp%gdmorpar%subiw)
-      call setpardef(ipardef, rpardef, NPARDEF, -2, 5, gdp%gdmorpar%epspar)
-      ! SANTOSS copy of Van Rijn (2007)
-      call setpardef(ipardef, rpardef, NPARDEF, -4, 1, gdp%gdmorpar%iopsus)
-      call setpardef(ipardef, rpardef, NPARDEF, -4, 2, gdp%gdmorpar%pangle)
-      call setpardef(ipardef, rpardef, NPARDEF, -4, 3, gdp%gdmorpar%fpco)
-      call setpardef(ipardef, rpardef, NPARDEF, -4, 4, gdp%gdmorpar%subiw)
-      call setpardef(ipardef, rpardef, NPARDEF, -4, 5, gdp%gdmorpar%epspar)
-      !
-      call rdtrafrm(lundia, error, filtrn, lsedtot, &
-                  & ipardef, rpardef, gdp%gdtrapar, &
-                  & gdp%gdmorpar%moroutput%sedpar, &
-                  & gdp%gdsedpar%sedtyp, filsed, gdp%gdsedpar%sedblock, &
-                  & gdp%griddim, gdp%gdinttim%julday, gdp%gdsedpar%max_mud_sedtyp)
+      gdp%gdsedpar%stressStrainRelation = .true.
+   else
+      gdp%gdsedpar%stressStrainRelation = .false.
    end if
-   if (.not. error) then
+   !
+   ! Read data from that file
+   !
+   call rdsed(lundia, error, lsal, ltem, lsed, &
+            & lsedtot, lstsci, ltur, namcon, iopsus, &
+            & gdp%d%nmlb,gdp%d%nmub,gdp%d%kmax,filsed, sed_ptr, &
+            & slu_ptr, gdp%gdsedpar,gdp%gdtrapar, gdp%griddim)
+   end if
+   if (.not.error) then
+   !
+   ! Read name of morphology input file
+   !
+   filmor = ' '
+   call prop_get(gdp%mdfile_ptr, '*', 'Filmor', filmor)
+   !
+   ! Create Morphology branch in input tree
+   !
+   call tree_create_node(gdp%input_tree, 'Morphology Input', mor_ptr )
+   call tree_put_data(mor_ptr, transfer(trim(filmor),node_value), 'STRING' )
+   !
+   ! Read data from that file
+   !
+   call rdmor(lundia, error, filmor, lsec, lsedtot, &
+            & lsed, nmaxus, nto, lfbedfrm, &
+            & nambnd, gdp%gdinttim%julday, mor_ptr, gdp%gdsedpar, &
+              &gdp%gdmorpar, fwfacmor, gdp%gdmorlyr, gdp%griddim, ag)
+   end if
+   if (.not.error) then
+   !
+   ! FWFac is independent of sediment transport. Use the value historically
+   ! specified in mor file only if it hasn't been specified in the mdf file.
+   !
+   string = ' '
+   call prop_get(gdp%mdfile_ptr, '*', 'FWFac', string)
+   if (string == ' ') then
+      gdp%gdnumeco%fwfac = fwfacmor
+   end if
+   !
+   ! Some other parameters are transport formula specific. Use the value
+   ! historically specified in mor file as default.
+   !
+   ipardef = 0
+   rpardef = 0.0_fp
+   ! Van Rijn (1993)
+   call setpardef(ipardef, rpardef, NPARDEF, -1, 1, gdp%gdmorpar%iopsus)
+   call setpardef(ipardef, rpardef, NPARDEF, -1, 2, gdp%gdmorpar%aksfac)
+   call setpardef(ipardef, rpardef, NPARDEF, -1, 3, gdp%gdmorpar%rwave)
+   call setpardef(ipardef, rpardef, NPARDEF, -1, 4, gdp%gdmorpar%rdc)
+   call setpardef(ipardef, rpardef, NPARDEF, -1, 5, gdp%gdmorpar%rdw)
+   call setpardef(ipardef, rpardef, NPARDEF, -1, 6, gdp%gdmorpar%iopkcw)
+   ! for backward compatibility gdp%gdmorpar%epspar should NOT be copied to par 7 of Van Rijn 1993 (-1)
+   ! Van Rijn (2007)
+   call setpardef(ipardef, rpardef, NPARDEF, -2, 1, gdp%gdmorpar%iopsus)
+   call setpardef(ipardef, rpardef, NPARDEF, -2, 2, gdp%gdmorpar%pangle)
+   call setpardef(ipardef, rpardef, NPARDEF, -2, 3, gdp%gdmorpar%fpco)
+   call setpardef(ipardef, rpardef, NPARDEF, -2, 4, gdp%gdmorpar%subiw)
+   call setpardef(ipardef, rpardef, NPARDEF, -2, 5, gdp%gdmorpar%epspar)
+   ! SANTOSS copy of Van Rijn (2007)
+   call setpardef(ipardef, rpardef, NPARDEF, -4, 1, gdp%gdmorpar%iopsus)
+   call setpardef(ipardef, rpardef, NPARDEF, -4, 2, gdp%gdmorpar%pangle)
+   call setpardef(ipardef, rpardef, NPARDEF, -4, 3, gdp%gdmorpar%fpco)
+   call setpardef(ipardef, rpardef, NPARDEF, -4, 4, gdp%gdmorpar%subiw)
+   call setpardef(ipardef, rpardef, NPARDEF, -4, 5, gdp%gdmorpar%epspar)
+   !
+   call rdtrafrm(lundia, error, filtrn, lsedtot, &
+                 & ipardef, rpardef, gdp%gdtrapar, &
+               & gdp%gdmorpar%moroutput%sedpar, &
+               & gdp%gdsedpar%sedtyp, filsed, gdp%gdsedpar%sedblock, &
+               & gdp%griddim, gdp%gdinttim%julday, gdp%gdsedpar%max_mud_sedtyp)
+   end if
+   if (.not.error) then
       !
       ! update tratyp based on the transport formula selected
       ! switch off the bed load component when Partheniades-Krone is used.
@@ -212,12 +246,12 @@ subroutine rdsedmortra(lundia, error, lsal, ltem, lsed, &
       !--------------------------------------------------------------------------
       if (gdp%gdprocs%flmd2l) then
          if (gdp%gdmorpar%bedupd) then
-            call prterr(lundia, 'U190', 'Bed level updating automatically switched off for 2-layer fluid mud computation')
-            gdp%gdmorpar%bedupd = .false.
+             call prterr(lundia, 'U190', 'Bed level updating automatically switched off for 2-layer fluid mud computation')
+             gdp%gdmorpar%bedupd = .false.
          end if
          if (gdp%gdmorpar%cmpupd) then
-            call prterr(lundia, 'U190', 'Bed composition updating automatically switched off for 2-layer fluid mud computation')
-            gdp%gdmorpar%cmpupd = .false.
+             call prterr(lundia, 'U190', 'Bed composition updating automatically switched off for 2-layer fluid mud computation')
+             gdp%gdmorpar%cmpupd = .false.
          end if
       end if
       !--------------------------------------------------------------------------
@@ -225,9 +259,9 @@ subroutine rdsedmortra(lundia, error, lsal, ltem, lsed, &
       ! Echo sediment and transport parameters
       !
       call echosed(lundia, error, lsed, lsedtot, &
-                 & iopsus, gdp%gdsedpar, gdp%gdtrapar, gdp%gdmorpar%cmpupd)
+                 & iopsus, gdp%gdphysco%rhow, gdp%gdphysco%ag, gdp%gdsedpar, gdp%gdtrapar, gdp%gdmorpar%cmpupd)
    end if
-   if (.not. error) then
+   if (.not.error) then
       !
       ! Echo morphology parameters
       !
@@ -236,13 +270,13 @@ subroutine rdsedmortra(lundia, error, lsal, ltem, lsed, &
       call echomor(lundia, error, lsec, lsedtot, nto, &
                  & nambnd, gdp%gdsedpar, gdp%gdmorpar, gdp%gdexttim%tunitstr, cmpupdall, cmpupdany)
    end if
-   if (.not. error) then
+   if (.not.error) then
       !
       ! Read scour and echo parameters
       !
-      call rdscour(lundia, error, nmmax, gdp)
+      call rdscour(lundia, error, nmmax, gdp       )
    end if
-   if (.not. error) then
+   if (.not.error) then
       !
       ! If either Van Rijn 2004 transport formula (iform = -2) or the extended
       ! SANTOSS version (iform = -4) is used, switch on the bed roughness height
