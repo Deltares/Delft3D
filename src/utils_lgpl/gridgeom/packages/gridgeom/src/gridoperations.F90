@@ -170,6 +170,7 @@ contains
 
    subroutine SAVENET()
       use network_data
+      use m_alloc, only: deallocate_if_allocated
       implicit none
       integer :: ierr
       integer :: k, KX, LS, LS0, LX
@@ -211,7 +212,7 @@ contains
 
       ! Only save optional dxe when it is there already
       if (allocated(dxe)) then
-         if (allocated(dxe0)) deallocate (dxe0)
+         call deallocate_if_allocated(dxe0)
          allocate (dxe0(LX), STAT=IERR)
          dxe0(1:LX) = dxe(1:LX)
       end if
@@ -305,7 +306,7 @@ contains
          allocate (RLIN(LMAX), STAT=IERR)
 
          if (also_dxe_) then
-            if (allocated(dxe)) deallocate (dxe)
+            call deallocate_if_allocated(dxe)
             allocate (dxe(LMAX))
             dxe = dmiss
          end if

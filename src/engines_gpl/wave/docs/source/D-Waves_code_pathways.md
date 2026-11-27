@@ -19,17 +19,18 @@ Implementation links on each page connect those responsibilities to code.
 In all three cases, D-Waves manages the SWAN computations and maps fields
 between the hydrodynamic (Delft3D4 or D-Flow FM) and SWAN grids. In standalone
 runs, reading saved hydrodynamic input and writing wave fields
-(`[Output] WriteCOM`) are independent choices. **Online runs (modes 1 and 2)
-always require `WriteCOM = true`:** otherwise D-Waves aborts during input
-checking.
+(`[Output] WriteCOM`) are independent choices. **DelftIO and DIMR online runs
+require `WriteCOM = true`:** otherwise D-Waves aborts during input checking.
+The `--online=precice` selection is present in the branch, but its coupling
+initialization and field exchange are not implemented yet.
 
 \dotfile dwaves_code_pathways.dot "D-Waves code entry points per pathway"
 
 [DOT source](../include/dwaves_code_pathways.dot)
 
 The diagram above is a developer view: it lists the main code entry points of
-each pathway side by side. The preCICE panel at the bottom is reference
-material only; see the preCICE comparison at the end of this page.
+each pathway side by side. Its preCICE panel marks the unfinished implementation
+steps; see the preCICE status and reference comparison at the end of this page.
 
 ## Communication models
 
@@ -56,23 +57,45 @@ parallel computation. Delft3D4 domain partitioning is separate from SWAN's
 OpenMP parallelism. For more on the synchronization and mode-2 water/mud
 exchange, see the [Delft3D4 pathway details](./D-Waves_pathway_delft3d4.md).
 
+## Selecting the connection mode
+
+The internal `wave_flow_mode_type` stores two independent selections:
+`online` (`none`, `delftio`, `dimr` or `precice`) and `com_file` (`none`,
+NEFIS or NetCDF). This replaces the old internal integer `mode` and the
+separate `flowgridfile` field.
+
+The D-Waves executable accepts `--online=<value>`:
+
+| Option | Internal connection | Communication-file type |
+|---|---|---|
+| `--online=none` (default) | Standalone | Selected from the optional MDW com-file |
+| `--online=delftio` | Delft3D4 online through DelftIO | NEFIS |
+| `--online=dimr` | D-Flow FM online through DIMR | NetCDF |
+| `--online=precice` | preCICE selection | None; preCICE coupling is not implemented yet |
+
+The executable still accepts legacy numeric modes for compatibility: `0`
+selects standalone, `1` selects DelftIO/NEFIS, and `2` selects DelftIO/NEFIS
+with the legacy mud connection. The BMI interface also retains its `mode`
+variable. DIMR's `"online with DflowFM"` value maps to `dimr`/NetCDF, while
+`"stand-alone"` maps to standalone. These BMI values are not the executable's
+numeric modes.
+
 ### D-Flow FM online through DIMR/BMI
 
 DIMR controls the component lifecycle and the update schedule. In the usual
 configuration, it initializes D-Flow FM before D-Waves and calls the components
 according to the configured schedule. Before initializing D-Waves, DIMR sets
-D-Waves' mode through the BMI `mode` variable. The value depends on where
-D-Waves appears in the `<control>` section of `dimr_config.xml`:
+the BMI `mode` variable. D-Waves translates the online value to the internal
+`dimr` connection and NetCDF com-file type. The value depends on where D-Waves
+appears in the `<control>` section of `dimr_config.xml`:
 
 - D-Waves is a `<start>` inside a `<startGroup>` within a `<parallel>` block,
   with D-Flow FM as the `<parallel>` block's own `<start>` (as in the
   [example configuration](../../../../../examples/dflowfm/08_dflowfm_sequential_dwaves/dimr_config.xml)):
-  DIMR sets mode 1 (online).
+  DIMR sets the BMI mode to `"online with DflowFM"`.
 - D-Waves is a plain `<start>` directly under `<control>`, as the first block
   and outside any `<parallel>` block, so that DIMR drives D-Waves on its own:
-  DIMR sets mode 0 (standalone, no D-Flow FM coupling).
-
-A non-blank MDW `[General] FlowFile` forces mode 1 regardless of what DIMR sets.
+  DIMR sets the BMI mode to `"stand-alone"` (no D-Flow FM coupling).
 
 In the coupled layout, D-Flow FM and D-Waves exchange fields through NetCDF
 communication files. BMI controls component execution but does not transfer
@@ -110,33 +133,39 @@ live coupling. See the
 
 | Setting | Role |
 |---|---|
-| D-Waves mode 0 / 1 / 2 | Standalone / online / classic Delft3D4 water-plus-mud extension. The caller supplies the initial mode (the executable's second argument, default 0; DIMR through the BMI `mode` variable). A non-blank `[General] FlowFile` then forces mode 1, and a non-blank `FlowMudFile` mode 2. Both online engines normally use mode 1. |
-| `[General] FlowFile` | MDW switch for online mode (mode 1). Only whether it is non-blank matters; the value is never used as a file path. It does not select the D-Flow FM NetCDF route. `FlowMudFile` adds mode 2 within the same parser branch. |
-| `[General] ComFile` | Existing Delft3D4 offline runid selection (manual A.1.2). Legacy; read only when `FlowFile` is blank. |
-| `[Output] COMFile` | D-Flow FM NetCDF communication-file path (must end in `com.nc`); selects the D-Flow FM file route, including offline use. The old `FlowGridForCom` keyword is no longer supported and aborts the run. |
+| `--online=<value>` | Selects standalone (`none`, the default), DelftIO/NEFIS (`delftio`), DIMR/NetCDF (`dimr`), or the reserved preCICE mode (`precice`). preCICE lifecycle and field exchange are not implemented yet. |
+| Legacy numeric mode / BMI `mode` | Compatibility inputs at the executable and BMI boundaries. They are translated to the internal `wave_flow_mode_type`; do not use the legacy integer to describe the internal connection model. |
+| `wave_flow_mode_type` | Internal pair of `online` and `com_file` selections. Online selections determine the expected communication-file type; standalone file type is determined from the optional com-file configuration. |
+| `[General] FlowFile` | Removed as a mode selector. Use `--online` for executable runs; DIMR supplies the online selection through the BMI interface. |
+| `[General] ComFile` | Existing Delft3D4 offline runid selection (manual A.1.2). |
+| `[General] FlowMudFile` | Deprecated Delft3D4 water/mud coupling input. The mode remains supported for compatibility; it is not supported with DIMR or preCICE. |
+| `[Output] COMFile` | D-Flow FM NetCDF communication-file path, typically ending in `com.nc`; used for the D-Flow FM file route, including offline use. |
 | Hydrodynamic input selections (`FlowBedLevel`, `FlowWaterLevel`, `FlowVelocity`, ...) | Select which Delft3D4 or D-Flow FM fields D-Waves reads. |
-| `[Output] WriteCOM` | Writes wave fields to the communication file(s). Optional in standalone runs; mandatory in modes 1 and 2. |
+| `[Output] WriteCOM` | Writes wave fields to the communication file(s). Optional in standalone runs; mandatory for DelftIO and DIMR online runs. |
 
-MDW keywords such as `FlowFile` keep a historical "Flow" prefix and apply to
-both Delft3D4 and D-Flow FM; they do not by themselves identify the engine.
-
-Mode alone does not identify the engine. A blank or non-blank
-`[Output] COMFile` selects classic DelftIO/NEFIS versus D-Flow FM NetCDF
-handling. **Preserve the mode-2 water/mud dependencies for Delft3D4**;
-D-Flow FM/BMI does not implement that path.
+The online selection identifies the connection type; the communication-file
+type identifies the file format used for field exchange. Preserve the legacy
+`FlowMudFile` water/mud behavior for Delft3D4; D-Flow FM/BMI does not implement
+that path.
 
 Configuration reference: [D-Waves User Manual](https://content.oss.deltares.nl/dhydro/D-Waves_User_Manual.pdf),
 version 2027.01, revision 81378 (28 October 2026, DRAFT), Sections 3.3.1, 5.4.1.1–5.4.1.2 and 5.4.9
-(GUI), Appendices A.1.1 (MDW keywords, including `FlowFile`, `FlowMudFile` and
-`WriteCOM`) and A.1.2 (Delft3D4 offline workflow). Source links on the scenario pages establish
-the implementation behavior.
+(GUI), Appendices A.1.1 (MDW keywords, including `FlowMudFile` and
+`WriteCOM`) and A.1.2 (Delft3D4 offline workflow). The manual predates this
+branch's `--online` option and removal of `FlowFile`; source links on the
+scenario pages establish the branch behavior.
 
-## Reference comparison: UNST-9075 preCICE proof of concept
+## preCICE status and reference comparison
 
-The proof-of-concept branch is used here only as a reference for comparison.
-Its D-Waves changes are not in the current checkout or main branch and must
-not be read as a supported current D-Waves pathway. The reference branch adds
-preCICE-specific hooks in its D-Waves manager:
+This branch adds `--online=precice` and the corresponding internal mode, but
+the D-Waves initialization and field-exchange path is still marked TODO. The
+option must not be interpreted as a working preCICE coupling.
+
+The UNST-9075 proof-of-concept branch remains useful only as a comparison for
+the missing implementation. Its D-Waves changes are not the implementation in
+this branch:
+
+The reference branch adds preCICE-specific hooks in its D-Waves manager:
 
 - Its [`wave_main.F90`](https://github.com/Deltares/Delft3D/blob/all/poc/UNST-9075_preCICE_Proof_of_Concept/src/engines_gpl/wave/packages/manager/src/wave_main.F90)
   adds preCICE lifecycle entry points, including `initialize_fm_coupling`,
@@ -151,13 +180,9 @@ preCICE-specific hooks in its D-Waves manager:
   protocol is distinct from the current DelftIO handshake and from DIMR's
   current BMI lifecycle.
 
-The comparison also shows that the D-Waves BMI wrapper and executable source
-are not themselves the preCICE adapter: the GitHub blobs for
-`wave_bmi.f90` and `wave_exe.f90` have the same IDs on the current branch and
-the proof-of-concept branch, while the proof-of-concept changes the manager
-and SWAN orchestration path. In the current checkout,
+Unlike the proof of concept, this branch does not yet have preCICE state,
+lifecycle calls, or field exchange in
 [wave_main.f90](../../packages/manager/src/wave_main.f90) and
-[swan_tot.f90](../../packages/manager/src/swan_tot.f90) have no preCICE state
-or lifecycle calls. Treat the proof-of-concept as comparison material only,
-not as a current implementation or evidence that D-Flow FM/BMI coupling uses
-preCICE.
+[swan_tot.f90](../../packages/manager/src/swan_tot.f90). Treat the reference as
+comparison material only, not as evidence that the branch has a working
+preCICE pathway or that D-Flow FM/BMI coupling uses preCICE.

@@ -200,7 +200,7 @@ contains
          do LF = lnx1D + 1, lnx
             if (ifrcutp(LF) /= uniform_friction_type) then
                error = .true.
-               write (msgbuf, '(a,i0,a,i0,a,i0,a)') 'Local roughness type (', ifrcutp(LF), ') must match the global uniformFrictionType (', uniform_friction_type, ') when used in combination with Trachytopes. (Flow link=', LF, ').'
+               write (msgbuf, '(a,i0,a,i0,a,i0,a)') 'Local roughness type (', ifrcutp(LF), ') must match the global unifFrictType (', uniform_friction_type, ') when used in combination with Trachytopes. (Flow link=', LF, ').'
                call err_flush()
             end if
          end do
