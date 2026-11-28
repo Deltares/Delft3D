@@ -2,27 +2,23 @@ if(TARGET GDAL::GDAL)
     set(geotiff_test_source src/test_bilinear_geotiff.f90)
 endif()
 
-if(WIN32)
-    set(conan_run_script "${CMAKE_BINARY_DIR}/conan/generators/conanrun.bat")
-    set(conan_test_script "${CMAKE_CURRENT_BINARY_DIR}/conan_test_launcher.bat")
-    file(CONFIGURE OUTPUT "${conan_test_script}" CONTENT [=[
-@echo off
-call "@conan_run_script@"
-if not "%errorlevel%"=="0" exit /b %errorlevel%
-%*
-exit /b %errorlevel%
-]=] @ONLY NEWLINE_STYLE CRLF)
-    set(CMAKE_TEST_LAUNCHER "${conan_test_script}" ${CMAKE_TEST_LAUNCHER})
-elseif(UNIX)
-    set(conan_run_script "${CMAKE_BINARY_DIR}/conan/generators/conanrun.sh")
-    set(conan_test_script "${CMAKE_CURRENT_BINARY_DIR}/conan_test_launcher.sh")
-    file(CONFIGURE OUTPUT "${conan_test_script}" CONTENT [=[
-set -eo pipefail
-source "@conan_run_script@"
-exec "$@"
-]=] @ONLY NEWLINE_STYLE LF)
-    set(CMAKE_TEST_LAUNCHER "${conan_test_script}" ${CMAKE_TEST_LAUNCHER})
-endif()
+# Some variable names have either _DEBUG, _RELWITHDEBINFO or _RELEASE as their suffix,
+# depending on the build type, which on Windows is unknown at configuration time.
+# This function stores a generator expression in the result variable that always
+# evaluates the variable that matches the build type.
+function(config_type_suffix_generator variable_prefix result_variable)
+    string(CONCAT value
+        "$<$<CONFIG:Debug>:${${variable_prefix}_DEBUG}>"
+        "$<$<CONFIG:RelWithDebInfo>:${${variable_prefix}_RELWITHDEBINFO}>"
+        "$<$<CONFIG:Release>:${${variable_prefix}_RELEASE}>"
+    )
+    set(${result_variable} "${value}" PARENT_SCOPE)
+endfunction()
+
+# Retrieve generator expressions for the bin dir of `ncgen` and it's required libraries.
+config_type_suffix_generator(netcdf_BIN_DIRS ncgen_bin_dir)
+config_type_suffix_generator(netcdf_LIB_DIRS netcdf_lib_dir)
+config_type_suffix_generator(hdf5_LIB_DIRS hdf5_lib_dir)
 
 set_source_files_properties(src/test_dflowfm_version.F90 PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 add_fortran_gtest(test_dflowfm_kernel_gtest
@@ -76,6 +72,10 @@ add_fortran_gtest(test_dflowfm_kernel_gtest
         src/test_temporal_statistics.f90
     LIBRARIES dflowfm_kernel test_helpers netCDF::netcdff
     VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
+    PROPERTIES  # Some tests invoke `ncgen`. Make sure it's on the PATH, and it can find it's linked libraries.
+        ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${ncgen_bin_dir}"
+        ENVIRONMENT_MODIFICATION "LD_LIBRARY_PATH=path_list_prepend:${netcdf_lib_dir}"
+        ENVIRONMENT_MODIFICATION "LD_LIBRARY_PATH=path_list_prepend:${hdf5_lib_dir}"
 )
 add_subdirectory(helpers)
 
