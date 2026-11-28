@@ -7,7 +7,8 @@ module test_init_spatial_fields_integration
    use m_wind, only: air_pressure, rain
    use m_cell_geometry, only: xz, yz, ndx
    use m_flowgeom, only: kcs, ndxi
-   use m_file_helpers, only: create_file, create_netcdf_from_cdl
+   use m_file_helpers, only: create_file
+   use m_netcdf_helpers, only: create_netcdf_from_cdl
    use precision_basics, only: dp
    use messagehandling, only: LEVEL_FATAL
    use tree_data_types, only: tree_data

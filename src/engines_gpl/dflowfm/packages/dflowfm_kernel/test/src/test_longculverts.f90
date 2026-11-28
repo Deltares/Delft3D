@@ -4,7 +4,8 @@ module test_longculverts
    use m_longculverts, only: convert1D2DLongCulverts, default_longculverts
    use m_network_helpers, only: t_grid_helper
    use iso_c_utils, only: cstr
-   use m_file_helpers, only: create_file, create_netcdf_from_cdl
+   use m_file_helpers, only: create_file
+   use m_netcdf_helpers, only: create_netcdf_from_cdl
    use precision, only: dp
 
    implicit none(type, external)
