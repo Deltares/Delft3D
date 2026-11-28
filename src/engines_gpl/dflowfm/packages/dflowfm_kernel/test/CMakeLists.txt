@@ -2,23 +2,23 @@ if(TARGET GDAL::GDAL)
     set(geotiff_test_source src/test_bilinear_geotiff.f90)
 endif()
 
-# Some variable names have either _DEBUG, _RELWITHDEBINFO or _RELEASE as their suffix,
-# depending on the build type, which on Windows is unknown at configuration time.
-# This function stores a generator expression in the result variable that always
-# evaluates the variable that matches the build type.
-function(config_type_suffix_generator variable_prefix result_variable)
-    string(CONCAT value
+# Some variable names have either _DEBUG, _RELWITHDEBINFO or _RELEASE as their suffix
+# depending on the build type (Which on Windows is unknown at configuration time).
+# This function returns a generator expression that evaluates the variable with
+# the matching build type suffix in it's name.
+function(build_type_suffix_generator variable_prefix result_generator)
+    string(CONCAT generator
         "$<$<CONFIG:Debug>:${${variable_prefix}_DEBUG}>"
         "$<$<CONFIG:RelWithDebInfo>:${${variable_prefix}_RELWITHDEBINFO}>"
         "$<$<CONFIG:Release>:${${variable_prefix}_RELEASE}>"
     )
-    set(${result_variable} "${value}" PARENT_SCOPE)
+    set(${result_generator} "${generator}" PARENT_SCOPE)
 endfunction()
 
 # Retrieve generator expressions for the bin dir of `ncgen` and it's required libraries.
-config_type_suffix_generator(netcdf_BIN_DIRS ncgen_bin_dir)
-config_type_suffix_generator(netcdf_LIB_DIRS netcdf_lib_dir)
-config_type_suffix_generator(hdf5_LIB_DIRS hdf5_lib_dir)
+build_type_suffix_generator(netcdf_BIN_DIRS ncgen_bin_dir)
+build_type_suffix_generator(netcdf_LIB_DIRS netcdf_lib_dir)
+build_type_suffix_generator(hdf5_LIB_DIRS hdf5_lib_dir)
 
 set_source_files_properties(src/test_dflowfm_version.F90 PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 add_fortran_gtest(test_dflowfm_kernel_gtest
