@@ -198,10 +198,6 @@ if(NOT WITH_INTERACTER)
         add_subdirectory(${checkout_src_root}/${ftnunit_module} ftnunit)
     endif()
 
-    if(NOT TARGET test_dflowfm_kernel)
-        add_subdirectory(${checkout_src_root}/${test_dflowfm_kernel} test_dflowfm_kernel)
-    endif()
-
     if(NOT TARGET test_deltares_common)
         add_subdirectory(${checkout_src_root}/${test_deltares_common_module} test_deltares_common)
     endif()

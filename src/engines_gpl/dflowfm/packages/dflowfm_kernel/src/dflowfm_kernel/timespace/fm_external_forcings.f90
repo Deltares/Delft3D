@@ -38,8 +38,8 @@ module fm_external_forcings
    use fm_external_forcings_init, only: init_new, init_spatial_fields, sourcesink_parse_coordinates, adduniformtimerelation_objects
    use fm_external_forcings_init_old, only: init_old
    use fm_external_forcings_update, only: compute_air_water_interaction_most_fluxes, &
-      prepare_air_pressure_temperature_dew_point_temperature, set_external_forcings, prepare_wind, calculate_wind_stresses, &
-      update_sea_surface_temperature
+                                          prepare_air_pressure_temperature_dew_point_temperature, set_external_forcings, prepare_wind, calculate_wind_stresses, &
+                                          update_sea_surface_temperature
    use fm_external_forcings_update_boundaries, only: set_external_forcings_boundaries, addtimespacerelation_boundaries
    use m_waveconst
 
@@ -1234,14 +1234,14 @@ contains
          iresult = DFM_WRONGINPUT
       end if
    end subroutine validate_heat_flux_input_providers
-   
+
    !> Validate required MOST providers and initialize default pressure when no pressure provider is supplied.
    subroutine validate_most_input_providers(iresult)
       use m_meteo, only: item_windx, item_windy, item_windxy_x, item_windxy_y, &
-                        item_apwxwy_x, item_apwxwy_y, item_apwxwy_p, item_apwxwy_c, item_airpressure, item_charnock, &
-                        item_hac_air_temperature, item_hacs_air_temperature, item_dac_air_temperature, &
-                        item_dacs_air_temperature, item_air_temperature, item_dac_dew_point_temperature, &
-                        item_dacs_dew_point_temperature, item_dew_point_temperature
+                         item_apwxwy_x, item_apwxwy_y, item_apwxwy_p, item_apwxwy_c, item_airpressure, item_charnock, &
+                         item_hac_air_temperature, item_hacs_air_temperature, item_dac_air_temperature, &
+                         item_dacs_air_temperature, item_air_temperature, item_dac_dew_point_temperature, &
+                         item_dacs_dew_point_temperature, item_dew_point_temperature
       use m_ec_parameters, only: ec_undef_int
       use m_wind, only: PavBnd, wcharnock, jawindstressgiven, air_pressure
       use m_alloc, only: realloc
@@ -1257,9 +1257,9 @@ contains
 
       iresult = DFM_NOERR
       wind_x_available = any([item_windx, item_windxy_x] /= ec_undef_int) .or. &
-                (item_apwxwy_x /= ec_undef_int .and. jawindstressgiven == 0)
+                         (item_apwxwy_x /= ec_undef_int .and. jawindstressgiven == 0)
       wind_y_available = any([item_windy, item_windxy_y] /= ec_undef_int) .or. &
-                (item_apwxwy_y /= ec_undef_int .and. jawindstressgiven == 0)
+                         (item_apwxwy_y /= ec_undef_int .and. jawindstressgiven == 0)
       if (.not. (wind_x_available .and. wind_y_available)) then
          call mess(LEVEL_ERROR, 'AirSeaInteractionModel = MOST requires wind velocity forcing for both components. Please check ext file.')
          iresult = DFM_WRONGINPUT
@@ -1283,14 +1283,14 @@ contains
             default_pressure = PavBnd
          end if
          call realloc(air_pressure, ndx, fill=default_pressure, keepExisting=.false.)
-         write (message, '(a,es12.5,a)') 'AirSeaInteractionModel = MOST: no variable air pressure forcing specified in ext file; ' // &
-             'simulation continues with constant air pressure = ', &
+         write (message, '(a,es12.5,a)') 'AirSeaInteractionModel = MOST: no variable air pressure forcing specified in ext file; '// &
+            'simulation continues with constant air pressure = ', &
             default_pressure, ' Pa.'
          call mess(LEVEL_INFO, trim(message))
       end if
       if (all([item_apwxwy_c, item_charnock] == ec_undef_int)) then
-         write (message, '(a,es12.5,a)') 'AirSeaInteractionModel = MOST: no variable Charnock specified in ext file; ' // &
-             'simulation continues with constant Charnock coefficient = ', &
+         write (message, '(a,es12.5,a)') 'AirSeaInteractionModel = MOST: no variable Charnock specified in ext file; '// &
+            'simulation continues with constant Charnock coefficient = ', &
             wcharnock%scalar, ' [-].'
          call mess(LEVEL_INFO, trim(message))
       end if
@@ -1375,27 +1375,7 @@ contains
       if (allocated(air_pressure)) then
          deallocate (air_pressure)
       end if
-      if (allocated(kbndz)) then
-         deallocate (kbndz)
-      end if
-      if (allocated(xbndz)) then
-         deallocate (xbndz)
-      end if
-      if (allocated(ybndz)) then
-         deallocate (ybndz)
-      end if
-      if (allocated(xy2bndz)) then
-         deallocate (xy2bndz)
-      end if
-      if (allocated(zbndz)) then
-         deallocate (zbndz)
-      end if
-      if (allocated(zbndz0)) then
-         deallocate (zbndz0)
-      end if
-      if (allocated(zkbndz)) then
-         deallocate (zkbndz)
-      end if
+      call deallocate_water_level_boundary_data()
       id_first_wind = huge(id_first_wind)
       id_last_wind = -huge(id_last_wind)
 
@@ -1405,9 +1385,6 @@ contains
          allocate (xbndz(nbndz), ybndz(nbndz), xy2bndz(2, nbndz), zbndz(nbndz), kbndz(N4, nbndz), zbndz0(nbndz), kdz(nbndz), stat=ierr)
          call aerr('xbndz(nbndz), ybndz(nbndz), xy2bndz(2,nbndz), zbndz(nbndz), kbndz(N4,nbndz), zbndz0(nbndz), kdz(nbndz)', ierr, nbndz * 10)
          if (jased > 0 .and. jaceneqtr == 2 .and. .not. stm_included) then
-            if (allocated(zkbndz)) then
-               deallocate (zkbndz, kbanz)
-            end if
             allocate (zkbndz(2, nbndz), stat=ierr)
             call aerr('zkbndz(2,nbndz)', ierr, 2 * nbndz)
             allocate (kbanz(2, nbndz), stat=ierr)

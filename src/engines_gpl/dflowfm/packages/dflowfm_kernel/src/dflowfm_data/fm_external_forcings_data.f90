@@ -391,7 +391,7 @@ module fm_external_forcings_data
       integer, dimension(:), allocatable :: source_sink_indices !< Numbers of the sources/sinks in the bubble screen. {size=num_flowcells}
       real(kind=dp) :: z_level !< [m] z-level of the bubble screen air discharge
       real(kind=dp) :: total_area !< [m2] Total area of the bubble screen
-      character(len=:), allocatable  :: discharge_input !< filename or value for the bubble screen air discharge
+      character(len=:), allocatable :: discharge_input !< filename or value for the bubble screen air discharge
       logical, dimension(:), allocatable :: is_active !< True if computation is currently possible (min 3 layers above z-level). {size=num_flowcells}
    end type t_Bubblescreen
 
@@ -414,6 +414,37 @@ contains
       call default_fm_external_forcing_data()
    end subroutine reset_flowexternalforcings
 
+   !> Release water-level boundary storage, also after partial initialization.
+   subroutine deallocate_water_level_boundary_data()
+      if (allocated(kbndz)) then
+         deallocate (kbndz)
+      end if
+      if (allocated(xbndz)) then
+         deallocate (xbndz)
+      end if
+      if (allocated(ybndz)) then
+         deallocate (ybndz)
+      end if
+      if (allocated(xy2bndz)) then
+         deallocate (xy2bndz)
+      end if
+      if (allocated(zbndz)) then
+         deallocate (zbndz)
+      end if
+      if (allocated(zbndz0)) then
+         deallocate (zbndz0)
+      end if
+      if (allocated(kdz)) then
+         deallocate (kdz)
+      end if
+      if (allocated(zkbndz)) then
+         deallocate (zkbndz)
+      end if
+      if (allocated(kbanz)) then
+         deallocate (kbanz)
+      end if
+   end subroutine deallocate_water_level_boundary_data
+
 !> Resets external forcing variables intended for a restart of flow simulation.
 !! For external forcings it is equivalent with reset_flowexternalforcings().
    subroutine default_fm_external_forcing_data()
@@ -422,6 +453,7 @@ contains
       use m_dambreak_breach, only: reset_dambreak_counters
       use timespace_parameters, only: OPERAND_UNKNOWN
 
+      call deallocate_water_level_boundary_data()
       jatimespace = 0 ! doen ja/nee 1/0
       mhis = 0 ! unit nr external forcings history *.exthis
       operand = OPERAND_UNKNOWN

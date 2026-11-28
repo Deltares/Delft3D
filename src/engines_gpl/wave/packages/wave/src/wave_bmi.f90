@@ -64,6 +64,7 @@ integer(c_int) function initialize(c_mdw_file) result(c_iresult) bind(C, name="i
   !DEC$ ATTRIBUTES DLLEXPORT :: initialize
   use iso_c_binding, only: c_char
   use wave_main, only: wave_main_init
+  use wave_data, only: ONLINE_NONE, ONLINE_DIMR, stand_alone, flow_online, COM_NETCDF, COM_NONE
   !
   ! Global
   character(kind=c_char),intent(in)    :: c_mdw_file(MAXSTRLEN)
@@ -71,10 +72,23 @@ integer(c_int) function initialize(c_mdw_file) result(c_iresult) bind(C, name="i
   ! Local
   character(len=strlen(c_mdw_file)) :: mdw_file
   integer                           :: retval
+  integer                           :: online_in
+  integer                           :: com_file_in
   !
   ! Body
+  select case (wave_mode)
+  case (stand_alone)
+      online_in = ONLINE_NONE
+      com_file_in = COM_NONE
+  case (flow_online)
+      online_in = ONLINE_DIMR
+      com_file_in = COM_NETCDF
+  case default
+      write(*,*) "ERROR: D-Waves BMI_initialize: wave_mode has not been set"
+      call wavestop(1, "ERROR: D-Waves BMI_initialize: wave_mode has not been set")
+  end select
   mdw_file   = char_array_to_string(c_mdw_file, strlen(c_mdw_file))
-  retval     = wave_main_init(wave_mode, mdw_file)
+  retval     = wave_main_init(wave_mode, online_in, com_file_in, mdw_file)
   c_iresult  = retval
 end function initialize
 !
@@ -351,41 +365,6 @@ subroutine set_var(c_key, c_value) bind(C, name="set_var")
   end select
 end subroutine set_var
 !
-!
-!
-!!!===============================================================================
-!!subroutine set_var(c_var_name, xptr) bind(C, name="set_var")
-!!  !DEC$ ATTRIBUTES DLLEXPORT :: set_var
-!!  ! Return a pointer to the variable
-!!  use iso_c_binding, only: c_double, c_char, c_loc, c_f_pointer
-!!  !
-!!  ! Global
-!!  character(kind=c_char), intent(in) :: c_var_name(*)
-!!  type(c_ptr), value, intent(in) :: xptr
-!!  !
-!!  ! Local
-!!  character(kind=c_char), pointer   :: x_char_ptr(:)
-!!  character(len=strlen(c_var_name)) :: var_name ! The fortran name of the attribute name
-!!  character(len=MAXSTRLEN)          :: var_value
-!!  !
-!!  ! Body
-!!  var_name = char_array_to_string(c_var_name, strlen(c_var_name))
-!!  if (var_name /= "mode") then
-!!      write(*,'(2a)') "ERROR:BMI_set_var: unrecognized var_name:", trim(var_name)
-!!      call wavestop(1, "ERROR:BMI_set_var: unrecognized var_name:"//trim(var_name))
-!!  endif
-!!  call c_f_pointer(xptr, x_char_ptr, [MAXSTRLEN]) 
-!!  var_value = char_array_to_string(x_char_ptr, MAXSTRLEN)
-!!  select case(var_value)
-!!  case("stand-alone")
-!!      wave_mode = 0
-!!  case("online with DflowFM", "online with Delft3D-FLOW")
-!!      wave_mode = 1
-!!  case default
-!!      write(*,'(2a)') "ERROR:BMI_set_var: unrecognized value:", trim(var_value)
-!!  end select
-!!end subroutine set_var
-!!!
 !
 !
 !===============================================================================

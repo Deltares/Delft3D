@@ -1,4 +1,5 @@
 module test_longculverts
+   use m_message_helpers, only: t_abort_threshold_guard
    use assertions_gtest
    use m_longculverts, only: convert1D2DLongCulverts, default_longculverts
    use m_network_helpers, only: t_grid_helper
@@ -423,7 +424,6 @@ contains
       use m_flow, only: s1, q1
       use m_longculverts_data, only: nlongculverts, longculverts
       use dfm_error, only: DFM_NOERR
-      use unstruc_messages, only: threshold_abort
       use messagehandling, only: LEVEL_FATAL
       use m_inidat, only: inidat
       use Timers, only: timini, timon
@@ -434,6 +434,7 @@ contains
       use m_flow_spatietimestep, only: flow_spatietimestep
       use precision, only: dp
 
+      type(t_abort_threshold_guard) :: abort_threshold
       integer :: ierr, iresult, i
 
       character(len=*), parameter :: NET_FILE = "test_lc_net.nc"
@@ -453,8 +454,7 @@ contains
       call create_longculvert_structure_file(TEST_STR_FILE, LC2_X(:, :1), LC2_Y(:, :1), LC2_Z(:, :1))
       call create_mdu_file(TEST_MDU_FILE, NET_FILE, TEST_STR_FILE)
       md_ident = TEST_MDU_FILE
-      threshold_abort = LEVEL_FATAL
-
+      call abort_threshold%set(LEVEL_FATAL)
       call resetFullFlowModel()
       call inidat()
       call timini()
@@ -507,7 +507,6 @@ contains
       use m_flow_modelinit, only: flow_modelinit
       use unstruc_model, only: loadModel, md_ident
       use dfm_error, only: DFM_NOERR
-      use unstruc_messages, only: threshold_abort
       use messagehandling, only: LEVEL_FATAL
       use m_inidat, only: inidat
       use Timers, only: timini, timon
@@ -515,6 +514,7 @@ contains
       use MessageHandling, only: SetMessageHandling
       use m_resetfullflowmodel, only: resetfullflowmodel
       use netcdf, only: nf90_noerr
+      type(t_abort_threshold_guard) :: abort_threshold
       integer, intent(out) :: iresult
 
       character(len=*), parameter :: NET_FILE = "test_lc_net.nc"
@@ -531,8 +531,7 @@ contains
       call create_longculvert_structure_file(TEST_STR_FILE, LC2_X(:, :1), LC2_Y(:, :1), LC2_Z(:, :1))
       call create_mdu_file(TEST_MDU_FILE, NET_FILE, TEST_STR_FILE)
       md_ident = TEST_MDU_FILE
-      threshold_abort = LEVEL_FATAL
-
+      call abort_threshold%set(LEVEL_FATAL)
       call resetFullFlowModel()
       call inidat()
       call timini()
@@ -828,8 +827,9 @@ contains
       integer :: flow_links(2)
       character(len=*), parameter :: STR_FILE = "test_lc_flowdir_str.ini"
       character(len=*), parameter :: NET_FILE = "test_lc_flowdir_net.nc"
-      character(len=256) :: mdu_file = "test_lc_flowdir.mdu"
+      character(len=256) :: mdu_file
 
+      mdu_file = "test_lc_flowdir.mdu"
       call create_longculvert_structure_file(STR_FILE, &
                                              reshape([50.0_dp, 350.0_dp, 350.0_dp, 50.0_dp, &
                                                       50.0_dp, 350.0_dp], [2, 3]), &
@@ -1039,7 +1039,6 @@ contains
       use m_flow, only: s1
       use m_cell_geometry, only: xz
       use dfm_error, only: DFM_NOERR
-      use unstruc_messages, only: threshold_abort
       use messagehandling, only: LEVEL_FATAL, SetMessageHandling
       use m_inidat, only: inidat
       use Timers, only: timini, timon
@@ -1047,6 +1046,7 @@ contains
       use m_resetfullflowmodel, only: resetfullflowmodel
       use precision, only: dp
 
+      type(t_abort_threshold_guard) :: abort_threshold
       character(len=*), intent(in) :: mdu_file
       integer, intent(out) :: iresult
 
@@ -1054,7 +1054,7 @@ contains
       integer :: ierr, i
 
       md_ident = mdu_file
-      threshold_abort = LEVEL_FATAL
+      call abort_threshold%set(LEVEL_FATAL)
       call resetFullFlowModel()
       call inidat()
       call timini()
@@ -1170,9 +1170,10 @@ contains
       integer :: iresult, i
       real(kind=dp) :: q_low_friction, q_high_friction
       character(len=*), parameter :: STR_FILE = "test_lc2pt_fric_str.ini"
-      character(len=256) :: MDU_FILE = "test_lc2pt_fric_converted.mdu"
+      character(len=256) :: MDU_FILE
       character(len=*), parameter :: NET_FILE = "test_lc_convert_2pt_net.nc"
 
+      MDU_FILE = "test_lc2pt_fric_converted.mdu"
       call create_longculvert_structure_file(STR_FILE, LC2_X, LC2_Y, LC2_Z, friction_values=[0.01_dp, 0.05_dp])
 
       call create_two_row_netfile(NET_FILE)
@@ -1215,9 +1216,10 @@ contains
       integer :: iresult, i
       real(kind=dp) :: q_low_friction, q_high_friction
       character(len=*), parameter :: STR_FILE = "test_lc2pt_default_friction_str.ini"
-      character(len=256) :: MDU_FILE = "test_lc2pt_default_friction_converted.mdu"
+      character(len=256) :: MDU_FILE
       character(len=*), parameter :: NET_FILE = "test_lc_convert_2pt_net.nc"
 
+      MDU_FILE = "test_lc2pt_default_friction_converted.mdu"
       call create_file(STR_FILE, [character(len=64) :: &
                                   "[General]", &
                                   "    fileVersion     = 3.00", &
@@ -1515,9 +1517,10 @@ contains
       integer :: iresult, i
       real(kind=dp) :: q_low_friction, q_high_friction
       character(len=*), parameter :: STR_FILE = "test_lc3pt_fric_str.ini"
-      character(len=256) :: MDU_FILE = "test_lc3pt_fric.mdu"
+      character(len=256) :: MDU_FILE
       character(len=*), parameter :: NET_FILE = "test_lc_convert_3pt_net.nc"
 
+      MDU_FILE = "test_lc3pt_fric.mdu"
       call create_longculvert_structure_file(STR_FILE, LC3_X, LC3_Y, LC3_Z, friction_values=[0.01_dp, 0.05_dp])
 
       call create_two_row_netfile(NET_FILE)
@@ -1723,8 +1726,9 @@ contains
       integer :: iresult, i, L1, L2, L3
       character(len=*), parameter :: NET_FILE = "test_lc_convert_4pt_net.nc"
       character(len=*), parameter :: STR_FILE = "test_lc_convert_4pt_str.ini"
-      character(len=256) :: mdu_file = "test_lc_convert_4pt.mdu"
+      character(len=256) :: mdu_file
 
+      mdu_file = "test_lc_convert_4pt.mdu"
       call create_longculvert_structure_file(STR_FILE, LC4_X, LC4_Y, LC4_Z)
       call create_two_row_netfile(NET_FILE)
       call create_mdu_file(mdu_file, NET_FILE, STR_FILE)
@@ -1769,7 +1773,6 @@ contains
       use m_flowgeom, only: ndx, ndx2d, bl
       use m_cell_geometry, only: xz
       use dfm_error, only: DFM_NOERR
-      use unstruc_messages, only: threshold_abort
       use messagehandling, only: LEVEL_FATAL, SetMessageHandling
       use m_inidat, only: inidat
       use Timers, only: timini, timon
@@ -2157,7 +2160,7 @@ contains
       character(len=256) :: mdufile_local, netfile_local
       type(t_filenames) :: filenames
       integer :: ierr, iunit
-      logical :: file_exists
+      logical :: file_exists, converted_file_open
 
       ! Delete leftover converted_crsdef.ini from previous test runs
       inquire (file='converted_crsdef.ini', exist=file_exists, number=iunit)
@@ -2182,6 +2185,8 @@ contains
       md_japartition = 1 !> to make long culvert initialisation write the converted files
       jaSkipCmdLineArgs = 0
       call INIDAT()
+      inquire (file="converted_"//trim(structurefile), opened=converted_file_open)
+      call f90_expect_true(.not. converted_file_open, "Converted structures file should be closed")
       ! Write the updated net file (now includes culvert netlinks)
       netfile_local = "converted_"//trim(netfile)
       call findcells(0)

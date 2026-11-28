@@ -3,8 +3,8 @@ module test_sources_sinks
    use fm_external_forcings, only: sourcesink_parse_coordinates
    use tree_structures, only: tree_data, tree_create, tree_create_node, tree_destroy
    use properties, only: prop_set
-   use MessageHandling, only: getLastMessage, LEVEL_ERROR, resetMessageCount_MH, LEVEL_FATAL, SetMessageHandling, LEVEL_ALL
-   use unstruc_messages, only: threshold_abort
+   use MessageHandling, only: getLastMessage, LEVEL_ERROR, LEVEL_FATAL, SetMessageHandling, LEVEL_ALL
+   use m_message_helpers, only: t_abort_threshold_guard
    use precision_basics, only: dp
    use m_missing, only: dmiss
    use m_file_helpers, only: create_file
@@ -34,20 +34,25 @@ contains
       integer :: error_level
       character(len=256) :: error_message
 
-      threshold_abort = LEVEL_FATAL
       call SetMessageHandling(useLog=.true., thresholdLevel=LEVEL_ALL, reset_counters=.true.)
 
       call tree_create("sourcesinks.ext", tree)
       call tree_create_node(tree, "sourcesink", block_ptr)
-      call prop_set(block_ptr, "", "id",           "left")
-      call prop_set(block_ptr, "", "name",         "cool_name")
+      call prop_set(block_ptr, "", "id", "left")
+      call prop_set(block_ptr, "", "name", "cool_name")
       call prop_set(block_ptr, "", "locationFile", "this_file_does_not_exist.pliz")
-      call prop_set(block_ptr, "", "zSource",      "-7.5")
-      call prop_set(block_ptr, "", "Area",         "0.0")
-      call prop_set(block_ptr, "", "discharge",    "left.bc")
-      call prop_set(block_ptr, "", "salinityDelta","left.bc")
+      call prop_set(block_ptr, "", "zSource", "-7.5")
+      call prop_set(block_ptr, "", "Area", "0.0")
+      call prop_set(block_ptr, "", "discharge", "left.bc")
+      call prop_set(block_ptr, "", "salinityDelta", "left.bc")
 
-      success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, 'sourcesink', x_coordinates, y_coordinates, z_range_source, z_range_sink)
+      block
+         type(t_abort_threshold_guard) :: abort_threshold
+
+         call abort_threshold%set(LEVEL_FATAL)
+         success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, 'sourcesink', &
+                                                x_coordinates, y_coordinates, z_range_source, z_range_sink)
+      end block
       call f90_expect_false(success)
 
       call getLastMessage(error_level, error_message)
@@ -84,17 +89,23 @@ contains
 
       call tree_create("sourcesinks.ext", tree)
       call tree_create_node(tree, "sourcesink", block_ptr)
-      call prop_set(block_ptr, "", "id",           "left")
-      call prop_set(block_ptr, "", "name",         "cool_name")
+      call prop_set(block_ptr, "", "id", "left")
+      call prop_set(block_ptr, "", "name", "cool_name")
       call prop_set(block_ptr, "", "locationFile", "my_polyline.pliz")
-      call prop_set(block_ptr, "", "zSource",      "-7.5")
-      call prop_set(block_ptr, "", "zSink",        "-11.5")
-      call prop_set(block_ptr, "", "Area",         "0.0")
-      call prop_set(block_ptr, "", "discharge",    "left.bc")
-      call prop_set(block_ptr, "", "salinityDelta","left.bc")
+      call prop_set(block_ptr, "", "zSource", "-7.5")
+      call prop_set(block_ptr, "", "zSink", "-11.5")
+      call prop_set(block_ptr, "", "Area", "0.0")
+      call prop_set(block_ptr, "", "discharge", "left.bc")
+      call prop_set(block_ptr, "", "salinityDelta", "left.bc")
 
-      call resetMessageCount_MH()
-      success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
+      call SetMessageHandling(useLog=.true., thresholdLevel=LEVEL_ALL, reset_counters=.true.)
+      block
+         type(t_abort_threshold_guard) :: abort_threshold
+
+         call abort_threshold%set(LEVEL_FATAL)
+         success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, &
+                                                x_coordinates, y_coordinates, z_range_source, z_range_sink)
+      end block
       call f90_expect_false(success)
 
       call getLastMessage(error_level, error_message)
@@ -129,14 +140,14 @@ contains
 
       call tree_create("sourcesinks.ext", tree)
       call tree_create_node(tree, "sourcesink", block_ptr)
-      call prop_set(block_ptr, "", "id",           "left")
-      call prop_set(block_ptr, "", "name",         "cool_name")
+      call prop_set(block_ptr, "", "id", "left")
+      call prop_set(block_ptr, "", "name", "cool_name")
       call prop_set(block_ptr, "", "locationFile", "my_polyline.pliz")
-      call prop_set(block_ptr, "", "zSource",      "-7.5")
-      call prop_set(block_ptr, "", "zSink",        "-11.5")
-      call prop_set(block_ptr, "", "Area",         "0.0")
-      call prop_set(block_ptr, "", "discharge",    "left.bc")
-      call prop_set(block_ptr, "", "salinityDelta","left.bc")
+      call prop_set(block_ptr, "", "zSource", "-7.5")
+      call prop_set(block_ptr, "", "zSink", "-11.5")
+      call prop_set(block_ptr, "", "Area", "0.0")
+      call prop_set(block_ptr, "", "discharge", "left.bc")
+      call prop_set(block_ptr, "", "salinityDelta", "left.bc")
 
       success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
       if (.not. f90_assert_true(success)) then
@@ -201,12 +212,12 @@ contains
 
       call tree_create("sourcesinks.ext", tree)
       call tree_create_node(tree, "sourcesink", block_ptr)
-      call prop_set(block_ptr, "", "id",           "left")
-      call prop_set(block_ptr, "", "name",         "cool_name")
+      call prop_set(block_ptr, "", "id", "left")
+      call prop_set(block_ptr, "", "name", "cool_name")
       call prop_set(block_ptr, "", "locationFile", "my_polyline.pliz")
-      call prop_set(block_ptr, "", "Area",         "0.0")
-      call prop_set(block_ptr, "", "discharge",    "left.bc")
-      call prop_set(block_ptr, "", "salinityDelta","left.bc")
+      call prop_set(block_ptr, "", "Area", "0.0")
+      call prop_set(block_ptr, "", "discharge", "left.bc")
+      call prop_set(block_ptr, "", "salinityDelta", "left.bc")
 
       success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
       if (.not. f90_assert_true(success)) then
@@ -271,12 +282,12 @@ contains
 
       call tree_create("sourcesinks.ext", tree)
       call tree_create_node(tree, "sourcesink", block_ptr)
-      call prop_set(block_ptr, "", "id",           "left")
-      call prop_set(block_ptr, "", "name",         "cool_name")
+      call prop_set(block_ptr, "", "id", "left")
+      call prop_set(block_ptr, "", "name", "cool_name")
       call prop_set(block_ptr, "", "locationFile", "my_polyline.pliz")
-      call prop_set(block_ptr, "", "Area",         "0.0")
-      call prop_set(block_ptr, "", "discharge",    "left.bc")
-      call prop_set(block_ptr, "", "salinityDelta","left.bc")
+      call prop_set(block_ptr, "", "Area", "0.0")
+      call prop_set(block_ptr, "", "discharge", "left.bc")
+      call prop_set(block_ptr, "", "salinityDelta", "left.bc")
 
       success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
       if (.not. f90_assert_true(success)) then
@@ -341,12 +352,12 @@ contains
 
       call tree_create("sourcesinks.ext", tree)
       call tree_create_node(tree, "sourcesink", block_ptr)
-      call prop_set(block_ptr, "", "id",           "left")
-      call prop_set(block_ptr, "", "name",         "cool_name")
+      call prop_set(block_ptr, "", "id", "left")
+      call prop_set(block_ptr, "", "name", "cool_name")
       call prop_set(block_ptr, "", "locationFile", "my_polyline.pliz")
-      call prop_set(block_ptr, "", "Area",         "0.0")
-      call prop_set(block_ptr, "", "discharge",    "left.bc")
-      call prop_set(block_ptr, "", "salinityDelta","left.bc")
+      call prop_set(block_ptr, "", "Area", "0.0")
+      call prop_set(block_ptr, "", "discharge", "left.bc")
+      call prop_set(block_ptr, "", "salinityDelta", "left.bc")
 
       success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
       if (.not. f90_assert_true(success)) then
@@ -404,16 +415,16 @@ contains
 
       call tree_create("sourcesinks.ext", tree)
       call tree_create_node(tree, "sourcesink", block_ptr)
-      call prop_set(block_ptr, "", "id",             "left")
-      call prop_set(block_ptr, "", "name",           "cool_name")
+      call prop_set(block_ptr, "", "id", "left")
+      call prop_set(block_ptr, "", "name", "cool_name")
       call prop_set(block_ptr, "", "numCoordinates", "2")
-      call prop_set(block_ptr, "", "xCoordinates",   "25.0 26.0")
-      call prop_set(block_ptr, "", "yCoordinates",   "5.0 6.0")
-      call prop_set(block_ptr, "", "zSource",        "-7.5")
-      call prop_set(block_ptr, "", "zSink",          "-13.5")
-      call prop_set(block_ptr, "", "Area",           "0.0")
-      call prop_set(block_ptr, "", "discharge",      "left.bc")
-      call prop_set(block_ptr, "", "salinityDelta",  "left.bc")
+      call prop_set(block_ptr, "", "xCoordinates", "25.0 26.0")
+      call prop_set(block_ptr, "", "yCoordinates", "5.0 6.0")
+      call prop_set(block_ptr, "", "zSource", "-7.5")
+      call prop_set(block_ptr, "", "zSink", "-13.5")
+      call prop_set(block_ptr, "", "Area", "0.0")
+      call prop_set(block_ptr, "", "discharge", "left.bc")
+      call prop_set(block_ptr, "", "salinityDelta", "left.bc")
 
       success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
       if (.not. f90_assert_true(success)) then
@@ -469,16 +480,16 @@ contains
 
       call tree_create("sourcesinks.ext", tree)
       call tree_create_node(tree, "sourcesink", block_ptr)
-      call prop_set(block_ptr, "", "id",             "left")
-      call prop_set(block_ptr, "", "name",           "cool_name")
+      call prop_set(block_ptr, "", "id", "left")
+      call prop_set(block_ptr, "", "name", "cool_name")
       call prop_set(block_ptr, "", "numCoordinates", "2")
-      call prop_set(block_ptr, "", "xCoordinates",   "25.0 26.0")
-      call prop_set(block_ptr, "", "yCoordinates",   "5.0 6.0")
-      call prop_set(block_ptr, "", "zSource",        "-7.5 -3.0")
-      call prop_set(block_ptr, "", "zSink",          "-10.0 -6.0")
-      call prop_set(block_ptr, "", "Area",           "0.0")
-      call prop_set(block_ptr, "", "discharge",      "left.bc")
-      call prop_set(block_ptr, "", "salinityDelta",  "left.bc")
+      call prop_set(block_ptr, "", "xCoordinates", "25.0 26.0")
+      call prop_set(block_ptr, "", "yCoordinates", "5.0 6.0")
+      call prop_set(block_ptr, "", "zSource", "-7.5 -3.0")
+      call prop_set(block_ptr, "", "zSink", "-10.0 -6.0")
+      call prop_set(block_ptr, "", "Area", "0.0")
+      call prop_set(block_ptr, "", "discharge", "left.bc")
+      call prop_set(block_ptr, "", "salinityDelta", "left.bc")
 
       success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
       if (.not. f90_assert_true(success)) then

@@ -1296,7 +1296,7 @@ contains
 
       integer, intent(in) :: Nc !< number of points to be interpolated
       real(kind=hp), dimension(Nc), intent(in) :: xc, yc !< point coordinates of target grid points
-      integer, pointer, intent(in) :: kc(:) !< Target mask array-pointer, whether or not (1/0) target points should be included. Pass null() when no masking is wanted.
+      integer, allocatable, intent(in) :: kc(:) !< Target mask array, whether or not (1/0) target points should be included. Pass null() when no masking is wanted.
       integer, dimension(Nc), intent(out) :: Mn !< source index for each target point
       real(kind=hp), intent(in) :: dmiss !< Missing value inside xc, yx (if any).
       real(kind=hp), intent(in) :: XS(:), YS(:) !< point coordinates of source data points
@@ -1308,7 +1308,7 @@ contains
 
       Mn = -1
       do k = 1, Nc ! Target points
-         if (associated(kc)) then
+         if (allocated(kc)) then
             if (KC(K) == 0) then
                cycle
             end if
@@ -1331,7 +1331,7 @@ contains
 
       integer, intent(in) :: Nc !< number of points to be interpolated
       real(kind=sp), dimension(Nc), intent(in) :: xc, yc !< point coordinates of target grid points
-      integer, pointer, intent(in) :: kc(:) !< Target mask array-pointer, whether or not (1/0) target points should be included. Pass null() when no masking is wanted.
+      integer, allocatable, intent(in) :: kc(:) !< Target mask array, whether or not (1/0) target points should be included. Pass null() when no masking is wanted.
       integer, dimension(Nc), intent(out) :: Mn !< source index for each target point
       real(kind=hp), intent(in) :: dmiss !< Missing value inside xc, yx (if any).
       real(kind=hp), intent(in) :: XS(:), YS(:) !< point coordinates of source data points

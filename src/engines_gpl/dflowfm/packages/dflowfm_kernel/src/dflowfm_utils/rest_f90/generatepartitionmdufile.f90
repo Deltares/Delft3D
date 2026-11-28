@@ -54,6 +54,7 @@ contains
       logical :: in_numerics !< Flag to check if currently in [numerics] block
       logical :: in_geometry !< Flag to check if currently in [geometry] block
       logical :: icgsolver_present !< Flag to check if icgsolver keyword is present in input *.mdu file, to decide whether it needs to be added
+      logical :: crossdeffile_present !< Flag to check if crossdeffile keyword is present in input *.mdu file, to decide whether it needs to be added
       logical, dimension(10) :: keyword_present !< Flags to check if keywords that need to be replaced are present in input *.mdu file, to decide whether find-and-replace is needed
       integer :: equal_pos !< Position of the equal sign in the line, to separate keyword from value
       integer :: stat !< Status of I/O operations
@@ -81,6 +82,7 @@ contains
       in_numerics = .false.
       in_geometry = .false.
       icgsolver_present = .false.
+      crossdeffile_present = .false.
       keyword_present = .false.
       stat = 0
 
@@ -107,7 +109,7 @@ contains
          if (strcmpi(mdu_line_main, '[geometry]', 10)) then
             in_geometry = .true.
          elseif (mdu_line_main(1:1) == '[' .and. in_geometry) then ! About to close [geometry] block
-            if (len_trim(md_1dfiles%cross_section_definitions) > 0) then ! Only add crossdeffile if the variable is not empty
+            if (.not. crossdeffile_present .and. len_trim(md_1dfiles%cross_section_definitions) > 0) then ! Only add crossdeffile if the variable is not empty
                mdu_line_partition = "CrossDefFile = "//trim(md_1dfiles%cross_section_definitions)//"       # Cross section definitions file (*.ini)"
                write (unit_partition, "(a)") trim(mdu_line_partition)
             end if
@@ -177,6 +179,7 @@ contains
             else if (keyword_present(9)) then ! Modify CrossSectionDefinitionsFile
                mdu_line_partition = trim(keyword)//" "//trim(md_1dfiles%cross_section_definitions)//"       # Cross section definitions file (*.ini)"
                write (unit_partition, "(a)") trim(mdu_line_partition)
+               crossdeffile_present = .true.
             else if (keyword_present(10)) then ! Modify ConvertLongCulverts, set the value 0 as long culverts are already converted during partitioning.
                mdu_line_partition = "ConvertLongCulverts         = 0                   # Default: 0. Whether or not to convert long culvert input to 1D2D long culverts"
                write (unit_partition, "(a)") trim(mdu_line_partition)

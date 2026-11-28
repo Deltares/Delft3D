@@ -220,6 +220,7 @@ module m_ec_typedefs
       integer :: nSourceItems !< Number of source Items <= size(sourceItemsPtr)
       type(tEcItemPtr), dimension(:), pointer :: targetItemsPtr => null() !< target items, stored in tEcInstance%ecItemsPtr
       integer :: nTargetItems !< Number of target Items <= size(targetItemsPtr)
+      integer, dimension(:), allocatable :: targetMask !< Whether or not (1/0) target points should be updated. Unallocated means no masking. Size must match all target items.
    end type tEcConnection
 
    type tEcConnectionPtr
