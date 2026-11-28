@@ -4,7 +4,7 @@ module test_longculverts
    use m_longculverts, only: convert1D2DLongCulverts, default_longculverts
    use m_network_helpers, only: t_grid_helper
    use iso_c_utils, only: cstr
-   use m_file_helpers, only: create_file
+   use m_file_helpers, only: create_file, create_netcdf_from_cdl
    use precision, only: dp
 
    implicit none(type, external)
@@ -273,116 +273,63 @@ contains
 
    !> Create a minimal UGRID 2D net file: a simple channel of 4 quads in a row.
    !! Nodes form a 5x2 grid (10 nodes), edges connect them into 4 rectangular cells.
-   subroutine create_minimal_netfile(filename, ierr)
-      use precision, only: dp
-      use netcdf
+   subroutine create_minimal_netfile(filename, success)
       character(len=*), intent(in) :: filename
-      integer, intent(out) :: ierr
+      logical, intent(out) :: success
 
-      integer :: ncid, dimid_node, dimid_edge, dimid_face, dimid_maxnodes, dimid_two
-      integer :: varid_mesh, varid_xn, varid_yn, varid_en, varid_fn
-      integer :: nNodes, nEdges, nFaces
-      real(kind=dp) :: xnodes(10), ynodes(10)
-      integer :: edge_nodes(2, 13), face_nodes(4, 4)
-      integer :: i, j, k
-
-      ! 5 columns x 2 rows of nodes => 10 nodes
       ! Node layout (y=0 bottom row, y=100 top row):
       !   6---7---8---9---10      (y=100)
       !   |   |   |   |   |
       !   1---2---3---4---5       (y=0)
       ! x=  0  100 200 300 400
-      nNodes = 10
-      nEdges = 13 ! 4 horizontal bottom + 4 horizontal top + 5 vertical
-      nFaces = 4
-
-      k = 0
-      do j = 1, 2
-         do i = 1, 5
-            k = k + 1
-            xnodes(k) = real((i - 1) * 100, dp)
-            ynodes(k) = real((j - 1) * 100, dp)
-         end do
-      end do
-
-      ! Edge connectivity (1-based)
-      ! Bottom horizontal edges: 1-2, 2-3, 3-4, 4-5
-      edge_nodes(:, 1) = [1, 2]
-      edge_nodes(:, 2) = [2, 3]
-      edge_nodes(:, 3) = [3, 4]
-      edge_nodes(:, 4) = [4, 5]
-      ! Top horizontal edges: 6-7, 7-8, 8-9, 9-10
-      edge_nodes(:, 5) = [6, 7]
-      edge_nodes(:, 6) = [7, 8]
-      edge_nodes(:, 7) = [8, 9]
-      edge_nodes(:, 8) = [9, 10]
-      ! Vertical edges: 1-6, 2-7, 3-8, 4-9, 5-10
-      edge_nodes(:, 9) = [1, 6]
-      edge_nodes(:, 10) = [2, 7]
-      edge_nodes(:, 11) = [3, 8]
-      edge_nodes(:, 12) = [4, 9]
-      edge_nodes(:, 13) = [5, 10]
-
-      ! Face-node connectivity (CCW): 4 quads
-      face_nodes(:, 1) = [1, 2, 7, 6]
-      face_nodes(:, 2) = [2, 3, 8, 7]
-      face_nodes(:, 3) = [3, 4, 9, 8]
-      face_nodes(:, 4) = [4, 5, 10, 9]
-
-      ! Create NetCDF file
-      ierr = nf90_create(filename, NF90_CLOBBER, ncid)
-      if (ierr /= nf90_noerr) return
-
-      ! Global attributes
-      ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Conventions', 'CF-1.8 UGRID-1.0')
-
-      ! Dimensions
-      ierr = nf90_def_dim(ncid, 'mesh2d_nNodes', nNodes, dimid_node)
-      ierr = nf90_def_dim(ncid, 'mesh2d_nEdges', nEdges, dimid_edge)
-      ierr = nf90_def_dim(ncid, 'mesh2d_nFaces', nFaces, dimid_face)
-      ierr = nf90_def_dim(ncid, 'mesh2d_nMax_face_nodes', 4, dimid_maxnodes)
-      ierr = nf90_def_dim(ncid, 'Two', 2, dimid_two)
-
-      ! Mesh topology variable
-      ierr = nf90_def_var(ncid, 'mesh2d', NF90_INT, varid_mesh)
-      ierr = nf90_put_att(ncid, varid_mesh, 'cf_role', 'mesh_topology')
-      ierr = nf90_put_att(ncid, varid_mesh, 'topology_dimension', 2)
-      ierr = nf90_put_att(ncid, varid_mesh, 'node_coordinates', 'mesh2d_node_x mesh2d_node_y')
-      ierr = nf90_put_att(ncid, varid_mesh, 'edge_node_connectivity', 'mesh2d_edge_nodes')
-      ierr = nf90_put_att(ncid, varid_mesh, 'face_node_connectivity', 'mesh2d_face_nodes')
-
-      ! Node coordinates
-      ierr = nf90_def_var(ncid, 'mesh2d_node_x', NF90_DOUBLE, [dimid_node], varid_xn)
-      ierr = nf90_put_att(ncid, varid_xn, 'standard_name', 'projection_x_coordinate')
-      ierr = nf90_put_att(ncid, varid_xn, 'units', 'm')
-
-      ierr = nf90_def_var(ncid, 'mesh2d_node_y', NF90_DOUBLE, [dimid_node], varid_yn)
-      ierr = nf90_put_att(ncid, varid_yn, 'standard_name', 'projection_y_coordinate')
-      ierr = nf90_put_att(ncid, varid_yn, 'units', 'm')
-
-      ! Edge-node connectivity
-      ierr = nf90_def_var(ncid, 'mesh2d_edge_nodes', NF90_INT, [dimid_two, dimid_edge], varid_en)
-      ierr = nf90_put_att(ncid, varid_en, 'cf_role', 'edge_node_connectivity')
-      ierr = nf90_put_att(ncid, varid_en, 'start_index', 1)
-
-      ! Face-node connectivity
-      ierr = nf90_def_var(ncid, 'mesh2d_face_nodes', NF90_INT, [dimid_maxnodes, dimid_face], varid_fn)
-      ierr = nf90_put_att(ncid, varid_fn, 'cf_role', 'face_node_connectivity')
-      ierr = nf90_put_att(ncid, varid_fn, 'start_index', 1)
-
-      ierr = nf90_enddef(ncid)
-      if (ierr /= nf90_noerr) then
-         ierr = nf90_close(ncid)
-         return
-      end if
-
-      ! Write data
-      ierr = nf90_put_var(ncid, varid_xn, xnodes)
-      ierr = nf90_put_var(ncid, varid_yn, ynodes)
-      ierr = nf90_put_var(ncid, varid_en, edge_nodes)
-      ierr = nf90_put_var(ncid, varid_fn, face_nodes)
-
-      ierr = nf90_close(ncid)
+      call create_netcdf_from_cdl( &
+         filename, &
+         [character(len=80) :: &
+            'netcdf minimal_net {', &
+            'dimensions:', &
+            '    mesh2d_nNodes = 10 ;', &
+            '    mesh2d_nEdges = 13 ;', &
+            '    mesh2d_nFaces = 4 ;', &
+            '    mesh2d_nMax_face_nodes = 4 ;', &
+            '    Two = 2 ;', &
+            'variables:', &
+            '    int mesh2d ;', &
+            '        mesh2d:cf_role = "mesh_topology" ;', &
+            '        mesh2d:topology_dimension = 2 ;', &
+            '        mesh2d:node_coordinates = "mesh2d_node_x mesh2d_node_y" ;', &
+            '        mesh2d:edge_node_connectivity = "mesh2d_edge_nodes" ;', &
+            '        mesh2d:face_node_connectivity = "mesh2d_face_nodes" ;', &
+            '    double mesh2d_node_x(mesh2d_nNodes) ;', &
+            '        mesh2d_node_x:standard_name = "projection_x_coordinate" ;', &
+            '        mesh2d_node_x:units = "m" ;', &
+            '    double mesh2d_node_y(mesh2d_nNodes) ;', &
+            '        mesh2d_node_y:standard_name = "projection_y_coordinate" ;', &
+            '        mesh2d_node_y:units = "m" ;', &
+            '    int mesh2d_edge_nodes(mesh2d_nEdges, Two) ;', &
+            '        mesh2d_edge_nodes:cf_role = "edge_node_connectivity" ;', &
+            '        mesh2d_edge_nodes:start_index = 1 ;', &
+            '    int mesh2d_face_nodes(mesh2d_nFaces, mesh2d_nMax_face_nodes) ;', &
+            '        mesh2d_face_nodes:cf_role = "face_node_connectivity" ;', &
+            '        mesh2d_face_nodes:start_index = 1 ;', &
+            '', &
+            '// global attributes:', &
+            '        :Conventions = "CF-1.8 UGRID-1.0" ;', &
+            'data:', &
+            '', &
+            ' mesh2d_node_x = 0, 100, 200, 300, 400, 0, 100, 200, 300, 400 ;', &
+            ' mesh2d_node_y = 0, 0, 0, 0, 0, 100, 100, 100, 100, 100 ;', &
+            '', &
+            ' // One edge per row: 4 bottom horizontal, 4 top horizontal, then 5 vertical edges.', &
+            ' mesh2d_edge_nodes =', &
+            '    1, 2,   2, 3,   3, 4,   4, 5,', &
+            '    6, 7,   7, 8,   8, 9,   9, 10,', &
+            '    1, 6,   2, 7,   3, 8,   4, 9,   5, 10 ;', &
+            '', &
+            ' // One face per row (counter-clockwise).', &
+            ' mesh2d_face_nodes =', &
+            '    1, 2, 7, 6,   2, 3, 8, 7,   3, 4, 9, 8,   4, 5, 10, 9 ;', &
+            '}' &
+         ], success)
    end subroutine create_minimal_netfile
 
    !> Create a minimal MDU file that references the net file and structure file.
@@ -430,12 +377,12 @@ contains
       use m_partitioninfo, only: jampi
       use MessageHandling, only: SetMessageHandling
       use m_resetfullflowmodel, only: resetfullflowmodel
-      use netcdf, only: nf90_noerr
       use m_flow_spatietimestep, only: flow_spatietimestep
       use precision, only: dp
 
       type(t_abort_threshold_guard) :: abort_threshold
-      integer :: ierr, iresult, i
+      integer :: iresult, i
+      logical :: success
 
       character(len=*), parameter :: NET_FILE = "test_lc_net.nc"
       character(len=*), parameter :: TEST_STR_FILE = "test_lc_structures.ini"
@@ -445,8 +392,8 @@ contains
       integer :: lc_link
 
       ! ARRANGE: Create all input files
-      call create_minimal_netfile(NET_FILE, ierr)
-      if (.not. f90_assert_eq(ierr, nf90_noerr, cstr("NetCDF net file creation should succeed"))) then
+      call create_minimal_netfile(NET_FILE, success)
+      if (.not. f90_assert_true(success, cstr("NetCDF net file creation should succeed"))) then
          call default_longculverts()
          return
       end if
@@ -506,14 +453,13 @@ contains
    subroutine setup_longculvert_model(iresult)
       use m_flow_modelinit, only: flow_modelinit
       use unstruc_model, only: loadModel, md_ident
-      use dfm_error, only: DFM_NOERR
+      use dfm_error, only: DFM_NOERR, DFM_GENERICERROR
       use messagehandling, only: LEVEL_FATAL
       use m_inidat, only: inidat
       use Timers, only: timini, timon
       use m_partitioninfo, only: jampi
       use MessageHandling, only: SetMessageHandling
       use m_resetfullflowmodel, only: resetfullflowmodel
-      use netcdf, only: nf90_noerr
       type(t_abort_threshold_guard) :: abort_threshold
       integer, intent(out) :: iresult
 
@@ -521,11 +467,11 @@ contains
       character(len=*), parameter :: TEST_STR_FILE = "test_lc_structures.ini"
       character(len=*), parameter :: TEST_MDU_FILE = "test_lc.mdu"
       character(len=256) :: mdu_local
-      integer :: ierr
+      logical :: success
 
-      call create_minimal_netfile(NET_FILE, ierr)
-      if (ierr /= nf90_noerr) then
-         iresult = ierr
+      call create_minimal_netfile(NET_FILE, success)
+      if (.not. success) then
+         iresult = DFM_GENERICERROR
          return
       end if
       call create_longculvert_structure_file(TEST_STR_FILE, LC2_X(:, :1), LC2_Y(:, :1), LC2_Z(:, :1))
@@ -921,110 +867,70 @@ contains
       call default_longculverts()
    end subroutine test_converted_allowed_flowdir_controls_discharge
 
-   !> Create a 5x3-node UGRID net (4 cells wide, 2 rows).
+   !> Create a 5x3-node UGRID net (4 cells wide, 2 rows) from a CDL description.
    subroutine create_two_row_netfile(filename)
-      use precision, only: dp
-      use netcdf
       character(len=*), intent(in) :: filename
 
-      integer :: ncid, dimid_node, dimid_edge, dimid_face, dimid_maxnodes, dimid_two
-      integer :: varid_mesh, varid_xn, varid_yn, varid_en, varid_fn
-      ! 5 cols x 3 rows = 15 nodes, 8 cells in 2 rows of 4
-      integer, parameter :: NNODES = 15, NEDGES = 22, NFACES = 8
-      real(kind=dp) :: xnodes(NNODES), ynodes(NNODES)
-      integer :: edge_nodes(2, NEDGES), face_nodes(4, NFACES)
-      integer :: i, j, k, ierr
+      logical :: success
 
-      k = 0
-      do j = 1, 3
-         do i = 1, 5
-            k = k + 1
-            xnodes(k) = real((i - 1) * 100, dp)
-            ynodes(k) = real((j - 1) * 100, dp)
-         end do
-      end do
-
-      ! Bottom horizontal edges (row 0-1): 1-2, 2-3, 3-4, 4-5
-      edge_nodes(:, 1) = [1, 2]
-      edge_nodes(:, 2) = [2, 3]
-      edge_nodes(:, 3) = [3, 4]
-      edge_nodes(:, 4) = [4, 5]
-      ! Middle horizontal edges (row 1-2): 6-7, 7-8, 8-9, 9-10
-      edge_nodes(:, 5) = [6, 7]
-      edge_nodes(:, 6) = [7, 8]
-      edge_nodes(:, 7) = [8, 9]
-      edge_nodes(:, 8) = [9, 10]
-      ! Top horizontal edges (row 2-3): 11-12, 12-13, 13-14, 14-15
-      edge_nodes(:, 9) = [11, 12]
-      edge_nodes(:, 10) = [12, 13]
-      edge_nodes(:, 11) = [13, 14]
-      edge_nodes(:, 12) = [14, 15]
-      ! Vertical edges bottom tier: 1-6, 2-7, 3-8, 4-9, 5-10
-      edge_nodes(:, 13) = [1, 6]
-      edge_nodes(:, 14) = [2, 7]
-      edge_nodes(:, 15) = [3, 8]
-      edge_nodes(:, 16) = [4, 9]
-      edge_nodes(:, 17) = [5, 10]
-      ! Vertical edges top tier: 6-11, 7-12, 8-13, 9-14, 10-15
-      edge_nodes(:, 18) = [6, 11]
-      edge_nodes(:, 19) = [7, 12]
-      edge_nodes(:, 20) = [8, 13]
-      edge_nodes(:, 21) = [9, 14]
-      edge_nodes(:, 22) = [10, 15]
-
-      ! Bottom row of faces (CCW)
-      face_nodes(:, 1) = [1, 2, 7, 6]
-      face_nodes(:, 2) = [2, 3, 8, 7]
-      face_nodes(:, 3) = [3, 4, 9, 8]
-      face_nodes(:, 4) = [4, 5, 10, 9]
-      ! Top row of faces (CCW)
-      face_nodes(:, 5) = [6, 7, 12, 11]
-      face_nodes(:, 6) = [7, 8, 13, 12]
-      face_nodes(:, 7) = [8, 9, 14, 13]
-      face_nodes(:, 8) = [9, 10, 15, 14]
-
-      ierr = nf90_create(filename, NF90_CLOBBER, ncid)
-      if (ierr /= nf90_noerr) return
-
-      ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Conventions', 'CF-1.8 UGRID-1.0')
-      ierr = nf90_def_dim(ncid, 'mesh2d_nNodes', NNODES, dimid_node)
-      ierr = nf90_def_dim(ncid, 'mesh2d_nEdges', NEDGES, dimid_edge)
-      ierr = nf90_def_dim(ncid, 'mesh2d_nFaces', NFACES, dimid_face)
-      ierr = nf90_def_dim(ncid, 'mesh2d_nMax_face_nodes', 4, dimid_maxnodes)
-      ierr = nf90_def_dim(ncid, 'Two', 2, dimid_two)
-
-      ierr = nf90_def_var(ncid, 'mesh2d', NF90_INT, varid_mesh)
-      ierr = nf90_put_att(ncid, varid_mesh, 'cf_role', 'mesh_topology')
-      ierr = nf90_put_att(ncid, varid_mesh, 'topology_dimension', 2)
-      ierr = nf90_put_att(ncid, varid_mesh, 'node_coordinates', 'mesh2d_node_x mesh2d_node_y')
-      ierr = nf90_put_att(ncid, varid_mesh, 'edge_node_connectivity', 'mesh2d_edge_nodes')
-      ierr = nf90_put_att(ncid, varid_mesh, 'face_node_connectivity', 'mesh2d_face_nodes')
-
-      ierr = nf90_def_var(ncid, 'mesh2d_node_x', NF90_DOUBLE, [dimid_node], varid_xn)
-      ierr = nf90_put_att(ncid, varid_xn, 'standard_name', 'projection_x_coordinate')
-      ierr = nf90_put_att(ncid, varid_xn, 'units', 'm')
-      ierr = nf90_def_var(ncid, 'mesh2d_node_y', NF90_DOUBLE, [dimid_node], varid_yn)
-      ierr = nf90_put_att(ncid, varid_yn, 'standard_name', 'projection_y_coordinate')
-      ierr = nf90_put_att(ncid, varid_yn, 'units', 'm')
-
-      ierr = nf90_def_var(ncid, 'mesh2d_edge_nodes', NF90_INT, [dimid_two, dimid_edge], varid_en)
-      ierr = nf90_put_att(ncid, varid_en, 'cf_role', 'edge_node_connectivity')
-      ierr = nf90_put_att(ncid, varid_en, 'start_index', 1)
-      ierr = nf90_def_var(ncid, 'mesh2d_face_nodes', NF90_INT, [dimid_maxnodes, dimid_face], varid_fn)
-      ierr = nf90_put_att(ncid, varid_fn, 'cf_role', 'face_node_connectivity')
-      ierr = nf90_put_att(ncid, varid_fn, 'start_index', 1)
-
-      ierr = nf90_enddef(ncid)
-      if (ierr /= nf90_noerr) then
-         ierr = nf90_close(ncid)
-         return
-      end if
-
-      ierr = nf90_put_var(ncid, varid_xn, xnodes)
-      ierr = nf90_put_var(ncid, varid_yn, ynodes)
-      ierr = nf90_put_var(ncid, varid_en, edge_nodes)
-      ierr = nf90_put_var(ncid, varid_fn, face_nodes)
-      ierr = nf90_close(ncid)
+      call create_netcdf_from_cdl( &
+         filename, &
+         [character(len=80) :: &
+            'netcdf two_row_net {', &
+            'dimensions:', &
+            '    mesh2d_nNodes = 15 ;', &
+            '    mesh2d_nEdges = 22 ;', &
+            '    mesh2d_nFaces = 8 ;', &
+            '    mesh2d_nMax_face_nodes = 4 ;', &
+            '    Two = 2 ;', &
+            'variables:', &
+            '    int mesh2d ;', &
+            '        mesh2d:cf_role = "mesh_topology" ;', &
+            '        mesh2d:topology_dimension = 2 ;', &
+            '        mesh2d:node_coordinates = "mesh2d_node_x mesh2d_node_y" ;', &
+            '        mesh2d:edge_node_connectivity = "mesh2d_edge_nodes" ;', &
+            '        mesh2d:face_node_connectivity = "mesh2d_face_nodes" ;', &
+            '    double mesh2d_node_x(mesh2d_nNodes) ;', &
+            '        mesh2d_node_x:standard_name = "projection_x_coordinate" ;', &
+            '        mesh2d_node_x:units = "m" ;', &
+            '    double mesh2d_node_y(mesh2d_nNodes) ;', &
+            '        mesh2d_node_y:standard_name = "projection_y_coordinate" ;', &
+            '        mesh2d_node_y:units = "m" ;', &
+            '    int mesh2d_edge_nodes(mesh2d_nEdges, Two) ;', &
+            '        mesh2d_edge_nodes:cf_role = "edge_node_connectivity" ;', &
+            '        mesh2d_edge_nodes:start_index = 1 ;', &
+            '    int mesh2d_face_nodes(mesh2d_nFaces, mesh2d_nMax_face_nodes) ;', &
+            '        mesh2d_face_nodes:cf_role = "face_node_connectivity" ;', &
+            '        mesh2d_face_nodes:start_index = 1 ;', &
+            '', &
+            '// global attributes:', &
+            '        :Conventions = "CF-1.8 UGRID-1.0" ;', &
+            'data:', &
+            '', &
+            ' // 5 columns x 3 rows of nodes', &
+            ' mesh2d_node_x = 0, 100, 200, 300, 400,', &
+            '                0, 100, 200, 300, 400,', &
+            '                0, 100, 200, 300, 400 ;', &
+            ' mesh2d_node_y = 0, 0, 0, 0, 0,', &
+            '                100, 100, 100, 100, 100,', &
+            '                200, 200, 200, 200, 200 ;', &
+            '', &
+            ' // One edge per row: bottom, middle and top horizontal edges,', &
+            ' // then the vertical edges of the bottom tier and of the top tier.', &
+            ' mesh2d_edge_nodes =', &
+            '    1, 2,   2, 3,   3, 4,   4, 5,', &
+            '    6, 7,   7, 8,   8, 9,   9, 10,', &
+            '    11, 12, 12, 13, 13, 14, 14, 15,', &
+            '    1, 6,   2, 7,   3, 8,   4, 9,   5, 10,', &
+            '    6, 11,  7, 12,  8, 13,  9, 14,  10, 15 ;', &
+            '', &
+            ' // One face per row (counter-clockwise): bottom row, then top row.', &
+            ' mesh2d_face_nodes =', &
+            '    1, 2, 7, 6,   2, 3, 8, 7,   3, 4, 9, 8,   4, 5, 10, 9,', &
+            '    6, 7, 12, 11, 7, 8, 13, 12, 8, 9, 14, 13, 9, 10, 15, 14 ;', &
+            '}' &
+         ], success)
+      call f90_expect_true(success, "Could not create the two-row net file "//filename)
    end subroutine create_two_row_netfile
 
    !> Shared helper for two-culvert integration tests.
@@ -1786,11 +1692,11 @@ contains
       character(len=*), parameter :: STR_FILE = "test_lc_existing1d_str.ini"
       character(len=*), parameter :: MDU_FILE = "test_lc_existing1d.mdu"
       character(len=256) :: mdu_local
-      integer :: ierr
+      logical :: success
 
       ! Create a net file that includes a 1D network (branch) alongside the 2D grid.
-      call create_net_with_1d_branch(NET_FILE, ierr)
-      if (.not. f90_assert_eq(ierr, 0, cstr("Net file with 1D branch creation should succeed"))) then
+      call create_net_with_1d_branch(NET_FILE, success)
+      if (.not. f90_assert_true(success, cstr("Net file with 1D branch creation should succeed"))) then
          call default_longculverts()
          return
       end if
@@ -1833,311 +1739,196 @@ contains
    !! interfere with the culvert placement), discretised into 3 mesh1d nodes.
    !! The 1D part is written as a full network1d + network-coupled mesh1d
    !! (branch index + offset) so the reader populates meshgeom1d (networkIndex > 0).
-   subroutine create_net_with_1d_branch(filename, ierr)
-      use precision, only: dp
-      use netcdf
+   subroutine create_net_with_1d_branch(filename, success)
       character(len=*), intent(in) :: filename
-      integer, intent(out) :: ierr
+      logical, intent(out) :: success
 
-      ! 2D
-      integer :: ncid, dimid_node, dimid_edge, dimid_face, dimid_maxnodes, dimid_two
-      integer :: varid_mesh, varid_xn, varid_yn, varid_en, varid_fn
-      integer, parameter :: NNODES = 15, NEDGES = 22, NFACES = 8
-      real(kind=dp) :: xnodes(NNODES), ynodes(NNODES)
-      integer :: edge_nodes(2, NEDGES), face_nodes(4, NFACES)
-
-      ! network1d
-      integer, parameter :: NET1D_NNODES = 2, NET1D_NEDGES = 1, NET1D_NGEOM = 2
-      integer, parameter :: IDLEN = 40, LNLEN = 80
-      integer :: dimid_idlen, dimid_lnlen
-      integer :: dimid_1dnnodes, dimid_1dnedges, dimid_1dgeom
-      integer :: varid_net1d, varid_net_en, varid_net_brid, varid_net_brln
-      integer :: varid_net_elen, varid_net_nid, varid_net_nln
-      integer :: varid_net_nx, varid_net_ny
-      integer :: varid_net_geom, varid_net_gcount, varid_net_gx, varid_net_gy
-      integer :: varid_net_border, varid_net_btype
-      integer :: net_edge_nodes(2, NET1D_NEDGES)
-      real(kind=dp) :: net_node_x(NET1D_NNODES), net_node_y(NET1D_NNODES)
-      real(kind=dp) :: net_edge_length(NET1D_NEDGES)
-      integer :: net_geom_count(NET1D_NEDGES)
-      real(kind=dp) :: net_geom_x(NET1D_NGEOM), net_geom_y(NET1D_NGEOM)
-      integer :: net_branch_order(NET1D_NEDGES), net_branch_type(NET1D_NEDGES)
-      character(len=IDLEN) :: net_branch_id(NET1D_NEDGES), net_node_id(NET1D_NNODES)
-      character(len=LNLEN) :: net_branch_ln(NET1D_NEDGES), net_node_ln(NET1D_NNODES)
-
-      ! mesh1d (3 mesh nodes on the single branch)
-      integer, parameter :: M1D_NNODES = 3, M1D_NEDGES = 2
-      integer :: dimid_m1dnodes, dimid_m1dedges
-      integer :: varid_m1d, varid_m1d_nbr, varid_m1d_noff, varid_m1d_nx, varid_m1d_ny
-      integer :: varid_m1d_en, varid_m1d_ebr, varid_m1d_eoff
-      integer :: varid_m1d_nid, varid_m1d_nln
-      integer :: m1d_node_branch(M1D_NNODES), m1d_edge_branch(M1D_NEDGES)
-      real(kind=dp) :: m1d_node_offset(M1D_NNODES), m1d_edge_offset(M1D_NEDGES)
-      real(kind=dp) :: m1d_node_x(M1D_NNODES), m1d_node_y(M1D_NNODES)
-      integer :: m1d_edge_nodes(2, M1D_NEDGES)
-      character(len=IDLEN) :: m1d_node_id(M1D_NNODES)
-      character(len=LNLEN) :: m1d_node_ln(M1D_NNODES)
-
-      integer :: i, j, k
-
-      ! 2D grid (same as create_two_row_netfile)
-      k = 0
-      do j = 1, 3
-         do i = 1, 5
-            k = k + 1
-            xnodes(k) = real((i - 1) * 100, dp)
-            ynodes(k) = real((j - 1) * 100, dp)
-         end do
-      end do
-
-      edge_nodes(:, 1) = [1, 2]
-      edge_nodes(:, 2) = [2, 3]
-      edge_nodes(:, 3) = [3, 4]
-      edge_nodes(:, 4) = [4, 5]
-      edge_nodes(:, 5) = [6, 7]
-      edge_nodes(:, 6) = [7, 8]
-      edge_nodes(:, 7) = [8, 9]
-      edge_nodes(:, 8) = [9, 10]
-      edge_nodes(:, 9) = [11, 12]
-      edge_nodes(:, 10) = [12, 13]
-      edge_nodes(:, 11) = [13, 14]
-      edge_nodes(:, 12) = [14, 15]
-      edge_nodes(:, 13) = [1, 6]
-      edge_nodes(:, 14) = [2, 7]
-      edge_nodes(:, 15) = [3, 8]
-      edge_nodes(:, 16) = [4, 9]
-      edge_nodes(:, 17) = [5, 10]
-      edge_nodes(:, 18) = [6, 11]
-      edge_nodes(:, 19) = [7, 12]
-      edge_nodes(:, 20) = [8, 13]
-      edge_nodes(:, 21) = [9, 14]
-      edge_nodes(:, 22) = [10, 15]
-
-      face_nodes(:, 1) = [1, 2, 7, 6]
-      face_nodes(:, 2) = [2, 3, 8, 7]
-      face_nodes(:, 3) = [3, 4, 9, 8]
-      face_nodes(:, 4) = [4, 5, 10, 9]
-      face_nodes(:, 5) = [6, 7, 12, 11]
-      face_nodes(:, 6) = [7, 8, 13, 12]
-      face_nodes(:, 7) = [8, 9, 14, 13]
-      face_nodes(:, 8) = [9, 10, 15, 14]
-
-      ! network1d: single branch from (-200,50) to (-100,50), length 100
-      net_node_x = [-200.0_dp, -100.0_dp]
-      net_node_y = [50.0_dp, 50.0_dp]
-      net_edge_nodes(:, 1) = [1, 2]
-      net_edge_length(1) = 100.0_dp
-      net_geom_count(1) = NET1D_NGEOM
-      net_geom_x = [-200.0_dp, -100.0_dp]
-      net_geom_y = [50.0_dp, 50.0_dp]
-      net_branch_order(1) = -1
-      net_branch_type(1) = 0
-      net_branch_id(1) = 'branch1'
-      net_branch_ln(1) = 'branch1'
-      net_node_id(1) = 'nNode1'
-      net_node_id(2) = 'nNode2'
-      net_node_ln(1) = 'nNode1'
-      net_node_ln(2) = 'nNode2'
-
-      ! mesh1d: 3 nodes on branch 1 (0-based branch index) at offsets 0/50/100
-      m1d_node_branch = [0, 0, 0]
-      m1d_node_offset = [0.0_dp, 50.0_dp, 100.0_dp]
-      m1d_node_x = [-200.0_dp, -150.0_dp, -100.0_dp]
-      m1d_node_y = [50.0_dp, 50.0_dp, 50.0_dp]
-      m1d_edge_nodes(:, 1) = [1, 2]
-      m1d_edge_nodes(:, 2) = [2, 3]
-      m1d_edge_branch = [0, 0]
-      m1d_edge_offset = [25.0_dp, 75.0_dp]
-      m1d_node_id(1) = 'mesh1d_node0001'
-      m1d_node_id(2) = 'mesh1d_node0002'
-      m1d_node_id(3) = 'mesh1d_node0003'
-      m1d_node_ln(1) = 'mesh1d_node0001'
-      m1d_node_ln(2) = 'mesh1d_node0002'
-      m1d_node_ln(3) = 'mesh1d_node0003'
-
-      !----------------------------------------------------------------!
-      ! Write NetCDF
-      !----------------------------------------------------------------!
-      ierr = nf90_create(filename, NF90_CLOBBER, ncid)
-      if (ierr /= nf90_noerr) return
-
-      ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Conventions', 'CF-1.8 UGRID-1.0 Deltares-0.10')
-
-      ! ---- 2D dimensions and variables ----
-      ierr = nf90_def_dim(ncid, 'mesh2d_nNodes', NNODES, dimid_node)
-      ierr = nf90_def_dim(ncid, 'mesh2d_nEdges', NEDGES, dimid_edge)
-      ierr = nf90_def_dim(ncid, 'mesh2d_nFaces', NFACES, dimid_face)
-      ierr = nf90_def_dim(ncid, 'mesh2d_nMax_face_nodes', 4, dimid_maxnodes)
-      ierr = nf90_def_dim(ncid, 'Two', 2, dimid_two)
-
-      ierr = nf90_def_var(ncid, 'mesh2d', NF90_INT, varid_mesh)
-      ierr = nf90_put_att(ncid, varid_mesh, 'cf_role', 'mesh_topology')
-      ierr = nf90_put_att(ncid, varid_mesh, 'topology_dimension', 2)
-      ierr = nf90_put_att(ncid, varid_mesh, 'node_coordinates', 'mesh2d_node_x mesh2d_node_y')
-      ierr = nf90_put_att(ncid, varid_mesh, 'edge_node_connectivity', 'mesh2d_edge_nodes')
-      ierr = nf90_put_att(ncid, varid_mesh, 'face_node_connectivity', 'mesh2d_face_nodes')
-
-      ierr = nf90_def_var(ncid, 'mesh2d_node_x', NF90_DOUBLE, [dimid_node], varid_xn)
-      ierr = nf90_put_att(ncid, varid_xn, 'standard_name', 'projection_x_coordinate')
-      ierr = nf90_put_att(ncid, varid_xn, 'units', 'm')
-      ierr = nf90_def_var(ncid, 'mesh2d_node_y', NF90_DOUBLE, [dimid_node], varid_yn)
-      ierr = nf90_put_att(ncid, varid_yn, 'standard_name', 'projection_y_coordinate')
-      ierr = nf90_put_att(ncid, varid_yn, 'units', 'm')
-
-      ierr = nf90_def_var(ncid, 'mesh2d_edge_nodes', NF90_INT, [dimid_two, dimid_edge], varid_en)
-      ierr = nf90_put_att(ncid, varid_en, 'cf_role', 'edge_node_connectivity')
-      ierr = nf90_put_att(ncid, varid_en, 'start_index', 1)
-      ierr = nf90_def_var(ncid, 'mesh2d_face_nodes', NF90_INT, [dimid_maxnodes, dimid_face], varid_fn)
-      ierr = nf90_put_att(ncid, varid_fn, 'cf_role', 'face_node_connectivity')
-      ierr = nf90_put_att(ncid, varid_fn, 'start_index', 1)
-
-      ! ---- string-length dimensions ----
-      ierr = nf90_def_dim(ncid, 'strLengthIds', IDLEN, dimid_idlen)
-      ierr = nf90_def_dim(ncid, 'strLengthLongNames', LNLEN, dimid_lnlen)
-
-      ! ---- network1d ----
-      ierr = nf90_def_dim(ncid, 'network1d_nNodes', NET1D_NNODES, dimid_1dnnodes)
-      ierr = nf90_def_dim(ncid, 'network1d_nEdges', NET1D_NEDGES, dimid_1dnedges)
-      ierr = nf90_def_dim(ncid, 'network1d_nGeometryNodes', NET1D_NGEOM, dimid_1dgeom)
-
-      ierr = nf90_def_var(ncid, 'network1d', NF90_INT, varid_net1d)
-      ierr = nf90_put_att(ncid, varid_net1d, 'cf_role', 'mesh_topology')
-      ierr = nf90_put_att(ncid, varid_net1d, 'long_name', 'Topology data of 1D network')
-      ierr = nf90_put_att(ncid, varid_net1d, 'topology_dimension', 1)
-      ierr = nf90_put_att(ncid, varid_net1d, 'node_dimension', 'network1d_nNodes')
-      ierr = nf90_put_att(ncid, varid_net1d, 'edge_dimension', 'network1d_nEdges')
-      ierr = nf90_put_att(ncid, varid_net1d, 'node_coordinates', 'network1d_node_x network1d_node_y')
-      ierr = nf90_put_att(ncid, varid_net1d, 'node_id', 'network1d_node_id')
-      ierr = nf90_put_att(ncid, varid_net1d, 'node_long_name', 'network1d_node_long_name')
-      ierr = nf90_put_att(ncid, varid_net1d, 'edge_node_connectivity', 'network1d_edge_nodes')
-      ierr = nf90_put_att(ncid, varid_net1d, 'edge_length', 'network1d_edge_length')
-      ierr = nf90_put_att(ncid, varid_net1d, 'edge_geometry', 'network1d_geometry')
-      ierr = nf90_put_att(ncid, varid_net1d, 'branch_id', 'network1d_branch_id')
-      ierr = nf90_put_att(ncid, varid_net1d, 'branch_long_name', 'network1d_branch_long_name')
-
-      ierr = nf90_def_var(ncid, 'network1d_node_x', NF90_DOUBLE, [dimid_1dnnodes], varid_net_nx)
-      ierr = nf90_put_att(ncid, varid_net_nx, 'standard_name', 'projection_x_coordinate')
-      ierr = nf90_put_att(ncid, varid_net_nx, 'units', 'm')
-      ierr = nf90_def_var(ncid, 'network1d_node_y', NF90_DOUBLE, [dimid_1dnnodes], varid_net_ny)
-      ierr = nf90_put_att(ncid, varid_net_ny, 'standard_name', 'projection_y_coordinate')
-      ierr = nf90_put_att(ncid, varid_net_ny, 'units', 'm')
-
-      ierr = nf90_def_var(ncid, 'network1d_node_id', NF90_CHAR, [dimid_idlen, dimid_1dnnodes], varid_net_nid)
-      ierr = nf90_def_var(ncid, 'network1d_node_long_name', NF90_CHAR, [dimid_lnlen, dimid_1dnnodes], varid_net_nln)
-
-      ierr = nf90_def_var(ncid, 'network1d_edge_nodes', NF90_INT, [dimid_two, dimid_1dnedges], varid_net_en)
-      ierr = nf90_put_att(ncid, varid_net_en, 'cf_role', 'edge_node_connectivity')
-      ierr = nf90_put_att(ncid, varid_net_en, 'start_index', 1)
-      ierr = nf90_def_var(ncid, 'network1d_edge_length', NF90_DOUBLE, [dimid_1dnedges], varid_net_elen)
-      ierr = nf90_put_att(ncid, varid_net_elen, 'units', 'm')
-      ierr = nf90_def_var(ncid, 'network1d_branch_id', NF90_CHAR, [dimid_idlen, dimid_1dnedges], varid_net_brid)
-      ierr = nf90_def_var(ncid, 'network1d_branch_long_name', NF90_CHAR, [dimid_lnlen, dimid_1dnedges], varid_net_brln)
-
-      ierr = nf90_def_var(ncid, 'network1d_geometry', NF90_INT, varid_net_geom)
-      ierr = nf90_put_att(ncid, varid_net_geom, 'geometry_type', 'line')
-      ierr = nf90_put_att(ncid, varid_net_geom, 'node_count', 'network1d_geom_node_count')
-      ierr = nf90_put_att(ncid, varid_net_geom, 'node_coordinates', 'network1d_geom_x network1d_geom_y')
-      ierr = nf90_def_var(ncid, 'network1d_geom_node_count', NF90_INT, [dimid_1dnedges], varid_net_gcount)
-      ierr = nf90_def_var(ncid, 'network1d_geom_x', NF90_DOUBLE, [dimid_1dgeom], varid_net_gx)
-      ierr = nf90_put_att(ncid, varid_net_gx, 'standard_name', 'projection_x_coordinate')
-      ierr = nf90_put_att(ncid, varid_net_gx, 'units', 'm')
-      ierr = nf90_def_var(ncid, 'network1d_geom_y', NF90_DOUBLE, [dimid_1dgeom], varid_net_gy)
-      ierr = nf90_put_att(ncid, varid_net_gy, 'standard_name', 'projection_y_coordinate')
-      ierr = nf90_put_att(ncid, varid_net_gy, 'units', 'm')
-
-      ierr = nf90_def_var(ncid, 'network1d_branch_order', NF90_INT, [dimid_1dnedges], varid_net_border)
-      ierr = nf90_put_att(ncid, varid_net_border, 'long_name', 'Order of branches for interpolation')
-      ierr = nf90_put_att(ncid, varid_net_border, 'mesh', 'network1d')
-      ierr = nf90_put_att(ncid, varid_net_border, 'location', 'edge')
-      ierr = nf90_def_var(ncid, 'network1d_branch_type', NF90_INT, [dimid_1dnedges], varid_net_btype)
-      ierr = nf90_put_att(ncid, varid_net_btype, 'long_name', 'Type of branches')
-      ierr = nf90_put_att(ncid, varid_net_btype, 'mesh', 'network1d')
-      ierr = nf90_put_att(ncid, varid_net_btype, 'location', 'edge')
-
-      ! ---- mesh1d (network-coupled) ----
-      ierr = nf90_def_dim(ncid, 'mesh1d_nNodes', M1D_NNODES, dimid_m1dnodes)
-      ierr = nf90_def_dim(ncid, 'mesh1d_nEdges', M1D_NEDGES, dimid_m1dedges)
-
-      ierr = nf90_def_var(ncid, 'mesh1d', NF90_INT, varid_m1d)
-      ierr = nf90_put_att(ncid, varid_m1d, 'cf_role', 'mesh_topology')
-      ierr = nf90_put_att(ncid, varid_m1d, 'long_name', 'Topology data of 1D mesh')
-      ierr = nf90_put_att(ncid, varid_m1d, 'topology_dimension', 1)
-      ierr = nf90_put_att(ncid, varid_m1d, 'coordinate_space', 'network1d')
-      ierr = nf90_put_att(ncid, varid_m1d, 'node_dimension', 'mesh1d_nNodes')
-      ierr = nf90_put_att(ncid, varid_m1d, 'edge_dimension', 'mesh1d_nEdges')
-      ierr = nf90_put_att(ncid, varid_m1d, 'edge_node_connectivity', 'mesh1d_edge_nodes')
-      ierr = nf90_put_att(ncid, varid_m1d, 'node_coordinates', 'mesh1d_node_branch mesh1d_node_offset mesh1d_node_x mesh1d_node_y')
-      ierr = nf90_put_att(ncid, varid_m1d, 'edge_coordinates', 'mesh1d_edge_branch mesh1d_edge_offset')
-      ierr = nf90_put_att(ncid, varid_m1d, 'node_id', 'mesh1d_node_id')
-      ierr = nf90_put_att(ncid, varid_m1d, 'node_long_name', 'mesh1d_node_long_name')
-
-      ierr = nf90_def_var(ncid, 'mesh1d_node_branch', NF90_INT, [dimid_m1dnodes], varid_m1d_nbr)
-      ierr = nf90_put_att(ncid, varid_m1d_nbr, 'long_name', 'Index of branch on which mesh nodes are located')
-      ierr = nf90_put_att(ncid, varid_m1d_nbr, 'start_index', 0)
-      ierr = nf90_def_var(ncid, 'mesh1d_node_offset', NF90_DOUBLE, [dimid_m1dnodes], varid_m1d_noff)
-      ierr = nf90_put_att(ncid, varid_m1d_noff, 'long_name', 'Offset along branch of mesh nodes')
-      ierr = nf90_put_att(ncid, varid_m1d_noff, 'units', 'm')
-      ierr = nf90_def_var(ncid, 'mesh1d_node_x', NF90_DOUBLE, [dimid_m1dnodes], varid_m1d_nx)
-      ierr = nf90_put_att(ncid, varid_m1d_nx, 'standard_name', 'projection_x_coordinate')
-      ierr = nf90_put_att(ncid, varid_m1d_nx, 'units', 'm')
-      ierr = nf90_def_var(ncid, 'mesh1d_node_y', NF90_DOUBLE, [dimid_m1dnodes], varid_m1d_ny)
-      ierr = nf90_put_att(ncid, varid_m1d_ny, 'standard_name', 'projection_y_coordinate')
-      ierr = nf90_put_att(ncid, varid_m1d_ny, 'units', 'm')
-
-      ierr = nf90_def_var(ncid, 'mesh1d_edge_nodes', NF90_INT, [dimid_two, dimid_m1dedges], varid_m1d_en)
-      ierr = nf90_put_att(ncid, varid_m1d_en, 'cf_role', 'edge_node_connectivity')
-      ierr = nf90_put_att(ncid, varid_m1d_en, 'start_index', 1)
-      ierr = nf90_def_var(ncid, 'mesh1d_edge_branch', NF90_INT, [dimid_m1dedges], varid_m1d_ebr)
-      ierr = nf90_put_att(ncid, varid_m1d_ebr, 'start_index', 0)
-      ierr = nf90_def_var(ncid, 'mesh1d_edge_offset', NF90_DOUBLE, [dimid_m1dedges], varid_m1d_eoff)
-      ierr = nf90_put_att(ncid, varid_m1d_eoff, 'units', 'm')
-
-      ierr = nf90_def_var(ncid, 'mesh1d_node_id', NF90_CHAR, [dimid_idlen, dimid_m1dnodes], varid_m1d_nid)
-      ierr = nf90_put_att(ncid, varid_m1d_nid, 'long_name', 'ID of mesh nodes')
-      ierr = nf90_put_att(ncid, varid_m1d_nid, 'cf_role', 'timeseries_id')
-      ierr = nf90_def_var(ncid, 'mesh1d_node_long_name', NF90_CHAR, [dimid_lnlen, dimid_m1dnodes], varid_m1d_nln)
-      ierr = nf90_put_att(ncid, varid_m1d_nln, 'long_name', 'Long name of mesh nodes')
-
-      ierr = nf90_enddef(ncid)
-      if (ierr /= nf90_noerr) then
-         ierr = nf90_close(ncid)
-         return
-      end if
-
-      ! ---- write 2D data ----
-      ierr = nf90_put_var(ncid, varid_xn, xnodes)
-      ierr = nf90_put_var(ncid, varid_yn, ynodes)
-      ierr = nf90_put_var(ncid, varid_en, edge_nodes)
-      ierr = nf90_put_var(ncid, varid_fn, face_nodes)
-
-      ! ---- write network1d data ----
-      ierr = nf90_put_var(ncid, varid_net_nx, net_node_x)
-      ierr = nf90_put_var(ncid, varid_net_ny, net_node_y)
-      ierr = nf90_put_var(ncid, varid_net_nid, net_node_id)
-      ierr = nf90_put_var(ncid, varid_net_nln, net_node_ln)
-      ierr = nf90_put_var(ncid, varid_net_en, net_edge_nodes)
-      ierr = nf90_put_var(ncid, varid_net_elen, net_edge_length)
-      ierr = nf90_put_var(ncid, varid_net_brid, net_branch_id)
-      ierr = nf90_put_var(ncid, varid_net_brln, net_branch_ln)
-      ierr = nf90_put_var(ncid, varid_net_gcount, net_geom_count)
-      ierr = nf90_put_var(ncid, varid_net_gx, net_geom_x)
-      ierr = nf90_put_var(ncid, varid_net_gy, net_geom_y)
-      ierr = nf90_put_var(ncid, varid_net_border, net_branch_order)
-      ierr = nf90_put_var(ncid, varid_net_btype, net_branch_type)
-
-      ! ---- write mesh1d data ----
-      ierr = nf90_put_var(ncid, varid_m1d_nbr, m1d_node_branch)
-      ierr = nf90_put_var(ncid, varid_m1d_noff, m1d_node_offset)
-      ierr = nf90_put_var(ncid, varid_m1d_nx, m1d_node_x)
-      ierr = nf90_put_var(ncid, varid_m1d_ny, m1d_node_y)
-      ierr = nf90_put_var(ncid, varid_m1d_en, m1d_edge_nodes)
-      ierr = nf90_put_var(ncid, varid_m1d_ebr, m1d_edge_branch)
-      ierr = nf90_put_var(ncid, varid_m1d_eoff, m1d_edge_offset)
-      ierr = nf90_put_var(ncid, varid_m1d_nid, m1d_node_id)
-      ierr = nf90_put_var(ncid, varid_m1d_nln, m1d_node_ln)
-
-      ierr = nf90_close(ncid)
-      ierr = 0 ! success
+      ! The 2D grid is the same as in create_two_row_netfile. The 1D branch is a single branch from (-200, 50)
+      ! to (-100, 50) with length 100, with 3 mesh1d nodes at offsets 0, 50 and 100 on branch 1 (0-based index).
+      ! The string variables have fixed lengths: 40 characters for ids and 80 characters for long names.
+      call create_netcdf_from_cdl( &
+         filename, &
+         [character(len=110) :: &
+            'netcdf net_with_1d_branch {', &
+            'dimensions:', &
+            '    mesh2d_nNodes = 15 ;', &
+            '    mesh2d_nEdges = 22 ;', &
+            '    mesh2d_nFaces = 8 ;', &
+            '    mesh2d_nMax_face_nodes = 4 ;', &
+            '    Two = 2 ;', &
+            '    strLengthIds = 40 ;', &
+            '    strLengthLongNames = 80 ;', &
+            '    network1d_nNodes = 2 ;', &
+            '    network1d_nEdges = 1 ;', &
+            '    network1d_nGeometryNodes = 2 ;', &
+            '    mesh1d_nNodes = 3 ;', &
+            '    mesh1d_nEdges = 2 ;', &
+            'variables:', &
+            '    int mesh2d ;', &
+            '        mesh2d:cf_role = "mesh_topology" ;', &
+            '        mesh2d:topology_dimension = 2 ;', &
+            '        mesh2d:node_coordinates = "mesh2d_node_x mesh2d_node_y" ;', &
+            '        mesh2d:edge_node_connectivity = "mesh2d_edge_nodes" ;', &
+            '        mesh2d:face_node_connectivity = "mesh2d_face_nodes" ;', &
+            '    double mesh2d_node_x(mesh2d_nNodes) ;', &
+            '        mesh2d_node_x:standard_name = "projection_x_coordinate" ;', &
+            '        mesh2d_node_x:units = "m" ;', &
+            '    double mesh2d_node_y(mesh2d_nNodes) ;', &
+            '        mesh2d_node_y:standard_name = "projection_y_coordinate" ;', &
+            '        mesh2d_node_y:units = "m" ;', &
+            '    int mesh2d_edge_nodes(mesh2d_nEdges, Two) ;', &
+            '        mesh2d_edge_nodes:cf_role = "edge_node_connectivity" ;', &
+            '        mesh2d_edge_nodes:start_index = 1 ;', &
+            '    int mesh2d_face_nodes(mesh2d_nFaces, mesh2d_nMax_face_nodes) ;', &
+            '        mesh2d_face_nodes:cf_role = "face_node_connectivity" ;', &
+            '        mesh2d_face_nodes:start_index = 1 ;', &
+            '    int network1d ;', &
+            '        network1d:cf_role = "mesh_topology" ;', &
+            '        network1d:long_name = "Topology data of 1D network" ;', &
+            '        network1d:topology_dimension = 1 ;', &
+            '        network1d:node_dimension = "network1d_nNodes" ;', &
+            '        network1d:edge_dimension = "network1d_nEdges" ;', &
+            '        network1d:node_coordinates = "network1d_node_x network1d_node_y" ;', &
+            '        network1d:node_id = "network1d_node_id" ;', &
+            '        network1d:node_long_name = "network1d_node_long_name" ;', &
+            '        network1d:edge_node_connectivity = "network1d_edge_nodes" ;', &
+            '        network1d:edge_length = "network1d_edge_length" ;', &
+            '        network1d:edge_geometry = "network1d_geometry" ;', &
+            '        network1d:branch_id = "network1d_branch_id" ;', &
+            '        network1d:branch_long_name = "network1d_branch_long_name" ;', &
+            '    double network1d_node_x(network1d_nNodes) ;', &
+            '        network1d_node_x:standard_name = "projection_x_coordinate" ;', &
+            '        network1d_node_x:units = "m" ;', &
+            '    double network1d_node_y(network1d_nNodes) ;', &
+            '        network1d_node_y:standard_name = "projection_y_coordinate" ;', &
+            '        network1d_node_y:units = "m" ;', &
+            '    char network1d_node_id(network1d_nNodes, strLengthIds) ;', &
+            '    char network1d_node_long_name(network1d_nNodes, strLengthLongNames) ;', &
+            '    int network1d_edge_nodes(network1d_nEdges, Two) ;', &
+            '        network1d_edge_nodes:cf_role = "edge_node_connectivity" ;', &
+            '        network1d_edge_nodes:start_index = 1 ;', &
+            '    double network1d_edge_length(network1d_nEdges) ;', &
+            '        network1d_edge_length:units = "m" ;', &
+            '    char network1d_branch_id(network1d_nEdges, strLengthIds) ;', &
+            '    char network1d_branch_long_name(network1d_nEdges, strLengthLongNames) ;', &
+            '    int network1d_geometry ;', &
+            '        network1d_geometry:geometry_type = "line" ;', &
+            '        network1d_geometry:node_count = "network1d_geom_node_count" ;', &
+            '        network1d_geometry:node_coordinates = "network1d_geom_x network1d_geom_y" ;', &
+            '    int network1d_geom_node_count(network1d_nEdges) ;', &
+            '    double network1d_geom_x(network1d_nGeometryNodes) ;', &
+            '        network1d_geom_x:standard_name = "projection_x_coordinate" ;', &
+            '        network1d_geom_x:units = "m" ;', &
+            '    double network1d_geom_y(network1d_nGeometryNodes) ;', &
+            '        network1d_geom_y:standard_name = "projection_y_coordinate" ;', &
+            '        network1d_geom_y:units = "m" ;', &
+            '    int network1d_branch_order(network1d_nEdges) ;', &
+            '        network1d_branch_order:long_name = "Order of branches for interpolation" ;', &
+            '        network1d_branch_order:mesh = "network1d" ;', &
+            '        network1d_branch_order:location = "edge" ;', &
+            '    int network1d_branch_type(network1d_nEdges) ;', &
+            '        network1d_branch_type:long_name = "Type of branches" ;', &
+            '        network1d_branch_type:mesh = "network1d" ;', &
+            '        network1d_branch_type:location = "edge" ;', &
+            '    int mesh1d ;', &
+            '        mesh1d:cf_role = "mesh_topology" ;', &
+            '        mesh1d:long_name = "Topology data of 1D mesh" ;', &
+            '        mesh1d:topology_dimension = 1 ;', &
+            '        mesh1d:coordinate_space = "network1d" ;', &
+            '        mesh1d:node_dimension = "mesh1d_nNodes" ;', &
+            '        mesh1d:edge_dimension = "mesh1d_nEdges" ;', &
+            '        mesh1d:edge_node_connectivity = "mesh1d_edge_nodes" ;', &
+            '        mesh1d:node_coordinates = "mesh1d_node_branch mesh1d_node_offset mesh1d_node_x mesh1d_node_y" ;', &
+            '        mesh1d:edge_coordinates = "mesh1d_edge_branch mesh1d_edge_offset" ;', &
+            '        mesh1d:node_id = "mesh1d_node_id" ;', &
+            '        mesh1d:node_long_name = "mesh1d_node_long_name" ;', &
+            '    int mesh1d_node_branch(mesh1d_nNodes) ;', &
+            '        mesh1d_node_branch:long_name = "Index of branch on which mesh nodes are located" ;', &
+            '        mesh1d_node_branch:start_index = 0 ;', &
+            '    double mesh1d_node_offset(mesh1d_nNodes) ;', &
+            '        mesh1d_node_offset:long_name = "Offset along branch of mesh nodes" ;', &
+            '        mesh1d_node_offset:units = "m" ;', &
+            '    double mesh1d_node_x(mesh1d_nNodes) ;', &
+            '        mesh1d_node_x:standard_name = "projection_x_coordinate" ;', &
+            '        mesh1d_node_x:units = "m" ;', &
+            '    double mesh1d_node_y(mesh1d_nNodes) ;', &
+            '        mesh1d_node_y:standard_name = "projection_y_coordinate" ;', &
+            '        mesh1d_node_y:units = "m" ;', &
+            '    int mesh1d_edge_nodes(mesh1d_nEdges, Two) ;', &
+            '        mesh1d_edge_nodes:cf_role = "edge_node_connectivity" ;', &
+            '        mesh1d_edge_nodes:start_index = 1 ;', &
+            '    int mesh1d_edge_branch(mesh1d_nEdges) ;', &
+            '        mesh1d_edge_branch:start_index = 0 ;', &
+            '    double mesh1d_edge_offset(mesh1d_nEdges) ;', &
+            '        mesh1d_edge_offset:units = "m" ;', &
+            '    char mesh1d_node_id(mesh1d_nNodes, strLengthIds) ;', &
+            '        mesh1d_node_id:long_name = "ID of mesh nodes" ;', &
+            '        mesh1d_node_id:cf_role = "timeseries_id" ;', &
+            '    char mesh1d_node_long_name(mesh1d_nNodes, strLengthLongNames) ;', &
+            '        mesh1d_node_long_name:long_name = "Long name of mesh nodes" ;', &
+            '', &
+            '// global attributes:', &
+            '        :Conventions = "CF-1.8 UGRID-1.0 Deltares-0.10" ;', &
+            'data:', &
+            '', &
+            ' // 2D grid: 5 columns x 3 rows of nodes', &
+            ' mesh2d_node_x = 0, 100, 200, 300, 400,', &
+            '                0, 100, 200, 300, 400,', &
+            '                0, 100, 200, 300, 400 ;', &
+            ' mesh2d_node_y = 0, 0, 0, 0, 0,', &
+            '                100, 100, 100, 100, 100,', &
+            '                200, 200, 200, 200, 200 ;', &
+            ' mesh2d_edge_nodes =', &
+            '    1, 2,   2, 3,   3, 4,   4, 5,', &
+            '    6, 7,   7, 8,   8, 9,   9, 10,', &
+            '    11, 12, 12, 13, 13, 14, 14, 15,', &
+            '    1, 6,   2, 7,   3, 8,   4, 9,   5, 10,', &
+            '    6, 11,  7, 12,  8, 13,  9, 14,  10, 15 ;', &
+            ' mesh2d_face_nodes =', &
+            '    1, 2, 7, 6,   2, 3, 8, 7,   3, 4, 9, 8,   4, 5, 10, 9,', &
+            '    6, 7, 12, 11, 7, 8, 13, 12, 8, 9, 14, 13, 9, 10, 15, 14 ;', &
+            '', &
+            ' // network1d: a single branch', &
+            ' network1d_node_x = -200, -100 ;', &
+            ' network1d_node_y = 50, 50 ;', &
+            ' network1d_node_id =', &
+            '  "nNode1",', &
+            '  "nNode2" ;', &
+            ' network1d_node_long_name =', &
+            '  "nNode1",', &
+            '  "nNode2" ;', &
+            ' network1d_edge_nodes = 1, 2 ;', &
+            ' network1d_edge_length = 100 ;', &
+            ' network1d_branch_id =', &
+            '  "branch1" ;', &
+            ' network1d_branch_long_name =', &
+            '  "branch1" ;', &
+            ' network1d_geom_node_count = 2 ;', &
+            ' network1d_geom_x = -200, -100 ;', &
+            ' network1d_geom_y = 50, 50 ;', &
+            ' network1d_branch_order = -1 ;', &
+            ' network1d_branch_type = 0 ;', &
+            '', &
+            ' // mesh1d: 3 nodes on branch 1 (0-based branch index) at offsets 0, 50 and 100', &
+            ' mesh1d_node_branch = 0, 0, 0 ;', &
+            ' mesh1d_node_offset = 0, 50, 100 ;', &
+            ' mesh1d_node_x = -200, -150, -100 ;', &
+            ' mesh1d_node_y = 50, 50, 50 ;', &
+            ' mesh1d_edge_nodes =', &
+            '    1, 2,', &
+            '    2, 3 ;', &
+            ' mesh1d_edge_branch = 0, 0 ;', &
+            ' mesh1d_edge_offset = 25, 75 ;', &
+            ' mesh1d_node_id =', &
+            '  "mesh1d_node0001",', &
+            '  "mesh1d_node0002",', &
+            '  "mesh1d_node0003" ;', &
+            ' mesh1d_node_long_name =', &
+            '  "mesh1d_node0001",', &
+            '  "mesh1d_node0002",', &
+            '  "mesh1d_node0003" ;', &
+            '}' &
+         ], success)
    end subroutine create_net_with_1d_branch
 
    subroutine convertlongculverts(mdufile, structurefile, netfile)

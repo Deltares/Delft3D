@@ -21,18 +21,18 @@ contains
 
       call create_netcdf_from_cdl( &
          NC_FILE, [character(len=80) :: &
-            "netcdf swan_fixture {", &
-            "dimensions:", &
-            "    time = 2;", &
-            "    yc = 1;", &
-            "    xc = 1;", &
-            "variables:", &
-            "    float hs(time, yc, xc);", &
+            'netcdf swan_fixture {', &
+            'dimensions:', &
+            '    time = 2;', &
+            '    yc = 1;', &
+            '    xc = 1;', &
+            'variables:', &
+            '    float hs(time, yc, xc);', &
             '    hs:units = "m";', &
             '    hs:standard_name = "sea_surface_wave_significant_height";', &
-            "data:", &
-            "    hs = 0.5, 1.25;", &
-            "}" &
+            'data:', &
+            '    hs = 0.5, 1.25;', &
+            '}' &
          ], success=success)
       if (.not. f90_assert_true(success, "Could not create NetCDF fixture: "//NC_FILE)) then
          return
