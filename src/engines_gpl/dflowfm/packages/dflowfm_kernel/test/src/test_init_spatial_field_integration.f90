@@ -8,6 +8,7 @@ module test_init_spatial_fields_integration
    use m_cell_geometry, only: xz, yz, ndx
    use m_flowgeom, only: kcs, ndxi
    use m_file_helpers, only: create_file
+   use m_netcdf_helpers, only: create_netcdf_from_cdl
    use precision_basics, only: dp
    use messagehandling, only: LEVEL_FATAL
    use tree_data_types, only: tree_data
@@ -20,6 +21,7 @@ module test_init_spatial_fields_integration
    character(len=*), parameter :: EXT_FILENAME = "test_spatial.ext"
    character(len=*), parameter :: BC_FILENAME = "test_rain.bc"
    character(len=*), parameter :: BASE_DIR = "."
+   integer, parameter :: CDL_LEN = 100 !< Length of the lines of CDL in the NetCDF fixtures.
    integer, parameter :: NUM_SCALAR_METEO_CASES = 16
    character(len=32), dimension(NUM_SCALAR_METEO_CASES), parameter :: SCALAR_METEO_QUANTITIES = [character(len=32) :: &
                                                                                                  'airdensity', 'airpressure', 'airtemperature', 'cloudiness', 'dewpoint', 'humidity', &
@@ -89,23 +91,29 @@ contains
    end subroutine setup_minimal_grid_with_points
 
    subroutine create_scalar_netcdf(file_name)
-      use netcdf
-
       character(len=*), intent(in) :: file_name
-      integer :: ncid, time_dimid, time_varid, ssrd_varid
 
-      call check_netcdf(nf90_create(file_name, NF90_CLOBBER, ncid))
-      call check_netcdf(nf90_def_dim(ncid, 'time', 2, time_dimid))
-      call check_netcdf(nf90_def_var(ncid, 'time', NF90_DOUBLE, [time_dimid], time_varid))
-      call check_netcdf(nf90_put_att(ncid, time_varid, 'standard_name', 'time'))
-      call check_netcdf(nf90_put_att(ncid, time_varid, 'units', 'seconds since 2000-01-01 00:00:00'))
-      call check_netcdf(nf90_def_var(ncid, 'ssrd', NF90_DOUBLE, [time_dimid], ssrd_varid))
-      call check_netcdf(nf90_put_att(ncid, ssrd_varid, 'standard_name', 'surface_downwelling_shortwave_flux_in_air'))
-      call check_netcdf(nf90_put_att(ncid, ssrd_varid, 'units', 'W m-2'))
-      call check_netcdf(nf90_enddef(ncid))
-      call check_netcdf(nf90_put_var(ncid, time_varid, [0.0_dp, 100.0_dp]))
-      call check_netcdf(nf90_put_var(ncid, ssrd_varid, [100.0_dp, 300.0_dp]))
-      call check_netcdf(nf90_close(ncid))
+      logical :: success
+
+      call create_netcdf_from_cdl( &
+         file_name, &
+         [character(len=CDL_LEN) :: &
+         'netcdf scalar_timeseries {', &
+         'dimensions:', &
+         '    time = 2 ;', &
+         'variables:', &
+         '    double time(time) ;', &
+         '        time:standard_name = "time" ;', &
+         '        time:units = "seconds since 2000-01-01 00:00:00" ;', &
+         '    double ssrd(time) ;', &
+         '        ssrd:standard_name = "surface_downwelling_shortwave_flux_in_air" ;', &
+         '        ssrd:units = "W m-2" ;', &
+         'data:', &
+         '    time = 0, 100 ;', &
+         '    ssrd = 100, 300 ;', &
+         '}' &
+         ], success)
+      call f90_expect_true(success, 'Could not create the NetCDF fixture '//file_name)
    end subroutine create_scalar_netcdf
 
    !> Create a gridded field with one or two snapshots, or no time axis, for initialization tests.
@@ -213,59 +221,6 @@ contains
       call check_netcdf(nf90_close(ncid))
    end subroutine create_initial_gridded_netcdf
 
-   subroutine create_netcdf_timeseries_with_coordinates(file_name)
-      use netcdf
-
-      character(len=*), intent(in) :: file_name
-      integer :: ncid, time_dimid, time_varid, x_varid, y_varid, ssrd_varid
-
-      call check_netcdf(nf90_create(file_name, NF90_CLOBBER, ncid))
-      call check_netcdf(nf90_def_dim(ncid, 'time', 2, time_dimid))
-      call check_netcdf(nf90_def_var(ncid, 'time', NF90_DOUBLE, [time_dimid], time_varid))
-      call check_netcdf(nf90_put_att(ncid, time_varid, 'standard_name', 'time'))
-      call check_netcdf(nf90_put_att(ncid, time_varid, 'units', 'seconds since 2000-01-01 00:00:00'))
-      call check_netcdf(nf90_def_var(ncid, 'x', NF90_DOUBLE, [time_dimid], x_varid))
-      call check_netcdf(nf90_put_att(ncid, x_varid, 'standard_name', 'projection_x_coordinate'))
-      call check_netcdf(nf90_def_var(ncid, 'y', NF90_DOUBLE, [time_dimid], y_varid))
-      call check_netcdf(nf90_put_att(ncid, y_varid, 'standard_name', 'projection_y_coordinate'))
-      call check_netcdf(nf90_def_var(ncid, 'ssrd', NF90_DOUBLE, [time_dimid], ssrd_varid))
-      call check_netcdf(nf90_put_att(ncid, ssrd_varid, 'standard_name', 'surface_downwelling_shortwave_flux_in_air'))
-      call check_netcdf(nf90_put_att(ncid, ssrd_varid, 'units', 'W m-2'))
-      call check_netcdf(nf90_put_att(ncid, ssrd_varid, 'coordinates', 'x y'))
-      call check_netcdf(nf90_enddef(ncid))
-      call check_netcdf(nf90_put_var(ncid, time_varid, [0.0_dp, 100.0_dp]))
-      call check_netcdf(nf90_put_var(ncid, x_varid, [1.0_dp, 2.0_dp]))
-      call check_netcdf(nf90_put_var(ncid, y_varid, [3.0_dp, 4.0_dp]))
-      call check_netcdf(nf90_put_var(ncid, ssrd_varid, [100.0_dp, 300.0_dp]))
-      call check_netcdf(nf90_close(ncid))
-   end subroutine create_netcdf_timeseries_with_coordinates
-
-   subroutine create_windxy_netcdf(file_name)
-      use netcdf
-
-      character(len=*), intent(in) :: file_name
-      integer :: ncid, time_dimid, time_varid, u10_varid, v10_varid
-      real(dp), parameter :: FILL_VALUE = -999.0_dp
-
-      call check_netcdf(nf90_create(file_name, NF90_CLOBBER, ncid))
-      call check_netcdf(nf90_def_dim(ncid, 'time', 3, time_dimid))
-      call check_netcdf(nf90_def_var(ncid, 'time', NF90_DOUBLE, [time_dimid], time_varid))
-      call check_netcdf(nf90_put_att(ncid, time_varid, 'standard_name', 'time'))
-      call check_netcdf(nf90_put_att(ncid, time_varid, 'units', 'seconds since 2000-01-01 00:00:00'))
-      call check_netcdf(nf90_def_var(ncid, 'u10', NF90_DOUBLE, [time_dimid], u10_varid))
-      call check_netcdf(nf90_put_att(ncid, u10_varid, 'standard_name', 'eastward_wind'))
-      call check_netcdf(nf90_put_att(ncid, u10_varid, 'units', 'm s-1'))
-      call check_netcdf(nf90_def_var(ncid, 'v10', NF90_DOUBLE, [time_dimid], v10_varid))
-      call check_netcdf(nf90_put_att(ncid, v10_varid, 'standard_name', 'northward_wind'))
-      call check_netcdf(nf90_put_att(ncid, v10_varid, 'units', 'm s-1'))
-      call check_netcdf(nf90_put_att(ncid, v10_varid, '_FillValue', FILL_VALUE))
-      call check_netcdf(nf90_enddef(ncid))
-      call check_netcdf(nf90_put_var(ncid, time_varid, [0.0_dp, 100.0_dp, 200.0_dp]))
-      call check_netcdf(nf90_put_var(ncid, u10_varid, [2.0_dp, 6.0_dp, 10.0_dp]))
-      call check_netcdf(nf90_put_var(ncid, v10_varid, [-4.0_dp, FILL_VALUE, 4.0_dp]))
-      call check_netcdf(nf90_close(ncid))
-   end subroutine create_windxy_netcdf
-
    subroutine check_netcdf(status)
       use netcdf, only: NF90_NOERR, nf90_strerror
 
@@ -273,6 +228,70 @@ contains
 
       if (status /= NF90_NOERR) error stop nf90_strerror(status)
    end subroutine check_netcdf
+
+   subroutine create_netcdf_timeseries_with_coordinates(file_name)
+      character(len=*), intent(in) :: file_name
+
+      logical :: success
+
+      call create_netcdf_from_cdl( &
+         file_name, &
+         [character(len=CDL_LEN) :: &
+         'netcdf located_timeseries {', &
+         'dimensions:', &
+         '    time = 2 ;', &
+         'variables:', &
+         '    double time(time) ;', &
+         '        time:standard_name = "time" ;', &
+         '        time:units = "seconds since 2000-01-01 00:00:00" ;', &
+         '    double x(time) ;', &
+         '        x:standard_name = "projection_x_coordinate" ;', &
+         '    double y(time) ;', &
+         '        y:standard_name = "projection_y_coordinate" ;', &
+         '    double ssrd(time) ;', &
+         '        ssrd:standard_name = "surface_downwelling_shortwave_flux_in_air" ;', &
+         '        ssrd:units = "W m-2" ;', &
+         '        ssrd:coordinates = "x y" ;', &
+         'data:', &
+         '    time = 0, 100 ;', &
+         '    x = 1, 2 ;', &
+         '    y = 3, 4 ;', &
+         '    ssrd = 100, 300 ;', &
+         '}' &
+         ], success)
+      call f90_expect_true(success, 'Could not create the NetCDF fixture '//file_name)
+   end subroutine create_netcdf_timeseries_with_coordinates
+
+   subroutine create_windxy_netcdf(file_name)
+      character(len=*), intent(in) :: file_name
+
+      logical :: success
+
+      call create_netcdf_from_cdl( &
+         file_name, &
+         [character(len=CDL_LEN) :: &
+         'netcdf windxy {', &
+         'dimensions:', &
+         '    time = 3 ;', &
+         'variables:', &
+         '    double time(time) ;', &
+         '        time:standard_name = "time" ;', &
+         '        time:units = "seconds since 2000-01-01 00:00:00" ;', &
+         '    double u10(time) ;', &
+         '        u10:standard_name = "eastward_wind" ;', &
+         '        u10:units = "m s-1" ;', &
+         '    double v10(time) ;', &
+         '        v10:standard_name = "northward_wind" ;', &
+         '        v10:units = "m s-1" ;', &
+         '        v10:_FillValue = -999. ;', &
+         'data:', &
+         '    time = 0, 100, 200 ;', &
+         '    u10 = 2, 6, 10 ;', &
+         '    v10 = -4, -999, 4 ;', &
+         '}' &
+         ], success)
+      call f90_expect_true(success, 'Could not create the NetCDF fixture '//file_name)
+   end subroutine create_windxy_netcdf
 
    !$gtest
    subroutine test_polygon_preserves_uncovered_values() bind(C)

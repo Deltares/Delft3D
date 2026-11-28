@@ -45,7 +45,9 @@ add_fortran_gtest(test_example
 
 `SOURCES` drives both compilation and test registration; no C++ bootstrap is
 needed. Optional arguments are `INCLUDES`, `DEFINITIONS`, `CXX_SOURCES` for C++
-helpers, and `TEST_TEARDOWN c_binding_name` for cleanup after every test, including
+helpers, `PROPERTIES name value...` for CTest properties applied to every test in
+the target (for example `ENVIRONMENT_MODIFICATION`), and
+`TEST_TEARDOWN c_binding_name` for cleanup after every test, including
 failures. D-Flow FM's existing target uses teardown to reset model state.
 
 ### Check results and guard prerequisites

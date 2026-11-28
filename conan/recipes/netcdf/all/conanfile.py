@@ -31,6 +31,7 @@ class NetcdfConan(ConanFile):
         "dap": [True, False],
         "byterange": [True, False],
         "parallel4": [True, False],
+        "build_utilities": [True, False],
     }
     default_options = {
         "shared": False,
@@ -41,6 +42,7 @@ class NetcdfConan(ConanFile):
         "dap": True,
         "byterange": False,
         "parallel4": False,
+        "build_utilities": False,
     }
 
     @property
@@ -68,7 +70,7 @@ class NetcdfConan(ConanFile):
     def generate(self):
         tc = CMakeToolchain(self)
         tc.variables["BUILD_TESTING"] = False
-        tc.variables["BUILD_UTILITIES"] = False
+        tc.variables["BUILD_UTILITIES"] = self.options.build_utilities
         tc.variables["ENABLE_TESTS"] = False
         tc.variables["ENABLE_FILTER_TESTING"] = False
 
@@ -97,17 +99,19 @@ class NetcdfConan(ConanFile):
         cmake = CMake(self)
         cmake.install()
 
-        rm(self, "nc-config", os.path.join(self.package_folder, "bin"))
+        bin_dir = os.path.join(self.package_folder, "bin")
+        rm(self, "nc-config", bin_dir)
         rm(self, "*.settings", os.path.join(self.package_folder, "lib"))
         rmdir(self, os.path.join(self.package_folder, "lib", "cmake"))
         rmdir(self, os.path.join(self.package_folder, "lib", "pkgconfig"))
         rmdir(self, os.path.join(self.package_folder, "share"))
         if self.settings.os == "Windows" and self.options.shared:
             for vc_file in ["concrt*.dll", "msvcp*.dll", "vcruntime*.dll"]:
-                rm(self, vc_file, os.path.join(self.package_folder, "bin"))
-            rm(self, "*[!.dll]", os.path.join(self.package_folder, "bin"))
-        else:
-            rmdir(self, os.path.join(self.package_folder, "bin"))
+                rm(self, vc_file, bin_dir)
+            if not self.options.build_utilities:
+                rm(self, "*[!.dll]", bin_dir)
+        elif not self.options.build_utilities:
+            rmdir(self, bin_dir)
 
     def package_info(self):
         self.cpp_info.set_property("cmake_file_name", "netCDF")
